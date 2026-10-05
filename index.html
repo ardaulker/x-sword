@@ -1,0 +1,568 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taktiksel Satranç Arenası</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --panel-bg: #16213e;
+            --cell-bg: #2d3250;
+            --cell-hover: #424769;
+            --text-color: #e94560;
+            --player: #00ff88;
+            --enemy-green: #00cc66;
+            --red: #ff3333;
+            --blue: #3388ff;
+        }
+
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+
+        /* HEADER & UI */
+        .header {
+            width: 100%;
+            padding: 15px 20px;
+            background-color: var(--panel-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+
+
+        .title-area h1 { margin: 0; font-size: 20px; color: var(--player); text-transform: uppercase; letter-spacing: 2px;}
+        .status { font-size: 16px; font-weight: bold; background: #000; padding: 8px 15px; border-radius: 5px; border: 1px solid var(--player); }
+        
+        .header-buttons { display: flex; gap: 10px; }
+        .btn-rules, .btn-restart { color: white; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 5px; text-transform: uppercase; transition: 0.3s;}
+        .btn-rules { background: var(--text-color); }
+        .btn-rules:hover { background: #ff1a4a; transform: scale(1.05); }
+        .btn-restart { background: var(--blue); }
+        .btn-restart:hover { background: #1a66cc; transform: scale(1.05); }
+
+
+        /* MAIN LAYOUT */
+        .main-container {
+            display: flex;
+            width: 100%;
+            max-width: 1000px;
+            height: calc(100vh - 70px);
+            padding: 20px;
+            box-sizing: border-box;
+            gap: 20px;
+        }
+
+
+        /* BOARD AREA */
+        .board-container {
+            flex: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(9, 1fr);
+            gap: 4px;
+            background-color: #111;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            background-color: var(--cell-bg);
+            /* SEKİZGEN YAPISI */
+            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: 0.2s;
+        }
+
+
+        .cell.valid-move { background-color: #2d5a2d; cursor: pointer; box-shadow: inset 0 0 10px #00ff00; }
+        .cell.valid-attack { background-color: #6a1b1b; cursor: pointer; box-shadow: inset 0 0 10px #ff0000; }
+        
+        /* LOG PANEL */
+        .log-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 2px solid #2d3250;
+        }
+        .log-panel h3 { margin-top: 0; color: #aaa; text-align: center; border-bottom: 1px solid #444; padding-bottom: 10px;}
+        .log-list { overflow-y: auto; flex-grow: 1; font-size: 13px; font-family: monospace; line-height: 1.5; padding-right: 5px; }
+        .log-item { margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px dashed #333; }
+        .log-player { color: var(--player); font-weight: bold; }
+        .log-enemy { color: var(--text-color); }
+        .log-kill { color: #ffeb3b; font-weight: bold; }
+
+
+        /* PIECES & SHAPES */
+        .piece {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+            transition: 0.3s all ease-in-out;
+            pointer-events: none;
+        }
+        .piece-text {
+            color: white;
+            font-weight: 900;
+            font-size: 16px;
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            z-index: 15;
+            transition: transform 0.3s;
+        }
+
+
+        .shape-square { border-radius: 0; }
+        .shape-diamond { transform: rotate(45deg); }
+        .shape-diamond .piece-text { transform: rotate(-45deg); }
+
+
+        .color-red { background-color: var(--red); box-shadow: inset 0 0 5px #000; }
+        .color-blue { background-color: var(--blue); box-shadow: inset 0 0 5px #000; }
+        .color-player { background-color: var(--player); box-shadow: 0 0 10px #00ff88; }
+        .color-enemy-green { background-color: var(--enemy-green); border: 2px solid #000;}
+
+
+        /* SWORDS (Bıçaklar) */
+        .swords { position: absolute; width: 100%; height: 100%; z-index: -1; transition: 0.3s;}
+        .sword-line-1, .sword-line-2 {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, #e0e0e0, #ffffff, #e0e0e0, transparent);
+            width: 180%; height: 4px;
+            top: 50%; left: -40%;
+            margin-top: -2px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.8);
+            clip-path: polygon(0 50%, 10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%);
+        }
+        .sword-line-2 { transform: rotate(90deg); }
+
+
+        .piece.color-red .swords { transform: rotate(45deg); }
+        .piece.color-blue .swords { transform: rotate(-45deg); }
+        .piece.shape-square.color-player .swords, 
+        .piece.shape-square.color-enemy-green .swords { transform: rotate(0deg); }
+        .piece.shape-diamond.color-player .swords, 
+        .piece.shape-diamond.color-enemy-green .swords { transform: rotate(0deg); }
+
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .modal-overlay.hidden { display: none; }
+        .modal-content {
+            background: var(--panel-bg);
+            padding: 30px; border-radius: 10px; width: 80%; max-width: 600px;
+            border: 2px solid var(--player); box-shadow: 0 0 20px rgba(0,255,136,0.5);
+            max-height: 80vh; overflow-y: auto;
+        }
+        .modal-content h2 { color: var(--player); text-align: center; margin-top: 0; text-transform: uppercase;}
+        .modal-content ul { line-height: 1.8; color: #ddd; }
+        .modal-content li strong { color: white; }
+        .close-btn { 
+            display: block; width: 100%; padding: 10px; background: var(--text-color); 
+            color: white; border: none; text-align: center; font-weight: bold; cursor: pointer; 
+            border-radius: 5px; margin-top: 20px; font-size: 16px;
+        }
+        .close-btn:hover { background: #ff1a4a; }
+
+
+    </style>
+</head>
+<body>
+
+
+    <div class="header">
+        <div class="title-area">
+            <h1>Taktiksel Satranç</h1>
+        </div>
+        <div class="status" id="statusBox">Hamle Sırası: Sende | Mod: DÜZ</div>
+        <div class="header-buttons">
+            <button class="btn-restart" onclick="initGame()">Yeniden Başlat</button>
+            <button class="btn-rules" onclick="toggleRules(true)">Kurallar</button>
+        </div>
+    </div>
+
+
+    <div class="main-container">
+        <div class="board-container">
+            <div class="board" id="board"></div>
+        </div>
+        <div class="log-panel">
+            <h3>Savaş Kayıtları</h3>
+            <div class="log-list" id="logList"></div>
+        </div>
+    </div>
+
+
+    <!-- KURALLAR MODALI -->
+    <div class="modal-overlay hidden" id="rulesModal">
+        <div class="modal-content">
+            <h2>Oyun Kuralları</h2>
+            <ul>
+                <li><strong>Sen (Yeşil Yıldız ★):</strong> Tahtanın merkezindesin. Her el hamle modun <strong>DÜZ</strong> ve <strong>ÇAPRAZ</strong> olarak değişir.</li>
+                <li><strong>Karanlık İkiz (Siyah Noktalı Yeşil [1]):</strong> Seninle tamamen aynı kurallara tabidir. Senin gibi form değiştirir.</li>
+                <li><strong>Yeşil Formlar:</strong> Kareyken düz hareket edip düz yersiniz. Elmas (Baklava) iken çapraz hareket edip çapraz yersiniz.</li>
+                <li><strong>Kırmızı Botlar (Kare):</strong> Sadece <strong>DÜZ</strong> yürürler, ancak sadece <strong>ÇAPRAZ</strong> yerler. (Kılıçları çaprazdır).</li>
+                <li><strong>Mavi Botlar (Elmas):</strong> Sadece <strong>ÇAPRAZ</strong> yürürler, ancak sadece <strong>DÜZ</strong> yerler. (Kılıçları düzdür).</li>
+                <li><strong>Sıralama:</strong> Önce Sen oynarsın, ardından taşların üzerindeki 1'den 17'ye kadar olan numaralara göre botlar oynar. Kılıçların yönü her zaman kimin nereye yiyebileceğini gösterir!</li>
+            </ul>
+            <button class="close-btn" onclick="toggleRules(false)">Anladım, Savaşa Başla!</button>
+        </div>
+    </div>
+
+
+    <script>
+        const GRID_SIZE = 9;
+        let boardEl = document.getElementById('board');
+        let logList = document.getElementById('logList');
+        let statusBox = document.getElementById('statusBox');
+        
+        let entities = [];
+        let greenPhase = 'DUZ'; 
+        let isPlayerTurn = true;
+        let gameOver = false;
+
+
+        function initGame() {
+            entities = [];
+            boardEl.innerHTML = '';
+            logList.innerHTML = '';
+            greenPhase = 'DUZ';
+            isPlayerTurn = true;
+            gameOver = false;
+            
+            entities.push({ id: 'P', type: 'player', r: 4, c: 4, num: '★', alive: true });
+
+
+            let emptySpaces = [];
+            for(let r=0; r<GRID_SIZE; r++) {
+                for(let c=0; c<GRID_SIZE; c++) {
+                    if(r !== 4 || c !== 4) emptySpaces.push({r, c});
+                }
+            }
+            emptySpaces.sort(() => Math.random() - 0.5); 
+
+
+            let e = emptySpaces.pop();
+            entities.push({ id: 1, type: 'green_enemy', r: e.r, c: e.c, num: '1', alive: true });
+
+
+            for(let i=2; i<=9; i++) {
+                e = emptySpaces.pop();
+                entities.push({ id: i, type: 'red', r: e.r, c: e.c, num: i.toString(), alive: true });
+            }
+            for(let i=10; i<=17; i++) {
+                e = emptySpaces.pop();
+                entities.push({ id: i, type: 'blue', r: e.r, c: e.c, num: i.toString(), alive: true });
+            }
+
+
+            drawBoard();
+            addLog("Oyun Başladı! Sıra sende.", "log-player");
+            updateStatus();
+        }
+
+
+        function drawBoard() {
+            boardEl.innerHTML = '';
+            for(let r=0; r<GRID_SIZE; r++) {
+                for(let c=0; c<GRID_SIZE; c++) {
+                    let cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.r = r;
+                    cell.dataset.c = c;
+                    
+                    cell.addEventListener('mouseenter', () => handleHover(r, c));
+                    cell.addEventListener('mouseleave', () => clearHighlights());
+                    cell.addEventListener('click', () => handleClick(r, c));
+
+
+                    let entity = entities.find(e => e.r === r && e.c === c && e.alive);
+                    if (entity) {
+                        cell.appendChild(createPieceElement(entity));
+                    }
+                    boardEl.appendChild(cell);
+                }
+            }
+        }
+
+
+        function createPieceElement(e) {
+            let piece = document.createElement('div');
+            piece.className = 'piece';
+
+
+            let text = document.createElement('div');
+            text.className = 'piece-text';
+            
+            if (e.type === 'player') text.innerHTML = `<span style="color:#fff;">★</span>`;
+            else if (e.type === 'green_enemy') text.innerHTML = `<span style="color:#000;">1</span>`;
+            else text.innerText = e.num;
+
+
+            let swords = document.createElement('div');
+            swords.className = 'swords';
+            swords.innerHTML = `<div class="sword-line-1"></div><div class="sword-line-2"></div>`;
+            
+            piece.appendChild(swords);
+            piece.appendChild(text);
+
+
+            if (e.type === 'red') {
+                piece.classList.add('shape-square', 'color-red');
+            } else if (e.type === 'blue') {
+                piece.classList.add('shape-diamond', 'color-blue');
+            } else if (e.type === 'player' || e.type === 'green_enemy') {
+                piece.classList.add(e.type === 'player' ? 'color-player' : 'color-enemy-green');
+                piece.classList.add(greenPhase === 'DUZ' ? 'shape-square' : 'shape-diamond');
+            }
+            return piece;
+        }
+
+
+        function getValidMoves(entity, currentPhase) {
+            let moves = [];
+            let r = entity.r; let c = entity.c;
+            
+            let dirs = [];
+            let attackDirs = [];
+
+
+            const cross = [[-1,-1], [-1,1], [1,-1], [1,1]];
+            const straight = [[-1,0], [1,0], [0,-1], [0,1]];
+
+
+            if (entity.type === 'red') {
+                dirs = straight; attackDirs = cross;
+            } else if (entity.type === 'blue') {
+                dirs = cross; attackDirs = straight;
+            } else {
+                dirs = currentPhase === 'DUZ' ? straight : cross;
+                attackDirs = dirs; 
+            }
+
+
+            for (let d of dirs) {
+                let nr = r + d[0], nc = c + d[1];
+                if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                    if (!entities.find(e => e.r === nr && e.c === nc && e.alive)) {
+                        moves.push({r: nr, c: nc, type: 'walk'});
+                    }
+                }
+            }
+            for (let d of attackDirs) {
+                let nr = r + d[0], nc = c + d[1];
+                if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                    let target = entities.find(e => e.r === nr && e.c === nc && e.alive);
+                    if (target && target.id !== entity.id) {
+                        moves.push({r: nr, c: nc, type: 'attack', target: target});
+                    }
+                }
+            }
+            return moves;
+        }
+
+
+        function clearHighlights() {
+            document.querySelectorAll('.cell').forEach(c => {
+                c.classList.remove('valid-move', 'valid-attack');
+            });
+        }
+
+
+        function handleHover(r, c) {
+            if (!isPlayerTurn || gameOver) return;
+            let targetEntity = entities.find(e => e.r === r && e.c === c && e.alive);
+            
+            clearHighlights();
+            let entityToExamine = targetEntity; 
+            if (!entityToExamine) entityToExamine = entities.find(e => e.id === 'P' && e.alive); 
+            
+            if (!entityToExamine) return;
+
+
+            let moves = getValidMoves(entityToExamine, greenPhase);
+            moves.forEach(m => {
+                let index = m.r * GRID_SIZE + m.c;
+                let cell = boardEl.children[index];
+                if (m.type === 'walk') cell.classList.add('valid-move');
+                else cell.classList.add('valid-attack');
+            });
+        }
+
+
+        function handleClick(r, c) {
+            if (!isPlayerTurn || gameOver) return;
+            let player = entities.find(e => e.id === 'P' && e.alive);
+            if (!player) return;
+
+
+            let moves = getValidMoves(player, greenPhase);
+            let selectedMove = moves.find(m => m.r === r && m.c === c);
+
+
+            if (selectedMove) {
+                executeMove(player, selectedMove);
+                isPlayerTurn = false;
+                clearHighlights();
+                drawBoard();
+                
+                if (checkGameOver()) return;
+                
+                setTimeout(() => runBots(1), 500); 
+            }
+        }
+
+
+        function executeMove(entity, move) {
+            if (move.type === 'attack') {
+                move.target.alive = false;
+                let attackerName = entity.id === 'P' ? 'Sen' : (entity.type === 'green_enemy' ? 'İkiz Yeşil' : `{entity.num}]`);
+                let victimName = move.target.id === 'P' ? 'Seni' : `[${move.target.num}]`;
+                addLog(`⚔️ ${attackerName}, ${victimName} yedi!`, 'log-kill');
+            }
+            entity.r = move.r;
+            entity.c = move.c;
+        }
+
+
+        function runBots(botId) {
+            if (gameOver) return;
+            if (botId > 17) {
+                greenPhase = greenPhase === 'DUZ' ? 'CAPRAZ' : 'DUZ';
+                isPlayerTurn = true;
+                updateStatus();
+                drawBoard();
+                addLog("--- Yeni Tur: Sıra Sende ---", "log-player");
+                return;
+            }
+
+
+            let bot = entities.find(e => e.id === botId && e.alive);
+            if (bot) {
+                let moves = getValidMoves(bot, greenPhase);
+                let attackMoves = moves.filter(m => m.type === 'attack');
+                
+                let chosenMove = null;
+                
+                if (attackMoves.length > 0) {
+                    let playerKill = attackMoves.find(m => m.target.id === 'P');
+                    if(playerKill) chosenMove = playerKill;
+                    else chosenMove = attackMoves[Math.floor(Math.random() * attackMoves.length)];
+                } else if (moves.length > 0) {
+                    let player = entities.find(e => e.id === 'P');
+                    if (player && player.alive) {
+                        moves.sort((a, b) => {
+                            let distA = Math.abs(a.r - player.r) + Math.abs(a.c - player.c);
+                            let distB = Math.abs(b.r - player.r) + Math.abs(b.c - player.c);
+                            return distA - distB;
+                        });
+                        chosenMove = moves[0];
+                    } else {
+                        chosenMove = moves[Math.floor(Math.random() * moves.length)];
+                    }
+                }
+
+
+                if (chosenMove) {
+                    executeMove(bot, chosenMove);
+                    drawBoard();
+                }
+            }
+
+
+            if (checkGameOver()) return;
+            setTimeout(() => runBots(botId + 1), 200); 
+        }
+
+
+        function checkGameOver() {
+            let player = entities.find(e => e.id === 'P');
+            let enemies = entities.filter(e => e.id !== 'P' && e.alive);
+
+
+            if (!player.alive) {
+                gameOver = true;
+                statusBox.innerHTML = "OYUN BİTTİ - YUKARIDAN YENİDEN BAŞLATIN";
+                statusBox.style.color = "red";
+                addLog("❌ ÖLDÜN! Oyun bitti.", "log-enemy");
+                return true;
+            }
+            if (enemies.length === 0) {
+                gameOver = true;
+                statusBox.innerHTML = "ZAFER - YUKARIDAN YENİDEN BAŞLATIN";
+                statusBox.style.color = "#00ff88";
+                addLog("🏆 KAZANDIN! Arenada tek sen kaldın.", "log-player");
+                return true;
+            }
+            return false;
+        }
+
+
+        function addLog(msg, className) {
+            let div = document.createElement('div');
+            div.className = `log-item ${className || ''}`;
+            div.innerText = msg;
+            logList.appendChild(div);
+            logList.scrollTop = logList.scrollHeight;
+        }
+
+
+        function updateStatus() {
+            if(!gameOver) {
+                statusBox.innerHTML = `Sıra: {greenPhase}</span>`;
+            }
+        }
+
+
+        function toggleRules(show) {
+            let modal = document.getElementById('rulesModal');
+            if(show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
