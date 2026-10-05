@@ -258,18 +258,21 @@
         let statusBox = document.getElementById('statusBox');
         
         let entities = [];
-        let greenPhase = 'DUZ'; 
+        let greenPhase = 'DUZ';
         let isPlayerTurn = true;
         let gameOver = false;
+        let gameId = 0; // Yeniden başlatınca eski oyunun bekleyen bot hamleleri bunu görüp durur
 
 
         function initGame() {
+            gameId++;
             entities = [];
             boardEl.innerHTML = '';
             logList.innerHTML = '';
             greenPhase = 'DUZ';
             isPlayerTurn = true;
             gameOver = false;
+            statusBox.style.color = '';
             
             entities.push({ id: 'P', type: 'player', r: 4, c: 4, num: '★', alive: true });
 
@@ -446,10 +449,12 @@
                 isPlayerTurn = false;
                 clearHighlights();
                 drawBoard();
-                
+
                 if (checkGameOver()) return;
-                
-                setTimeout(() => runBots(1), 500); 
+                updateStatus();
+
+                let id = gameId;
+                setTimeout(() => runBots(1, id), 500);
             }
         }
 
@@ -457,7 +462,7 @@
         function executeMove(entity, move) {
             if (move.type === 'attack') {
                 move.target.alive = false;
-                let attackerName = entity.id === 'P' ? 'Sen' : (entity.type === 'green_enemy' ? 'İkiz Yeşil' : `{entity.num}]`);
+                let attackerName = entity.id === 'P' ? 'Sen' : (entity.type === 'green_enemy' ? 'İkiz Yeşil' : `[${entity.num}]`);
                 let victimName = move.target.id === 'P' ? 'Seni' : `[${move.target.num}]`;
                 addLog(`⚔️ ${attackerName}, ${victimName} yedi!`, 'log-kill');
             }
@@ -466,8 +471,8 @@
         }
 
 
-        function runBots(botId) {
-            if (gameOver) return;
+        function runBots(botId, id) {
+            if (gameOver || id !== gameId) return;
             if (botId > 17) {
                 greenPhase = greenPhase === 'DUZ' ? 'CAPRAZ' : 'DUZ';
                 isPlayerTurn = true;
@@ -512,7 +517,7 @@
 
 
             if (checkGameOver()) return;
-            setTimeout(() => runBots(botId + 1), 200); 
+            setTimeout(() => runBots(botId + 1, id), 200);
         }
 
 
@@ -550,7 +555,8 @@
 
         function updateStatus() {
             if(!gameOver) {
-                statusBox.innerHTML = `Sıra: {greenPhase}</span>`;
+                let mode = greenPhase === 'DUZ' ? 'DÜZ' : 'ÇAPRAZ';
+                statusBox.innerHTML = `Hamle Sırası: ${isPlayerTurn ? 'Sende' : 'Botlarda'} | Mod: ${mode}`;
             }
         }
 
