@@ -47,7 +47,7 @@ node tests/tests2.js        # eski demo: renkli yollar, ölen botların atlanmas
 - Tek oyunculu modda İkiz senin aynandır: senden hemen sonra, senin yönünde oynar. İkiz ve bütün botlar gidince kazanırsın.
 - Her maçta rastgele bir köşeden, rastgele bir bot dizilişiyle başlarsın.
 - Hamle sırası maç başında bir kez karılır, bütün maç aynı kalır; botun numarası sıradaki yeridir. Kolayda ilk sen oynarsın.
-- Herkes herkesi alabilir. Son kalan sen olursan kazanırsın.
+- Herkes herkesi alabilir. Almak puan kazandırır: oyuncu 50, İkiz 30, bot 10; ayakta kalan +30. Kazananı skor belirler.
 - Yeşil kareler senin yolların. Bir bota dokununca turuncu kareler onun yollarını gösterir. Kırmızı kareler alınabilecek taşlardır.
 
 ## Sırada ne var

@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {
   createGame, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
-  roundOrder, random, pieceById, threatsFor, SIZE_BY_STARS, NEUTRALS_BY_STARS,
+  roundOrder, random, pieceById, threatsFor, ranking, SIZE_BY_STARS, NEUTRALS_BY_STARS, POINTS, SURVIVOR_BONUS,
 } from '../engine/rules.js';
 import { chooseMove, targetOf } from '../engine/bots.js';
 
@@ -118,6 +118,39 @@ test('son yıldız kalınca oyun biter', () => {
   assert.equal(st.over, true);
   assert.equal(st.winner, 0);
   assert.match(st.log.at(-1).text, /Turkuaz kazandı/);
+});
+
+test('puan: bot 10, oyuncu 50; ayakta kalan +30 alır', () => {
+  assert.deepEqual([POINTS.red, POINTS.blue, POINTS.twin, POINTS.star, SURVIVOR_BONUS], [10, 10, 30, 50, 30]);
+  const st = position([{ kind: 'blue', r: 2, c: 1 }]);
+  play(st, { r: 2, c: 1 });
+  assert.equal(st.seats[0].score, 10);
+  const end = position([]);
+  pieceById(end, 's1').r = 2; pieceById(end, 's1').c = 1;
+  play(end, { r: 2, c: 1 });
+  assert.equal(end.seats[0].score, 50 + 30);
+  assert.equal(end.seats[0].bonus, 30);
+});
+
+test('kazananı skor belirler: çok alan ama elenen oyuncu, saklanıp ayakta kalanı geçer', () => {
+  const st = position([], { n: 3 });
+  st.seats[1].score = 120; st.seats[1].takes = 4;
+  // s1 elenmiş gibi: s2 onu alamaz ama sıralama skora bakar.
+  pieceById(st, 's1').alive = false; st.seats[1].out = true; st.outOrder.push(1);
+  pieceById(st, 's2').r = 2; pieceById(st, 's2').c = 1;
+  play(st, { r: 2, c: 1 }); // s0, s2'yi alır: 50 + 30 bonus = 80
+  assert.equal(st.over, true);
+  assert.equal(st.seats[0].score, 80);
+  assert.equal(st.winner, 1);
+  assert.deepEqual(ranking(st), [1, 0, 2]);
+});
+
+test('eşit skorda alma sayısı, o da eşitse geç elenen önde', () => {
+  const st = position([], { n: 3 });
+  st.seats.forEach(s => { s.score = 50; });
+  st.seats[2].takes = 2;
+  st.seats[0].out = true; st.seats[1].out = true; st.outOrder.push(0, 1);
+  assert.deepEqual(ranking(st), [2, 1, 0]);
 });
 
 test('arena daralır: dış halkadakiler düşer, oraya artık gidilemez', () => {

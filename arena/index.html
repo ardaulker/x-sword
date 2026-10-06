@@ -186,7 +186,7 @@
   <div class="modal">
     <h2>Kurallar</h2>
     <ul>
-      <li><b>Amaç:</b> Arenada son kalan yıldız ol.</li>
+      <li><b>Amaç ve puan:</b> Maç, tek yıldız kalınca biter. Kazananı skor belirler: oyuncu almak 50, İkiz'i almak 30, bot almak 10 puan; ayakta kalan yıldız +30 bonus alır. Sıralama: skor, sonra alma sayısı, sonra hayatta kalma süresi. Saklanmak tek başına kazandırmaz.</li>
       <li><b>Yıldızlar:</b> 2–4 oyuncu, herkesin bir yıldızı var. Boş koltuğa yapay zekâ oyuncu oturur; kenarı kesik çizgilidir. Her maçta yıldızlar rastgele köşelerden, botlar rastgele dizilişle başlar.</li>
       <li><b>Tahta:</b> 2 kişide 9×9, 3 kişide 11×11, 4 kişide 13×13.</li>
       <li><b>Mod:</b> Her tur ya DÜZ ya ÇAPRAZ, her tur değişir. Yıldızlar o yönde gider ve o yönde alır.</li>
@@ -421,7 +421,7 @@ function renderSeats() {
   const a = state.over ? null : currentActor(state);
   $('seats').innerHTML = state.seats.map(s => `
     <div class="seat ${s.out ? 'out' : ''} ${a?.kind === 'star' && a.seat === s.index ? 'now' : ''}">
-      <span class="dot s${s.index}"></span>${s.name}${s.kind === 'bot' ? ` · YZ ${LEVEL_NAME[s.level]}` : ''} · ${s.takes} alma
+      <span class="dot s${s.index}"></span>${s.name}${s.kind === 'bot' ? ` · YZ ${LEVEL_NAME[s.level]}` : ''} · ${s.score} puan · ${s.takes} alma
     </div>`).join('');
 }
 
@@ -455,7 +455,7 @@ function finish() {
   $('overTitle').textContent = state.winner == null ? 'Berabere!' : `🏆 ${state.seats[state.winner].name} kazandı!`;
   $('overList').innerHTML = ranking(state).map(i => {
     const s = state.seats[i];
-    return `<li><span class="dot s${i}"></span>${s.name}${s.kind === 'bot' ? ' (yapay zekâ)' : ''} — ${s.takes} alma</li>`;
+    return `<li><span class="dot s${i}"></span>${s.name}${s.kind === 'bot' ? ' (yapay zekâ)' : ''} — ${s.score} puan · ${s.takes} alma</li>`;
   }).join('');
   $('overMeta').textContent = `${state.round}. turda bitti · maç süresi ${fmt(Date.now() - clock.start)}`;
   $('overOverlay').hidden = false;

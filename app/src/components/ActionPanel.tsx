@@ -1,5 +1,5 @@
 import {
-  collapseDue, currentActor, nextMode, pieceById, takeDirs, threatsFor,
+  collapseDue, currentActor, nextMode, pieceById, ranking, starOf, takeDirs, threatsFor,
 } from '../../../engine/rules.js';
 import type { GameState, Piece } from '../../../engine/rules.js';
 import type { GameController, View } from '../game/controller';
@@ -47,19 +47,37 @@ export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) 
   // ---------------------------------------------------------- oyun sonu
   if (view.phase === 'bitti') {
     const won = st.winner === ME;
-    const place = st.seats.length - st.outOrder.indexOf(ME);
-    let title = 'Maç bitti', sub = '';
+    const mine = st.seats[ME];
+    const order = ranking(st);
+    let title: string, sub: string;
     if (st.solo) {
       title = won ? 'Kazandın!' : 'Alındın';
-      sub = won ? `Arenada tek sen kaldın · ${st.seats[ME].takes} alma` : `${st.round}. turda · ${st.seats[ME].takes} alma`;
-    } else if (won) { title = 'Kazandın!'; sub = `Son kalan yıldız sensin · ${st.seats[ME].takes} alma`; }
-    else if (st.winner == null) { title = 'Berabere'; sub = 'Arenada yıldız kalmadı'; }
-    else sub = `${seatName(st, st.winner)} kazandı · sen ${place}. sıradasın`;
+      sub = `${mine.score} puan · ${mine.takes} alma${won ? ' · arenada tek sen kaldın' : ` · ${st.round}. turda`}`;
+    } else {
+      title = won ? 'Kazandın!' : `${seatName(st, st.winner ?? order[0])} kazandı`;
+      sub = `Sen ${order.indexOf(ME) + 1}. oldun · ${mine.score} puan · ${mine.takes} alma`;
+    }
     return (
       <section className="panel" aria-label="Maç sonu">
         <div className="panel-stack">
           <div className="panel-big" style={{ color: won ? myColor : TXT }}>{title}</div>
           <div className="panel-sub-strong">{sub}</div>
+          {!st.solo && (
+            <ol className="rank-list" aria-label="Sıralama">
+              {order.map((seat, i) => {
+                const s = st.seats[seat], p = starOf(st, seat)!;
+                return (
+                  <li key={seat} className={`rank-row${seat === ME ? ' is-me' : ''}`}>
+                    <span className="rank-no">{i + 1}.</span>
+                    <PieceGlyph kind="star" seat={seat} size={20} diamond={diamondOf(p, st.mode)} grey={!p.alive} />
+                    <span className="rank-name" style={{ color: PLAYER_COLORS[seat] }}>{seatName(st, seat)}</span>
+                    <span className="rank-meta">{s.takes} alma{s.bonus ? ` · +${s.bonus} bonus` : ''}</span>
+                    <span className="rank-score">{s.score}</span>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
           <div className="panel-hint">Maç süresi {time} · {st.round} tur</div>
           <div className="btn-row">
             <button type="button" className="btn btn-ghost" onClick={() => ctl.openMenu()}>Menü</button>
@@ -75,15 +93,15 @@ export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) 
 
   // ---------------------------------------------------------- elendin
   if (!me.alive && !view.watching) {
-    const place = st.seats.length - st.outOrder.indexOf(ME);
+    const mine = st.seats[ME];
     return (
       <section className="panel" aria-label="Elendin">
         <div className="panel-stack">
           <div className="panel-row-baseline">
             <div className="panel-big">Elendin</div>
-            <div className="panel-sub-strong">{place}. sıra · {st.seats[ME].takes} alma</div>
+            <div className="panel-sub-strong">{mine.score} puan · şu an {ranking(st).indexOf(ME) + 1}.</div>
           </div>
-          <div className="panel-hint">Maçı izlemeye devam edebilir ya da çıkabilirsin.</div>
+          <div className="panel-hint">Skorun sayılmaya devam eder: kazananı skor belirler. İzleyebilir ya da çıkabilirsin.</div>
           <div className="btn-row">
             <button type="button" className="btn btn-ghost" onClick={() => ctl.openMenu()}>Maçtan çık</button>
             <button type="button" className="btn btn-main" onClick={() => ctl.watch()}>

@@ -116,6 +116,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
 }
 .log-name { font-size: 15px; font-weight: 700; white-space: nowrap; }
 .log-victim { font-size: 15px; font-weight: 600; color: var(--metin-2); text-decoration: line-through; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.log-points { margin-left: auto; font: 800 14px var(--font-display); flex: none; }
 .log-ring { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; color: var(--hazard); flex: none; }
 .log-empty { padding: 18px 2px; color: var(--metin-2); font-size: 14px; }
 

@@ -2,7 +2,7 @@
 // Kuralı motor (engine/) bilir; burası yalnız onun fonksiyonlarını çağırır ve ekrana ne olduğunu söyler.
 
 import {
-  collapseDue, createGame, play, currentActor, legalMoves, pieceById, starOf,
+  POINTS, collapseDue, createGame, play, currentActor, legalMoves, pieceById, starOf,
 } from '../../../engine/rules.js';
 import type { GameState, Level, Move, Piece } from '../../../engine/rules.js';
 import { chooseMove } from '../../../engine/bots.js';
@@ -31,6 +31,7 @@ export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', moveSeconds: 
 export interface Spot { r: number; c: number }
 export interface Trail { key: number; from: Spot; to: Spot; color: string }
 export interface Burst { key: number; r: number; c: number; color: string }
+export interface Float { key: number; r: number; c: number; text: string; color: string }
 export interface Toast { key: number; text: string; icon: 'sword' | 'clock' | 'info' | 'ring' }
 export interface Banner { key: number; title: string; sub: string; color: string; pieceId: string | null }
 // attackerId null: taş çöken halkada düştü.
@@ -44,6 +45,7 @@ export interface View {
   timer: number;
   trails: Trail[];
   bursts: Burst[];
+  floats: Float[];
   toast: Toast | null;
   banner: Banner | null;
   modeOverlay: boolean;
@@ -126,7 +128,7 @@ export class GameController {
     this.fast = false;
     this.view = {
       phase: 'hazir', sel: null, showThreats: false, timer: this.setup.moveSeconds,
-      trails: [], bursts: [], toast: null, banner: null, modeOverlay: false, sheet: null,
+      trails: [], bursts: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null,
       bots: { done: 0, total: 0, currentId: null }, events: [],
       clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, version: 0,
     };
@@ -144,6 +146,11 @@ export class GameController {
 
   private finish() {
     this.stopTicker();
+    const me = this.myStar();
+    if (this.state.seats[ME].bonus && me) {
+      this.float(me.r, me.c, `+${this.state.seats[ME].bonus}`, PLAYER_COLORS[ME]);
+      this.toast(`Hayatta kalma bonusu +${this.state.seats[ME].bonus}`, 'sword');
+    }
     this.emit({ phase: 'bitti', clockEnd: this.view.clockEnd ?? Date.now(), sel: null, showThreats: false, modeOverlay: false });
     if (this.state.winner === ME) buzz(BUZZ.take);
   }
@@ -331,7 +338,9 @@ export class GameController {
       this.view = { ...this.view, shake: this.view.shake + 1 };
       const mine = actor.kind === 'star' && actor.seat === ME;
       const me = victim.kind === 'star' && victim.seat === ME;
-      if (mine) { this.toast(`${objectOf(st, victim)} aldın!`, 'sword'); buzz(BUZZ.take); }
+      // Yalnız yıldızlar puan toplar: alınan taşın değeri tahtada uçar, skor tablosu anında güncellenir.
+      if (actor.kind === 'star') this.float(move.r, move.c, `+${POINTS[victim.kind]}`, colorOf(actor));
+      if (mine) { this.toast(`${objectOf(st, victim)} aldın! +${POINTS[victim.kind]}`, 'sword'); buzz(BUZZ.take); }
       if (me) { this.toast(`${subjectOf(st, actor)} seni aldı!`, 'sword'); buzz(BUZZ.takenOrOut); }
       if (victim.kind === 'star') {
         this.banner(me ? 'Elendin' : `${seatName(st, victim.seat)} elendi`,
@@ -376,6 +385,12 @@ export class GameController {
     const key = this.key();
     this.view = { ...this.view, bursts: [...this.view.bursts, { key, r, c, color }] };
     this.later(450, () => this.emit({ bursts: this.view.bursts.filter(b => b.key !== key) }));
+  }
+
+  private float(r: number, c: number, text: string, color: string) {
+    const key = this.key();
+    this.view = { ...this.view, floats: [...this.view.floats, { key, r, c, text, color }] };
+    this.later(1000, () => this.emit({ floats: this.view.floats.filter(f => f.key !== key) }));
   }
 
   private toast(text: string, icon: Toast['icon']) {

@@ -5,6 +5,11 @@
 export const SIZE_BY_STARS = { 1: 9, 2: 9, 3: 11, 4: 13 };
 export const NEUTRALS_BY_STARS = { 1: 14, 2: 14, 3: 21, 4: 28 };
 export const SEAT_NAMES = ['Turkuaz', 'Mor', 'Sarı', 'Pembe'];
+
+// Puan: bir yıldız (oyuncu) almak 50, İkiz'i almak 30, bir botu almak 10. Yalnız yıldızlar puan toplar.
+// Maçın sonunda ayakta kalan yıldız +30 hayatta kalma bonusu alır.
+export const POINTS = { star: 50, twin: 30, red: 10, blue: 10 };
+export const SURVIVOR_BONUS = 30;
 const SEAT_NAMES_ACC = ["Turkuaz'ı", "Mor'u", "Sarı'yı", "Pembe'yi"];
 
 const STRAIGHT = [[-1, 0], [1, 0], [0, -1], [0, 1]];
@@ -93,7 +98,7 @@ export function createGame({
     rng: ((seed ?? Math.floor(Math.random() * 2 ** 31)) >>> 0) || 1,
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
-      level: s.level || 'normal', takes: 0, out: false,
+      level: s.level || 'normal', takes: 0, score: 0, bonus: 0, out: false,
     })),
     pieces: [], order: [], turn: 0, over: false, winner: null, outOrder: [], log: [],
     solo: n === 1, lastStep: null, matchOrder: [],
@@ -262,7 +267,10 @@ export function play(state, move) {
 
 function takePiece(state, actor, target) {
   target.alive = false;
-  if (actor.kind === 'star') state.seats[actor.seat].takes++;
+  if (actor.kind === 'star') {
+    state.seats[actor.seat].takes++;
+    state.seats[actor.seat].score += POINTS[target.kind];
+  }
   log(state, `⚔️ ${nameOf(state, actor)}, ${accOf(state, target)} aldı!`);
   if (target.kind === 'star') starOut(state, target);
   checkOver(state);
@@ -276,21 +284,30 @@ function starOut(state, star) {
   checkOver(state);
 }
 
-// Çok oyunculu: son kalan yıldız kazanır. Tek oyunculu: İkiz ve bütün botlar gidince kazanırsın, alınınca kaybedersin.
+// Maç, çok oyunculuda tek yıldız kalınca biter; kazananı skor belirler (ranking).
+// Tek oyunculu: İkiz ve bütün botlar gidince kazanırsın, alınınca kaybedersin.
 function checkOver(state) {
   if (state.over) return;
   const alive = state.pieces.filter(p => p.kind === 'star' && p.alive);
   if (state.solo) {
     if (alive.length && state.pieces.some(p => p.alive && p.kind !== 'star')) return;
     state.over = true;
+    if (alive.length) survivorBonus(state, 0);
     state.winner = alive.length ? 0 : null;
     log(state, alive.length ? '🏆 Kazandın! Arenada tek sen kaldın.' : '❌ Alındın! Oyun bitti.');
     return;
   }
   if (alive.length > 1) return;
   state.over = true;
-  state.winner = alive.length ? alive[0].seat : null;
-  log(state, alive.length ? `🏆 ${state.seats[state.winner].name} kazandı!` : 'Berabere! Arenada yıldız kalmadı.');
+  if (alive.length) survivorBonus(state, alive[0].seat);
+  state.winner = ranking(state)[0];
+  const w = state.seats[state.winner];
+  log(state, `🏆 ${w.name} kazandı! (${w.score} puan)`);
+}
+
+function survivorBonus(state, seat) {
+  state.seats[seat].bonus = SURVIVOR_BONUS;
+  state.seats[seat].score += SURVIVOR_BONUS;
 }
 
 // Alınmış taşların sırası beklenmeden atlanır; tur bitince mod değişir, arena gerekirse daralır.
@@ -326,7 +343,10 @@ function collapse(state) {
 }
 
 // Kazanan önce, sonra en son çıkandan ilk çıkana.
+// Sıralama: önce skor, sonra alma sayısı, sonra hayatta kalma (ayakta kalan > geç elenen > erken elenen).
 export function ranking(state) {
-  const out = [...state.outOrder].reverse();
-  return state.winner == null ? out : [state.winner, ...out];
+  const lasted = s => (s.out ? state.outOrder.indexOf(s.index) : state.seats.length);
+  return [...state.seats]
+    .sort((a, b) => b.score - a.score || b.takes - a.takes || lasted(b) - lasted(a))
+    .map(s => s.index);
 }

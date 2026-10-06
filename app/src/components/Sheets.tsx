@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
-  NEUTRALS_BY_STARS, SIZE_BY_STARS, nextMode, pieceById, takeDirs, walkDirs,
+  NEUTRALS_BY_STARS, POINTS, SIZE_BY_STARS, nextMode, pieceById, takeDirs, walkDirs,
 } from '../../../engine/rules.js';
 import type { GameState, Level, Piece } from '../../../engine/rules.js';
 import { targetOf } from '../../../engine/bots.js';
@@ -145,6 +145,7 @@ export function LogSheet({ ctl, events }: { ctl: GameController; events: TakeEve
         <Icon d={ICON.sword} size={20} color="#A9B4DA" />
         <Mini st={st} p={v} size={26} grey />
         <span className="log-victim">{labelOf(st, v)}</span>
+        {a?.kind === 'star' && <span className="log-points" style={{ color: colorOf(a) }}>+{POINTS[v.kind]}</span>}
       </div>,
     );
   }

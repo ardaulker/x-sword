@@ -33,6 +33,8 @@ export interface Seat {
   kind: 'human' | 'bot';
   level: Level;
   takes: number;
+  score: number;
+  bonus: number;
   out: boolean;
   outRound?: number;
 }
@@ -85,6 +87,8 @@ export interface GameOptions {
 export const SIZE_BY_STARS: Record<number, number>;
 export const NEUTRALS_BY_STARS: Record<number, number>;
 export const SEAT_NAMES: string[];
+export const POINTS: Record<Piece['kind'], number>;
+export const SURVIVOR_BONUS: number;
 
 export function flip(mode: Mode): Mode;
 export function modeLabel(mode: Mode): string;

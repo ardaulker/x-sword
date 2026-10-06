@@ -62,7 +62,7 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 - Bot zekâsı kodda çözülecek. Senden istenen iki şey var: zorluk seçimi, bir de botun kimi hedeflediğini okunur gösteren bir işaret. Bu işaret ayarlardan kapatılabilsin.
 
 ## Bitiş
-- Son kalan yıldız kazanır. Sıralamayı alınma sırası belirler.
+- Maç, tek yıldız kalınca biter. Kazananı skor belirler: oyuncu almak 50, İkiz'i almak 30, bot almak 10 puan; ayakta kalan yıldız +30 bonus alır. Sıralama: skor, sonra alma sayısı, sonra hayatta kalma süresi. Saklanmak tek başına kazandırmaz.
 - Maç sonsuza kadar sürmesin diye arena daralır. Her 6 turda bir (6., 12., 18. … tur), tur sonunda en dıştaki halka çöker. O halkada kalan taş oyundan çıkar. Bir tur önce halka uyarılır; çökecek tur boyunca halka işaretli görünür.
 - Bir maç 5–10 dakika sürmeli.
 - Alınan oyuncu maçı izlemeye devam edebilir ya da çıkabilir.

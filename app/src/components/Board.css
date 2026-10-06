@@ -57,6 +57,19 @@
 }
 @keyframes ghost-in { from { opacity: 0; } }
 
+/* Alınan taşın puanı: kareden yukarı süzülür. */
+.board-float {
+  position: absolute; z-index: 5; transform: translate(-50%, 0); pointer-events: none;
+  font: 800 16px var(--font-display); text-shadow: 0 0 6px rgba(11, 16, 38, .9), 0 0 2px #0B1026; white-space: nowrap;
+  animation: float-up calc(1000ms * var(--hiz-carpan)) var(--ease-kay) forwards;
+}
+@keyframes float-up {
+  0% { transform: translate(-50%, 4px) scale(.7); opacity: 0; }
+  15% { transform: translate(-50%, -6px) scale(1.15); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translate(-50%, -34px) scale(1); opacity: 0; }
+}
+
 /* Hale: sıra sende · tehdit · çökecek halkada · oynayan bot · seçili */
 .halo { position: absolute; inset: -6%; border-radius: 50%; box-sizing: border-box; pointer-events: none; }
 .halo-turn { border: 2px solid; opacity: .9; }

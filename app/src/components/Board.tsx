@@ -306,6 +306,10 @@ export function Board({ ctl, view, cell }: Props) {
           </div>
         ))}
 
+        {view.floats.map(f => (
+          <div key={f.key} className="board-float" style={{ left: f.c * step + cell / 2, top: f.r * step, color: f.color }}>{f.text}</div>
+        ))}
+
         {st.pieces.map(p => {
           const halo = haloOf(p);
           const target = isBot(p) && p.alive ? targetOf(st, p) : null;
