@@ -39,7 +39,7 @@ export function MainMenu({ setup, onStart, onResume, resumeInfo, onPuzzles, onSt
         <h1 className="menu-title">X SWORD</h1>
         <div className="menu-pill">
           <svg width="16" height="16" viewBox="0 0 100 100" aria-hidden="true"><polygon points="17,17 83,17 83,83 17,83" fill="none" stroke="#E9F0FF" strokeWidth="10" /></svg>
-          <span>{tr('Düz mü, çapraz mı? Her tur yeni yön.')}</span>
+          <span>{tr('Yön her tur el değiştirir.')}</span>
           <svg width="16" height="16" viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,5 95,50 50,95 5,50" fill="none" stroke="#E9F0FF" strokeWidth="10" /></svg>
         </div>
       </div>

@@ -296,7 +296,7 @@ const dict: Record<string, string> = {
   'Hazırım': 'Ich bin bereit',
   'En az iki oyuncu gerekir. Herkes "Hazırım" deyince başlatabilirsin.': 'Mindestens zwei Spieler nötig. Sobald alle „Ich bin bereit" sagen, kannst du starten.',
   'Kurucu başlatınca maç herkeste aynı anda açılır.': 'Wenn der Gastgeber startet, beginnt das Spiel bei allen gleichzeitig.',
-  'Düz mü, çapraz mı? Her tur yeni yön.': 'Gerade oder diagonal? Jede Runde eine neue Richtung.',
+  'Yön her tur el değiştirir.': 'Die Richtung wechselt jede Runde.',
   'Duraklatılan maç · Tur {n} · {p} puan': 'Pausiertes Spiel · Runde {n} · {p} Pkt.',
   'Oyuna başla': 'Spielen',
   'Botlara karşı · tek ya da 2–4 oyuncu': 'Gegen Bots · allein oder 2–4 Spieler',
