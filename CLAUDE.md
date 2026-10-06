@@ -22,3 +22,62 @@
 - Renkler tasarıma göre (Arda 6 Ekim 2026'da seçti): gidilebilir kareler oyuncunun **kendi renginde**, gidilebilir ama tehlikeli kare kırmızı çizgili, kırmızı (`--danger`) yalnız tehlike ve tehdit, turuncu (`--hazard`) yalnız çökecek halka. Önceki "yeşil = senin yolun, turuncu = botun yolu" kuralı geçersiz.
 - Kural ya da bot zekâsı değişince kural metinlerini aynı değişiklikte güncelle: oyundaki "Nasıl oynanır?" ekranı (`app/src/screens/RulesScreen.tsx`) ve arenadaki Kurallar penceresi (`arena/index.html`). `docs/tasarim-prompt.md` içindeki oyun bölümünü de güncelle. Oyuncu rehberi kodla birlikte değişir.
 - `index.html` Windows satır sonları (CRLF) ve BOM ile geldi. Dosyayı baştan yazan bir araç kullanırsan satır sonlarını koru. Yoksa diff bütün dosyayı değişmiş gösterir.
+
+---
+
+# Geçmiş ve çalışma notları (modeli değiştirirsen sohbeti baştan okumana gerek yok; bunu oku)
+
+## Arda ile çalışma biçimi
+- Arda Türkçe yazar. Cevaplar "kanka" ile başlar, kısa cümle, her cümlede tek fikir; gerekince şema. İş yapmadan önce uzun soru sorma: makul varsayılanı seç, cevapta söyle.
+- Kural ya da bot değişince testi koş, metinleri güncelle (aşağıda "Kural değişince" listesi), commit + push et. Push'tan sonra Actions'ın bittiğini ve canlı sayfanın console'unun temiz olduğunu kontrol et. (Son iki turda bu bakılmadı; yine de yap.)
+- Commit sonuna `Co-Authored-By` satırı eklenir (sistem hatırlatması söyler).
+- X Sword başka hiçbir projeyle hesap, dosya, hafıza paylaşmaz.
+- macOS notları: `sed -i ''` ister; `*.tsx` gibi glob'ları tırnakla (`--include='*.tsx'`), zsh yoksa hata verir. Çok satırlı düzenlemede Python betiği kullan.
+
+## Oyun kuralları (güncel özet; ayrıntı `RulesScreen.tsx`)
+- Tahta 9/11/13/15 kare (en az: 1 oyuncu 9, 2 oyuncu 11, 3–4 oyuncu 13 gibi `BOARD_SIZES`/`defaultNeutrals`). Her turda mod DÜZ ↔ ÇAPRAZ değişir. Yıldız moda göre düz ya da çapraz gider ve alır. Kızıl bot düz yürür çapraz alır; Çelik bot çapraz yürür düz alır. Herkes tek kare gider. Kızıl/Çelik botlar eşit ve yıldız çevresinde dengeli dağılır (`balancedKinds`).
+- Hamle sırası maç başında bir kez karılır (`matchOrder`), bütün maç aynı kalır. **Taş numarası her tur ayakta kalanlar arasında baştan verilir** (`roundOrder` botun `label`'ını da günceller; `app/src/game/order.ts → orderNo`). Tur içinde biri alınsa numaralar o tur değişmez. Sıra şeridi gelecek turları o turun yeni numaralarıyla gösterir.
+- Hamle: kareye dokun, önizle, onayla. Süre 20 sn; dolarsa güvenli hamle oynanır.
+- Her 6 turda (6., 12., 18. ...) en dış halka çöker; bir tur önce ince turuncu, çökeceği tur çizgili işaretlenir. Gerilim müziği çalar.
+- Puan: yıldız / İkiz / Kızıl-Çelik (`POINTS`), son ayakta kalan yıldıza `SURVIVOR_BONUS`. Sıralama: skor, alma sayısı, hayatta kalma. Rakip yıldızlar gidince kazanan belli olur; yerel 2–4 oyunculu maçta "Devam et / Bitir" sorulur (`keepGoing`, çevrimiçide kapalı).
+- Tek oyunculu: **İkiz** oyuncunun aynasıdır (oyuncudan hemen sonra aynı yönü oynar, oyuncuyu alamaz). Bütün botlar gidince kazanırsın. İkiz bir taş alırsa çift puan + ayna bonusu.
+- Bonuslar: maça bir çift adımla başlanır. 20 puan çift adım, 40 çift hamle, 60 ikisinden biri rastgele, 50 ayna (tahtada herhangi bir taşla yer değiştir). İlk daralmayı atlatan zırh (1 can), ikinci daralmayı atlatan çift hamle. Yapay zekâ da bonus kullanır (`bonusMoves`, `BONUS_COST`).
+- Zorluk: Kolay (sen ilk oynarsın), Normal (yer rastgele), Zor (yer rastgele, bot hedef üçgeni gizli). Rakip yapay zekâ (`Setup.aiLevel`) ile arena botları (`Setup.level`) ayrı ayarlanır. Normal rakip %30 ikinci en iyi hamleyi seçer, Zor avlar.
+- Seçenekler (varsayılan kapalı): kişilikler (avcı/temkinli/fırsatçı), engel kareleri, takım (2'ye 2, yalnız 4 oyuncu). Bulmacalar (11 adet), günlük meydan okuma, istatistikler, maç tekrarı bağlantısı, çok oyunculu lobi (tahta + bot sayısı).
+- Duraklatma: menü düğmesi durdurur; ana menüde "Devam et"; yarım maç `xsword-save` ile cihaza yazılır. Duraklatma menüsü: Devam et, Yeniden başlat, Yeni oyun, Ayarlar (maç içinde yalnız ses, titreşim, dil), Ana menü.
+
+## Ölçümler (`tests/engine.test.mjs` yazdırır)
+- Dikkatli oyuncu: Kolay rakibe %92, Normal %37, Zor %15 kazanır. Zor, Normal'e 149–51.
+- Kişilik galibiyetleri (90 maç, 4 Zor): avcı 42, temkinli 32, fırsatçı 16.
+- Takım dengesi (100 maç, 4 yapay zekâ): Normal A47/B53, Zor A42/B58; gürültü içinde, dokunulmadı. "Hep B kazanıyor" gelirse 300 maçla bak.
+- Kızıl/Çelik farkı yıldız çevresinde ortalama 0.53.
+
+## Kararlar ve nedenleri (kronolojik özet)
+- Ad X Sword; "vurmak" yerine "almak"; "yemek" hiç geçmez.
+- Eski "yeşil/turuncu yol" renk kuralı iptal; renkler tasarıma göre (üstte "Renkler").
+- Tek oyunculuda İkiz'i almak şart değil, botlar bitince kazanılır. Bonus şartlı kazanılır (puan, daralmayı atlatma), rastgele dağıtılmaz.
+- Çeviri 7 dilde (tr + en de fr es it pt), bayraklı seçici, Ayarlar'dan.
+- 7 öneri yapıldı: günlük meydan okuma, ipucu kartı, bonus dengesi + yapay zekâ bonusu, paylaşım kartı, kopan misafire 15 sn, geniş ekran düzeni, ses ayarları. Arda önerilerden birini (3.) istemedi.
+- Zor yapay zekâ ilk başta Normal ile eşitti (99–101); Normal'e hata payı, Zor'a avlama eklenince ayrıştı.
+- Bulmaca üretici ilk başta bulmaca bulamadı (rastgele pozisyonlar kayıp); 2–4 bot, mesafe ≤5, çözüm sayısı gevşetilerek çözüldü.
+- Slogan: "Yön her tur el değiştirir." (Arda 1. seçeneği seçti). Renk körü modu adı "Renk desteği" (nazik dil).
+- Duraklatma ana menüye dönünce de korunur ve uygulama yeniden açılınca sürer.
+- Yapılmadı ama konuşuldu: TestFlight/Capacitor yolu (hafıza notu var), daha çeşitli bulmacalar, çok oyunculu lobiye kişilik/takım seçeneği, temalar.
+
+## Kural değişince (kontrol listesi)
+1. `engine/rules.js` / `bots.js` + `engine/rules.d.ts` tipleri.
+2. `node tests/engine.test.mjs`; gerekirse test ekle.
+3. `app/src/screens/RulesScreen.tsx`, `arena/index.html` Kurallar, `docs/tasarim-prompt.md` oyun bölümü, bu dosya.
+4. Yeni yazı varsa `tr()` ile ekle ve **altı sözlüğe de** (`app/src/i18n/*.ts`) elle ekle. Sözlükler artık elle düzenlenir (eskiden betikle üretiliyordu, betik repoda yok). Anahtar = Türkçe cümlenin kendisi; anahtarı değiştirirsen altı dosyada da değiştir.
+5. `npm --prefix app run build` (tsc + vite + `check-css.mjs` + `check-i18n.mjs`).
+6. Commit, push, Actions ve canlı console.
+
+## Kod haritası (hızlı)
+- Motor: `engine/rules.js` (`createGame`, `play`, `roundOrder`, `matchOrder`, `createPuzzle`, `isWinner`, `friendly`, `ranking`, `attackersOf`), `engine/bots.js` (`chooseMove`, `SLIP`, `HUNT_*`, persona ağırlıkları). Tohumlu (`mulberry32`), tekrar = seçenekler + tohum + hamle listesi.
+- Uygulama: `app/src/App.tsx` (hash yönlendirme: `#/ #/oyun #/kurallar #/ayarlar #/cok #/oda #/mac #/katil/KOD #/istatistik #/bulmaca #/izle/KOD`), `game/controller.ts` (maç akışı, pause/park/save/restart/replay), `game/{settings,order,names,record,stats,daily,share,coach,haptics,threats,puzzles}.ts`, `components/{Board,Sheets,InfoChip,PlayerStrip,ActionPanel,TurnQueue,Header,Flag}.tsx`, `screens/*`, `net/{room,protocol,transport}.ts`, `i18n/`.
+- Araçlar: `tools/make-puzzles.mjs` → `app/src/game/puzzles.ts`.
+
+## Dikkat
+- `tr()` ilk argümanı düz tırnaklı yazı olmalı. Motorun `log` metinleri çevrilmez ama bot adı (`label`) oyun metinlerinde görünür.
+- `index.html` CRLF + BOM; `arena/index.html` düzenlerken satır sonlarını koru (`newline=''` ile oku/yaz).
+- Test kurulumları (`position()` gibi) `roundOrder` çağırınca bot `label`'ı yeniden hesaplanır; testte sabit numara varsayma, `pieceById(...).label` kullan.
