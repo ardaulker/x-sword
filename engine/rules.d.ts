@@ -90,6 +90,8 @@ export interface GameOptions {
   firstSeat?: number | null;
   shuffle?: boolean;
   keepGoing?: boolean;
+  /** Yalnız tek oyunculuda: 9, 11, 13 ya da 15. */
+  size?: number;
 }
 
 export const SIZE_BY_STARS: Record<number, number>;
@@ -99,6 +101,8 @@ export const POINTS: Record<Piece['kind'], number>;
 export const SURVIVOR_BONUS: number;
 export const BONUS_KINDS: BonusKind[];
 export const BONUS_SCORES: number[];
+export const SOLO_SIZES: number[];
+export function maxNeutrals(size: number): number;
 export const TWIN_TAKE_MULT: number;
 export const SWAP_RANGE: number;
 export const BONUS_NAMES: Record<BonusKind, string>;

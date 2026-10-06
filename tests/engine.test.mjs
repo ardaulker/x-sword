@@ -1,7 +1,7 @@
 // Kural motoru ve botların testleri: node tests/engine.test.mjs
 import assert from 'node:assert/strict';
 import {
-  createGame, endMatch, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
+  createGame, endMatch, maxNeutrals, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
   roundOrder, random, pieceById, threatsFor, ranking, SIZE_BY_STARS, NEUTRALS_BY_STARS, POINTS, SURVIVOR_BONUS,
 } from '../engine/rules.js';
 import { chooseMove, targetOf } from '../engine/bots.js';
@@ -431,4 +431,14 @@ test('çok oyunculu, devam açıkken: tek yıldız kalınca kazanan belli olur, 
   assert.equal(st.winner, 0);
   assert.equal(endMatch(st).over, true);
   assert.equal(mk(false).over, true);
+});
+
+test('tek oyunculu: 13×13 tahta ve en çok bot', () => {
+  for (const seed of [1, 2, 3, 4, 5]) {
+    const st = createGame({ seats: seats(1), seed, size: 13, neutrals: 999 });
+    assert.equal(st.size, 13);
+    assert.equal(st.pieces.filter(p => p.kind === 'red' || p.kind === 'blue').length, maxNeutrals(13));
+    assert.equal(new Set(st.pieces.map(p => `${p.r},${p.c}`)).size, st.pieces.length);
+  }
+  assert.equal(createGame({ seats: seats(2), seed: 1, size: 13 }).size, 9); // yalnız tek oyunculuda
 });

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { NEUTRALS_BY_STARS, POINTS, SIZE_BY_STARS, pieceById, ranking, starOf } from '../../../engine/rules.js';
+import { NEUTRALS_BY_STARS, POINTS, SIZE_BY_STARS, SOLO_SIZES, maxNeutrals, pieceById, ranking, starOf } from '../../../engine/rules.js';
 import type { GameState, Level, Piece } from '../../../engine/rules.js';
 import type { GameController, Setup, TakeEvent } from '../game/controller';
 import { HAZARD_TXT, ICON, TXT, colorOf, diamondOf, seatOf } from '../game/look';
@@ -82,7 +82,11 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
 }) {
   const [players, setPlayers] = useState(setup.players);
   const [level, setLevel] = useState<Level>(setup.level);
-  const size = SIZE_BY_STARS[players];
+  const [boardSize, setBoardSize] = useState(setup.boardSize);
+  const [bots, setBots] = useState(setup.bots);
+  const size = players === 1 ? boardSize : SIZE_BY_STARS[players];
+  const maxBots = maxNeutrals(boardSize);
+  const botCount = Math.min(bots, maxBots);
   return (
     <SheetFrame label="Yeni maç" onClose={onClose}>
       <div className="sheet-head">
@@ -97,6 +101,23 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
           </button>
         ))}
       </div>
+      {players === 1 && (
+        <>
+          <div className="field-label">TAHTA</div>
+          <div className="seg" role="radiogroup" aria-label="Tahta boyutu">
+            {SOLO_SIZES.map(n => (
+              <button key={n} type="button" role="radio" aria-checked={boardSize === n} className={boardSize === n ? 'is-on' : ''} onClick={() => setBoardSize(n)}>
+                <b>{n}×{n}</b>
+              </button>
+            ))}
+          </div>
+          <div className="field-label">ARENA BOTU: {botCount}</div>
+          <div className="bots-row">
+            <input type="range" min={2} max={maxBots} value={botCount} aria-label="Arena botu sayısı" onChange={e => setBots(Number(e.target.value))} />
+            <button type="button" className="btn btn-ghost bots-max" onClick={() => setBots(maxBots)}>Maks {maxBots}</button>
+          </div>
+        </>
+      )}
       <div className="field-label">BOT ZORLUĞU</div>
       <div className="seg" role="radiogroup" aria-label="Bot zorluğu">
         {LEVEL_LABELS.map(([v, t]) => (
@@ -107,7 +128,7 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
       </div>
       <div className="menu-note">
         {players === 1
-          ? `Sen, aynan İkiz ve ${NEUTRALS_BY_STARS[1]} arena botu · tahta ${size}×${size}. Bütün botları temizle.`
+          ? `Sen, aynan İkiz ve ${botCount} arena botu · tahta ${size}×${size}. Bütün botları temizle.`
           : `Sen ve ${players - 1} yapay zekâ oyuncu · tahta ${size}×${size} · ${NEUTRALS_BY_STARS[players]} arena botu.`}
         {level === 'kolay' ? ' İlk sen oynarsın.' : level === 'zor' ? ' Botların hedefi gizli.' : ''}
       </div>
@@ -121,7 +142,7 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
         {onHome
           ? <button type="button" className="btn btn-ghost" onClick={onHome}>Ana menü</button>
           : <button type="button" className="btn btn-ghost" onClick={onClose}>Kapat</button>}
-        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level })}>Başlat</button>
+        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, boardSize, bots: botCount })}>Başlat</button>
       </div>
     </SheetFrame>
   );

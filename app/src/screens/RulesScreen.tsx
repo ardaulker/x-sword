@@ -95,7 +95,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
           <p>Botun kenarındaki üçgen, kovaladığı oyuncunun yönünde ve renginde durur.</p>
         </Card>
         <Card title="Tek oyunculu: İkiz" visual={<div className="rule-pair"><PieceGlyph {...star} size={34} diamond={false} /><PieceGlyph kind="twin" seat={0} size={34} diamond={false} /></div>}>
-          <p>İkiz senin aynandır: senden hemen sonra, senin yaptığın yönün aynısını oynar. O kare doluysa oradaki taşı alır, yol kapalıysa yerinde kalır. Seni hiç alamaz. Bütün botlar gidince kazanırsın; İkiz'i almana gerek yok. İkiz bir taş alırsa sana çift puan ve bir Ayna bonusu verir.</p>
+          <p>İkiz senin aynandır: senden hemen sonra, senin yaptığın yönün aynısını oynar. O kare doluysa oradaki taşı alır, yol kapalıysa yerinde kalır. Seni hiç alamaz. Bütün botlar gidince kazanırsın; İkiz'i almana gerek yok. İkiz bir taş alırsa sana çift puan ve bir Ayna bonusu verir. Tek oyunculuda tahtayı (9–15) ve bot sayısını yeni maç ekranından seçersin.</p>
         </Card>
 
         <h2>Bonuslar</h2>

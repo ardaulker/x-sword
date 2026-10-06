@@ -34,9 +34,12 @@ export interface Setup {
   players: number;
   level: Level;
   moveSeconds: number;
+  /** Yalnız tek oyunculuda: tahta kenarı ve arena botu sayısı. */
+  boardSize: number;
+  bots: number;
 }
 // players 1: tek oyunculu mod (sen + aynan İkiz + botlar). 2–4: yapay zekâ oyunculara karşı.
-export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', moveSeconds: 20 };
+export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', moveSeconds: 20, boardSize: 9, bots: 14 };
 
 export interface Spot { r: number; c: number }
 export interface Trail { key: number; from: Spot; to: Spot; color: string }
@@ -133,7 +136,7 @@ export class GameController {
     this.dispose();
     this.net = net;
     setMe(me);
-    this.setup = { players: match.seats.length, level: match.level, moveSeconds: match.moveSeconds };
+    this.setup = { ...DEFAULT_SETUP, players: match.seats.length, level: match.level, moveSeconds: match.moveSeconds };
     this.reset(match);
     for (const m of replay) { play(this.state, m); this.moves.push(m); }
     this.emit();
@@ -169,7 +172,8 @@ export class GameController {
       const seats = Array.from({ length: this.setup.players }, (_, i) =>
         i === ME ? { kind: 'human' as const } : { kind: 'bot' as const, level: this.setup.level });
       // Kolayda ilk sen oynarsın; normal ve zorda sıradaki yerin de rastgele.
-      this.state = createGame({ seats, neutralLevel: this.setup.level, firstSeat: this.setup.level === 'kolay' ? ME : null, keepGoing: true });
+      this.state = createGame({ seats, neutralLevel: this.setup.level, firstSeat: this.setup.level === 'kolay' ? ME : null, keepGoing: true,
+        ...(this.setup.players === 1 ? { size: this.setup.boardSize, neutrals: this.setup.bots } : {}) });
     }
     this.moves = [];
     this.fast = false;
