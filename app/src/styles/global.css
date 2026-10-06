@@ -1,0 +1,133 @@
+/* Genel zemin, butonlar ve alttan açılan kartlar. Renk ve ölçüler design/tokens/tokens.css'ten. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--zemin);
+  color: var(--metin-1);
+  font-family: var(--font-ui);
+  font-size: var(--fs-govde);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); outline-offset: 2px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ------------------------------------------------------------ taş */
+
+.pg { position: relative; flex: none; }
+.pg-shape {
+  position: absolute; left: 17%; top: 17%; width: 66%; height: 66%; border-radius: 10%;
+  transition: transform calc(var(--t-sekil) * var(--hiz-carpan)) var(--ease-yay);
+}
+.pg-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.pg-grey .pg-shape, .pg-grey .pg-svg { filter: grayscale(1); opacity: .7; }
+
+/* ------------------------------------------------------------ butonlar */
+
+.btn {
+  height: 52px; border-radius: var(--r-md); border: 0; padding: 0 12px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font: 600 var(--fs-buton) var(--font-ui); white-space: nowrap;
+}
+.btn-ghost { flex: 1; border: 1.5px solid var(--cizgi-2); background: transparent; color: var(--metin-1); }
+.btn-main { flex: 2; background: var(--ice); color: var(--murekkep); font-weight: 700; font-size: 17px; }
+.btn-block { width: 100%; flex: none; height: 50px; }
+.btn-row { display: flex; gap: 8px; }
+
+.round-btn {
+  width: 44px; height: 44px; border-radius: 22px; border: 0; background: var(--yuzey-2); color: var(--metin-1);
+  display: flex; align-items: center; justify-content: center; flex: none;
+}
+
+/* ------------------------------------------------------------ alttan açılan kart */
+
+.sheet-scrim {
+  position: absolute; inset: 0; z-index: 20; background: rgba(5, 8, 20, .64);
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 0 8px calc(env(safe-area-inset-bottom) + 8px);
+  animation: scrim-in calc(var(--t-panel-ac) * var(--hiz-carpan)) ease-out;
+}
+.sheet {
+  max-height: 88%; overflow-y: auto;
+  background: var(--yuzey-1); border: 1px solid #2B3670; border-radius: var(--r-xl);
+  padding: 10px 18px 18px; display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, .4);
+  animation: sheet-in calc(var(--t-panel-ac) * var(--hiz-carpan)) var(--ease-kay);
+}
+.sheet:focus { outline: none; }
+.sheet-handle { align-self: center; width: 40px; height: 5px; border-radius: 3px; background: var(--cizgi-2); flex: none; }
+.sheet-head { display: flex; align-items: center; gap: 10px; }
+.sheet-title { font-size: 20px; font-weight: 700; flex: 1; }
+
+@keyframes scrim-in { from { background: rgba(5, 8, 20, 0); } }
+@keyframes sheet-in { from { transform: translateY(40px); opacity: 0; } }
+
+/* Taş bilgisi */
+.info-head { display: flex; align-items: center; gap: 14px; }
+.info-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.info-title { font-size: 20px; font-weight: 700; }
+.info-sub { font-size: 14px; font-weight: 500; color: var(--metin-2); }
+.info-order {
+  height: 28px; padding: 0 10px; border-radius: 14px; background: var(--yuzey-3);
+  display: flex; align-items: center; font: 700 13px var(--font-display); white-space: nowrap;
+}
+.info-diagrams { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.dia {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 12px 8px; border-radius: 16px; background: var(--yuzey-derin);
+}
+.dia-title { font-size: 11px; font-weight: 700; letter-spacing: .14em; color: var(--metin-2); }
+.dia-grid { display: grid; grid-template-columns: repeat(3, 38px); gap: 4px; }
+.dia-cell {
+  position: relative; width: 38px; height: 38px;
+  clip-path: polygon(26% 0, 74% 0, 100% 26%, 100% 74%, 74% 100%, 26% 100%, 0 74%, 0 26%);
+}
+.dia-cell svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.dia-text { font-size: 13px; font-weight: 600; }
+.info-target {
+  display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 12px;
+  border-radius: var(--r-md); background: var(--yuzey-2); font-size: 15px;
+}
+.info-target-label { font-size: 13px; font-weight: 700; letter-spacing: .1em; color: var(--metin-2); }
+.info-target-dist { margin-left: auto; font-size: 13px; font-weight: 500; color: var(--metin-2); white-space: nowrap; }
+.info-warn {
+  display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px;
+  background: rgba(255, 59, 92, .14); color: var(--danger-metin); font-size: 14px; font-weight: 700;
+}
+
+/* Savaş kaydı */
+.sheet:has(.log-list) { gap: 6px; padding: 10px 16px 16px; }
+.log-list { display: flex; flex-direction: column; gap: 6px; }
+.log-head { padding: 10px 2px 2px; font: 700 12px var(--font-display); letter-spacing: .14em; color: var(--metin-2); }
+.log-row {
+  display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 10px;
+  border-radius: 12px; background: var(--yuzey-2);
+}
+.log-name { font-size: 15px; font-weight: 700; white-space: nowrap; }
+.log-victim { font-size: 15px; font-weight: 600; color: var(--metin-2); text-decoration: line-through; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.log-ring { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; color: var(--hazard); flex: none; }
+.log-empty { padding: 18px 2px; color: var(--metin-2); font-size: 14px; }
+
+/* Menü */
+.field-label { font-size: 12px; font-weight: 700; letter-spacing: .14em; color: var(--metin-2); margin-bottom: -6px; }
+.seg { display: flex; gap: 6px; }
+.seg button {
+  flex: 1; min-height: 52px; border-radius: 12px; border: 1.5px solid var(--cizgi); background: var(--yuzey-2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+}
+.seg button b { font: 700 16px var(--font-display); }
+.seg button span { font-size: 12px; font-weight: 600; color: var(--metin-2); }
+.seg button.is-on { border-color: var(--ice); background: var(--ice); color: var(--murekkep); }
+.seg button.is-on span { color: var(--murekkep); }
+.menu-note { font-size: 13px; color: var(--metin-2); line-height: 1.4; }
