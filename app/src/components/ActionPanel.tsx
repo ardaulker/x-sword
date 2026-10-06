@@ -3,6 +3,7 @@ import {
 } from '../../../engine/rules.js';
 import type { GameState, Piece } from '../../../engine/rules.js';
 import type { GameController, View } from '../game/controller';
+import type { NetActions } from '../screens/GameScreen';
 import {
   DANGER, DANGER_TXT, HAZARD, HAZARD_TXT, ICON, PLAYER_COLORS, TXT, TXT2, colorOf, diamondOf, isBot, seatOf,
 } from '../game/look';
@@ -36,7 +37,7 @@ function Who({ st, p }: { st: GameState; p: Piece | null | undefined }) {
   return <PieceGlyph kind={p.kind} seat={seatOf(p)} size={34} diamond={diamondOf(p, st.mode)} />;
 }
 
-export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) {
+export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: View; net?: NetActions }) {
   const st = ctl.state;
   const me = ctl.myStar();
   const myColor = PLAYER_COLORS[me.seat];
@@ -79,12 +80,15 @@ export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) 
             </ol>
           )}
           <div className="panel-hint">Maç süresi {time} · {st.round} tur</div>
+          {net && !net.onRematch && <div className="panel-hint">Kurucu rövanş açarsa lobiye dönersin.</div>}
           <div className="btn-row">
-            <button type="button" className="btn btn-ghost" onClick={() => ctl.openMenu()}>Menü</button>
-            <button type="button" className="btn btn-main" style={{ background: won ? myColor : undefined }} onClick={() => ctl.newGame()}>
-              <Icon d={ICON.replay} size={18} stroke={2.2} color="#0B1026" />
-              Rövanş
-            </button>
+            <button type="button" className="btn btn-ghost" onClick={() => (net ? net.onLeave() : ctl.openMenu())}>{net ? 'Odadan çık' : 'Menü'}</button>
+            {(!net || net.onRematch) && (
+              <button type="button" className="btn btn-main" style={{ background: won ? myColor : undefined }} onClick={() => (net?.onRematch ? net.onRematch() : ctl.newGame())}>
+                <Icon d={ICON.replay} size={18} stroke={2.2} color="#0B1026" />
+                {net ? 'Lobiye dön' : 'Rövanş'}
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -103,7 +107,7 @@ export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) 
           </div>
           <div className="panel-hint">Skorun sayılmaya devam eder: kazananı skor belirler. İzleyebilir ya da çıkabilirsin.</div>
           <div className="btn-row">
-            <button type="button" className="btn btn-ghost" onClick={() => ctl.openMenu()}>Maçtan çık</button>
+            <button type="button" className="btn btn-ghost" onClick={() => (net ? net.onLeave() : ctl.openMenu())}>Maçtan çık</button>
             <button type="button" className="btn btn-main" onClick={() => ctl.watch()}>
               <Icon d={ICON.eye} size={18} stroke={2.2} color="#0B1026" />
               İzlemeye devam
@@ -193,10 +197,12 @@ export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) 
               <div key={i} style={{ background: i < done - 1 ? '#6F7FB8' : i === done - 1 ? '#EEF2FF' : '#232D5E' }} />
             ))}
           </div>
-          <button type="button" className="btn btn-fast" onClick={() => ctl.speedUp()}>
-            <Icon d={ICON.fast} size={18} fill="#EEF2FF" />
-            Hızlandır · ya da tahtaya dokun
-          </button>
+          {!ctl.isGuest && (
+            <button type="button" className="btn btn-fast" onClick={() => ctl.speedUp()}>
+              <Icon d={ICON.fast} size={18} fill="#EEF2FF" />
+              Hızlandır · ya da tahtaya dokun
+            </button>
+          )}
         </div>
       </section>
     );

@@ -1,0 +1,60 @@
+/* Çok oyunculu giriş ve lobi (tasarım: design/reference/Lobi.dc.html). */
+
+.lobby {
+  position: relative; display: flex; flex-direction: column;
+  width: 100%; max-width: 480px; height: 100vh; height: 100dvh; margin: 0 auto;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  background: var(--zemin-degrade);
+}
+.lobby-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; flex: none; }
+.lobby-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+.lobby-titles h1 { margin: 0; font-size: 20px; }
+.lobby-titles span { font-size: 13px; color: var(--metin-2); }
+.lobby-code {
+  display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border-radius: 14px;
+  border: 1.5px solid var(--cizgi-2); background: var(--yuzey-1); color: var(--metin-1);
+  font: 700 20px var(--font-display); letter-spacing: .16em;
+}
+.lobby-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 4px 12px 12px; }
+.lobby-center { align-items: center; justify-content: center; text-align: center; color: var(--metin-2); }
+.lobby-foot { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 8px 12px calc(env(safe-area-inset-bottom) + 12px); }
+.lobby-start { width: 100%; flex: none; height: 56px; font-size: 18px; }
+.lobby-note { margin: 0; font-size: 13px; line-height: 1.4; color: var(--metin-3); text-align: center; }
+.lobby-error { margin: 0; padding: 10px 12px; border-radius: 12px; background: rgba(255, 59, 92, .14); color: var(--danger-metin); font-weight: 600; }
+.btn:disabled { opacity: .45; cursor: default; }
+
+.join { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 18px; background: var(--yuzey-1); border: 1px solid var(--cizgi); }
+.join label { font-size: 12px; font-weight: 700; letter-spacing: .14em; color: var(--metin-2); }
+.join input {
+  height: 60px; border-radius: 14px; border: 1.5px solid var(--cizgi-2); background: var(--yuzey-derin); color: var(--metin-1);
+  font: 800 30px var(--font-display); letter-spacing: .3em; text-align: center; text-transform: uppercase;
+}
+.join input:focus { outline: 2px solid var(--ice); outline-offset: 1px; }
+.join .btn { flex: none; width: 100%; }
+
+.lobby-invite { display: flex; flex-direction: column; gap: 8px; }
+.lobby-wa { background: #25D366; color: var(--murekkep); font-weight: 700; text-decoration: none; }
+.lobby-invite-row { display: flex; gap: 8px; }
+.lobby-invite-row .btn { height: 44px; font-size: 14px; }
+
+.seats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.seat {
+  min-height: 104px; display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 16px;
+  background: var(--yuzey-1); border: 1.5px solid var(--cizgi);
+}
+.seat.is-empty { border-style: dashed; background: transparent; justify-content: space-between; }
+.seat.is-me { border-color: var(--cizgi-2); box-shadow: 0 0 0 3px rgba(233, 240, 255, .06); }
+.seat-top { display: flex; align-items: center; gap: 10px; }
+.seat-names { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.seat-names b { font-size: 16px; }
+.seat-names span { font-size: 12px; font-weight: 600; color: var(--metin-2); }
+.seat-bottom { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
+.seat-ready { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: var(--yuzey-3); color: var(--metin-2); }
+.seat-ready.is-ready { background: rgba(59, 255, 143, .15); color: #3BFF8F; }
+.seat-x { width: 32px; height: 32px; border-radius: 16px; border: 0; background: var(--yuzey-2); color: var(--metin-2); display: flex; align-items: center; justify-content: center; }
+.seat-empty { font-size: 14px; font-weight: 600; color: var(--metin-2); }
+.seat-wait { font-size: 12px; color: var(--metin-3); }
+.seat-add { height: 40px; border-radius: 12px; border: 1.5px solid var(--cizgi-2); background: var(--yuzey-2); color: var(--metin-1); font-size: 13px; font-weight: 700; }
+
+.lobby-spin { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--cizgi-2); border-top-color: var(--ice); animation: spin 900ms linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

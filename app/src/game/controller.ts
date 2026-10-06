@@ -8,7 +8,16 @@ import type { GameState, Level, Move, Piece } from '../../../engine/rules.js';
 import { chooseMove } from '../../../engine/bots.js';
 import { BUZZ, buzz } from './haptics';
 import { HAZARD, PLAYER_COLORS, colorOf, isBot } from './look';
-import { ME, labelOf, objectOf, seatName, subjectOf } from './names';
+import { ME, labelOf, objectOf, seatName, setMe, subjectOf } from './names';
+import type { MatchStart } from '../net/protocol';
+
+// Çok oyunculu maçta bu cihazın rolü. Kurucu maçı yürütür ve her hamleyi yayınlar;
+// misafir kendi hamlesini kurucuya gönderir, bütün hamleleri kurucudan alıp uygular.
+export interface NetRole {
+  role: 'host' | 'guest';
+  broadcast?: (n: number, move: Move | null) => void;
+  send?: (move: Move | null) => void;
+}
 
 export type Phase =
   | 'hazir'     // maç başlıyor
@@ -83,6 +92,9 @@ export class GameController {
   private bannerUntil = 0;
   private fast = false;
   private seq = 0;
+  private net: NetRole | null = null;
+  private moves: (Move | null)[] = []; // maçın bütün hamleleri, sırayla
+  private waitingSeat: number | null = null; // kurucu: hamlesi beklenen uzak oyuncu
 
   constructor(setup: Setup = DEFAULT_SETUP) {
     this.setup = setup;
@@ -104,11 +116,28 @@ export class GameController {
 
   newGame(setup: Setup = this.setup) {
     this.dispose();
+    this.net = null;
+    setMe(0);
     this.setup = setup;
     this.reset();
     this.emit();
     this.start();
   }
+
+  // Çok oyunculu maç: herkes aynı başlangıçla aynı tahtayı kurar. Sonradan katılan misafir eski hamleleri sessizce oynar.
+  startMatch(match: MatchStart, me: number, net: NetRole, replay: (Move | null)[] = []) {
+    this.dispose();
+    this.net = net;
+    setMe(me);
+    this.setup = { players: match.seats.length, level: match.level, moveSeconds: match.moveSeconds };
+    this.reset(match);
+    for (const m of replay) { play(this.state, m); this.moves.push(m); }
+    this.emit();
+    this.later(replay.length ? 0 : 600, () => this.advance());
+  }
+
+  get isGuest() { return this.net?.role === 'guest'; }
+  get isNet() { return this.net != null; }
 
   dispose() {
     this.timers.forEach(id => clearTimeout(id));
@@ -116,17 +145,23 @@ export class GameController {
     this.stopTicker();
     this.botTimer = null;
     this.banners = [];
+    this.waitingSeat = null;
   }
 
   myStar() {
     return starOf(this.state, ME)!;
   }
 
-  private reset() {
-    const seats = Array.from({ length: this.setup.players }, (_, i) =>
-      i === ME ? { kind: 'human' as const } : { kind: 'bot' as const, level: this.setup.level });
-    // Kolayda ilk sen oynarsın; normal ve zorda sıradaki yerin de rastgele.
-    this.state = createGame({ seats, neutralLevel: this.setup.level, firstSeat: this.setup.level === 'kolay' ? ME : null });
+  private reset(match?: MatchStart) {
+    if (match) {
+      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed });
+    } else {
+      const seats = Array.from({ length: this.setup.players }, (_, i) =>
+        i === ME ? { kind: 'human' as const } : { kind: 'bot' as const, level: this.setup.level });
+      // Kolayda ilk sen oynarsın; normal ve zorda sıradaki yerin de rastgele.
+      this.state = createGame({ seats, neutralLevel: this.setup.level, firstSeat: this.setup.level === 'kolay' ? ME : null });
+    }
+    this.moves = [];
     this.fast = false;
     this.view = {
       phase: 'hazir', sel: null, showThreats: false, timer: this.setup.moveSeconds,
@@ -137,13 +172,98 @@ export class GameController {
   }
 
   private advance() {
+    if (this.net?.role === 'guest') return this.guestAdvance();
     const st = this.state;
     if (st.over) return this.finish();
     const a = currentActor(st)!;
     if (a.kind === 'twin') return this.twinTurn(a);
     if (a.kind !== 'star') return this.botTurn();
-    if (st.seats[a.seat].kind === 'human') return this.myTurn();
+    if (st.seats[a.seat].kind === 'human') return a.seat === ME ? this.myTurn() : this.remoteTurn(a);
     return this.starBotTurn(a);
+  }
+
+  // ------------------------------------------------------------ çok oyunculu: kurucu
+
+  // Uzak oyuncunun hamlesi beklenir; süre biterse kurucu onun yerine güvenli bir hamle yapar.
+  private remoteTurn(a: Piece) {
+    this.waitingSeat = a.kind === 'star' ? a.seat : null;
+    this.emit({ phase: 'rakip', timer: this.setup.moveSeconds });
+    this.startTicker();
+  }
+
+  receiveMove(seat: number, move: Move | null) {
+    const st = this.state;
+    const a = currentActor(st);
+    if (this.waitingSeat !== seat || !a || a.kind !== 'star' || a.seat !== seat) return;
+    const moves = legalMoves(st, a, st.mode);
+    const legal = move ? moves.find(m => m.r === move.r && m.c === move.c) : null;
+    if (move ? !legal : moves.length) return; // geçersiz hamle ya da hamlesi varken pas: yok sayılır
+    this.commitRemote(legal ?? null);
+  }
+
+  private commitRemote(move: Move | null) {
+    this.waitingSeat = null;
+    this.stopTicker();
+    const o = this.apply(move);
+    this.emit({ phase: 'bekle' });
+    if (o) this.continueAfter(o, 450);
+  }
+
+  // Bağlantısı kopan oyuncunun yerine yapay zekâ geçer.
+  dropSeat(seat: number) {
+    const s = this.state.seats[seat];
+    if (!s || s.kind === 'bot') return;
+    s.kind = 'bot';
+    s.level = this.setup.level;
+    this.toast(`${seatName(this.state, seat)} ayrıldı · yerine yapay zekâ oynuyor`, 'info');
+    this.emit();
+    if (this.waitingSeat === seat) {
+      this.waitingSeat = null;
+      this.stopTicker();
+      this.starBotTurn(currentActor(this.state)!);
+    }
+  }
+
+  // ------------------------------------------------------------ çok oyunculu: misafir
+
+  // Misafir hiçbir şeye kendi karar vermez: sırası gelen taşa göre ekranı hazırlar ve kurucunun hamlesini bekler.
+  private guestAdvance() {
+    const st = this.state;
+    if (st.over) return this.finish();
+    const a = currentActor(st);
+    if (!a) return;
+    if (a.kind === 'star' && a.seat === ME) return this.myTurn();
+    if (a.kind === 'star') {
+      this.emit({ phase: 'rakip', timer: this.setup.moveSeconds });
+      this.startTicker();
+    } else if (isBot(a) && this.view.phase !== 'bot') {
+      this.botQueue = this.botRun();
+      this.emit({ phase: 'bot', bots: { done: 0, total: this.botQueue.length, currentId: null } });
+    }
+  }
+
+  receiveNetMove(n: number, move: Move | null) {
+    if (this.net?.role !== 'guest' || n !== this.moves.length + 1) return;
+    const a = currentActor(this.state);
+    this.stopTicker();
+    const o = this.apply(move);
+    if (a && isBot(a)) this.view = { ...this.view, bots: { ...this.view.bots, done: this.botQueue.indexOf(a.id) + 1, currentId: a.id } };
+    this.emit({ phase: a && isBot(a) && !o?.roundEnded ? 'bot' : 'bekle' });
+    if (!o) return;
+    if (this.state.over) return this.finish();
+    if (o.roundEnded) {
+      // Kurucu da mod kartını aynı süre gösterip bekler; sıradaki hamle ondan sonra gelir.
+      this.emit({ phase: 'mod', modeOverlay: true });
+      this.later(1300, () => { this.emit({ modeOverlay: false }); this.guestAdvance(); });
+      return;
+    }
+    this.guestAdvance();
+  }
+
+  netLost() {
+    this.stopTicker();
+    this.toast('Odayla bağlantı koptu', 'info');
+    this.emit();
   }
 
   private finish() {
@@ -208,6 +328,11 @@ export class GameController {
 
   private commitMine(move: Move | null) {
     this.stopTicker();
+    if (this.net?.role === 'guest') {
+      this.net.send?.(move);
+      this.emit({ phase: 'bekle', sel: null, showThreats: false });
+      return;
+    }
     const o = this.apply(move);
     this.emit({ phase: 'bekle', sel: null, showThreats: false });
     if (o) this.continueAfter(o, 500);
@@ -237,18 +362,22 @@ export class GameController {
   }
 
   private botTurn() {
-    // Sıra karışık: bu bölüm, sıradaki yıldıza ya da İkiz'e kadar art arda oynayacak botlardır.
-    const st = this.state;
-    this.botQueue = [];
+    this.botQueue = this.botRun();
+    this.fast = false;
+    this.emit({ phase: 'bot', bots: { done: 0, total: this.botQueue.length, currentId: null } });
+    this.botTimer = this.later(250, () => this.botStep());
+  }
+
+  // Sıra karışık: bu bölüm, sıradaki yıldıza ya da İkiz'e kadar art arda oynayacak botlardır.
+  private botRun() {
+    const st = this.state, run: string[] = [];
     for (const id of st.order.slice(st.turn)) {
       const p = pieceById(st, id);
       if (!p || !p.alive) continue;
       if (!isBot(p)) break;
-      this.botQueue.push(id);
+      run.push(id);
     }
-    this.fast = false;
-    this.emit({ phase: 'bot', bots: { done: 0, total: this.botQueue.length, currentId: null } });
-    this.botTimer = this.later(250, () => this.botStep());
+    return run;
   }
 
   // Bir bot oynar; hızlandırıldıysa kalanların hepsi aynı anda.
@@ -328,6 +457,8 @@ export class GameController {
     const victim = move?.type === 'take' && move.targetId ? pieceById(st, move.targetId) ?? null : null;
 
     play(st, move);
+    this.moves.push(move);
+    if (this.net?.role === 'host') this.net.broadcast?.(this.moves.length, move);
 
     const fallen = st.pieces.filter(p => aliveBefore.has(p.id) && !p.alive && p !== victim);
     const collapsed = st.ring !== ring;
@@ -449,13 +580,18 @@ export class GameController {
         if (t <= 0) {
           this.stopTicker();
           this.emit({ timer: 0 });
-          this.autoMove();
+          if (this.net?.role !== 'guest') this.autoMove(); // misafirde süreyi kurucu yönetir
           return;
         }
         if (t <= 5) buzz(BUZZ.lastSeconds);
         this.emit({ timer: t });
       } else if (this.view.phase === 'rakip') {
         this.emit({ timer: Math.max(0, t) });
+        if (t <= 0 && this.waitingSeat != null) {
+          const a = currentActor(this.state)!;
+          this.toast(`${labelOf(this.state, a)} için süre doldu`, 'clock');
+          this.commitRemote(chooseMove(this.state, a, 'normal'));
+        }
       } else {
         this.stopTicker();
       }

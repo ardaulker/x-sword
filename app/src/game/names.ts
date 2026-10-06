@@ -2,7 +2,9 @@
 
 import type { GameState, Mode, Piece } from '../../../engine/rules.js';
 
-export const ME = 0; // Bu cihazdaki oyuncunun koltuğu.
+// Bu cihazdaki oyuncunun koltuğu. Tek cihazda 0; çok oyunculuda maç başlarken ağdan gelir.
+export let ME = 0;
+export const setMe = (seat: number) => { ME = seat; };
 
 const SEAT_ACC = ["'i", "'yi", "'ü", "'ü"]; // 1'i, 2'yi, 3'ü, 4'ü
 

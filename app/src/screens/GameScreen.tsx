@@ -8,7 +8,7 @@ import { BOARD_PAD, Board, boardGap, boardOuter } from '../components/Board';
 import { CompactBar, ModeIndicator, TopBar } from '../components/Header';
 import { PlayerStrip } from '../components/PlayerStrip';
 import { TurnQueue } from '../components/TurnQueue';
-import { LogSheet, SetupSheet } from '../components/Sheets';
+import { LeaveSheet, LogSheet, SetupSheet } from '../components/Sheets';
 import { InfoChip } from '../components/InfoChip';
 import { Icon } from '../components/bits';
 import './GameScreen.css';
@@ -34,7 +34,15 @@ function announce(ctl: GameController, view: View) {
   return '';
 }
 
-export function GameScreen({ ctl, onNewGame, onHome }: { ctl: GameController; onNewGame: (s: Setup) => void; onHome: () => void }) {
+// Çok oyunculu maçta: menü odadan çıkarır; kurucu maç sonunda herkesi lobiye döndürebilir.
+export interface NetActions {
+  onLeave: () => void;
+  onRematch?: () => void;
+}
+
+export function GameScreen({ ctl, onNewGame, onHome, net }: {
+  ctl: GameController; onNewGame: (s: Setup) => void; onHome: () => void; net?: NetActions;
+}) {
   const view = useSyncExternalStore(ctl.subscribe, ctl.getSnapshot);
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -87,11 +95,12 @@ export function GameScreen({ ctl, onNewGame, onHome }: { ctl: GameController; on
             </div>
           )}
         </div>
-        <ActionPanel ctl={ctl} view={view} />
+        <ActionPanel ctl={ctl} view={view} net={net} />
       </div>
 
       {sheet?.type === 'kayit' && <LogSheet ctl={ctl} events={view.events} />}
-      {sheet?.type === 'menu' && <SetupSheet setup={ctl.setup} onStart={onNewGame} onClose={() => ctl.closeSheet()} onHome={onHome} />}
+      {sheet?.type === 'menu' && !net && <SetupSheet setup={ctl.setup} onStart={onNewGame} onClose={() => ctl.closeSheet()} onHome={onHome} />}
+      {sheet?.type === 'menu' && net && <LeaveSheet onLeave={net.onLeave} onClose={() => ctl.closeSheet()} />}
 
       {view.hit > 0 && <div key={view.hit} className="hit-flash" aria-hidden="true" />}
       <div className="sr-only" aria-live="polite">{announce(ctl, view)}</div>

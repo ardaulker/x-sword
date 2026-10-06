@@ -24,6 +24,8 @@ daralan arena, hamle önizlemesi ve üç zorlukta bot. İnsanlar şimdilik aynı
 Kural motoru olarak `engine/` kullanılır. Şimdilik mobil oyun ekranı var: tek oyunculu mod (sen + aynan İkiz + arena botları) ya da 2–4 yıldızla yapay zekâya karşı.
 `main`'e her push'ta GitHub Actions motor testlerini koşar, oyunu derler ve bütün siteyi Pages'e yayınlar.
 
+Çok oyunculu: ana menüden "Çok oyunculu" → "Oda kur". 5 karakterlik kodu ya da davet linkini paylaş; arkadaşların kodla katılır, "Hazırım" der, kurucu başlatır. Bağlantı telefondan telefona kurulur (PeerJS), hesap gerekmez. Odayı kuran telefon maçı yürütür; o çıkarsa maç biter, misafir çıkarsa yerine yapay zekâ oynar.
+
 ```
 npm --prefix app install
 npm --prefix app run dev     # http://localhost:5173

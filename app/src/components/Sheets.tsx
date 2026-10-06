@@ -119,3 +119,20 @@ export function SetupSheet({ setup, onStart, onClose, onHome }: {
     </SheetFrame>
   );
 }
+
+// Çok oyunculu maçta menü: odadan çıkış.
+export function LeaveSheet({ onLeave, onClose }: { onLeave: () => void; onClose: () => void }) {
+  return (
+    <SheetFrame label="Maçtan çık" onClose={onClose}>
+      <div className="sheet-head">
+        <div className="sheet-title">Maçtan çık?</div>
+        <button type="button" className="round-btn" aria-label="Kapat" onClick={onClose}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
+      </div>
+      <p className="menu-note">Çıkarsan yerine yapay zekâ oynar. Odayı sen kurduysan maç herkes için biter.</p>
+      <div className="btn-row">
+        <button type="button" className="btn btn-ghost" onClick={onClose}>Vazgeç</button>
+        <button type="button" className="btn btn-main" style={{ background: 'var(--danger)' }} onClick={onLeave}>Maçtan çık</button>
+      </div>
+    </SheetFrame>
+  );
+}
