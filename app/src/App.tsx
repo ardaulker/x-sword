@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { DEFAULT_SETUP, GameController } from './game/controller';
 import type { Setup } from './game/controller';
 import { GameScreen } from './screens/GameScreen';
+import { MainMenu } from './screens/MainMenu';
 
 const SETUP_KEY = 'xsword-app-setup';
 
@@ -23,19 +24,35 @@ function saveSetup(s: Setup) {
   }
 }
 
+// Ekranlar adres çubuğundaki #/ ile seçilir; telefonun geri tuşu menüye döndürür.
+type Screen = 'menu' | 'oyun';
+const readScreen = (): Screen => (location.hash === '#/oyun' ? 'oyun' : 'menu');
+const go = (s: Screen) => { location.hash = s === 'menu' ? '/' : `/${s}`; };
+
 export function App() {
   const [ctl] = useState(() => new GameController(loadSetup()));
+  const [screen, setScreen] = useState<Screen>(readScreen);
   if (import.meta.env.DEV) (window as unknown as { xsword: GameController }).xsword = ctl;
 
   useEffect(() => {
-    ctl.start();
-    return () => ctl.dispose();
-  }, [ctl]);
+    const onHash = () => setScreen(readScreen());
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
-  const newGame = (s: Setup) => {
+  // Oyun ekranına girince maç başlar, çıkınca durur.
+  useEffect(() => {
+    if (screen !== 'oyun') return;
+    ctl.newGame(ctl.setup);
+    return () => ctl.dispose();
+  }, [ctl, screen]);
+
+  const start = (s: Setup) => {
     saveSetup(s);
-    ctl.newGame(s);
+    if (screen === 'oyun') ctl.newGame(s);
+    else { ctl.setup = s; go('oyun'); }
   };
 
-  return <GameScreen ctl={ctl} onNewGame={newGame} />;
+  if (screen === 'oyun') return <GameScreen ctl={ctl} onNewGame={start} onHome={() => go('menu')} />;
+  return <MainMenu setup={ctl.setup} onStart={start} />;
 }

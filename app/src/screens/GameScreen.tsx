@@ -8,7 +8,7 @@ import { BOARD_PAD, Board, boardGap, boardOuter } from '../components/Board';
 import { CompactBar, ModeIndicator, TopBar } from '../components/Header';
 import { PlayerStrip } from '../components/PlayerStrip';
 import { TurnQueue } from '../components/TurnQueue';
-import { LogSheet, MenuSheet } from '../components/Sheets';
+import { LogSheet, SetupSheet } from '../components/Sheets';
 import { InfoChip } from '../components/InfoChip';
 import { Icon } from '../components/bits';
 import './GameScreen.css';
@@ -34,7 +34,7 @@ function announce(ctl: GameController, view: View) {
   return '';
 }
 
-export function GameScreen({ ctl, onNewGame }: { ctl: GameController; onNewGame: (s: Setup) => void }) {
+export function GameScreen({ ctl, onNewGame, onHome }: { ctl: GameController; onNewGame: (s: Setup) => void; onHome: () => void }) {
   const view = useSyncExternalStore(ctl.subscribe, ctl.getSnapshot);
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -91,7 +91,7 @@ export function GameScreen({ ctl, onNewGame }: { ctl: GameController; onNewGame:
       </div>
 
       {sheet?.type === 'kayit' && <LogSheet ctl={ctl} events={view.events} />}
-      {sheet?.type === 'menu' && <MenuSheet ctl={ctl} onStart={onNewGame} />}
+      {sheet?.type === 'menu' && <SetupSheet setup={ctl.setup} onStart={onNewGame} onClose={() => ctl.closeSheet()} onHome={onHome} />}
 
       <div className="sr-only" aria-live="polite">{announce(ctl, view)}</div>
     </div>

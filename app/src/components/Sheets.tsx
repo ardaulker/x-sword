@@ -75,16 +75,18 @@ export function LogSheet({ ctl, events }: { ctl: GameController; events: TakeEve
 
 const LEVEL_LABELS: [Level, string][] = [['kolay', 'Kolay'], ['normal', 'Normal'], ['zor', 'Zor']];
 
-export function MenuSheet({ ctl, onStart }: { ctl: GameController; onStart: (s: Setup) => void }) {
-  const [players, setPlayers] = useState(ctl.setup.players);
-  const [level, setLevel] = useState<Level>(ctl.setup.level);
-  const close = () => ctl.closeSheet();
+// Maç ayarı: ana menüden "Oyuna başla" ile ve oyun içindeki menü düğmesiyle açılır.
+export function SetupSheet({ setup, onStart, onClose, onHome }: {
+  setup: Setup; onStart: (s: Setup) => void; onClose: () => void; onHome?: () => void;
+}) {
+  const [players, setPlayers] = useState(setup.players);
+  const [level, setLevel] = useState<Level>(setup.level);
   const size = SIZE_BY_STARS[players];
   return (
-    <SheetFrame label="Menü" onClose={close}>
+    <SheetFrame label="Yeni maç" onClose={onClose}>
       <div className="sheet-head">
         <div className="sheet-title">Yeni maç</div>
-        <button type="button" className="round-btn" aria-label="Kapat" onClick={close}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
+        <button type="button" className="round-btn" aria-label="Kapat" onClick={onClose}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
       </div>
       <div className="field-label">OYUNCU SAYISI</div>
       <div className="seg" role="radiogroup" aria-label="Oyuncu sayısı">
@@ -106,10 +108,13 @@ export function MenuSheet({ ctl, onStart }: { ctl: GameController; onStart: (s: 
         {players === 1
           ? `Sen, aynan İkiz ve ${NEUTRALS_BY_STARS[1]} arena botu · tahta ${size}×${size}. Son kalan sen ol.`
           : `Sen ve ${players - 1} yapay zekâ oyuncu · tahta ${size}×${size} · ${NEUTRALS_BY_STARS[players]} arena botu.`}
+        {level === 'kolay' ? ' İlk sen oynarsın.' : level === 'zor' ? ' Botların hedefi gizli.' : ''}
       </div>
       <div className="btn-row">
-        <button type="button" className="btn btn-ghost" onClick={close}>Kapat</button>
-        <button type="button" className="btn btn-main" onClick={() => onStart({ ...ctl.setup, players, level })}>Yeni maç başlat</button>
+        {onHome
+          ? <button type="button" className="btn btn-ghost" onClick={onHome}>Ana menü</button>
+          : <button type="button" className="btn btn-ghost" onClick={onClose}>Kapat</button>}
+        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level })}>Başlat</button>
       </div>
     </SheetFrame>
   );
