@@ -8,6 +8,7 @@ import { ME, labelOf, seatName } from '../game/names';
 import { PLAYER_COLORS } from '../game/look';
 import { Icon, RingIcon } from './bits';
 import { PieceGlyph } from './PieceGlyph';
+import { shareResult } from '../game/share';
 import { tr } from '../i18n';
 
 // Alttan açılan kart; arka plan kararır, dışına dokununca kapanır.
@@ -178,7 +179,7 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
         {onHome
           ? <button type="button" className="btn btn-ghost" onClick={onHome}>{tr('Ana menü')}</button>
           : <button type="button" className="btn btn-ghost" onClick={onClose}>{tr('Kapat')}</button>}
-        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, boardSize, bots: botCount })}>{tr('Başlat')}</button>
+        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, boardSize, bots: botCount, daily: null })}>{tr('Başlat')}</button>
       </div>
     </SheetFrame>
   );
@@ -208,6 +209,8 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose }: {
   const st = ctl.state;
   const me = st.seats[ME];
   const won = st.winner === ME;
+  const [shared, setShared] = useState(false);
+  const daily = ctl.setup.daily ?? null;
   const order = ranking(st);
   const lasted = (i: number) => (st.seats[i].out ? st.seats[i].outRound ?? st.round : st.round);
   const pending = st.decided && !st.over;
@@ -215,6 +218,7 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose }: {
   return (
     <SheetFrame label={tr('Maç sonucu')} onClose={onClose}>
       <div className="res-head">
+        {daily && <div className="res-daily">{tr('Günlük {date}', { date: daily })}</div>}
         <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{title}</div>
         <div className="res-sub">{pending ? tr('Rakip yıldız kalmadı. Botlarla savaşa devam edebilirsin') : st.solo ? (won ? tr('Arenada bot kalmadı') : tr('Bir dahaki sefere')) : tr('{n}. oldun', { n: order.indexOf(ME) + 1 })} · {time}</div>
       </div>
@@ -248,7 +252,12 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose }: {
         ) : (
           <button type="button" className="btn btn-ghost" onClick={onClose}>{tr('Tahtaya bak')}</button>
         )}
-        {!pending && onAgain && <button type="button" className="btn btn-main" onClick={onAgain}>{againLabel}</button>}
+        {!pending && (
+          <button type="button" className="btn btn-ghost" onClick={async () => { const r = await shareResult({ st, time, daily }); setShared(r !== 'shared'); }}>
+            {shared ? tr('Kopyalandı') : tr('Paylaş')}
+          </button>
+        )}
+        {!pending && onAgain && <button type="button" className="btn btn-main" onClick={onAgain}>{daily ? tr('Tekrar dene') : againLabel}</button>}
       </div>
     </SheetFrame>
   );

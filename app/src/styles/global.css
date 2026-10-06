@@ -147,3 +147,5 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
 .bots-row { display: flex; align-items: center; gap: 10px; }
 .bots-row input[type=range] { flex: 1; accent-color: var(--oyuncu-1); }
 .bots-row .bots-max { flex: none; padding: 8px 12px; }
+
+.res-daily { font: 700 12px var(--font-display); letter-spacing: .14em; color: var(--metin-3); text-transform: uppercase; margin-bottom: 4px; }

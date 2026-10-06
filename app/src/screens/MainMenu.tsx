@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Setup } from '../game/controller';
 import { Icon } from '../components/bits';
+import { loadDaily } from '../game/daily';
 import { SetupSheet } from '../components/Sheets';
 import './MainMenu.css';
 import { tr } from '../i18n';
@@ -22,10 +23,11 @@ export function XSwordLogo({ size }: { size: number }) {
   );
 }
 
-export function MainMenu({ setup, onStart, onRules, onMultiplayer, onSettings }: {
-  setup: Setup; onStart: (s: Setup) => void; onRules?: () => void; onMultiplayer?: () => void; onSettings?: () => void;
+export function MainMenu({ setup, onStart, onDaily, onRules, onMultiplayer, onSettings }: {
+  setup: Setup; onStart: (s: Setup) => void; onDaily?: () => void; onRules?: () => void; onMultiplayer?: () => void; onSettings?: () => void;
 }) {
   const [setupOpen, setSetupOpen] = useState(false);
+  const best = loadDaily();
   return (
     <div className="menu">
       <div className="menu-deco" aria-hidden="true">
@@ -50,6 +52,12 @@ export function MainMenu({ setup, onStart, onRules, onMultiplayer, onSettings }:
             <span>{tr('Botlara karşı · tek ya da 2–4 oyuncu')}</span>
           </span>
         </button>
+        {onDaily && (
+          <button type="button" className="menu-btn menu-daily" onClick={onDaily}>
+            <Icon d="M7 3 V6 M17 3 V6 M4 9 H20 M5 5 H19 A1 1 0 0 1 20 6 V19 A1 1 0 0 1 19 20 H5 A1 1 0 0 1 4 19 V6 A1 1 0 0 1 5 5 Z" size={20} stroke={2.2} />
+            <span className="menu-play-text"><b>{tr('Günlük meydan okuma')}</b><span>{best ? tr('Bugünkü en iyin: {n} puan', { n: best.score }) : tr('Herkes bugün aynı tahtada oynar')}</span></span>
+          </button>
+        )}
         <div className="menu-row">
           <button type="button" className="menu-btn" disabled={!onMultiplayer} onClick={onMultiplayer}>
             <Icon d="M9 11 A4 4 0 1 0 9.01 11 Z M2 21 C2 17 5 15 9 15 C11 15 12.5 15.5 13.5 16.3 M19 8 V14 M16 11 H22" size={20} stroke={2.2} />

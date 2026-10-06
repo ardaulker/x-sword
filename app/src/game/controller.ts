@@ -8,9 +8,10 @@ import type { BonusKind, GameState, Level, Move, Piece } from '../../../engine/r
 import { chooseMove } from '../../../engine/bots.js';
 import { BUZZ, feel, sound, startTension, stopTension } from './haptics';
 import { coachStep, markCoachSeen } from './coach';
+import { DAILY, saveDaily, seedOf } from './daily';
 import { SPEED, settings } from './settings';
 import { HAZARD, PLAYER_COLORS, colorOf, isBot } from './look';
-import { ME, labelOf, objectOf, seatName, setMe, subjectOf } from './names';
+import { ME, clockText, labelOf, objectOf, seatName, setMe, subjectOf } from './names';
 import type { MatchStart } from '../net/protocol';
 import { tr } from '../i18n';
 
@@ -39,6 +40,8 @@ export interface Setup {
   /** Yalnız tek oyunculuda: tahta kenarı ve arena botu sayısı. */
   boardSize: number;
   bots: number;
+  /** Günlük meydan okuma: tarih yazısı (YYYY-AA-GG). Doluysa tahta, bot ve zorluk sabittir. */
+  daily?: string | null;
 }
 // players 1: tek oyunculu mod (sen + aynan İkiz + botlar). 2–4: yapay zekâ oyunculara karşı.
 export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', moveSeconds: 20, boardSize: 9, bots: 14 };
@@ -180,11 +183,14 @@ export class GameController {
     if (match) {
       this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed });
     } else {
-      const seats = Array.from({ length: this.setup.players }, (_, i) =>
+      const daily = this.setup.daily ?? null;
+      const seats = Array.from({ length: daily ? 1 : this.setup.players }, (_, i) =>
         i === ME ? { kind: 'human' as const } : { kind: 'bot' as const, level: this.setup.level });
       // Kolayda ilk sen oynarsın; normal ve zorda sıradaki yerin de rastgele.
-      this.state = createGame({ seats, neutralLevel: this.setup.level, firstSeat: this.setup.level === 'kolay' ? ME : null, keepGoing: true,
-        ...(this.setup.players === 1 ? { size: this.setup.boardSize, neutrals: this.setup.bots } : {}) });
+      this.state = daily
+        ? createGame({ seats, neutralLevel: 'normal', seed: seedOf(daily), size: DAILY.boardSize, neutrals: DAILY.bots })
+        : createGame({ seats, neutralLevel: this.setup.level, firstSeat: this.setup.level === 'kolay' ? ME : null, keepGoing: true,
+          ...(this.setup.players === 1 ? { size: this.setup.boardSize, neutrals: this.setup.bots } : {}) });
     }
     this.moves = [];
     this.fast = false;
@@ -300,6 +306,11 @@ export class GameController {
     // Kazanan belli ama botlar var: sonuç kartı "Devam et / Bitir" sorar, saat durmaz.
     const pending = this.state.decided && !this.state.over;
     if (pending) this.decisionShown = true;
+    const daily = this.setup.daily;
+    if (daily && this.state.over) {
+      const s = this.state;
+      saveDaily({ date: daily, score: s.seats[ME].score, won: s.winner === ME, round: s.round, time: clockText((this.view.clockEnd ?? Date.now()) - this.view.clockStart) });
+    }
     const me = this.myStar();
     if (this.state.seats[ME].bonus && me && !this.bonusShown) {
       this.bonusShown = true;

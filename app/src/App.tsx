@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { DEFAULT_SETUP, GameController } from './game/controller';
 import type { Setup } from './game/controller';
+import { todayKey } from './game/daily';
 import { GuestRoom, HostRoom } from './net/room';
 import type { AnyRoom } from './net/room';
 import { isCode } from './net/protocol';
@@ -100,7 +101,7 @@ export function App() {
   }, [room, roomView?.status, screen]);
 
   const start = (s: Setup) => {
-    saveSetup(s);
+    if (!s.daily) saveSetup(s);
     if (screen === 'oyun') ctl.newGame(s);
     else { ctl.setup = s; go('oyun'); }
   };
@@ -131,5 +132,5 @@ export function App() {
       />
     );
   }
-  return <MainMenu setup={ctl.setup} onStart={start} onRules={() => go('kurallar')} onMultiplayer={() => go('cok')} onSettings={() => go('ayarlar')} />;
+  return <MainMenu setup={ctl.setup} onStart={start} onDaily={() => start({ ...ctl.setup, players: 1, level: 'normal', daily: todayKey() })} onRules={() => go('kurallar')} onMultiplayer={() => go('cok')} onSettings={() => go('ayarlar')} />;
 }
