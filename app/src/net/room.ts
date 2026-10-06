@@ -22,6 +22,7 @@ export interface RoomView {
 
 const EMPTY: LobbySeat = { kind: 'empty', ready: false };
 const MAX_SEATS = 4;
+const GRACE_MS = 15000;
 
 abstract class Room {
   abstract readonly role: 'host' | 'guest';
@@ -53,6 +54,8 @@ export class HostRoom extends Room {
   private links: (Link<ToHost, ToGuest> | null)[] = Array(MAX_SEATS).fill(null);
   private match: MatchStart | null = null;
   private engineSeat: number[] = []; // lobi koltuğu → maçtaki koltuk
+  private tokens: string[] = []; // misafirin gizli kimliği: bağlantı kopunca geri dönebilmesi için
+  private grace: (number | null)[] = Array(MAX_SEATS).fill(null);
   private closed = false;
 
   constructor(ctl: GameController, level: Level, transport: Transport = peerTransport) {
@@ -67,9 +70,10 @@ export class HostRoom extends Room {
   }
 
   private join(link: Link<ToHost, ToGuest>) {
+    if (this.view.status === 'playing') { this.rejoin(link); return; }
     const i = this.view.seats.findIndex(s => s.kind === 'empty');
     if (this.view.status !== 'lobby' || i < 0) {
-      link.send({ t: 'closed', reason: this.view.status === 'playing' ? tr('Maç başladı.') : tr('Oda dolu.') });
+      link.send({ t: 'closed', reason: tr('Oda dolu.') });
       setTimeout(() => link.close(), 300);
       return;
     }
@@ -79,17 +83,40 @@ export class HostRoom extends Room {
     link.onClose(() => this.leave(i, link));
   }
 
+  // Maç sürerken yalnız kopan bir misafir, gizli kimliğiyle geri dönebilir.
+  private rejoin(link: Link<ToHost, ToGuest>) {
+    link.onMessage(m => {
+      const i = m.t === 'hello' && m.token ? this.tokens.indexOf(m.token) : -1;
+      if (i < 0 || this.links[i] || this.grace[i] == null || !this.match) {
+        link.send({ t: 'closed', reason: tr('Maç başladı.') });
+        setTimeout(() => link.close(), 300);
+        return;
+      }
+      clearTimeout(this.grace[i]!);
+      this.grace[i] = null;
+      this.links[i] = link;
+      link.onMessage(mm => this.message(i, mm));
+      link.onClose(() => this.leave(i, link));
+      link.send({ t: 'sync', match: this.match, you: this.engineSeat[i], moves: this.ctl.movesSoFar() });
+      this.ctl.returnSeat(this.engineSeat[i]);
+    });
+  }
+
   private message(i: number, m: ToHost) {
-    if (m.t === 'hello') this.broadcastLobby();
+    if (m.t === 'hello') { if (m.token) this.tokens[i] = m.token; this.broadcastLobby(); }
+    else if (m.t === 'bye') this.leave(i, this.links[i]!, true);
     else if (m.t === 'ready' && this.view.status === 'lobby') this.setSeat(i, { kind: 'guest', ready: m.ready });
     else if (m.t === 'move' && this.view.status === 'playing') this.ctl.receiveMove(this.engineSeat[i], m.move);
   }
 
-  private leave(i: number, link: Link<ToHost, ToGuest>) {
-    if (this.links[i] !== link) return;
+  private leave(i: number, link: Link<ToHost, ToGuest>, bye = false) {
+    if (!link || this.links[i] !== link) return;
     this.links[i] = null;
-    if (this.view.status === 'playing') this.ctl.dropSeat(this.engineSeat[i]);
-    else this.setSeat(i, EMPTY);
+    if (this.view.status !== 'playing') { this.setSeat(i, EMPTY); return; }
+    if (bye) { this.ctl.dropSeat(this.engineSeat[i]); return; }
+    // Kopma: 15 sn içinde dönmezse yerine yapay zekâ geçer.
+    this.ctl.awaySeat(this.engineSeat[i]);
+    this.grace[i] = window.setTimeout(() => { this.grace[i] = null; this.ctl.dropSeat(this.engineSeat[i]); }, GRACE_MS);
   }
 
   private setSeat(i: number, seat: LobbySeat) {
@@ -147,6 +174,7 @@ export class HostRoom extends Room {
 
   close() {
     this.closed = true;
+    this.grace.forEach(g => g != null && clearTimeout(g));
     this.links.forEach(l => { l?.send({ t: 'closed', reason: tr('Kurucu odayı kapattı.') }); l?.close(); });
     this.links = Array(MAX_SEATS).fill(null);
     this.endpoint?.close();
@@ -161,17 +189,50 @@ export class GuestRoom extends Room {
   readonly role = 'guest';
   private link: Link<ToGuest, ToHost> | null = null;
   private closed = false;
+  private reconnecting = false;
+  private readonly token = Math.random().toString(36).slice(2) + Date.now().toString(36);
 
-  constructor(ctl: GameController, code: string, transport: Transport = peerTransport) {
+  constructor(ctl: GameController, code: string, private transport: Transport = peerTransport) {
     super(ctl);
     this.view = { ...this.view, code };
     transport.join(code).then(link => {
       if (this.closed) return link.close();
-      this.link = link;
-      link.onMessage(m => this.message(m));
-      link.onClose(() => this.lost());
-      link.send({ t: 'hello' });
+      this.wire(link);
     }).catch((e: Error) => this.set({ status: 'error', error: e.message }));
+  }
+
+  private wire(link: Link<ToGuest, ToHost>) {
+    this.link = link;
+    link.onMessage(m => this.message(m));
+    link.onClose(() => this.lost());
+    link.send({ t: 'hello', token: this.token });
+  }
+
+  // Maç sürerken bağlantı koparsa 15 sn boyunca aynı odaya yeniden bağlanmaya çalışır.
+  private reconnect() {
+    if (this.reconnecting) return;
+    this.reconnecting = true;
+    this.ctl.note(tr('Bağlantı koptu · yeniden bağlanılıyor…'));
+    const deadline = Date.now() + GRACE_MS;
+    const attempt = () => {
+      if (this.closed) return;
+      this.transport.join(this.view.code).then(link => {
+        if (this.closed) return link.close();
+        this.reconnecting = false;
+        this.wire(link);
+      }).catch(() => {
+        if (Date.now() < deadline) setTimeout(attempt, 1500);
+        else this.giveUp();
+      });
+    };
+    attempt();
+  }
+
+  private giveUp() {
+    this.reconnecting = false;
+    this.closed = true;
+    this.ctl.netLost();
+    this.set({ status: 'closed', error: tr('Odayla bağlantı koptu.') });
   }
 
   private message(m: ToGuest) {
@@ -194,6 +255,7 @@ export class GuestRoom extends Room {
 
   private lost() {
     if (this.closed) return;
+    if (this.view.status === 'playing') { this.reconnect(); return; }
     this.closed = true;
     this.ctl.netLost();
     this.set({ status: 'closed', error: this.view.error || tr('Odayla bağlantı koptu.') });
@@ -203,6 +265,7 @@ export class GuestRoom extends Room {
 
   close() {
     this.closed = true;
+    this.link?.send({ t: 'bye' });
     this.link?.close();
     this.ctl.dispose();
     this.set({ status: 'closed' });

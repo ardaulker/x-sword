@@ -107,6 +107,7 @@ export class GameController {
   private net: NetRole | null = null;
   private moves: (Move | null)[] = []; // maçın bütün hamleleri, sırayla
   private waitingSeat: number | null = null; // kurucu: hamlesi beklenen uzak oyuncu
+  private away = new Set<number>(); // kurucu: bağlantısı kopmuş, dönmesi beklenen koltuklar
 
   constructor(setup: Setup = DEFAULT_SETUP) {
     this.setup = setup;
@@ -168,6 +169,7 @@ export class GameController {
     this.botTimer = null;
     this.banners = [];
     this.waitingSeat = null;
+    this.away.clear();
   }
 
   // Maç bitti ya da kazanan belli oldu ve sonuç kartı henüz gösterilmedi: oyun akışı durur.
@@ -222,8 +224,37 @@ export class GameController {
   private remoteTurn(a: Piece) {
     this.waitingSeat = a.kind === 'star' ? a.seat : null;
     this.emit({ phase: 'rakip', timer: this.setup.moveSeconds });
+    // Bağlantısı kopan oyuncuyu bekletmeyiz: onun yerine güvenli hamle oynanır, dönerse kaldığı yerden devam eder.
+    if (a.kind === 'star' && this.away.has(a.seat)) { this.later(500, () => this.awayMove()); return; }
     this.startTicker();
   }
+
+  private awayMove() {
+    const a = currentActor(this.state);
+    if (!a || a.kind !== 'star' || this.waitingSeat !== a.seat || !this.away.has(a.seat)) return;
+    this.commitRemote(chooseMove(this.state, a, 'normal'));
+  }
+
+  // Bir misafirin bağlantısı koptu; kısa bir süre geri dönebilir.
+  awaySeat(seat: number) {
+    if (!this.state.seats[seat] || this.state.seats[seat].kind === 'bot') return;
+    this.away.add(seat);
+    this.toast(tr('{name} bağlantısı koptu · dönmesi bekleniyor', { name: seatName(this.state, seat) }), 'info');
+    this.emit();
+    if (this.waitingSeat === seat) { this.stopTicker(); this.later(300, () => this.awayMove()); }
+  }
+
+  returnSeat(seat: number) {
+    if (!this.away.delete(seat)) return;
+    this.toast(tr('{name} geri döndü', { name: seatName(this.state, seat) }), 'info');
+    this.emit();
+  }
+
+  // Dönen misafire gönderilecek maç geçmişi.
+  movesSoFar() { return [...this.moves]; }
+
+  // Bağlantı durumu bildirimi (misafir ekranı).
+  note(text: string) { this.toast(text, 'info'); }
 
   receiveMove(seat: number, move: Move | null) {
     const st = this.state;
@@ -246,6 +277,7 @@ export class GameController {
   // Bağlantısı kopan oyuncunun yerine yapay zekâ geçer.
   dropSeat(seat: number) {
     const s = this.state.seats[seat];
+    this.away.delete(seat);
     if (!s || s.kind === 'bot') return;
     s.kind = 'bot';
     s.level = this.setup.level;

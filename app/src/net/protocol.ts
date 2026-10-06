@@ -19,7 +19,8 @@ export interface MatchStart {
 }
 
 export type ToHost =
-  | { t: 'hello' }
+  | { t: 'hello'; token?: string }
+  | { t: 'bye' }
   | { t: 'ready'; ready: boolean }
   | { t: 'move'; move: Move | null };
 
