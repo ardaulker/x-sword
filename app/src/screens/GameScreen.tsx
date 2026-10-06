@@ -8,7 +8,8 @@ import { BOARD_PAD, Board, boardGap, boardOuter } from '../components/Board';
 import { CompactBar, ModeIndicator, TopBar } from '../components/Header';
 import { PlayerStrip } from '../components/PlayerStrip';
 import { TurnQueue } from '../components/TurnQueue';
-import { InfoSheet, LogSheet, MenuSheet } from '../components/Sheets';
+import { LogSheet, MenuSheet } from '../components/Sheets';
+import { InfoChip } from '../components/InfoChip';
 import { Icon } from '../components/bits';
 import './GameScreen.css';
 
@@ -78,6 +79,7 @@ export function GameScreen({ ctl, onNewGame }: { ctl: GameController; onNewGame:
       <div ref={stageRef} className="stage">
         <div className="board-area" style={{ paddingTop: boardTop }}>
           {stage.w > 0 && <Board ctl={ctl} view={view} cell={cell} />}
+          {view.inspect && <InfoChip ctl={ctl} id={view.inspect} />}
           {view.toast && (
             <div key={view.toast.key} className="toast" role="status">
               <Icon d={view.toast.icon === 'clock' ? ICON.clock : view.toast.icon === 'info' ? ICON.info : view.toast.icon === 'ring' ? ICON.warn : ICON.sword} size={16} stroke={2.2} color="#0B1026" />
@@ -88,7 +90,6 @@ export function GameScreen({ ctl, onNewGame }: { ctl: GameController; onNewGame:
         <ActionPanel ctl={ctl} view={view} />
       </div>
 
-      {sheet?.type === 'bilgi' && <InfoSheet ctl={ctl} id={sheet.id} />}
       {sheet?.type === 'kayit' && <LogSheet ctl={ctl} events={view.events} />}
       {sheet?.type === 'menu' && <MenuSheet ctl={ctl} onStart={onNewGame} />}
 

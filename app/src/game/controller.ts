@@ -36,7 +36,7 @@ export interface Toast { key: number; text: string; icon: 'sword' | 'clock' | 'i
 export interface Banner { key: number; title: string; sub: string; color: string; pieceId: string | null }
 // attackerId null: taş çöken halkada düştü.
 export interface TakeEvent { key: number; round: number; attackerId: string | null; victimId: string }
-export type Sheet = { type: 'bilgi'; id: string } | { type: 'kayit' } | { type: 'menu' } | null;
+export type Sheet = { type: 'kayit' } | { type: 'menu' } | null;
 
 export interface View {
   phase: Phase;
@@ -50,6 +50,7 @@ export interface View {
   banner: Banner | null;
   modeOverlay: boolean;
   sheet: Sheet;
+  inspect: string | null; // dokunulan taş: yolları ve hedefi tahtada görünür, büyük kart açılmaz
   bots: { done: number; total: number; currentId: string | null };
   events: TakeEvent[];
   clockStart: number;
@@ -128,7 +129,7 @@ export class GameController {
     this.fast = false;
     this.view = {
       phase: 'hazir', sel: null, showThreats: false, timer: this.setup.moveSeconds,
-      trails: [], bursts: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null,
+      trails: [], bursts: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null,
       bots: { done: 0, total: 0, currentId: null }, events: [],
       clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, version: 0,
     };
@@ -175,6 +176,7 @@ export class GameController {
   // Bir kare seç. Seçili kareye ikinci kez dokunmak onaylar.
   select(move: Move) {
     if (!this.isMyMove()) return;
+    this.view = { ...this.view, inspect: null };
     const sel = this.view.sel;
     if (this.view.phase === 'onizleme' && sel && sel.r === move.r && sel.c === move.c) return this.confirm();
     buzz(BUZZ.select);
@@ -423,7 +425,12 @@ export class GameController {
 
   // ------------------------------------------------------------ kartlar
 
-  openInfo(id: string) { buzz(BUZZ.select); this.emit({ sheet: { type: 'bilgi', id } }); }
+  // Aynı taşa ikinci dokunuş kapatır.
+  inspectPiece(id: string) {
+    buzz(BUZZ.select);
+    this.emit({ inspect: this.view.inspect === id ? null : id });
+  }
+  closeInspect() { if (this.view.inspect) this.emit({ inspect: null }); }
   openLog() { this.emit({ sheet: { type: 'kayit' } }); }
   openMenu() { this.emit({ sheet: { type: 'menu' } }); }
   closeSheet() { if (this.view.sheet) this.emit({ sheet: null }); }

@@ -212,7 +212,7 @@ export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) 
     who = me; timer = t; title = 'Senin sıran'; sub = 'Yanan karelerden birine dokun';
     const threats = attackersOfMe(st, me).length;
     if (threats) { hint = `Şu an ${threats} taş seni alabilir. Çizgili kareler tehlikeli.`; hintColor = DANGER_TXT; }
-    else hint = 'Bir taşa uzun bas: nasıl yürür, nasıl alır, kimi hedefler.';
+    else hint = 'Bir taşa dokun: yolları ve kimi kovaladığı tahtada görünür.';
     if (collapseDue(st)) {
       sub = 'Dış halka bu turun sonunda çöküyor';
       hint = 'Turuncu çizgili halkada kalan taş elenir. İçeri gir.'; hintColor = HAZARD_TXT; border = HAZARD;
@@ -227,7 +227,7 @@ export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) 
     title = `${actor.kind === 'star' ? seatName(st, actor.seat) : labelOf(st, actor)} oynuyor`;
     const next = pieceById(st, st.order[st.turn + 1]);
     sub = !next ? 'Sonra: yeni tur' : next.kind === 'star' ? `Sonra: ${labelOf(st, next)}` : 'Sonra: botlar';
-    hint = me.alive ? 'Sıran gelince gidebileceğin kareler kendiliğinden yanar.' : 'İzliyorsun. Bir taşa dokun: nasıl yürür, nasıl alır.';
+    hint = me.alive ? 'Sıran gelince gidebileceğin kareler kendiliğinden yanar.' : 'İzliyorsun. Bir taşa dokun: yolları tahtada görünür.';
   } else if (view.phase === 'mod') {
     const first = actor?.kind === 'star' ? actor : null;
     who = first; title = `Mod değişti: ${modeWord(st.mode)}`;

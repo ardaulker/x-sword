@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import {
-  NEUTRALS_BY_STARS, POINTS, SIZE_BY_STARS, nextMode, pieceById, takeDirs, walkDirs,
-} from '../../../engine/rules.js';
+import { NEUTRALS_BY_STARS, POINTS, SIZE_BY_STARS, pieceById } from '../../../engine/rules.js';
 import type { GameState, Level, Piece } from '../../../engine/rules.js';
-import { targetOf } from '../../../engine/bots.js';
 import type { GameController, Setup, TakeEvent } from '../game/controller';
-import { CROSS, DANGER, HAZARD_TXT, ICE, ICON, PLAYER_COLORS, PLUS, TXT, colorOf, diamondOf, seatOf } from '../game/look';
-import { attackersOfMe } from '../game/threats';
-import { BOT_NAMES, ME, labelOf, modeLower, seatName } from '../game/names';
+import { HAZARD_TXT, ICON, TXT, colorOf, diamondOf, seatOf } from '../game/look';
+import { labelOf } from '../game/names';
 import { Icon, RingIcon } from './bits';
 import { PieceGlyph } from './PieceGlyph';
 
@@ -34,93 +30,6 @@ function SheetFrame({ label, onClose, children }: { label: string; onClose: () =
 const Mini = ({ st, p, size, grey }: { st: GameState; p: Piece; size: number; grey?: boolean }) => (
   <PieceGlyph kind={p.kind} seat={seatOf(p)} size={size} diamond={diamondOf(p, st.mode)} grey={grey} />
 );
-
-// ------------------------------------------------------------ taş bilgisi
-
-function Diagram({ st, p, kind }: { st: GameState; p: Piece; kind: 'walk' | 'take' }) {
-  const mode = nextMode(st, p);
-  const dirs = kind === 'walk' ? walkDirs(p, mode) : takeDirs(p, mode);
-  const straight = dirs[0][0] === 0 || dirs[0][1] === 0;
-  const cells = [];
-  for (let r = -1; r <= 1; r++) {
-    for (let c = -1; c <= 1; c++) {
-      const on = dirs.some(([dr, dc]) => dr === r && dc === c);
-      const mid = r === 0 && c === 0;
-      const bg = mid ? '#232D5E' : on ? (kind === 'walk' ? 'rgba(233,240,255,.22)' : 'rgba(255,59,92,.24)') : '#1A2452';
-      cells.push(
-        <div key={`${r},${c}`} className="dia-cell" style={{ background: bg }}>
-          {mid && <Mini st={st} p={p} size={38} />}
-          {on && kind === 'walk' && <svg viewBox="0 0 100 100"><path d="M50 37 A13 13 0 1 1 49.99 37 Z" fill={ICE} /></svg>}
-          {on && kind === 'take' && <svg viewBox="0 0 100 100"><path d={straight ? PLUS : CROSS} fill="none" stroke={DANGER} strokeWidth="11" strokeLinecap="round" /></svg>}
-        </div>,
-      );
-    }
-  }
-  return (
-    <div className="dia">
-      <div className="dia-title">{kind === 'walk' ? 'YÜRÜR' : 'ALIR'}</div>
-      <div className="dia-grid">{cells}</div>
-      <div className="dia-text">{straight ? 'Düz' : 'Çapraz'} · {kind === 'walk' ? 'tek kare' : straight ? '+' : '×'}</div>
-    </div>
-  );
-}
-
-export function InfoSheet({ ctl, id }: { ctl: GameController; id: string }) {
-  const st = ctl.state;
-  const p = pieceById(st, id);
-  const me = ctl.myStar();
-  if (!p) return null;
-  const close = () => ctl.closeSheet();
-  let title: string, sub: string, order: string;
-  if (p.kind === 'star') {
-    const mode = nextMode(st, p);
-    title = `${p.seat === ME ? 'Sen' : seatName(st, p.seat)} · yıldız`;
-    sub = `${mode === st.mode ? 'Bu tur' : 'Sonraki tur'} ${modeLower(mode)} gider ve alır`;
-  } else if (p.kind === 'twin') {
-    title = 'İkiz · aynan';
-    sub = 'Senden hemen sonra, senin yönünde oynar';
-  } else {
-    title = `${BOT_NAMES[p.kind]} bot · #${p.label}`;
-    sub = p.kind === 'red' ? 'Kare: düz yürür · ×: çapraz alır' : 'Elmas: çapraz yürür · +: düz alır';
-  }
-  // Sıra maç başında bir kez karılır; botun numarası da bu sıradaki yeridir.
-  order = `Sıra ${st.matchOrder.indexOf(p.id) + 1} / ${st.matchOrder.length}`;
-  const target = p.alive ? targetOf(st, p) : null;
-  const threatensMe = me.alive && p.id !== me.id && attackersOfMe(st, me).some(q => q.id === p.id);
-  return (
-    <SheetFrame label={title} onClose={close}>
-      <div className="info-head">
-        <Mini st={st} p={p} size={52} grey={!p.alive} />
-        <div className="info-titles">
-          <div className="info-title">{title}</div>
-          <div className="info-sub">{sub}</div>
-        </div>
-        <div className="info-order">{order}</div>
-      </div>
-      <div className="info-diagrams">
-        <Diagram st={st} p={p} kind="walk" />
-        <Diagram st={st} p={p} kind="take" />
-      </div>
-      {target && (
-        <div className="info-target">
-          <span className="info-target-label">HEDEFİ</span>
-          <Mini st={st} p={target} size={26} />
-          <span style={{ color: PLAYER_COLORS[target.seat], fontWeight: 700 }}>
-            {target.seat === ME ? `Sen (${seatName(st, ME)})` : seatName(st, target.seat)}
-          </span>
-          <span className="info-target-dist">{Math.max(Math.abs(target.r - p.r), Math.abs(target.c - p.c))} kare uzakta</span>
-        </div>
-      )}
-      {threatensMe && (
-        <div className="info-warn">
-          <Icon d={ICON.warn} size={18} stroke={2.2} />
-          <span>Bu tur seni alabilir</span>
-        </div>
-      )}
-      <button type="button" className="btn btn-ghost btn-block" onClick={close}>Kapat</button>
-    </SheetFrame>
-  );
-}
 
 // ------------------------------------------------------------ savaş kaydı
 

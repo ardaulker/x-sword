@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import {
-  collapseDue, legalMoves, nextCollapseRound, pieceAt, ringOf, threatsFor,
+  collapseDue, legalMoves, nextCollapseRound, nextMode, pieceAt, pieceById, ringOf, threatsFor,
 } from '../../../engine/rules.js';
 import type { Move, Piece } from '../../../engine/rules.js';
 import { targetOf } from '../../../engine/bots.js';
@@ -103,12 +103,22 @@ export function Board({ ctl, view, cell }: Props) {
   }
   for (const t of view.trails) seg(`tr${t.key}`, t.from, t.to, 'trail', t.color);
 
+  // Dokunulan taş: yolları ve alabilecekleri tahtada, botun hedefi çizgiyle. Zor modda hedef gizli.
+  const showTargets = ctl.setup.level !== 'zor';
+  const inspected = view.inspect ? pieceById(st, view.inspect) : null;
+  const inspectMoves = new Map<string, Move>();
+  if (inspected?.alive && inspected.id !== me.id) {
+    for (const m of legalMoves(st, inspected, nextMode(st, inspected))) inspectMoves.set(`${m.r},${m.c}`, m);
+    const t = showTargets && isBot(inspected) ? targetOf(st, inspected) : null;
+    if (t) seg('target', inspected, t, 'dash', PLAYER_COLORS[t.seat]);
+  }
+
   // ---------------------------------------------------------- taşlar
   const myThreats = myTurn ? attackersOfMe(st, me).length : 0;
   // Her taşın üstünde sıra numarası: şu an oynayan parlak, sıradaki 3 taş yarı parlak.
   const queue = upcoming(st, view, 4);
   const pipState = new Map(queue.map((q, i) => [q.id, i === 0 ? 'now' : 'next']));
-  const pinned = view.sheet?.type === 'bilgi' ? view.sheet.id : null;
+  const pinned = view.inspect;
 
   const haloOf = (p: Piece) => {
     if (!p.alive) return null;
@@ -151,10 +161,10 @@ export function Board({ ctl, view, cell }: Props) {
   const tap = (pt: { x: number; y: number }) => {
     if (view.sheet) ctl.closeSheet();
     if (view.phase === 'bot') return ctl.speedUp();
-    if (me.alive && distTo(pt, me) < cell * 0.5) return myTurn ? ctl.toggleThreats() : ctl.openInfo(me.id);
+    if (me.alive && distTo(pt, me) < cell * 0.5) return myTurn ? ctl.toggleThreats() : ctl.inspectPiece(me.id);
     const hit = st.pieces.find(p => p.alive && p.id !== me.id && distTo(pt, p) < cell * 0.45);
-    if (hit && !moves.some(m => m.targetId === hit.id)) return ctl.openInfo(hit.id);
-    if (!myTurn) return;
+    if (hit && !moves.some(m => m.targetId === hit.id)) return ctl.inspectPiece(hit.id);
+    if (!myTurn) return ctl.closeInspect();
     // Geniş dokunma: merkezi 1,6 adım içinde kalan en yakın gidilebilir kare.
     let best: Move | null = null, bd = Infinity;
     for (const m of moves) {
@@ -172,7 +182,7 @@ export function Board({ ctl, view, cell }: Props) {
       ...pt, fired: false, moved: false,
       timer: window.setTimeout(() => {
         const hit = pieceNear(pt);
-        if (hit && press.current === p) { p.fired = true; ctl.openInfo(hit.id); }
+        if (hit && press.current === p) { p.fired = true; ctl.inspectPiece(hit.id); }
       }, 450),
     };
     press.current = p;
@@ -221,11 +231,19 @@ export function Board({ ctl, view, cell }: Props) {
       const soonRing = soon && ring === st.ring;
       const falling = gone && view.fall?.ring === ring;
       const rc = reach.get(`${r},${c}`);
+      const im = rc ? undefined : inspectMoves.get(`${r},${c}`);
       let background = (r + c) % 2 ? 'var(--kare-2)' : 'var(--kare)';
       let frame: { stroke: string; width: number; dash?: string } | null = null;
       let mark: { d: string; fill: string; stroke: string; width: number } | null = null;
       if (gone) { background = 'var(--bosluk)'; frame = { stroke: '#2B3670', width: 4, dash: '6 7' }; }
       else if (doomedRing) background = 'var(--pat-hazard)';
+      if (im) {
+        // Başka bir taşın yolu: buz renginde kesik çerçeve; alabileceği taş nişanla, o taş sensen kırmızı.
+        frame = { stroke: 'rgba(233,240,255,.6)', width: 5, dash: '5 6' };
+        mark = im.type === 'take'
+          ? { d: MARK_AIM, fill: 'none', stroke: im.targetId === me.id ? DANGER : '#E9F0FF', width: 8 }
+          : { d: 'M50 40 A10 10 0 1 1 49.99 40 Z', fill: 'rgba(233,240,255,.75)', stroke: 'none', width: 0 };
+      }
       if (rc) {
         const danger = rc.doomed || rc.attackers > 0;
         background = danger ? 'var(--pat-danger)' : `linear-gradient(${reach18}, ${reach18}), var(--kare)`;
@@ -312,7 +330,7 @@ export function Board({ ctl, view, cell }: Props) {
 
         {st.pieces.map(p => {
           const halo = haloOf(p);
-          const target = isBot(p) && p.alive ? targetOf(st, p) : null;
+          const target = showTargets && isBot(p) && p.alive ? targetOf(st, p) : null;
           const pip = p.alive && !st.over ? pipState.get(p.id) ?? 'idle' : null;
           const badge = p.id === me.id && myThreats ? myThreats : 0;
           return (
