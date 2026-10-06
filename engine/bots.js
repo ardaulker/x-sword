@@ -163,7 +163,7 @@ function hunterPlan(state, piece, level) {
   return s;
 }
 
-// İkiz (bot yıldız): önce hayatta kal — gelecek turda güvenli seçeneği bol, ortaya yakın kareler.
+// Yapay zekâ oyuncu (bot yıldız): önce hayatta kal — gelecek turda güvenli seçeneği bol, ortaya yakın kareler.
 function starPlan(state, piece, level) {
   const grid = occupancy(state);
   const next = flip(state.mode);

@@ -270,7 +270,7 @@ for (const level of ['kolay', 'normal', 'zor']) {
   console.log(`   arena botları ${level.padEnd(6)}: maç ortalama ${(rounds / 300).toFixed(1)} tur, yıldızı botlar aldı %${(100 * byBots / 300).toFixed(0)}, botlar birbirini maç başı ${(botTakes / 300).toFixed(1)} kez aldı`);
 }
 
-console.log('\nİkiz güç ölçümü — 4 bot yıldız, 13×13, Normal arena, 120 maç:');
+console.log('\nYapay zekâ oyuncu güç ölçümü — 4 bot yıldız, 13×13, Normal arena, 120 maç:');
 const wins = [0, 0, 0, 0];
 const levels = ['kolay', 'normal', 'zor', 'zor'];
 for (let seed = 1; seed <= 120; seed++) {
@@ -286,7 +286,7 @@ test('normal ve zor arena botları dikkatli oyuncuyu kolaydan çabuk yakalar', (
   assert.ok(strength.zor <= strength.normal, `zor ${strength.zor} tur > normal ${strength.normal} tur`);
 });
 
-test('İkiz: normal ve zor, kolaydan çok daha sık kazanır', () => {
+test('yapay zekâ oyuncu: normal ve zor, kolaydan çok daha sık kazanır', () => {
   assert.ok(wins[1] > 3 * wins[0] && (wins[2] + wins[3]) / 2 > 3 * wins[0]);
 });
 

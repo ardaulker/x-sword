@@ -187,7 +187,7 @@
     <h2>Kurallar</h2>
     <ul>
       <li><b>Amaç:</b> Arenada son kalan yıldız ol.</li>
-      <li><b>Yıldızlar:</b> 2–4 oyuncu, herkesin bir yıldızı var. Boş koltuğa bot yıldız ("İkiz") oturur; kenarı kesik çizgilidir.</li>
+      <li><b>Yıldızlar:</b> 2–4 oyuncu, herkesin bir yıldızı var. Boş koltuğa yapay zekâ oyuncu oturur; kenarı kesik çizgilidir.</li>
       <li><b>Tahta:</b> 2 kişide 9×9, 3 kişide 11×11, 4 kişide 13×13.</li>
       <li><b>Mod:</b> Her tur ya DÜZ ya ÇAPRAZ, her tur değişir. Yıldızlar o yönde gider ve o yönde alır.</li>
       <li><b>Kırmızı bot:</b> düz yürür, çapraz alır. <b>Mavi bot:</b> çapraz yürür, düz alır.</li>
@@ -241,7 +241,7 @@ function renderSetup() {
     const row = document.createElement('div');
     row.className = 'seat-row';
     row.innerHTML = `<span class="dot s${i}"></span><b>${SEAT_NAMES[i]}</b>
-      <div class="seg"><button data-k="human" class="${s.kind === 'human' ? 'on' : ''}">İnsan</button><button data-k="bot" class="${s.kind === 'bot' ? 'on' : ''}">İkiz (bot)</button></div>
+      <div class="seg"><button data-k="human" class="${s.kind === 'human' ? 'on' : ''}">İnsan</button><button data-k="bot" class="${s.kind === 'bot' ? 'on' : ''}">Yapay zekâ</button></div>
       <select ${s.kind === 'bot' ? '' : 'hidden'}>${LEVELS.map(([v, t]) => `<option value="${v}" ${s.level === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
     row.querySelectorAll('.seg button').forEach(b => { b.onclick = () => { s.kind = b.dataset.k; saveSetup(); renderSetup(); }; });
     row.querySelector('select').onchange = e => { s.level = e.target.value; saveSetup(); };
@@ -406,7 +406,7 @@ function renderBanner(human, warn) {
   let text;
   if (state.over) text = 'Oyun bitti.';
   else if (human) text = `Sıra sende — ${state.seats[human.seat].name}. Yeşil ya da kırmızı bir kareye dokun, sonra onayla.`;
-  else if (a.kind === 'star') text = `${state.seats[a.seat].name} (İkiz) düşünüyor…`;
+  else if (a.kind === 'star') text = `${state.seats[a.seat].name} (yapay zekâ) düşünüyor…`;
   else text = 'Arena botları oynuyor…';
   const next = nextCollapseRound(state);
   if (!state.over && warn) text += ' ⚠️ Bu tur sonunda çizgili halka çöküyor!';
@@ -421,7 +421,7 @@ function renderSeats() {
   const a = state.over ? null : currentActor(state);
   $('seats').innerHTML = state.seats.map(s => `
     <div class="seat ${s.out ? 'out' : ''} ${a?.kind === 'star' && a.seat === s.index ? 'now' : ''}">
-      <span class="dot s${s.index}"></span>${s.name}${s.kind === 'bot' ? ` · İkiz ${LEVEL_NAME[s.level]}` : ''} · ${s.takes} alma
+      <span class="dot s${s.index}"></span>${s.name}${s.kind === 'bot' ? ` · YZ ${LEVEL_NAME[s.level]}` : ''} · ${s.takes} alma
     </div>`).join('');
 }
 
@@ -455,7 +455,7 @@ function finish() {
   $('overTitle').textContent = state.winner == null ? 'Berabere!' : `🏆 ${state.seats[state.winner].name} kazandı!`;
   $('overList').innerHTML = ranking(state).map(i => {
     const s = state.seats[i];
-    return `<li><span class="dot s${i}"></span>${s.name}${s.kind === 'bot' ? ' (İkiz)' : ''} — ${s.takes} alma</li>`;
+    return `<li><span class="dot s${i}"></span>${s.name}${s.kind === 'bot' ? ' (yapay zekâ)' : ''} — ${s.takes} alma</li>`;
   }).join('');
   $('overMeta').textContent = `${state.round}. turda bitti · maç süresi ${fmt(Date.now() - clock.start)}`;
   $('overOverlay').hidden = false;

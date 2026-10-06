@@ -48,7 +48,7 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 
 ## Oyuncu sayısı ve tahta
 - Tek oyunculu modda tahtada bir de **İkiz** olur: oyuncunun aynası. Oyuncudan hemen sonra, onun yaptığı yönün aynısını oynar; o kare boşsa yürür, doluysa oradaki taşı alır, kapalıysa yerinde kalır. Oyuncuyu hiç alamaz. Oyuncu, İkiz ve bütün botlar gidince kazanır.
-- Bir maçta 2–4 yıldız olur. Boş koltuğa bot yıldız ("İkiz") oturabilir. İkiz de bir oyuncu gibi sırasını oynar.
+- Bir maçta 2–4 yıldız olur. Boş koltuğa yapay zekâ oyuncu oturabilir. Onun adı da "Oyuncu N"dir ve bir oyuncu gibi sırasını oynar.
 - 2 yıldızda tahta 9×9 olur ve yaklaşık 14 bot vardır.
 - 3 yıldızda tahta 11×11 olur ve yaklaşık 21 bot vardır.
 - 4 yıldızda tahta 13×13 olur ve yaklaşık 28 bot vardır.
@@ -71,7 +71,7 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 - Hesap açmak yok. Oyuncu takma ad ve renk seçer.
 - Akış şöyle: Oda kur → linki, kodu ya da QR'ı paylaş (öncelik WhatsApp) → lobi → başlat.
 - Tek başına oynamak isteyen botlara karşı hızlı oyun açar.
-- Bağlantısı kopan oyuncu için 30 saniye beklenir. Sonra onun yerine İkiz geçer. Oyuncu geri dönerse yerini geri alır.
+- Bağlantısı kopan oyuncu için 30 saniye beklenir. Sonra onun yerine yapay zekâ geçer. Oyuncu geri dönerse yerini geri alır.
 - Yabancılarla eşleşme bu sürümde yok.
 
 # Telefon kuralları
@@ -85,7 +85,7 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 # Ekranlar
 1. Açılış ve ana menü: Hızlı oyun, Oda kur, Odaya katıl, Nasıl oynanır, Ayarlar.
 2. Oda kur / katıl: kod girme alanı ve linkle gelen davet.
-3. Lobi: 4 koltuk. Her koltukta ad, renk ve "hazır" durumu görünür. Boş koltuk için üç seçenek var: davet et, İkiz ekle, kapat. Lobide ayrıca şunlar bulunur: bot zorluğu, hamle süresi, tahta boyu önizlemesi, Paylaş ve Başlat. Başlat butonunu sadece odayı kuran görür.
+3. Lobi: 4 koltuk. Her koltukta ad, renk ve "hazır" durumu görünür. Boş koltuk için üç seçenek var: davet et, yapay zekâ ekle, kapat. Lobide ayrıca şunlar bulunur: bot zorluğu, hamle süresi, tahta boyu önizlemesi, Paylaş ve Başlat. Başlat butonunu sadece odayı kuran görür.
 4. **OYUN EKRANI.** Emeğin çoğunu bu ekrana ver.
    Üst çubukta şunlar bulunur:
    - **Maç saati.** Başlat'a basıldığı an 00:00'dan saymaya başlar. Oyun bitince durur. Hamle süresiyle karışmamalı.

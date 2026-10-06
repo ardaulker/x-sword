@@ -9,9 +9,10 @@
 - **İkiz** yalnız tek oyunculu moddadır ve oyuncunun aynasıdır: oyuncudan hemen sonra, onun yaptığı yönün aynısını oynar. O kare boşsa yürür, doluysa oradaki taşı alır, kapalıysa yerinde kalır. Bu yüzden oyuncuyu hiç alamaz. Tek oyunculu modda İkiz ve bütün botlar gidince kazanırsın. Arda 6 Ekim 2026'da böyle seçti. Kuzenin ilk dosyasında İkiz başkaydı: oyuncunun kurallarıyla oynuyordu ama hamlesini kendi seçen bir avcıydı.
 - Oyun metinlerinde "yemek" geçmez. Taş satrançtaki gibi alınır: "5 numarayı aldın!", "3 numara seni aldı!".
 - Tasarım kaynağı `design/`: önce `design/CLAUDE_CODE_HANDOFF.md`, sonra `design/tokens/tokens.css` ve `design/reference/*.dc.html` (okunacak referans, çalışan uygulama değil; nasıl okunacağı `design/reference/DC_FORMAT.md`'de).
-- Tasarım ilk brief'le yapıldı; şu üç karar onda yok, kodda tasarımın önüne geçer:
+- Tasarım ilk brief'le yapıldı; şu kararlar onda yok, kodda tasarımın önüne geçer:
   - Oyunun adı **X Sword** ("Taktiksel Satranç Arenası" ve ad önerileri geçersiz).
   - Tasarımdaki "vurmak / vuruş / vurdu" metinleri **"almak / alma / aldı"** olur.
+  - Tasarımdaki "İkiz" (boş koltuktaki bot oyuncu) artık **yapay zekâ oyuncu**dur ve insan gibi **"Oyuncu N"** diye anılır. "İkiz" adı yalnız tek oyunculu moddaki aynaya aittir.
   - Üst çubukta **maç saati** vardır: maç başlar başlamaz 00:00'dan sayar, bitince durur; oyun sonunda maç süresi yazar.
 - Renkler tasarıma göre (Arda 6 Ekim 2026'da seçti): gidilebilir kareler oyuncunun **kendi renginde**, gidilebilir ama tehlikeli kare kırmızı çizgili, kırmızı (`--danger`) yalnız tehlike ve tehdit, turuncu (`--hazard`) yalnız çökecek halka. Önceki "yeşil = senin yolun, turuncu = botun yolu" kuralı geçersiz.
 - Kural ya da bot zekâsı değişince oyundaki Kurallar penceresini aynı değişiklikte güncelle. `docs/tasarim-prompt.md` içindeki oyun bölümünü de güncelle. Oyuncu rehberi kodla birlikte değişir.

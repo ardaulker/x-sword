@@ -14,7 +14,7 @@ export type Phase =
   | 'hazir'     // maç başlıyor
   | 'sen'       // sıra sende
   | 'onizleme'  // bir kare seçtin, onay bekleniyor
-  | 'rakip'     // başka bir yıldız (İkiz) oynuyor
+  | 'rakip'     // başka bir yıldız (yapay zekâ oyuncu) oynuyor
   | 'bot'       // arena botları oynuyor
   | 'bekle'     // bir hamle oynandı, sıradaki adım geliyor
   | 'mod'       // mod değişiyor
@@ -201,7 +201,7 @@ export class GameController {
     if (o) this.continueAfter(o, 500);
   }
 
-  // ------------------------------------------------------------ İkiz ve botlar
+  // ------------------------------------------------------------ yapay zekâ oyuncular, İkiz ve botlar
 
   private starBotTurn(a: Piece) {
     this.emit({ phase: 'rakip', timer: this.setup.moveSeconds });

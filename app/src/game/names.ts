@@ -6,16 +6,10 @@ export const ME = 0; // Bu cihazdaki oyuncunun koltuğu.
 
 const SEAT_ACC = ["'i", "'yi", "'ü", "'ü"]; // 1'i, 2'yi, 3'ü, 4'ü
 
-export function seatName(state: GameState, seat: number) {
-  if (state.seats[seat].kind === 'human') return `Oyuncu ${seat + 1}`;
-  const twins = state.seats.filter(s => s.kind === 'bot').length;
-  return twins > 1 ? `İkiz ${seat + 1}` : 'İkiz';
-}
+// İnsan da yapay zekâ da "Oyuncu N" diye anılır. "İkiz" yalnız tek oyunculu moddaki aynanın adıdır.
+export const seatName = (_state: GameState, seat: number) => `Oyuncu ${seat + 1}`;
 
-const seatAcc = (state: GameState, seat: number) => {
-  const name = seatName(state, seat);
-  return name === 'İkiz' ? "İkiz'i" : name + SEAT_ACC[seat];
-};
+const seatAcc = (state: GameState, seat: number) => seatName(state, seat) + SEAT_ACC[seat];
 
 export const BOT_NAMES = { red: 'Kızıl', blue: 'Çelik' } as const;
 
