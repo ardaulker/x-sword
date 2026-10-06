@@ -132,4 +132,5 @@
 @keyframes banner-in { from { opacity: 0; transform: translate(-50%, -40%); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .cell-flow, .cell-fall, .mode-ov-band, 
+  .cell-flow, .cell-fall, .mode-ov-band, .mode-ov-pill, .mode-flip { animation: none; }
+} 
