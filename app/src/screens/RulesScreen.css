@@ -71,3 +71,6 @@
 .switch span { position: absolute; left: 3px; top: 3px; width: 24px; height: 24px; border-radius: 12px; background: var(--metin-2); transition: transform 160ms var(--ease-kay), background 160ms; }
 .switch.is-on { background: var(--oyuncu-1); }
 .switch.is-on span { transform: translateX(20px); background: var(--murekkep); }
+.set-note { margin: 0; font-size: 13px; color: var(--metin-3); }
+.set-col .set-row { padding: 0; border: 0; background: none; margin: 0; }
+.set-swatches { display: flex; gap: 14px; justify-content: center; padding-top: 6px; }

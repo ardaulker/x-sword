@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { Icon } from '../components/bits';
 import { feel } from '../game/haptics';
-import { saveSettings, settings } from '../game/settings';
+import { paletteOf, saveSettings, settings } from '../game/settings';
+import { PieceGlyph } from '../components/PieceGlyph';
 import type { Settings } from '../game/settings';
 import './RulesScreen.css';
 
-const SPEEDS: [Settings['speed'], string][] = [['yavas', 'Yavaş'], ['normal', 'Normal'], ['hizli', 'Hızlı']];
+const SPEEDS: [Settings['speed'], string, string][] = [
+  ['yavas', 'Yavaş', 'Kayma 320 ms · bot turu ~2 sn'],
+  ['normal', 'Normal', 'Kayma 220 ms · bot turu ~1,2 sn'],
+  ['hizli', 'Hızlı', 'Kayma 140 ms · bot turu ~0,8 sn'],
+];
 
 function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -38,6 +43,20 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
                 <b>{t}</b>
               </button>
             ))}
+          </div>
+          <p className="set-note">{SPEEDS.find(x => x[0] === s.speed)?.[2]}</p>
+        </div>
+        <Toggle label="Tehlike göstergesi" sub="Seni alabilecek taşların karelerini kırmızı çizgiyle gösterir." on={s.danger}
+          onChange={v => update({ danger: v })} />
+        <Toggle label="Bot hedef işareti" sub="Botun kenarındaki üçgen, kovaladığı oyuncunun renginde. Zor modda hep gizli." on={s.targets}
+          onChange={v => update({ targets: v })} />
+        <Toggle label="Bot sıra numaraları" sub="Kapalıyken numara yalnız oynayan ve sıradaki 3 taşta görünür." on={s.numbers}
+          onChange={v => update({ numbers: v })} />
+        <div className="rule set-col">
+          <Toggle label="Renk körü modu" sub="Oyuncu renkleri birbirinden daha kolay ayrılır. Amblemler zaten farklı." on={s.colorBlind}
+            onChange={v => update({ colorBlind: v })} />
+          <div className="set-swatches" aria-hidden="true">
+            {paletteOf(s.colorBlind).map((_, i) => <PieceGlyph key={`${i}${s.colorBlind}`} kind="star" seat={i} size={36} diamond={false} />)}
           </div>
         </div>
       </div>

@@ -13,6 +13,7 @@ import {
 import { attackersOfMe } from '../game/threats';
 import { labelOf, modeWord } from '../game/names';
 import { orderNo, upcoming } from '../game/order';
+import { settings } from '../game/settings';
 import { PieceGlyph } from './PieceGlyph';
 import { CenterBanner } from './CenterBanner';
 import { ModeOverlay } from './ModeOverlay';
@@ -104,7 +105,7 @@ export function Board({ ctl, view, cell }: Props) {
   for (const t of view.trails) seg(`tr${t.key}`, t.from, t.to, 'trail', t.color);
 
   // Dokunulan taş: yolları ve alabilecekleri tahtada, botun hedefi çizgiyle. Zor modda hedef gizli.
-  const showTargets = ctl.setup.level !== 'zor';
+  const showTargets = ctl.setup.level !== 'zor' && settings.targets;
   const inspected = view.inspect ? pieceById(st, view.inspect) : null;
   const inspectMoves = new Map<string, Move>();
   if (inspected?.alive && inspected.id !== me.id) {
@@ -245,7 +246,7 @@ export function Board({ ctl, view, cell }: Props) {
           : { d: 'M50 40 A10 10 0 1 1 49.99 40 Z', fill: 'rgba(233,240,255,.75)', stroke: 'none', width: 0 };
       }
       if (rc) {
-        const danger = rc.doomed || rc.attackers > 0;
+        const danger = settings.danger && (rc.doomed || rc.attackers > 0);
         background = danger ? 'var(--pat-danger)' : `linear-gradient(${reach18}, ${reach18}), var(--kare)`;
         frame = { stroke: myColor, width: 7 };
         mark = rc.move.type === 'swap'
@@ -333,7 +334,7 @@ export function Board({ ctl, view, cell }: Props) {
         {st.pieces.map(p => {
           const halo = haloOf(p);
           const target = showTargets && isBot(p) && p.alive ? targetOf(st, p) : null;
-          const pip = p.alive && !st.over ? pipState.get(p.id) ?? 'idle' : null;
+          const pip = p.alive && !st.over ? pipState.get(p.id) ?? (settings.numbers ? 'idle' : null) : null;
           const badge = p.id === me.id && myThreats ? myThreats : 0;
           return (
             <PieceGlyph

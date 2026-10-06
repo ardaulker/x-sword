@@ -7,6 +7,7 @@ import {
 import type { BonusKind, GameState, Level, Move, Piece } from '../../../engine/rules.js';
 import { chooseMove } from '../../../engine/bots.js';
 import { BUZZ, feel, sound } from './haptics';
+import { SPEED, settings } from './settings';
 import { HAZARD, PLAYER_COLORS, colorOf, isBot } from './look';
 import { ME, labelOf, objectOf, seatName, setMe, subjectOf } from './names';
 import type { MatchStart } from '../net/protocol';
@@ -408,7 +409,7 @@ export class GameController {
 
     const next = currentActor(st);
     if (o && !o.roundEnded && !st.over && next && isBot(next)) {
-      const stagger = Math.max(60, Math.min(110, Math.floor(1200 / Math.max(1, this.view.bots.total))));
+      const stagger = Math.max(60, Math.min(110, Math.floor(1200 / Math.max(1, this.view.bots.total)))) * SPEED[settings.speed];
       this.botTimer = this.later(this.fast ? 0 : stagger, () => this.botStep());
       return;
     }
