@@ -94,9 +94,10 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         <Card title={tr('Kolay · Normal · Zor')} visual={<PieceGlyph kind="blue" size={44} diamond svgExtra={<path d="M114 50 L94 37 L94 63 Z" fill="#3BFF8F" stroke="#0B1026" strokeWidth="4" />} />}>
           <p>{rich('**Kolay:** ilk sen oynarsın. **Normal:** sıradaki yerin rastgele. **Zor:** yerin rastgele ve botların hedef üçgeni gizli; kimi kovaladığını tahmin etmen gerekir.')}</p>
           <p>{tr('Botun kenarındaki üçgen, kovaladığı oyuncunun yönünde ve renginde durur.')}</p>
+          <p>{tr('Yeni maç ekranında tahtayı (en az 9, 11, 13; en çok 15) ve bot sayısını seçersin. Rakip yapay zekâların ve arena botlarının zekâsı ayrı ayarlanır: Zor rakip avcı gibi oynar, Normal ara sıra hata yapar.')}</p>
         </Card>
         <Card title={tr('Tek oyunculu: İkiz')} visual={<div className="rule-pair"><PieceGlyph {...star} size={34} diamond={false} /><PieceGlyph kind="twin" seat={0} size={34} diamond={false} /></div>}>
-          <p>{tr("İkiz senin aynandır: senden hemen sonra, senin yaptığın yönün aynısını oynar. O kare doluysa oradaki taşı alır, yol kapalıysa yerinde kalır. Seni hiç alamaz. Bütün botlar gidince kazanırsın; İkiz'i almana gerek yok. İkiz bir taş alırsa sana çift puan ve bir Ayna bonusu verir. Tek oyunculuda tahtayı (9–15) ve bot sayısını yeni maç ekranından seçersin.")}</p>
+          <p>{tr("İkiz senin aynandır: senden hemen sonra, senin yaptığın yönün aynısını oynar. O kare doluysa oradaki taşı alır, yol kapalıysa yerinde kalır. Seni hiç alamaz. Bütün botlar gidince kazanırsın; İkiz'i almana gerek yok. İkiz bir taş alırsa sana çift puan ve bir Ayna bonusu verir.")}</p>
         </Card>
 
         <h2>{tr('Bonuslar')}</h2>

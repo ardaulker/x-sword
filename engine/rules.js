@@ -4,9 +4,13 @@
 // 1 yıldız: tek oyunculu mod (sen + aynan İkiz + arena botları).
 export const SIZE_BY_STARS = { 1: 9, 2: 9, 3: 11, 4: 13 };
 export const NEUTRALS_BY_STARS = { 1: 14, 2: 14, 3: 21, 4: 28 };
-// Tek oyunculu modda tahta ve bot sayısı seçilir. Tahtanın üçte biri botla dolarsa daha fazlası oynanmaz.
-export const SOLO_SIZES = [9, 11, 13, 15];
+// Tahta ve bot sayısı seçilebilir; tahta en az oyuncu sayısının varsayılanı kadar olur (9, 11, 13), en çok 15.
+// Tahtanın üçte biri botla dolarsa daha fazlası oynanmaz.
+export const BOARD_SIZES = [9, 11, 13, 15];
 export const maxNeutrals = size => Math.floor(size * size / 3);
+// Seçilen tahtada, varsayılan kalabalıkla aynı yoğunlukta bot sayısı.
+export const defaultNeutrals = (stars, size) =>
+  Math.min(maxNeutrals(size), Math.round(NEUTRALS_BY_STARS[stars] * size * size / SIZE_BY_STARS[stars] ** 2));
 export const SEAT_NAMES = ['Turkuaz', 'Mor', 'Sarı', 'Pembe'];
 
 // Puan: bir yıldız (oyuncu) almak 50, İkiz'i almak 30, bir botu almak 10. Yalnız yıldızlar puan toplar.
@@ -106,7 +110,7 @@ export function createGame({
 } = {}) {
   const n = seats?.length;
   if (!(n >= 1 && n <= 4)) throw new Error('Bir maçta 1–4 yıldız olur.');
-  const size = n === 1 && SOLO_SIZES.includes(sizeOpt) ? sizeOpt : SIZE_BY_STARS[n];
+  const size = BOARD_SIZES.includes(sizeOpt) && sizeOpt >= SIZE_BY_STARS[n] ? sizeOpt : SIZE_BY_STARS[n];
   const state = {
     size, round: 1, mode: 'DUZ', ring: 0, shrinkStart, shrinkEvery, neutralLevel,
     rng: ((seed ?? Math.floor(Math.random() * 2 ** 31)) >>> 0) || 1,
@@ -136,7 +140,7 @@ export function createGame({
     const [r, c] = free.pop();
     state.pieces.push({ id: 'tw', kind: 'twin', mirrors: 's0', label: 'İkiz', r, c, alive: true });
   }
-  const count = Math.min(neutrals ?? NEUTRALS_BY_STARS[n], free.length, maxNeutrals(size));
+  const count = Math.min(neutrals ?? defaultNeutrals(n, size), free.length, maxNeutrals(size));
   const reds = Math.ceil(count / 2);
   for (let i = 0; i < count; i++) {
     const [r, c] = free[i];

@@ -75,6 +75,8 @@ export function SettingsScreen({ onBack, onRules }: { onBack: () => void; onRule
         </div>
         <Toggle label={tr('Tehlike göstergesi')} sub={tr('Seni alabilecek taşların karelerini kırmızı çizgiyle gösterir.')} on={s.danger}
           onChange={v => update({ danger: v })} />
+        <Toggle label={tr('Tehlike haritası')} sub={tr('Gelecek turda bir taşın seni alabileceği bütün kareleri soluk kırmızıyla gösterir.')} on={s.dangerMap}
+          onChange={v => update({ dangerMap: v })} />
         <Toggle label={tr('Bot hedef işareti')} sub={tr('Botun kenarındaki üçgen, kovaladığı oyuncunun renginde. Zor modda hep gizli.')} on={s.targets}
           onChange={v => update({ targets: v })} />
         <Toggle label={tr('Bot sıra numaraları')} sub={tr('Kapalıyken numara yalnız oynayan ve sıradaki 3 taşta görünür.')} on={s.numbers}

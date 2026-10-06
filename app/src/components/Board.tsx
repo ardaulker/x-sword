@@ -10,7 +10,7 @@ import {
   DANGER, HAZARD, MARK_AIM, MARK_DIAMOND, MARK_SQUARE, PLAYER_COLORS,
   alpha, chamferOf, diamondOf, isBot, notchPath, octClip, octPath, seatOf,
 } from '../game/look';
-import { attackersOfMe } from '../game/threats';
+import { attackersOfMe, heatMap } from '../game/threats';
 import { labelOf, modeWord } from '../game/names';
 import { orderNo, upcoming } from '../game/order';
 import { settings } from '../game/settings';
@@ -62,6 +62,8 @@ export function Board({ ctl, view, cell }: Props) {
   const k = chamferOf(n);
   const oct = octPath(k, 6);
 
+  // Tehlike haritası: ayarda ya da ilk iki maçta kendiliğinden açık.
+  const heat = (settings.dangerMap || ctl.autoMap) && me.alive && !st.over ? heatMap(st, me) : null;
   const reach = new Map<string, Reach>();
   for (const m of moves) {
     const t = threatsFor(st, me, m);
@@ -239,6 +241,7 @@ export function Board({ ctl, view, cell }: Props) {
       let mark: { d: string; fill: string; stroke: string; width: number } | null = null;
       if (gone) { background = 'var(--bosluk)'; frame = { stroke: '#2B3670', width: 4, dash: '6 7' }; }
       else if (doomedRing) background = 'var(--pat-hazard)';
+      if (heat?.has(`${r},${c}`) && !gone && !doomedRing) background = `linear-gradient(rgba(255,59,92,.17), rgba(255,59,92,.17)), ${background}`;
       if (im) {
         // Başka bir taşın yolu: buz renginde kesik çerçeve; alabileceği taş nişanla, o taş sensen kırmızı.
         frame = { stroke: 'rgba(233,240,255,.6)', width: 5, dash: '5 6' };

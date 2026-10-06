@@ -252,3 +252,6 @@
   .game > .strip { grid-column: 2; grid-row: 4; }
   .game.is-compact { gap: 8px 20px; }
 }
+
+.walk-take { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.walk-take-sep { margin: 0 4px; opacity: .5; }

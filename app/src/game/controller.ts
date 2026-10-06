@@ -35,7 +35,8 @@ export type Phase =
 
 export interface Setup {
   players: number;
-  level: Level;
+  level: Level;        // arena botlarının zekâsı
+  aiLevel: Level;      // yapay zekâ rakiplerin (2–4 oyunculu) zekâsı
   moveSeconds: number;
   /** Yalnız tek oyunculuda: tahta kenarı ve arena botu sayısı. */
   boardSize: number;
@@ -44,7 +45,7 @@ export interface Setup {
   daily?: string | null;
 }
 // players 1: tek oyunculu mod (sen + aynan İkiz + botlar). 2–4: yapay zekâ oyunculara karşı.
-export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', moveSeconds: 20, boardSize: 9, bots: 14 };
+export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', aiLevel: 'normal', moveSeconds: 20, boardSize: 9, bots: 14 };
 
 export interface Spot { r: number; c: number }
 export interface Trail { key: number; from: Spot; to: Spot; color: string }
@@ -102,6 +103,7 @@ export class GameController {
   private bannerUntil = 0;
   private fast = false;
   private decisionShown = false;
+  autoMap = false; // ilk maçlarda tehlike haritası kendiliğinden açık
   private bonusShown = false;
   private seq = 0;
   private net: NetRole | null = null;
@@ -126,6 +128,7 @@ export class GameController {
   start() {
     // İlk üç yerel maçta kısa bir ipucu kartı; "Anladım" deyince maç başlar.
     const step = this.net || !settings.tips ? null : coachStep();
+    this.autoMap = step != null && step < 2;
     if (step != null) { this.later(500, () => this.emit({ sheet: { type: 'ipucu', step } })); return; }
     this.later(600, () => this.advance());
   }
@@ -187,12 +190,12 @@ export class GameController {
     } else {
       const daily = this.setup.daily ?? null;
       const seats = Array.from({ length: daily ? 1 : this.setup.players }, (_, i) =>
-        i === ME ? { kind: 'human' as const } : { kind: 'bot' as const, level: this.setup.level });
+        i === ME ? { kind: 'human' as const } : { kind: 'bot' as const, level: this.setup.aiLevel });
       // Kolayda ilk sen oynarsın; normal ve zorda sıradaki yerin de rastgele.
       this.state = daily
         ? createGame({ seats, neutralLevel: 'normal', seed: seedOf(daily), size: DAILY.boardSize, neutrals: DAILY.bots })
         : createGame({ seats, neutralLevel: this.setup.level, firstSeat: this.setup.level === 'kolay' ? ME : null, keepGoing: true,
-          ...(this.setup.players === 1 ? { size: this.setup.boardSize, neutrals: this.setup.bots } : {}) });
+          size: this.setup.boardSize, neutrals: this.setup.bots });
     }
     this.moves = [];
     this.fast = false;

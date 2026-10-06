@@ -9,6 +9,7 @@ export interface Settings {
   volume: number;       // 0–1, efekt ve müzik için ortak seviye
   haptics: boolean;
   speed: 'yavas' | 'normal' | 'hizli';
+  dangerMap: boolean;   // gelecek turda alınabileceğin bütün kareler soluk kırmızı
   danger: boolean;      // gidilebilir ama tehlikeli kareler kırmızı çizgili
   targets: boolean;     // botun hedef üçgeni (zor modda hep gizli)
   numbers: boolean;     // bütün taşlarda sıra numarası; kapalıyken yalnız oynayan ve sıradaki 3 taş
@@ -23,7 +24,7 @@ const KEY = 'xsword-settings';
 export const SPEED = { yavas: 1.45, normal: 1, hizli: 0.65 } as const;
 
 function load(): Settings {
-  const def: Settings = { sound: true, music: true, tips: true, volume: 0.8, haptics: true, speed: 'normal', danger: true, targets: true, numbers: true, colorBlind: false };
+  const def: Settings = { sound: true, music: true, tips: true, dangerMap: false, volume: 0.8, haptics: true, speed: 'normal', danger: true, targets: true, numbers: true, colorBlind: false };
   try { return { ...def, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') }; } catch { return def; }
 }
 

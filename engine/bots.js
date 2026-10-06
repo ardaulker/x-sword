@@ -20,12 +20,15 @@ export function chooseMove(state, piece, level = levelOf(state, piece)) {
   const moves = legalMoves(state, piece, state.mode);
   if (!moves.length) return null;
   if (level === 'kolay') return easyMove(state, piece, moves);
-  let best = moves[0], bestScore = -Infinity;
+  let best = moves[0], bestScore = -Infinity, second = null, secondScore = -Infinity;
   for (const m of moves) {
     // Küçük rastgelelik: eşit hamleler arasında hep aynısını seçip tahmin edilir olmasın.
     const score = scoreMove(state, piece, m, level) + random(state);
-    if (score > bestScore) { bestScore = score; best = m; }
+    if (score > bestScore) { second = best; secondScore = bestScore; bestScore = score; best = m; }
+    else if (score > secondScore) { second = m; secondScore = score; }
   }
+  // Normal yapay zekâ oyuncu ara sıra ikinci en iyi hamleyi seçer (insan gibi hata yapar); Zor hiç yapmaz.
+  if (level === 'normal' && piece.kind === 'star' && second && second !== best && random(state) < SLIP) { best = second; bestScore = secondScore; }
   // Yapay zekâ oyuncular bonus da kullanır, ama bedeli var: ancak kazancı büyükse (bir yıldızı almak, ölümden kaçmak).
   if (piece.kind === 'star') {
     for (const m of bonusMoves(state, piece, level)) {
@@ -36,6 +39,8 @@ export function chooseMove(state, piece, level = levelOf(state, piece)) {
   return best;
 }
 
+const SLIP = 0.3;
+const HUNT_PULL = 20, HUNT_SQUEEZE = 30;
 const BONUS_COST = { step: 220, swap: 320, double: 200 };
 
 // Zırh kendiliğinden çalışır. Çift adım ve ayna normalde; çift hamle yalnız zorda ve yıldız alırken kullanılır.
@@ -199,6 +204,17 @@ function starPlan(state, piece, level) {
     for (const o of state.pieces) {
       if (o.kind !== 'star' || !o.alive || o.id === piece.id) continue;
       if (takeDirs(piece, next).some(([dr, dc]) => piece.r + dr === o.r && piece.c + dc === o.c)) s += 25;
+    }
+    // Avcı gibi davran: en çabuk ulaşabildiği rakip yıldıza sokul ve onun güvenli kaçışlarını daralt.
+    let best = Infinity, target = null;
+    for (const o of state.pieces) {
+      if (o.kind !== 'star' || !o.alive || o.id === piece.id) continue;
+      const d = huntDistance(state, piece, o, grid);
+      if (d < best) { best = d; target = o; }
+    }
+    if (target) {
+      s -= HUNT_PULL * best;
+      s -= HUNT_SQUEEZE * escapes(state, target, nextMode(state, target), grid);
     }
   }
   return s;

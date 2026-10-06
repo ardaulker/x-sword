@@ -396,6 +396,32 @@ for (let seed = 1; seed <= 120; seed++) {
 }
 console.log(`   kazanma: Kolay ${wins[0]}, Normal ${wins[1]}, Zor ${wins[2] + wins[3]} (iki koltuk)`);
 
+console.log('\nDikkatli oyuncu, tek yapay zekâ rakibe karşı — 9×9, Normal arena, 150 maç:');
+const vsAi = {};
+for (const level of ['kolay', 'normal', 'zor']) {
+  let won = 0;
+  for (let seed = 1; seed <= 150; seed++) {
+    const flip = seed % 2;
+    const policy = flip ? [level, 'careful'] : ['careful', level];
+    const { st } = runGame({ n: 2, neutralLevel: 'normal', seed, policy });
+    if (st.winner === (flip ? 1 : 0)) won++;
+  }
+  vsAi[level] = won;
+  console.log(`   rakip ${level.padEnd(6)}: dikkatli oyuncu %${(100 * won / 150).toFixed(0)} kazandı`);
+}
+
+console.log('\nZor yapay zekâ, Normal yapay zekâya karşı — 9×9, Normal arena, 200 maç:');
+{
+  let zor = 0, normal = 0;
+  for (let seed = 1; seed <= 200; seed++) {
+    const flip = seed % 2;
+    const { st } = runGame({ n: 2, neutralLevel: 'normal', seed, policy: flip ? ['zor', 'normal'] : ['normal', 'zor'] });
+    if (st.winner == null) continue;
+    if (st.winner === (flip ? 0 : 1)) zor++; else normal++;
+  }
+  console.log(`   Zor ${zor} · Normal ${normal}`);
+}
+
 test('normal ve zor arena botları dikkatli oyuncuyu kolaydan çabuk yakalar', () => {
   assert.ok(strength.normal < strength.kolay, `normal ${strength.normal} tur ≥ kolay ${strength.kolay} tur`);
   assert.ok(strength.zor <= strength.normal, `zor ${strength.zor} tur > normal ${strength.normal} tur`);
@@ -440,7 +466,9 @@ test('tek oyunculu: 13×13 tahta ve en çok bot', () => {
     assert.equal(st.pieces.filter(p => p.kind === 'red' || p.kind === 'blue').length, maxNeutrals(13));
     assert.equal(new Set(st.pieces.map(p => `${p.r},${p.c}`)).size, st.pieces.length);
   }
-  assert.equal(createGame({ seats: seats(2), seed: 1, size: 13 }).size, 9); // yalnız tek oyunculuda
+  assert.equal(createGame({ seats: seats(2), seed: 1, size: 13 }).size, 13);
+  assert.equal(createGame({ seats: seats(3), seed: 1, size: 9 }).size, 11); // en az varsayılan kadar
+  assert.equal(createGame({ seats: seats(2), seed: 1, size: 7 }).size, 9);
 });
 
 test('ayna: 50 puanda gelir, tahtanın her yerindeki taşla yer değiştirir', () => {

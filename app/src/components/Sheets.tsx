@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { NEUTRALS_BY_STARS, POINTS, SIZE_BY_STARS, SOLO_SIZES, maxNeutrals, pieceById, ranking, starOf } from '../../../engine/rules.js';
+import { POINTS, SIZE_BY_STARS, BOARD_SIZES, defaultNeutrals, maxNeutrals, pieceById, ranking, starOf } from '../../../engine/rules.js';
 import type { GameState, Level, Piece } from '../../../engine/rules.js';
 import type { GameController, Setup, TakeEvent } from '../game/controller';
 import { HAZARD_TXT, ICON, TXT, colorOf, diamondOf, seatOf } from '../game/look';
@@ -82,6 +82,7 @@ export function CoachSheet({ step, onDone }: { step: number; onDone: () => void 
       tr('Yanan karelerden birine dokun, önizlemeyi gör, Onayla\'ya bas.'),
       tr('Şekil yönü söyler: kare düz, elmas çapraz. Her tur mod değişir.'),
       tr('Çizgili kare tehlikeli: orada bir taş seni alabilir.'),
+      tr('Soluk kırmızı kareler: gelecek tur orada bir taş seni alabilir.'),
     ]],
     [tr('Botları oku'), [
       tr('Bir bota dokun: yolları ve kimi kovaladığı tahtada görünür.'),
@@ -119,11 +120,15 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
 }) {
   const [players, setPlayers] = useState(setup.players);
   const [level, setLevel] = useState<Level>(setup.level);
-  const [boardSize, setBoardSize] = useState(setup.boardSize);
-  const [bots, setBots] = useState(setup.bots);
-  const size = players === 1 ? boardSize : SIZE_BY_STARS[players];
-  const maxBots = maxNeutrals(boardSize);
-  const botCount = Math.min(bots, maxBots);
+  const [aiLevel, setAiLevel] = useState<Level>(setup.aiLevel);
+  const [pickedSize, setBoardSize] = useState(setup.boardSize);
+  // Bot sayısına dokunulmadıysa (null) tahtaya ve oyuncu sayısına göre varsayılan kalabalık kullanılır.
+  const [picked, setBots] = useState<number | null>(
+    setup.bots === defaultNeutrals(setup.players, Math.max(setup.boardSize, SIZE_BY_STARS[setup.players])) ? null : setup.bots);
+  const minSize = SIZE_BY_STARS[players];
+  const size = Math.max(pickedSize, minSize);
+  const maxBots = maxNeutrals(size);
+  const botCount = Math.min(picked ?? defaultNeutrals(players, size), maxBots);
   return (
     <SheetFrame label={tr('Yeni maç')} onClose={onClose}>
       <div className="sheet-head">
@@ -138,12 +143,12 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
           </button>
         ))}
       </div>
-      {players === 1 && (
+      {(
         <>
           <div className="field-label">{tr('TAHTA')}</div>
           <div className="seg" role="radiogroup" aria-label={tr('Tahta boyutu')}>
-            {SOLO_SIZES.map(n => (
-              <button key={n} type="button" role="radio" aria-checked={boardSize === n} className={boardSize === n ? 'is-on' : ''} onClick={() => setBoardSize(n)}>
+            {BOARD_SIZES.map(n => (
+              <button key={n} type="button" role="radio" aria-checked={size === n} disabled={n < minSize} className={size === n ? 'is-on' : ''} onClick={() => setBoardSize(n)}>
                 <b>{n}×{n}</b>
               </button>
             ))}
@@ -155,8 +160,20 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
           </div>
         </>
       )}
-      <div className="field-label">{tr('BOT ZORLUĞU')}</div>
-      <div className="seg" role="radiogroup" aria-label={tr('Bot zorluğu')}>
+      {players > 1 && (
+        <>
+          <div className="field-label">{tr('RAKİP ZEKÂSI')}</div>
+          <div className="seg" role="radiogroup" aria-label={tr('Rakip zekâsı')}>
+            {levelLabels().map(([v, t]) => (
+              <button key={v} type="button" role="radio" aria-checked={aiLevel === v} className={aiLevel === v ? 'is-on' : ''} onClick={() => setAiLevel(v)}>
+                <b>{t}</b>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+      <div className="field-label">{tr('ARENA BOTU ZEKÂSI')}</div>
+      <div className="seg" role="radiogroup" aria-label={tr('Arena botu zekâsı')}>
         {levelLabels().map(([v, t]) => (
           <button key={v} type="button" role="radio" aria-checked={level === v} className={level === v ? 'is-on' : ''} onClick={() => setLevel(v)}>
             <b>{t}</b>
@@ -166,7 +183,7 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
       <div className="menu-note">
         {players === 1
           ? tr('Sen, aynan İkiz ve {bots} arena botu · tahta {size}×{size}. Bütün botları temizle.', { bots: botCount, size })
-          : tr('Sen ve {ai} yapay zekâ oyuncu · tahta {size}×{size} · {bots} arena botu.', { ai: players - 1, size, bots: NEUTRALS_BY_STARS[players] })}
+          : tr('Sen ve {ai} yapay zekâ oyuncu · tahta {size}×{size} · {bots} arena botu.', { ai: players - 1, size, bots: botCount })}
         {level === 'kolay' ? tr(' İlk sen oynarsın.') : level === 'zor' ? tr(' Botların hedefi gizli.') : ''}
       </div>
       {(onRules || onEnd) && (
@@ -179,7 +196,7 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
         {onHome
           ? <button type="button" className="btn btn-ghost" onClick={onHome}>{tr('Ana menü')}</button>
           : <button type="button" className="btn btn-ghost" onClick={onClose}>{tr('Kapat')}</button>}
-        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, boardSize, bots: botCount, daily: null })}>{tr('Başlat')}</button>
+        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, aiLevel, boardSize: size, bots: botCount, daily: null })}>{tr('Başlat')}</button>
       </div>
     </SheetFrame>
   );
