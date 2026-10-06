@@ -21,8 +21,8 @@ export function XSwordLogo({ size }: { size: number }) {
   );
 }
 
-export function MainMenu({ setup, onStart, onRules, onMultiplayer }: {
-  setup: Setup; onStart: (s: Setup) => void; onRules?: () => void; onMultiplayer?: () => void;
+export function MainMenu({ setup, onStart, onRules, onMultiplayer, onSettings }: {
+  setup: Setup; onStart: (s: Setup) => void; onRules?: () => void; onMultiplayer?: () => void; onSettings?: () => void;
 }) {
   const [setupOpen, setSetupOpen] = useState(false);
   return (
@@ -61,10 +61,9 @@ export function MainMenu({ setup, onStart, onRules, onMultiplayer }: {
             {!onRules && <span className="menu-soon">Yakında</span>}
           </button>
         </div>
-        <button type="button" className="menu-link" disabled>
+        <button type="button" className="menu-link" disabled={!onSettings} onClick={onSettings}>
           <Icon d="M4 7 H14 M18 7 H20 M4 17 H8 M12 17 H20 M16 5 V9 M10 15 V19" size={18} />
           <span>Ayarlar</span>
-          <span className="menu-soon">Yakında</span>
         </button>
       </nav>
 

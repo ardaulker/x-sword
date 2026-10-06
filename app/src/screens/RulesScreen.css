@@ -62,3 +62,12 @@
 @media (prefers-reduced-motion: reduce) {
   .anim-morph .pg-shape, .anim-queue span, .anim-float { animation: none; }
 }
+
+/* Ayarlar */
+.set-row { width: 100%; text-align: left; color: inherit; align-items: center; cursor: pointer; }
+.set-col { flex-direction: column; align-items: stretch; }
+.set-col .seg { width: 100%; }
+.switch { flex: none; width: 50px; height: 30px; border-radius: 15px; background: var(--yuzey-3); position: relative; transition: background 160ms; }
+.switch span { position: absolute; left: 3px; top: 3px; width: 24px; height: 24px; border-radius: 12px; background: var(--metin-2); transition: transform 160ms var(--ease-kay), background 160ms; }
+.switch.is-on { background: var(--oyuncu-1); }
+.switch.is-on span { transform: translateX(20px); background: var(--murekkep); }

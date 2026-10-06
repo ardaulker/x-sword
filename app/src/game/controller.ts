@@ -6,7 +6,7 @@ import {
 } from '../../../engine/rules.js';
 import type { BonusKind, GameState, Level, Move, Piece } from '../../../engine/rules.js';
 import { chooseMove } from '../../../engine/bots.js';
-import { BUZZ, buzz } from './haptics';
+import { BUZZ, feel, sound } from './haptics';
 import { HAZARD, PLAYER_COLORS, colorOf, isBot } from './look';
 import { ME, labelOf, objectOf, seatName, setMe, subjectOf } from './names';
 import type { MatchStart } from '../net/protocol';
@@ -275,13 +275,14 @@ export class GameController {
       this.toast(`Hayatta kalma bonusu +${this.state.seats[ME].bonus}`, 'sword');
     }
     this.emit({ phase: 'bitti', clockEnd: this.view.clockEnd ?? Date.now(), sel: null, showThreats: false, modeOverlay: false });
-    if (this.state.winner === ME) buzz(BUZZ.take);
+    feel(this.state.winner === ME ? 'win' : 'lose', this.state.winner === ME ? BUZZ.take : BUZZ.takenOrOut);
   }
 
   // ------------------------------------------------------------ senin sıran
 
   private myTurn() {
     this.emit({ phase: 'sen', sel: null, showThreats: false, bonus: null, timer: this.setup.moveSeconds });
+    feel('myTurn', BUZZ.myTurn);
     if (!legalMoves(this.state, this.myStar(), this.state.mode).length) {
       this.toast('Gidecek kare yok · sıra geçti', 'info');
       this.emit();
@@ -301,21 +302,21 @@ export class GameController {
     this.view = { ...this.view, inspect: null };
     const sel = this.view.sel;
     if (this.view.phase === 'onizleme' && sel && sel.r === move.r && sel.c === move.c) return this.confirm();
-    buzz(BUZZ.select);
+    feel('select', BUZZ.select);
     this.emit({ phase: 'onizleme', sel: move, showThreats: false });
   }
 
   confirm() {
     const { phase, sel } = this.view;
     if (phase !== 'onizleme' || !sel) return;
-    buzz(BUZZ.confirm);
+    feel('move', BUZZ.confirm);
     this.commitMine(sel);
   }
 
   // Bonusu seç ya da bırak. Zırh seçilmez, kendiliğinden çalışır.
   selectBonus(kind: BonusKind) {
     if (!this.isMyMove() || kind === 'armor' || !this.state.seats[ME].bonuses[kind]) return;
-    buzz(BUZZ.select);
+    feel('select', BUZZ.select);
     this.emit({ phase: 'sen', sel: null, showThreats: false, bonus: this.view.bonus === kind ? null : kind });
   }
 
@@ -440,13 +441,13 @@ export class GameController {
   }
 
   private modeChange() {
-    buzz(BUZZ.mode);
+    feel('mode', BUZZ.mode);
     this.emit({ phase: 'mod', modeOverlay: true });
     this.later(1300, () => {
       // Çökecek turun başında açık uyarı: bu tur sonunda dış halkada kalan elenir.
       if (collapseDue(this.state)) {
         this.toast('Dış halka bu tur sonunda çöküyor!', 'ring');
-        buzz(BUZZ.collapse);
+        feel('collapse', BUZZ.collapse);
       }
       this.emit({ modeOverlay: false });
       this.advance();
@@ -468,14 +469,14 @@ export class GameController {
     play(st, move);
 
     // Bonus: kullanma, zırhla kurtulma, kazanma.
-    if (move?.bonus && actor.kind === 'star' && actor.seat === ME) { this.toast(`${BONUS_NAMES[move.bonus]}!`, 'info'); buzz(BUZZ.select); }
+    if (move?.bonus && actor.kind === 'star' && actor.seat === ME) { this.toast(`${BONUS_NAMES[move.bonus]}!`, 'info'); feel('bonusUse', BUZZ.bonusUse); }
     if (victim?.alive && victim.kind === 'star') {
       this.toast(victim.seat === ME ? 'Zırhın seni korudu!' : `${labelOf(st, victim)} zırhıyla kurtuldu`, 'info');
       this.burst(victim.r, victim.c, '#E9F0FF');
-      buzz(BUZZ.take);
+      feel('armor', BUZZ.take);
     }
     for (const k of Object.keys(myBonuses) as BonusKind[]) {
-      if (st.seats[ME].bonuses[k] > myBonuses[k]) { this.toast(`Bonus kazandın: ${BONUS_NAMES[k]}`, 'info'); buzz([15, 40, 15]); }
+      if (st.seats[ME].bonuses[k] > myBonuses[k]) { this.toast(`Bonus kazandın: ${BONUS_NAMES[k]}`, 'info'); feel('bonusGain', BUZZ.bonusGain); }
     }
     this.moves.push(move);
     if (this.net?.role === 'host') this.net.broadcast?.(this.moves.length, move);
@@ -489,15 +490,16 @@ export class GameController {
     if (victim && move && !victim.alive) {
       events.push({ key: this.key(), round, attackerId: actor.id, victimId: victim.id });
       this.burst(move.r, move.c, colorOf(actor));
+      if (!(actor.kind === 'star' && actor.seat === ME)) sound('take');
       this.view = { ...this.view, shake: this.view.shake + 1 };
       const mine = actor.kind === 'star' && actor.seat === ME;
       const me = victim.kind === 'star' && victim.seat === ME;
       // Yalnız yıldızlar puan toplar: alınan taşın değeri tahtada uçar, skor tablosu anında güncellenir.
       if (actor.kind === 'star') this.float(move.r, move.c, `+${POINTS[victim.kind]}`, colorOf(actor));
-      if (mine) { this.toast(`${objectOf(st, victim)} aldın! +${POINTS[victim.kind]}`, 'sword'); buzz(BUZZ.take); }
+      if (mine) { this.toast(`${objectOf(st, victim)} aldın! +${POINTS[victim.kind]}`, 'sword'); feel('take', BUZZ.take); this.later(120, () => sound('points')); }
       if (me) {
         this.toast(`${subjectOf(st, actor)} seni aldı!`, 'sword');
-        buzz(BUZZ.takenOrOut);
+        feel('out', BUZZ.takenOrOut);
         this.view = { ...this.view, hit: this.view.hit + 1 };
       }
       if (victim.kind === 'star') {
@@ -522,7 +524,7 @@ export class GameController {
       }
       else if (stars.length) sub = `${stars.map(p => labelOf(st, p)).join(', ')} düştü · arena ${side}×${side}`;
       this.banner('Dış halka çöktü', sub, HAZARD, null);
-      buzz(iFell ? BUZZ.takenOrOut : BUZZ.collapse);
+      feel(iFell ? 'out' : 'collapse', iFell ? BUZZ.takenOrOut : BUZZ.collapse);
     }
 
     this.view = { ...this.view, events };
@@ -581,7 +583,7 @@ export class GameController {
 
   // Aynı taşa ikinci dokunuş kapatır.
   inspectPiece(id: string) {
-    buzz(BUZZ.select);
+    feel('select', BUZZ.select);
     this.emit({ inspect: this.view.inspect === id ? null : id });
   }
   closeInspect() { if (this.view.inspect) this.emit({ inspect: null }); }
@@ -603,7 +605,7 @@ export class GameController {
           if (this.net?.role !== 'guest') this.autoMove(); // misafirde süreyi kurucu yönetir
           return;
         }
-        if (t <= 5) buzz(BUZZ.lastSeconds);
+        if (t <= 5) feel('tick', BUZZ.lastSeconds);
         this.emit({ timer: t });
       } else if (this.view.phase === 'rakip') {
         this.emit({ timer: Math.max(0, t) });

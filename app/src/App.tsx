@@ -8,6 +8,7 @@ import { GameScreen } from './screens/GameScreen';
 import { LobbyScreen, MultiplayerEntry } from './screens/Lobby';
 import { MainMenu } from './screens/MainMenu';
 import { RulesScreen } from './screens/RulesScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
 
 const SETUP_KEY = 'xsword-app-setup';
 
@@ -31,8 +32,8 @@ function saveSetup(s: Setup) {
 
 // Ekranlar adres çubuğundaki #/ ile seçilir; telefonun geri tuşu bir önceki ekrana döndürür.
 // #/katil/KOD davet linkidir: açınca o odaya katılır.
-type Screen = 'menu' | 'oyun' | 'kurallar' | 'cok' | 'oda' | 'mac' | 'katil';
-const SCREENS: Screen[] = ['oyun', 'kurallar', 'cok', 'oda', 'mac'];
+type Screen = 'menu' | 'oyun' | 'kurallar' | 'ayarlar' | 'cok' | 'oda' | 'mac' | 'katil';
+const SCREENS: Screen[] = ['oyun', 'kurallar', 'ayarlar', 'cok', 'oda', 'mac'];
 function readScreen(): Screen {
   const h = location.hash.replace(/^#\//, '');
   if (h.startsWith('katil/')) return 'katil';
@@ -108,6 +109,7 @@ export function App() {
 
   if (screen === 'oyun') return <GameScreen ctl={ctl} onNewGame={start} onHome={() => go('menu')} />;
   if (screen === 'kurallar') return <RulesScreen onBack={() => go('menu')} />;
+  if (screen === 'ayarlar') return <SettingsScreen onBack={() => go('menu')} />;
   if (screen === 'mac' && room) {
     return (
       <GameScreen
@@ -129,5 +131,5 @@ export function App() {
       />
     );
   }
-  return <MainMenu setup={ctl.setup} onStart={start} onRules={() => go('kurallar')} onMultiplayer={() => go('cok')} />;
+  return <MainMenu setup={ctl.setup} onStart={start} onRules={() => go('kurallar')} onMultiplayer={() => go('cok')} onSettings={() => go('ayarlar')} />;
 }
