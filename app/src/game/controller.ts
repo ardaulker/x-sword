@@ -11,6 +11,7 @@ import { SPEED, settings } from './settings';
 import { HAZARD, PLAYER_COLORS, colorOf, isBot } from './look';
 import { ME, labelOf, objectOf, seatName, setMe, subjectOf } from './names';
 import type { MatchStart } from '../net/protocol';
+import { tr } from '../i18n';
 
 // Çok oyunculu maçta bu cihazın rolü. Kurucu maçı yürütür ve her hamleyi yayınlar;
 // misafir kendi hamlesini kurucuya gönderir, bütün hamleleri kurucudan alıp uygular.
@@ -232,7 +233,7 @@ export class GameController {
     if (!s || s.kind === 'bot') return;
     s.kind = 'bot';
     s.level = this.setup.level;
-    this.toast(`${seatName(this.state, seat)} ayrıldı · yerine yapay zekâ oynuyor`, 'info');
+    this.toast(tr('{name} ayrıldı · yerine yapay zekâ oynuyor', { name: seatName(this.state, seat) }), 'info');
     this.emit();
     if (this.waitingSeat === seat) {
       this.waitingSeat = null;
@@ -279,7 +280,7 @@ export class GameController {
 
   netLost() {
     this.stopTicker();
-    this.toast('Odayla bağlantı koptu', 'info');
+    this.toast(tr('Odayla bağlantı koptu'), 'info');
     this.emit();
   }
 
@@ -293,7 +294,7 @@ export class GameController {
     if (this.state.seats[ME].bonus && me && !this.bonusShown) {
       this.bonusShown = true;
       this.float(me.r, me.c, `+${this.state.seats[ME].bonus}`, PLAYER_COLORS[ME]);
-      this.toast(`Hayatta kalma bonusu +${this.state.seats[ME].bonus}`, 'sword');
+      this.toast(tr('Hayatta kalma bonusu +{n}', { n: this.state.seats[ME].bonus }), 'sword');
     }
     this.emit({
       phase: 'bitti', clockEnd: pending ? null : this.view.clockEnd ?? Date.now(), sel: null, showThreats: false, modeOverlay: false,
@@ -323,7 +324,7 @@ export class GameController {
     this.emit({ phase: 'sen', sel: null, showThreats: false, bonus: null, timer: this.setup.moveSeconds });
     feel('myTurn', BUZZ.myTurn);
     if (!legalMoves(this.state, this.myStar(), this.state.mode).length) {
-      this.toast('Gidecek kare yok · sıra geçti', 'info');
+      this.toast(tr('Gidecek kare yok · sıra geçti'), 'info');
       this.emit();
       this.later(1200, () => this.commitMine(null));
       return;
@@ -370,7 +371,7 @@ export class GameController {
 
   private autoMove() {
     const m = chooseMove(this.state, this.myStar(), 'normal');
-    this.toast('Süre doldu · güvenli hamle yapıldı', 'clock');
+    this.toast(tr('Süre doldu · güvenli hamle yapıldı'), 'clock');
     this.commitMine(m);
   }
 
@@ -485,7 +486,7 @@ export class GameController {
     this.later(1300, () => {
       // Çökecek turun başında açık uyarı: bu tur sonunda dış halkada kalan elenir.
       if (collapseDue(this.state)) {
-        this.toast('Dış halka bu tur sonunda çöküyor!', 'ring');
+        this.toast(tr('Dış halka bu tur sonunda çöküyor!'), 'ring');
         feel('collapse', BUZZ.collapse);
         startTension();
       }
@@ -510,14 +511,14 @@ export class GameController {
     play(st, move);
 
     // Bonus: kullanma, zırhla kurtulma, kazanma.
-    if (move?.bonus && actor.kind === 'star' && actor.seat === ME) { this.toast(`${BONUS_NAMES[move.bonus]}!`, 'info'); feel('bonusUse', BUZZ.bonusUse); }
+    if (move?.bonus && actor.kind === 'star' && actor.seat === ME) { this.toast(`${tr(BONUS_NAMES[move.bonus])}!`, 'info'); feel('bonusUse', BUZZ.bonusUse); }
     if (victim?.alive && victim.kind === 'star') {
-      this.toast(victim.seat === ME ? 'Zırhın seni korudu!' : `${labelOf(st, victim)} zırhıyla kurtuldu`, 'info');
+      this.toast(victim.seat === ME ? tr('Zırhın seni korudu!') : tr('{name} zırhıyla kurtuldu', { name: labelOf(st, victim) }), 'info');
       this.burst(victim.r, victim.c, '#E9F0FF');
       feel('armor', BUZZ.take);
     }
     for (const k of Object.keys(myBonuses) as BonusKind[]) {
-      if (st.seats[ME].bonuses[k] > myBonuses[k]) { this.toast(`Bonus kazandın: ${BONUS_NAMES[k]}`, 'info'); feel('bonusGain', BUZZ.bonusGain); }
+      if (st.seats[ME].bonuses[k] > myBonuses[k]) { this.toast(tr('Bonus kazandın: {name}', { name: tr(BONUS_NAMES[k]) }), 'info'); feel('bonusGain', BUZZ.bonusGain); }
     }
     this.moves.push(move);
     if (this.net?.role === 'host') this.net.broadcast?.(this.moves.length, move);
@@ -540,18 +541,18 @@ export class GameController {
       if (actor.kind === 'twin' && st.seats[ME].score > scoreBefore) {
         const pts = POINTS[victim.kind] * TWIN_TAKE_MULT;
         this.float(move.r, move.c, `+${pts}`, PLAYER_COLORS[ME]);
-        this.toast(`Aynan ${objectOf(st, victim)} aldı! +${pts} (2×)`, 'sword');
+        this.toast(tr('Aynan {obj} aldı! +{pts} (2×)', { obj: objectOf(st, victim), pts }), 'sword');
         this.later(120, () => sound('points'));
       }
-      if (mine) { this.toast(`${objectOf(st, victim)} aldın! +${POINTS[victim.kind]}`, 'sword'); feel('take', BUZZ.take); this.later(120, () => sound('points')); }
+      if (mine) { this.toast(tr('{obj} aldın! +{pts}', { obj: objectOf(st, victim), pts: POINTS[victim.kind] }), 'sword'); feel('take', BUZZ.take); this.later(120, () => sound('points')); }
       if (me) {
-        this.toast(`${subjectOf(st, actor)} seni aldı!`, 'sword');
+        this.toast(tr('{name} seni aldı!', { name: subjectOf(st, actor) }), 'sword');
         feel('out', BUZZ.takenOrOut);
         this.view = { ...this.view, hit: this.view.hit + 1 };
       }
       if (victim.kind === 'star') {
-        this.banner(me ? 'Elendin' : `${seatName(st, victim.seat)} elendi`,
-          `${labelOf(st, actor)} aldı · ${st.seats[victim.seat].score} puanla`, PLAYER_COLORS[victim.seat], victim.id);
+        this.banner(me ? tr('Elendin') : tr('{name} elendi', { name: seatName(st, victim.seat) }),
+          tr('{name} aldı · {n} puanla', { name: labelOf(st, actor), n: st.seats[victim.seat].score }), PLAYER_COLORS[victim.seat], victim.id);
       }
     }
 
@@ -565,13 +566,13 @@ export class GameController {
       const side = st.size - 2 * st.ring;
       const stars = fallen.filter(p => p.kind === 'star');
       const iFell = stars.some(p => p.kind === 'star' && p.seat === ME);
-      let sub = fallen.length ? `${fallen.length} taş düştü · arena ${side}×${side}` : `Kimse düşmedi · arena ${side}×${side}`;
+      let sub = fallen.length ? tr('{n} taş düştü · arena {side}×{side}', { n: fallen.length, side }) : tr('Kimse düşmedi · arena {side}×{side}', { side });
       if (iFell) {
-        sub = 'Halkada kaldın, elendin';
+        sub = tr('Halkada kaldın, elendin');
         this.view = { ...this.view, hit: this.view.hit + 1 };
       }
-      else if (stars.length) sub = `${stars.map(p => labelOf(st, p)).join(', ')} düştü · arena ${side}×${side}`;
-      this.banner('Dış halka çöktü', sub, HAZARD, null);
+      else if (stars.length) sub = tr('{names} düştü · arena {side}×{side}', { names: stars.map(p => labelOf(st, p)).join(', '), side });
+      this.banner(tr('Dış halka çöktü'), sub, HAZARD, null);
       feel(iFell ? 'out' : 'collapse', iFell ? BUZZ.takenOrOut : BUZZ.collapse);
     }
 
@@ -660,7 +661,7 @@ export class GameController {
         this.emit({ timer: Math.max(0, t) });
         if (t <= 0 && this.waitingSeat != null) {
           const a = currentActor(this.state)!;
-          this.toast(`${labelOf(this.state, a)} için süre doldu`, 'clock');
+          this.toast(tr('{name} için süre doldu', { name: labelOf(this.state, a) }), 'clock');
           this.commitRemote(chooseMove(this.state, a, 'normal'));
         }
       } else {

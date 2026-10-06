@@ -7,6 +7,7 @@ import { orderNo } from '../game/order';
 import { attackersOfMe } from '../game/threats';
 import { Icon } from './bits';
 import { PieceGlyph } from './PieceGlyph';
+import { tr } from '../i18n';
 
 // Dokunulan taş için tek satır: kim, sırası, nasıl yürür ve alır, kimi kovalıyor.
 // Büyük kart yok; yollar ve hedef çizgisi zaten tahtada.
@@ -17,9 +18,9 @@ export function InfoChip({ ctl, id }: { ctl: GameController; id: string }) {
   const me = ctl.myStar();
   const mode = nextMode(st, p);
   const straight = (d: readonly (readonly [number, number])[]) => d[0][0] === 0 || d[0][1] === 0;
-  const walk = straight(walkDirs(p, mode)) ? 'düz' : 'çapraz';
-  const take = straight(takeDirs(p, mode)) ? 'düz' : 'çapraz';
-  const how = p.kind === 'twin' ? 'senin yönünde oynar' : walk === take ? `${walk} gider, ${take} alır` : `${walk} yürür, ${take} alır`;
+  const walk = straight(walkDirs(p, mode)) ? tr('düz') : tr('çapraz');
+  const take = straight(takeDirs(p, mode)) ? tr('düz') : tr('çapraz');
+  const how = p.kind === 'twin' ? tr('senin yönünde oynar') : walk === take ? tr('{w} gider, {t} alır', { w: walk, t: take }) : tr('{w} yürür, {t} alır', { w: walk, t: take });
   const hard = ctl.setup.level === 'zor';
   const target = isBot(p) && !hard ? targetOf(st, p) : null;
   const danger = me.alive && p.id !== me.id && attackersOfMe(st, me).some(q => q.id === p.id);
@@ -28,7 +29,7 @@ export function InfoChip({ ctl, id }: { ctl: GameController; id: string }) {
       type="button"
       className={`info-chip${danger ? ' is-danger' : ''}`}
       onClick={() => ctl.closeInspect()}
-      aria-label={`${labelOf(st, p)}, sıra ${orderNo(st, p.id)}, ${how}. Kapat.`}
+      aria-label={tr('{name}, sıra {n}, {how}. Kapat.', { name: labelOf(st, p), n: orderNo(st, p.id), how })}
     >
       <PieceGlyph kind={p.kind} seat={seatOf(p)} size={22} diamond={diamondOf(p, st.mode)} />
       <span className="info-chip-name" style={{ color: isBot(p) ? undefined : colorOf(p) }}>{labelOf(st, p)}</span>
@@ -36,10 +37,10 @@ export function InfoChip({ ctl, id }: { ctl: GameController; id: string }) {
       {target && (
         <span className="info-chip-target">
           <Icon d="M5 12 H19 M13 6 L19 12 L13 18" size={14} stroke={2.4} />
-          <span style={{ color: PLAYER_COLORS[target.seat] }}>{target.seat === ME ? 'Sen' : labelOf(st, target)}</span>
+          <span style={{ color: PLAYER_COLORS[target.seat] }}>{target.seat === ME ? tr('Sen') : labelOf(st, target)}</span>
         </span>
       )}
-      {isBot(p) && hard && <span className="info-chip-meta">· hedef gizli</span>}
+      {isBot(p) && hard && <span className="info-chip-meta">{tr('· hedef gizli')}</span>}
       {danger && <Icon d={ICON.warn} size={16} stroke={2.2} />}
     </button>
   );

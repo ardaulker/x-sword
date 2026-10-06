@@ -18,6 +18,7 @@ import { PieceGlyph } from './PieceGlyph';
 import { CenterBanner } from './CenterBanner';
 import { ModeOverlay } from './ModeOverlay';
 import './Board.css';
+import { tr } from '../i18n';
 
 export const BOARD_PAD = 6;
 export const boardGap = (n: number) => (n <= 9 ? 3 : 2);
@@ -257,13 +258,13 @@ export function Board({ ctl, view, cell }: Props) {
         if (sel && sel.r === r && sel.c === c) frame = { stroke: '#FFFFFF', width: 11 };
       }
       const occupant = pieceAt(st, r, c);
-      let label = `Satır ${r + 1}, sütun ${c + 1}`;
+      let label = tr('Satır {r}, sütun {c}', { r: r + 1, c: c + 1 });
       if (occupant) label += `, ${labelOf(st, occupant)}`;
-      if (rc) label += rc.move.type === 'take' ? ', alınabilir' : ', gidilebilir';
-      if (rc?.attackers) label += `, ${rc.attackers} taş seni alabilir`;
-      if (gone) label += ', çöktü';
-      else if (doomedRing) label += ', tur sonunda çökecek';
-      else if (soonRing) label += ', gelecek tur çökecek';
+      if (rc) label += rc.move.type === 'take' ? tr(', alınabilir') : tr(', gidilebilir');
+      if (rc?.attackers) label += tr(', {n} taş seni alabilir', { n: rc.attackers });
+      if (gone) label += tr(', çöktü');
+      else if (doomedRing) label += tr(', tur sonunda çökecek');
+      else if (soonRing) label += tr(', gelecek tur çökecek');
       cells.push(
         <div
           key={c}
@@ -298,7 +299,7 @@ export function Board({ ctl, view, cell }: Props) {
       className="board-frame"
       style={frameStyle}
       role="grid"
-      aria-label={`Tahta ${n}×${n}, mod ${modeWord(st.mode)}. Ok tuşları ya da Q E Z C ile kare seç, Enter ile onayla.`}
+      aria-label={tr('Tahta {n}×{n}, mod {mode}. Ok tuşları ya da Q E Z C ile kare seç, Enter ile onayla.', { n, mode: modeWord(st.mode) })}
       tabIndex={0}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -353,7 +354,7 @@ export function Board({ ctl, view, cell }: Props) {
               {halo && <div className={`halo halo-${halo}`} style={halo === 'turn' ? { borderColor: myColor } : undefined} />}
               {pip && <div className={`pip pip-${pip}`}>{orderNo(st, p.id)}</div>}
               {badge > 0 && <div className="threat-badge">{badge}</div>}
-              {p.kind === 'star' && p.alive && st.seats[p.seat].bonuses.armor > 0 && <div className="armor-badge" aria-label="Zırhlı" />}
+              {p.kind === 'star' && p.alive && st.seats[p.seat].bonuses.armor > 0 && <div className="armor-badge" aria-label={tr('Zırhlı')} />}
             </PieceGlyph>
           );
         })}

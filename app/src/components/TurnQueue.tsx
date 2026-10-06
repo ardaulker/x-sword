@@ -5,6 +5,7 @@ import { PLAYER_COLORS, alpha, colorOf, diamondOf, isBot, seatOf } from '../game
 import { ME, labelOf } from '../game/names';
 import { orderNo, previous, upcoming } from '../game/order';
 import { PieceGlyph } from './PieceGlyph';
+import { tr } from '../i18n';
 
 // Üstteki sıra göstergesi: solda şu an oynayan, sağda sıradakiler. Sıra geçince şerit sola kayar.
 export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: View; compact: boolean }) {
@@ -31,8 +32,8 @@ export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: V
     x += i === 0 ? slot + 6 : slot;
   });
 
-  const caption = st.over ? 'MAÇ BİTTİ' : mine ? 'SENİN SIRAN' : meNext ? 'SIRADA' : 'ŞİMDİ';
-  const name = st.over || !head ? '' : mine ? 'Hamleni seç' : labelOf(st, head);
+  const caption = st.over ? tr('MAÇ BİTTİ') : mine ? tr('SENİN SIRAN') : meNext ? tr('SIRADA') : tr('ŞİMDİ');
+  const name = st.over || !head ? '' : mine ? tr('Hamleni seç') : labelOf(st, head);
   const nameColor = head && !isBot(head) ? colorOf(head) : undefined;
 
   return (
@@ -40,7 +41,7 @@ export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: V
       className={`queue${mine ? ' is-mine' : ''}`}
       style={{ height: compact ? 34 : 40, '--me': myColor, '--me-soft': alpha(myColor, 0.14) } as CSSProperties}
       role="status"
-      aria-label={st.over ? 'Maç bitti' : `${caption}: ${head ? labelOf(st, head) : ''}`}
+      aria-label={st.over ? tr('Maç bitti') : `${caption}: ${head ? labelOf(st, head) : ''}`}
     >
       <div className="queue-now">
         <span className="queue-caption">{caption}</span>
@@ -50,7 +51,7 @@ export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: V
         {placed.map(p => {
           const style: CSSProperties = { transform: `translateX(${p.x}px)`, width: slot };
           if (!p.id) {
-            return <div key={p.key} className="queue-item queue-round" style={style}>T{p.round}</div>;
+            return <div key={p.key} className="queue-item queue-round" style={style}>{tr('T{n}', { n: p.round })}</div>;
           }
           const piece = pieceById(st, p.id)!;
           return (

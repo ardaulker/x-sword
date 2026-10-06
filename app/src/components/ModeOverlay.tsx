@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import type { Mode } from '../../../engine/rules.js';
 import { CROSS, DIAMOND_POINTS, PLUS, SQUARE_POINTS } from '../game/look';
 import { modeWord } from '../game/names';
+import { tr } from '../i18n';
 
 // Mod değişimi: tahtayı kapatmayan sakin bir işaret. Desenli bant tahtanın üstünden bir kez geçer,
 // üstte kısa bir şerit yeni modu söyler; mod çubuğu da aynı anda döner.
@@ -13,7 +14,7 @@ export function ModeOverlay({ mode, round }: { mode: Mode; round: number }) {
       <div className="mode-ov-pill">
         <ModeIcon mode={mode} size={22} stroke={9} />
         <b>{modeWord(mode)}</b>
-        <span>TUR {round} · {duz ? 'kare gider' : 'elmas gider'}</span>
+        <span>{tr('TUR {n}', { n: round })} · {duz ? tr('kare gider') : tr('elmas gider')}</span>
       </div>
     </div>
   );

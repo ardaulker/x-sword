@@ -5,11 +5,12 @@ import { paletteOf, saveSettings, settings } from '../game/settings';
 import { PieceGlyph } from '../components/PieceGlyph';
 import type { Settings } from '../game/settings';
 import './RulesScreen.css';
+import { LANGS, setLang, tr, useLang } from '../i18n';
 
-const SPEEDS: [Settings['speed'], string, string][] = [
-  ['yavas', 'Yavaş', 'Kayma 320 ms · bot turu ~2 sn'],
-  ['normal', 'Normal', 'Kayma 220 ms · bot turu ~1,2 sn'],
-  ['hizli', 'Hızlı', 'Kayma 140 ms · bot turu ~0,8 sn'],
+const speeds = (): [Settings['speed'], string, string][] => [
+  ['yavas', tr('Yavaş'), tr('Kayma 320 ms · bot turu ~2 sn')],
+  ['normal', tr('Normal'), tr('Kayma 220 ms · bot turu ~1,2 sn')],
+  ['hizli', tr('Hızlı'), tr('Kayma 140 ms · bot turu ~0,8 sn')],
 ];
 
 function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {
@@ -22,43 +23,54 @@ function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: 
 }
 
 export function SettingsScreen({ onBack, onRules }: { onBack: () => void; onRules?: () => void }) {
+  const lang = useLang();
   const [s, setS] = useState(settings);
   const update = (patch: Partial<Settings>) => { const next = { ...s, ...patch }; setS(next); saveSettings(next); };
   return (
     <div className="rules">
       <header className="rules-head">
-        <button type="button" className="round-btn" aria-label="Geri" onClick={onBack}><Icon d="M15 5 L8 12 L15 19" size={20} stroke={2.4} /></button>
-        <h1>Ayarlar</h1>
+        <button type="button" className="round-btn" aria-label={tr('Geri')} onClick={onBack}><Icon d="M15 5 L8 12 L15 19" size={20} stroke={2.4} /></button>
+        <h1>{tr('Ayarlar')}</h1>
       </header>
       <div className="rules-body">
+        <div className="rule set-col">
+          <div className="rule-text"><h3>{tr('Dil')}</h3><p>{tr('Oyunun bütün yazıları seçtiğin dilde görünür.')}</p></div>
+          <div className="seg lang-seg" role="radiogroup" aria-label={tr('Dil')}>
+            {LANGS.map(l => (
+              <button key={l.code} type="button" role="radio" aria-checked={lang === l.code} className={lang === l.code ? 'is-on' : ''} onClick={() => setLang(l.code)}>
+                <b>{l.name}</b>
+              </button>
+            ))}
+          </div>
+        </div>
         {onRules && (
           <button type="button" className="rule set-row" onClick={onRules}>
-            <div className="rule-text"><h3>Nasıl oynanır?</h3><p>Kurallar, puanlar ve bonusların nasıl kazanıldığı.</p></div>
+            <div className="rule-text"><h3>{tr('Nasıl oynanır?')}</h3><p>{tr('Kurallar, puanlar ve bonusların nasıl kazanıldığı.')}</p></div>
           </button>
         )}
-        <Toggle label="Ses" sub="Hamle, alma, puan, sıra, bonus ve maç sonu sesleri." on={s.sound}
+        <Toggle label={tr('Ses')} sub={tr('Hamle, alma, puan, sıra, bonus ve maç sonu sesleri.')} on={s.sound}
           onChange={v => { update({ sound: v }); if (v) feel('select'); }} />
-        <Toggle label="Titreşim" sub="Desteklenen telefonlarda. iPhone'da tarayıcı titreşime izin vermez." on={s.haptics}
+        <Toggle label={tr('Titreşim')} sub={tr("Desteklenen telefonlarda. iPhone'da tarayıcı titreşime izin vermez.")} on={s.haptics}
           onChange={v => { update({ haptics: v }); if (v) feel('select', 20); }} />
         <div className="rule set-col">
-          <div className="rule-text"><h3>Animasyon hızı</h3><p>Taş kayması, mod kartı, halka çöküşü: hepsi bu hızla oynar.</p></div>
-          <div className="seg" role="radiogroup" aria-label="Animasyon hızı">
-            {SPEEDS.map(([v, t]) => (
+          <div className="rule-text"><h3>{tr('Animasyon hızı')}</h3><p>{tr('Taş kayması, mod kartı, halka çöküşü: hepsi bu hızla oynar.')}</p></div>
+          <div className="seg" role="radiogroup" aria-label={tr('Animasyon hızı')}>
+            {speeds().map(([v, t]) => (
               <button key={v} type="button" role="radio" aria-checked={s.speed === v} className={s.speed === v ? 'is-on' : ''} onClick={() => update({ speed: v })}>
                 <b>{t}</b>
               </button>
             ))}
           </div>
-          <p className="set-note">{SPEEDS.find(x => x[0] === s.speed)?.[2]}</p>
+          <p className="set-note">{speeds().find(x => x[0] === s.speed)?.[2]}</p>
         </div>
-        <Toggle label="Tehlike göstergesi" sub="Seni alabilecek taşların karelerini kırmızı çizgiyle gösterir." on={s.danger}
+        <Toggle label={tr('Tehlike göstergesi')} sub={tr('Seni alabilecek taşların karelerini kırmızı çizgiyle gösterir.')} on={s.danger}
           onChange={v => update({ danger: v })} />
-        <Toggle label="Bot hedef işareti" sub="Botun kenarındaki üçgen, kovaladığı oyuncunun renginde. Zor modda hep gizli." on={s.targets}
+        <Toggle label={tr('Bot hedef işareti')} sub={tr('Botun kenarındaki üçgen, kovaladığı oyuncunun renginde. Zor modda hep gizli.')} on={s.targets}
           onChange={v => update({ targets: v })} />
-        <Toggle label="Bot sıra numaraları" sub="Kapalıyken numara yalnız oynayan ve sıradaki 3 taşta görünür." on={s.numbers}
+        <Toggle label={tr('Bot sıra numaraları')} sub={tr('Kapalıyken numara yalnız oynayan ve sıradaki 3 taşta görünür.')} on={s.numbers}
           onChange={v => update({ numbers: v })} />
         <div className="rule set-col">
-          <Toggle label="Renk körü modu" sub="Oyuncu renkleri birbirinden daha kolay ayrılır. Amblemler zaten farklı." on={s.colorBlind}
+          <Toggle label={tr('Renk körü modu')} sub={tr('Oyuncu renkleri birbirinden daha kolay ayrılır. Amblemler zaten farklı.')} on={s.colorBlind}
             onChange={v => update({ colorBlind: v })} />
           <div className="set-swatches" aria-hidden="true">
             {paletteOf(s.colorBlind).map((_, i) => <PieceGlyph key={`${i}${s.colorBlind}`} kind="star" seat={i} size={36} diamond={false} />)}

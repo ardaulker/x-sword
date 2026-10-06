@@ -14,6 +14,7 @@ import { RulesScreen } from './RulesScreen';
 import { InfoChip } from '../components/InfoChip';
 import { Icon } from '../components/bits';
 import './GameScreen.css';
+import { tr } from '../i18n';
 
 // Kısa ekranda (iPhone SE ya da tarayıcı çubukları açıkken) başlık ve mod tek satıra iner.
 const COMPACT_BELOW = 740;
@@ -25,13 +26,13 @@ const GAP = 6;
 
 function announce(ctl: GameController, view: View) {
   const st = ctl.state;
-  if (view.phase === 'bitti') return st.winner === 0 ? 'Kazandın!' : 'Maç bitti.';
-  if (view.phase === 'sen') return 'Senin sıran.';
-  if (view.phase === 'bot') return 'Botlar oynuyor.';
-  if (view.phase === 'mod') return `Yeni tur. Mod ${modeWord(st.mode)}.`;
+  if (view.phase === 'bitti') return st.winner === 0 ? tr('Kazandın!') : tr('Maç bitti.');
+  if (view.phase === 'sen') return tr('Senin sıran.');
+  if (view.phase === 'bot') return tr('Botlar oynuyor.');
+  if (view.phase === 'mod') return tr('Yeni tur. Mod {mode}.', { mode: modeWord(st.mode) });
   if (view.phase === 'rakip') {
     const a = currentActor(st);
-    return a ? `${labelOf(st, a)} oynuyor.` : '';
+    return a ? tr('{name} oynuyor.', { name: labelOf(st, a) }) : '';
   }
   return '';
 }
@@ -106,7 +107,7 @@ export function GameScreen({ ctl, onNewGame, onHome, net }: {
       {sheet?.type === 'sonuc' && (
         <ResultsSheet
           ctl={ctl} time={matchTime} onClose={() => ctl.closeSheet()}
-          onAgain={net ? net.onRematch : () => ctl.newGame()} againLabel={net ? 'Lobiye dön' : 'Rövanş'}
+          onAgain={net ? net.onRematch : () => ctl.newGame()} againLabel={net ? tr('Lobiye dön') : tr('Rövanş')}
         />
       )}
       {sheet?.type === 'menu' && !net && <SetupSheet setup={ctl.setup} onStart={onNewGame} onClose={() => ctl.closeSheet()} onHome={onHome}

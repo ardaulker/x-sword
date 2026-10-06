@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { clockText } from '../game/names';
 import { ICON } from '../game/look';
+import { tr } from '../i18n';
 
 export function Icon({ d, size = 22, stroke = 2, color = 'currentColor', fill = 'none' }: {
   d: string; size?: number; stroke?: number; color?: string; fill?: string;
@@ -36,7 +37,7 @@ export function useMatchTime(start: number, end: number | null) {
 export function MatchClock({ start, end }: { start: number; end: number | null }) {
   const t = useMatchTime(start, end);
   return (
-    <span className="clock-chip" role="timer" aria-label={`Maç süresi ${t}`}>
+    <span className="clock-chip" role="timer" aria-label={tr('Maç süresi {time}', { time: t })}>
       <Icon d={ICON.clock} size={13} stroke={2.2} />
       <span>{t}</span>
     </span>

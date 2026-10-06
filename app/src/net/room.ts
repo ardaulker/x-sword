@@ -6,6 +6,7 @@ import type { GameController } from '../game/controller';
 import { peerTransport } from './transport';
 import type { HostEndpoint, Link, Transport } from './transport';
 import type { LobbySeat, MatchStart, ToGuest, ToHost } from './protocol';
+import { tr } from '../i18n';
 
 export type RoomStatus = 'connecting' | 'lobby' | 'playing' | 'error' | 'closed';
 
@@ -68,7 +69,7 @@ export class HostRoom extends Room {
   private join(link: Link<ToHost, ToGuest>) {
     const i = this.view.seats.findIndex(s => s.kind === 'empty');
     if (this.view.status !== 'lobby' || i < 0) {
-      link.send({ t: 'closed', reason: this.view.status === 'playing' ? 'Maç başladı.' : 'Oda dolu.' });
+      link.send({ t: 'closed', reason: this.view.status === 'playing' ? tr('Maç başladı.') : tr('Oda dolu.') });
       setTimeout(() => link.close(), 300);
       return;
     }
@@ -107,7 +108,7 @@ export class HostRoom extends Room {
 
   clearSeat(i: number) {
     const l = this.links[i];
-    if (l) { this.links[i] = null; l.send({ t: 'closed', reason: 'Kurucu seni odadan çıkardı.' }); setTimeout(() => l.close(), 300); }
+    if (l) { this.links[i] = null; l.send({ t: 'closed', reason: tr('Kurucu seni odadan çıkardı.') }); setTimeout(() => l.close(), 300); }
     this.setSeat(i, EMPTY);
   }
 
@@ -146,7 +147,7 @@ export class HostRoom extends Room {
 
   close() {
     this.closed = true;
-    this.links.forEach(l => { l?.send({ t: 'closed', reason: 'Kurucu odayı kapattı.' }); l?.close(); });
+    this.links.forEach(l => { l?.send({ t: 'closed', reason: tr('Kurucu odayı kapattı.') }); l?.close(); });
     this.links = Array(MAX_SEATS).fill(null);
     this.endpoint?.close();
     this.ctl.dispose();
@@ -195,7 +196,7 @@ export class GuestRoom extends Room {
     if (this.closed) return;
     this.closed = true;
     this.ctl.netLost();
-    this.set({ status: 'closed', error: this.view.error || 'Odayla bağlantı koptu.' });
+    this.set({ status: 'closed', error: this.view.error || tr('Odayla bağlantı koptu.') });
   }
 
   ready(ready: boolean) { this.link?.send({ t: 'ready', ready }); }

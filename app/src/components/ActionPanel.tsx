@@ -11,6 +11,7 @@ import { attackersOfMe } from '../game/threats';
 import { ME, labelOf, modeLower, modeWord, seatName } from '../game/names';
 import { Icon, useMatchTime } from './bits';
 import { PieceGlyph } from './PieceGlyph';
+import { tr } from '../i18n';
 
 const takesStraight = (st: GameState, p: Piece) => {
   const [dr, dc] = takeDirs(p, nextMode(st, p))[0];
@@ -25,7 +26,7 @@ function Chips({ st, pieces, danger }: { st: GameState; pieces: Piece[]; danger?
         <div key={p.id} className={`chip${danger ? ' is-danger' : ''}`}>
           <PieceGlyph kind={p.kind} seat={seatOf(p)} size={22} diamond={diamondOf(p, st.mode)} />
           <span className="chip-label">{labelOf(st, p)}</span>
-          <span className="chip-how">{takesStraight(st, p) ? 'düz alır' : 'çapraz alır'}</span>
+          <span className="chip-how">{takesStraight(st, p) ? tr('düz alır') : tr('çapraz alır')}</span>
         </div>
       ))}
     </div>
@@ -52,19 +53,19 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
     const order = ranking(st);
     let title: string, sub: string;
     if (st.solo) {
-      title = won ? 'Kazandın!' : 'Alındın';
-      sub = `${mine.score} puan · ${mine.takes} alma${won ? ' · arenada tek sen kaldın' : ` · ${st.round}. turda`}`;
+      title = won ? tr('Kazandın!') : tr('Alındın');
+      sub = `${tr('{n} puan', { n: mine.score })} · ${tr('{n} alma', { n: mine.takes })}${won ? ` · ${tr('arenada bot kalmadı')}` : ` · ${tr('{n}. turda', { n: st.round })}`}`;
     } else {
-      title = won ? 'Kazandın!' : `${seatName(st, st.winner ?? order[0])} kazandı`;
-      sub = `Sen ${order.indexOf(ME) + 1}. oldun · ${mine.score} puan · ${mine.takes} alma`;
+      title = won ? tr('Kazandın!') : tr('{name} kazandı', { name: seatName(st, st.winner ?? order[0]) });
+      sub = `${tr('Sen {n}. oldun', { n: order.indexOf(ME) + 1 })} · ${tr('{n} puan', { n: mine.score })} · ${tr('{n} alma', { n: mine.takes })}`;
     }
     return (
-      <section className="panel" aria-label="Maç sonu">
+      <section className="panel" aria-label={tr('Maç sonu')}>
         <div className="panel-stack">
           <div className="panel-big" style={{ color: won ? myColor : TXT }}>{title}</div>
           <div className="panel-sub-strong">{sub}</div>
           {!st.solo && (
-            <ol className="rank-list" aria-label="Sıralama">
+            <ol className="rank-list" aria-label={tr('Sıralama')}>
               {order.map((seat, i) => {
                 const s = st.seats[seat], p = starOf(st, seat)!;
                 return (
@@ -72,21 +73,21 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
                     <span className="rank-no">{i + 1}.</span>
                     <PieceGlyph kind="star" seat={seat} size={20} diamond={diamondOf(p, st.mode)} grey={!p.alive} />
                     <span className="rank-name" style={{ color: PLAYER_COLORS[seat] }}>{seatName(st, seat)}</span>
-                    <span className="rank-meta">{s.takes} alma{s.bonus ? ` · +${s.bonus} bonus` : ''}</span>
+                    <span className="rank-meta">{tr('{n} alma', { n: s.takes })}{s.bonus ? ` · +${s.bonus} ${tr('bonus')}` : ''}</span>
                     <span className="rank-score">{s.score}</span>
                   </li>
                 );
               })}
             </ol>
           )}
-          <div className="panel-hint">Maç süresi {time} · {st.round} tur · <button type="button" className="link-btn" onClick={() => ctl.openResults()}>Sonuçlar</button></div>
-          {net && !net.onRematch && <div className="panel-hint">Kurucu rövanş açarsa lobiye dönersin.</div>}
+          <div className="panel-hint">{tr('Maç süresi {time}', { time })} · {tr('{n} tur', { n: st.round })} · <button type="button" className="link-btn" onClick={() => ctl.openResults()}>{tr('Sonuçlar')}</button></div>
+          {net && !net.onRematch && <div className="panel-hint">{tr('Kurucu rövanş açarsa lobiye dönersin.')}</div>}
           <div className="btn-row">
-            <button type="button" className="btn btn-ghost" onClick={() => (net ? net.onLeave() : ctl.openMenu())}>{net ? 'Odadan çık' : 'Menü'}</button>
+            <button type="button" className="btn btn-ghost" onClick={() => (net ? net.onLeave() : ctl.openMenu())}>{net ? tr('Odadan çık') : tr('Menü')}</button>
             {(!net || net.onRematch) && (
               <button type="button" className="btn btn-main" style={{ background: won ? myColor : undefined }} onClick={() => (net?.onRematch ? net.onRematch() : ctl.newGame())}>
                 <Icon d={ICON.replay} size={18} stroke={2.2} color="#0B1026" />
-                {net ? 'Lobiye dön' : 'Rövanş'}
+                {net ? tr('Lobiye dön') : tr('Rövanş')}
               </button>
             )}
           </div>
@@ -99,18 +100,18 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
   if (!me.alive && !view.watching) {
     const mine = st.seats[ME];
     return (
-      <section className="panel" aria-label="Elendin">
+      <section className="panel" aria-label={tr('Elendin')}>
         <div className="panel-stack">
           <div className="panel-row-baseline">
-            <div className="panel-big">Elendin</div>
-            <div className="panel-sub-strong">{mine.score} puan · şu an {ranking(st).indexOf(ME) + 1}.</div>
+            <div className="panel-big">{tr('Elendin')}</div>
+            <div className="panel-sub-strong">{tr('{n} puan', { n: mine.score })} · {tr('şu an {n}.', { n: ranking(st).indexOf(ME) + 1 })}</div>
           </div>
-          <div className="panel-hint">Skorun sayılmaya devam eder: kazananı skor belirler. İzleyebilir ya da çıkabilirsin.</div>
+          <div className="panel-hint">{tr('Skorun sayılmaya devam eder: kazananı skor belirler. İzleyebilir ya da çıkabilirsin.')}</div>
           <div className="btn-row">
-            <button type="button" className="btn btn-ghost" onClick={() => (net ? net.onLeave() : ctl.openMenu())}>Maçtan çık</button>
+            <button type="button" className="btn btn-ghost" onClick={() => (net ? net.onLeave() : ctl.openMenu())}>{tr('Maçtan çık')}</button>
             <button type="button" className="btn btn-main" onClick={() => ctl.watch()}>
               <Icon d={ICON.eye} size={18} stroke={2.2} color="#0B1026" />
-              İzlemeye devam
+              {tr('İzlemeye devam')}
             </button>
           </div>
         </div>
@@ -125,16 +126,16 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
     const { attackers, doomed } = threatsFor(st, me, sel);
     const risky = doomed || attackers.length > 0;
     const risk = doomed
-      ? 'Riskli · bu kare tur sonunda çöküyor'
-      : attackers.length ? `Riskli · ${attackers.length} taş seni burada alabilir` : 'Güvenli · burada kimse seni alamaz';
+      ? tr('Riskli · bu kare tur sonunda çöküyor')
+      : attackers.length ? tr('Riskli · {n} taş seni burada alabilir', { n: attackers.length }) : tr('Güvenli · burada kimse seni alamaz');
     return (
-      <section className="panel" aria-label="Hamle önizlemesi">
+      <section className="panel" aria-label={tr('Hamle önizlemesi')}>
         <div className="panel-stack">
           <div className="panel-row">
             <div className="panel-title-sm">
-              {sel.bonus ? `${BONUS_NAMES[sel.bonus]} · ` : ''}{sel.type === 'swap' && sel.targetId ? `${labelOf(st, pieceById(st, sel.targetId)!)} ile yer değiş` : victim ? `${labelOf(st, victim)} alınacak` : 'Hamle önizlemesi'}
+              {sel.bonus ? `${tr(BONUS_NAMES[sel.bonus])} · ` : ''}{sel.type === 'swap' && sel.targetId ? tr('{name} ile yer değiş', { name: labelOf(st, pieceById(st, sel.targetId)!) }) : victim ? tr('{name} alınacak', { name: labelOf(st, victim) }) : tr('Hamle önizlemesi')}
             </div>
-            <div className="panel-timer-sm" style={{ color: timerColor }}>{t} sn</div>
+            <div className="panel-timer-sm" style={{ color: timerColor }}>{tr('{n} sn', { n: t })}</div>
           </div>
           <div className={`risk-row${risky ? ' is-risky' : ''}`}>
             <Icon d={risky ? ICON.warn : ICON.check} size={18} stroke={2.2} />
@@ -142,9 +143,9 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
           </div>
           <Chips st={st} pieces={attackers} />
           <div className="btn-row">
-            <button type="button" className="btn btn-ghost" onClick={() => ctl.cancel()}>Vazgeç</button>
+            <button type="button" className="btn btn-ghost" onClick={() => ctl.cancel()}>{tr('Vazgeç')}</button>
             <button type="button" className="btn btn-main" style={{ background: risky ? DANGER : myColor }} onClick={() => ctl.confirm()}>
-              {risky ? 'Riskli · Onayla' : 'Onayla'}
+              {risky ? tr('Riskli · Onayla') : tr('Onayla')}
             </button>
           </div>
         </div>
@@ -156,18 +157,18 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
   if (view.phase === 'sen' && view.showThreats) {
     const th = attackersOfMe(st, me);
     return (
-      <section className="panel" aria-label="Seni alabilecek taşlar">
+      <section className="panel" aria-label={tr('Seni alabilecek taşlar')}>
         <div className="panel-stack">
           <div className="panel-row">
             <Icon d={th.length ? ICON.warn : ICON.check} size={22} stroke={2.2} color={th.length ? DANGER : myColor} />
             <div className="panel-title-sm" style={{ color: th.length ? DANGER_TXT : TXT }}>
-              {th.length ? `Şu an ${th.length} taş seni alabilir` : 'Şu an kimse seni alamaz'}
+              {th.length ? tr('Şu an {n} taş seni alabilir', { n: th.length }) : tr('Şu an kimse seni alamaz')}
             </div>
-            <div className="panel-timer-sm" style={{ color: timerColor }}>{t} sn</div>
+            <div className="panel-timer-sm" style={{ color: timerColor }}>{tr('{n} sn', { n: t })}</div>
           </div>
           <Chips st={st} pieces={th} danger />
           <div className="panel-hint">
-            {th.length ? 'Bu taşlar senden sonra oynuyor. Çizgisiz yanan kareler güvenli.' : 'Çizgisiz yanan kareler güvenli. Taşına tekrar dokun: kapanır.'}
+            {th.length ? tr('Bu taşlar senden sonra oynuyor. Çizgisiz yanan kareler güvenli.') : tr('Çizgisiz yanan kareler güvenli. Taşına tekrar dokun: kapanır.')}
           </div>
         </div>
       </section>
@@ -179,7 +180,7 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
     const { done, total, currentId } = view.bots;
     const cur = currentId ? pieceById(st, currentId) : null;
     return (
-      <section className="panel" aria-label="Botlar oynuyor">
+      <section className="panel" aria-label={tr('Botlar oynuyor')}>
         <div className="panel-stack">
           <div className="panel-row">
             <svg width="30" height="30" viewBox="0 0 100 100" style={{ flex: 'none' }} aria-hidden="true">
@@ -189,8 +190,8 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
               <path d="M66 58 V82 M54 70 H78" stroke="#0B1026" strokeWidth="7" strokeLinecap="round" />
             </svg>
             <div className="panel-titles">
-              <div className="panel-title">Botlar oynuyor</div>
-              <div className="panel-sub">{cur && cur.kind !== 'star' && isBot(cur) ? `Şimdi #${cur.label} · alınan bot atlanır` : 'Sırayla, art arda'}</div>
+              <div className="panel-title">{tr('Botlar oynuyor')}</div>
+              <div className="panel-sub">{cur && cur.kind !== 'star' && isBot(cur) ? tr('Şimdi #{n} · alınan bot atlanır', { n: cur.label }) : tr('Sırayla, art arda')}</div>
             </div>
             <div className="panel-count">{Math.min(done, total)} / {total}</div>
           </div>
@@ -202,7 +203,7 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
           {!ctl.isGuest && (
             <button type="button" className="btn btn-fast" onClick={() => ctl.speedUp()}>
               <Icon d={ICON.fast} size={18} fill="#EEF2FF" />
-              Hızlandır · ya da tahtaya dokun
+              {tr('Hızlandır · ya da tahtaya dokun')}
             </button>
           )}
         </div>
@@ -217,37 +218,37 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
   let timer: number | null = null, barColor = myColor;
 
   if (view.phase === 'sen') {
-    who = me; timer = t; title = 'Senin sıran'; sub = 'Yanan karelerden birine dokun';
+    who = me; timer = t; title = tr('Senin sıran'); sub = tr('Yanan karelerden birine dokun');
     const threats = attackersOfMe(st, me).length;
-    if (threats) { hint = `Şu an ${threats} taş seni alabilir. Çizgili kareler tehlikeli.`; hintColor = DANGER_TXT; }
-    else hint = 'Bir taşa dokun: yolları ve kimi kovaladığı tahtada görünür.';
+    if (threats) { hint = tr('Şu an {n} taş seni alabilir. Çizgili kareler tehlikeli.', { n: threats }); hintColor = DANGER_TXT; }
+    else hint = tr('Bir taşa dokun: yolları ve kimi kovaladığı tahtada görünür.');
     if (collapseDue(st)) {
-      sub = 'Dış halka bu turun sonunda çöküyor';
-      hint = 'Turuncu çizgili halkada kalan taş elenir. İçeri gir.'; hintColor = HAZARD_TXT; border = HAZARD;
+      sub = tr('Dış halka bu turun sonunda çöküyor');
+      hint = tr('Turuncu çizgili halkada kalan taş elenir. İçeri gir.'); hintColor = HAZARD_TXT; border = HAZARD;
     }
     if (lastSeconds) {
-      sub = 'Son saniyeler';
-      hint = 'Süre biterse oyun senin yerine güvenli bir hamle yapar.'; hintColor = TXT2;
+      sub = tr('Son saniyeler');
+      hint = tr('Süre biterse oyun senin yerine güvenli bir hamle yapar.'); hintColor = TXT2;
       border = DANGER; glow = '0 0 0 3px rgba(255,59,92,.18)';
     }
   } else if (view.phase === 'rakip' && actor) {
     who = actor; timer = t; barColor = colorOf(actor);
-    title = `${actor.kind === 'star' ? seatName(st, actor.seat) : labelOf(st, actor)} oynuyor`;
+    title = tr('{name} oynuyor', { name: actor.kind === 'star' ? seatName(st, actor.seat) : labelOf(st, actor) });
     const next = pieceById(st, st.order[st.turn + 1]);
-    sub = !next ? 'Sonra: yeni tur' : next.kind === 'star' ? `Sonra: ${labelOf(st, next)}` : 'Sonra: botlar';
-    hint = me.alive ? 'Sıran gelince gidebileceğin kareler kendiliğinden yanar.' : 'İzliyorsun. Bir taşa dokun: yolları tahtada görünür.';
+    sub = !next ? tr('Sonra: yeni tur') : next.kind === 'star' ? tr('Sonra: {name}', { name: labelOf(st, next) }) : tr('Sonra: botlar');
+    hint = me.alive ? tr('Sıran gelince gidebileceğin kareler kendiliğinden yanar.') : tr('İzliyorsun. Bir taşa dokun: yolları tahtada görünür.');
   } else if (view.phase === 'mod') {
     const first = actor?.kind === 'star' ? actor : null;
-    who = first; title = `Mod değişti: ${modeWord(st.mode)}`;
-    sub = `Tur ${st.round}${first ? ` · ilk sıra ${labelOf(st, first)}` : ''}`;
-    hint = `Yıldızlar artık ${modeLower(st.mode)} gider ve ${modeLower(st.mode)} alır.`;
+    who = first; title = tr('Mod değişti: {mode}', { mode: modeWord(st.mode) });
+    sub = `${tr('Tur {n}', { n: st.round })}${first ? ` · ${tr('ilk sıra {name}', { name: labelOf(st, first) })}` : ''}`;
+    hint = tr('Yıldızlar artık {mode} gider ve {mode} alır.', { mode: modeLower(st.mode) });
   } else if (view.phase === 'hazir') {
     const k = st.matchOrder.indexOf(me.id) + 1;
-    who = me; title = 'Maç başlıyor'; sub = `Tur 1 · ${modeWord(st.mode)} · sıran ${k} / ${st.matchOrder.length}`;
-    hint = k === 1 ? 'İlk sen oynuyorsun. Sıra bütün maç aynı kalır.' : `Senden önce ${k - 1} taş oynuyor. Sıra bütün maç aynı kalır.`;
+    who = me; title = tr('Maç başlıyor'); sub = tr('Tur 1 · {mode} · sıran {k} / {total}', { mode: modeWord(st.mode), k, total: st.matchOrder.length });
+    hint = k === 1 ? tr('İlk sen oynuyorsun. Sıra bütün maç aynı kalır.') : tr('Senden önce {n} taş oynuyor. Sıra bütün maç aynı kalır.', { n: k - 1 });
   } else {
-    title = 'Sıra geçiyor…'; sub = `Tur ${st.round}`;
-    hint = 'Bot turunda tahtaya dokunarak hızlandırabilirsin.';
+    title = tr('Sıra geçiyor…'); sub = tr('Tur {n}', { n: st.round });
+    hint = tr('Bot turunda tahtaya dokunarak hızlandırabilirsin.');
   }
 
   const total = ctl.setup.moveSeconds;
@@ -290,13 +291,13 @@ function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
   const b = ctl.state.seats[ME].bonuses;
   if (!Object.values(b).some(n => n > 0)) return null;
   return (
-    <div className="bonus-bar" role="group" aria-label="Bonuslar">
+    <div className="bonus-bar" role="group" aria-label={tr('Bonuslar')}>
       {(Object.keys(BONUS_ICONS) as BonusKind[]).map(k => (
         <button key={k} type="button" disabled={!b[k] || k === 'armor'} aria-pressed={view.bonus === k}
           className={`bonus${view.bonus === k ? ' is-on' : ''}${k === 'armor' && b[k] ? ' is-passive' : ''}`}
-          onClick={() => ctl.selectBonus(k)} aria-label={`${BONUS_NAMES[k]}: ${b[k]}`}>
+          onClick={() => ctl.selectBonus(k)} aria-label={`${tr(BONUS_NAMES[k])}: ${b[k]}`}>
           <Icon d={BONUS_ICONS[k]} size={18} stroke={2} fill={k === 'double' ? 'currentColor' : 'none'} />
-          <span>{BONUS_NAMES[k]}</span>
+          <span>{tr(BONUS_NAMES[k])}</span>
           {b[k] > 0 && <b>{b[k]}</b>}
         </button>
       ))}

@@ -5,23 +5,24 @@ import { ICON } from '../game/look';
 import { ME, modeWord } from '../game/names';
 import { Icon, MatchClock, RingIcon, useMatchTime } from './bits';
 import { ModeIcon } from './ModeOverlay';
+import { tr } from '../i18n';
 
 // Halka çipi. Üst çubukta maç saati de olduğu için yazı kısa tutulur; dar ekranda ve izlerken daha da kısalır.
 function ringInfo(st: GameState) {
   const next = nextCollapseRound(st);
-  if (next == null) return { long: 'Arena en dar', short: 'En dar', full: 'Arena daha fazla daralmaz', warn: false, soon: false };
-  if (next === st.round) return { long: 'Halka çöküyor', short: 'Çöküyor', full: 'Dış halka bu turun sonunda çöküyor', warn: collapseDue(st), soon: false };
+  if (next == null) return { long: tr('Arena en dar'), short: tr('En dar'), full: tr('Arena daha fazla daralmaz'), warn: false, soon: false };
+  if (next === st.round) return { long: tr('Halka çöküyor'), short: tr('Çöküyor'), full: tr('Dış halka bu turun sonunda çöküyor'), warn: collapseDue(st), soon: false };
   const k = next - st.round;
-  return { long: `Halka ${k} tur sonra`, short: `${k} tur sonra`, full: `Dış halka ${k} tur sonra çökecek`, warn: false, soon: k === 1 };
+  return { long: tr('Halka {k} tur sonra', { k }), short: tr('{k} tur sonra', { k }), full: tr('Dış halka {k} tur sonra çökecek', { k }), warn: false, soon: k === 1 };
 }
 
 const watching = (st: GameState) => !st.over && !starOf(st, ME)?.alive;
-const turText = (st: GameState) => `${watching(st) ? 'İZLEYİCİ · ' : ''}TUR ${st.round}`;
+const turText = (st: GameState) => `${watching(st) ? tr('İZLEYİCİ · ') : ''}${tr('TUR {n}', { n: st.round })}`;
 
 function LogButton({ ctl, view, size }: { ctl: GameController; view: View; size: number }) {
   const n = view.events.length;
   return (
-    <button type="button" className="icon-btn" style={{ width: size }} aria-label={`Savaş kaydı, ${n} alma`} onClick={() => ctl.openLog()}>
+    <button type="button" className="icon-btn" style={{ width: size }} aria-label={tr('Savaş kaydı, {n} alma', { n })} onClick={() => ctl.openLog()}>
       <Icon d={ICON.sword} size={size > 40 ? 22 : 20} />
       {n > 0 && <span className="icon-badge">{n}</span>}
     </button>
@@ -30,7 +31,7 @@ function LogButton({ ctl, view, size }: { ctl: GameController; view: View; size:
 
 function MenuButton({ ctl, size }: { ctl: GameController; size: number }) {
   return (
-    <button type="button" className="icon-btn" style={{ width: size }} aria-label="Menü" onClick={() => ctl.openMenu()}>
+    <button type="button" className="icon-btn" style={{ width: size }} aria-label={tr('Menü')} onClick={() => ctl.openMenu()}>
       <Icon d={ICON.menu} size={size > 40 ? 22 : 20} />
     </button>
   );
@@ -45,7 +46,7 @@ export function TopBar({ ctl, view }: { ctl: GameController; view: View }) {
       <MenuButton ctl={ctl} size={44} />
       <div className="topbar-mid">
         <span className="topbar-tur">
-          {watching(st) && <span className="topbar-eye" aria-label="İzleyici"><Icon d={ICON.eye} size={16} stroke={2.2} /></span>}
+          {watching(st) && <span className="topbar-eye" aria-label={tr('İzleyici')}><Icon d={ICON.eye} size={16} stroke={2.2} /></span>}
           TUR {st.round}
         </span>
         <span className={`ring-chip${ring.warn ? ' is-warn' : ring.soon ? ' is-soon' : ''}${watching(st) ? ' is-short' : ''}`} aria-label={ring.full}>
@@ -60,20 +61,20 @@ export function TopBar({ ctl, view }: { ctl: GameController; view: View }) {
   );
 }
 
-const modeSub = (mode: Mode) => (mode === 'DUZ' ? 'Yıldızlar düz gider, düz alır' : 'Yıldızlar çapraz gider, çapraz alır');
+const modeSub = (mode: Mode) => (mode === 'DUZ' ? tr('Yıldızlar düz gider, düz alır') : tr('Yıldızlar çapraz gider, çapraz alır'));
 
 // Mod göstergesi: oyunun en önemli bilgisi. DÜZ buz zemin, ÇAPRAZ gece zemin + çapraz desen.
 export function ModeIndicator({ mode }: { mode: Mode }) {
   const next: Mode = mode === 'DUZ' ? 'CAPRAZ' : 'DUZ';
   return (
-    <div key={mode} className={`mode-box mode-flip mode-${mode === 'DUZ' ? 'duz' : 'capraz'}`} role="status" aria-label={`Mod ${modeWord(mode)}. ${modeSub(mode)}. Sonraki tur ${modeWord(next)}.`}>
+    <div key={mode} className={`mode-box mode-flip mode-${mode === 'DUZ' ? 'duz' : 'capraz'}`} role="status" aria-label={tr('Mod {mode}. {sub}. Sonraki tur {next}.', { mode: modeWord(mode), sub: modeSub(mode), next: modeWord(next) })}>
       <ModeIcon mode={mode} size={34} stroke={9} />
       <div className="mode-box-text">
         <span className="mode-box-label">{modeWord(mode)}</span>
         <span className="mode-box-sub">{modeSub(mode)}</span>
       </div>
       <div className="mode-box-next">
-        <span>SONRAKİ TUR</span>
+        <span>{tr('SONRAKİ TUR')}</span>
         <span className="mode-box-next-mode">
           <svg width="13" height="13" viewBox="0 0 100 100" style={{ overflow: 'visible' }} aria-hidden="true">
             <polygon points={next === 'DUZ' ? '17,17 83,17 83,83 17,83' : '50,5 95,50 50,95 5,50'} fill="none" stroke="currentColor" strokeWidth="12" />
@@ -94,11 +95,11 @@ export function CompactBar({ ctl, view }: { ctl: GameController; view: View }) {
   return (
     <header className="compact-bar">
       <MenuButton ctl={ctl} size={40} />
-      <div key={mode} className={`mode-box mode-box-compact mode-flip mode-${mode === 'DUZ' ? 'duz' : 'capraz'}`} role="status" aria-label={`Mod ${modeWord(mode)}`}>
+      <div key={mode} className={`mode-box mode-box-compact mode-flip mode-${mode === 'DUZ' ? 'duz' : 'capraz'}`} role="status" aria-label={tr('Mod {mode}', { mode: modeWord(mode) })}>
         <ModeIcon mode={mode} size={24} stroke={10} />
         <span className="mode-box-label">{modeWord(mode)}</span>
         <div className="compact-info">
-          <span>{turText(st)} · <span role="timer" aria-label={`Maç süresi ${time}`}>{time}</span></span>
+          <span>{turText(st)} · <span role="timer" aria-label={tr('Maç süresi {time}', { time })}>{time}</span></span>
           <span className={ring.warn ? 'is-warn' : undefined}>{ring.long}</span>
         </div>
       </div>
