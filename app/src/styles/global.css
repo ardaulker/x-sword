@@ -149,3 +149,6 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
 .bots-row .bots-max { flex: none; padding: 8px 12px; }
 
 .res-daily { font: 700 12px var(--font-display); letter-spacing: .14em; color: var(--metin-3); text-transform: uppercase; margin-bottom: 4px; }
+
+/* Geniş ekranda kartlar telefon genişliğinde kalır. */
+.sheet { width: 100%; max-width: 480px; align-self: center; }

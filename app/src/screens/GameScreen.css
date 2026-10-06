@@ -238,3 +238,17 @@
 
 .coach-step { font: 700 13px var(--font-display); color: var(--metin-3); }
 .coach-list { margin: 4px 0 16px; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.4; color: var(--metin-1); }
+
+/* Geniş ekran (masaüstü, yatay tablet): tahta solda, oyun bilgisi sağ sütunda. */
+@media (min-width: 900px) and (min-height: 520px) {
+  .game {
+    max-width: 1160px; display: grid; gap: 8px 20px; align-content: start; padding-inline: 20px;
+    grid-template-columns: minmax(0, 1fr) 400px; grid-template-rows: repeat(4, auto) minmax(0, 1fr);
+  }
+  .game > .stage { grid-column: 1; grid-row: 1 / -1; min-height: 0; }
+  .game > .topbar, .game > .compact-bar { grid-column: 2; grid-row: 1; }
+  .game > .mode-box { grid-column: 2; grid-row: 2; }
+  .game > .queue { grid-column: 2; grid-row: 3; }
+  .game > .strip { grid-column: 2; grid-row: 4; }
+  .game.is-compact { gap: 8px 20px; }
+}
