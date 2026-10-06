@@ -10,13 +10,22 @@ Canlı: **https://ardaulker.github.io/x-sword/** — `main`'e her push GitHub Pa
 
 Bilgisayarda: `index.html` dosyasını tarayıcıda aç. Kurulum yok, sunucu yok.
 
+## Arena (yeni kural motoru)
+
+**https://ardaulker.github.io/x-sword/arena/** — 2–4 koltuk (insan ya da bot), oyuncu sayısıyla büyüyen tahta,
+daralan arena, hamle önizlemesi ve üç zorlukta bot. İnsanlar şimdilik aynı telefonda sırayla oynar.
+
+- `engine/rules.js`: kurallar. Ekrana dokunmaz; ileride çevrimiçi sunucu da bunu kullanacak.
+- `engine/bots.js`: Kolay / Normal / Zor botlar.
+
 ## Test
 
 `tests/` oyunu Node'da sahte bir DOM ile binlerce kez otomatik oynatır:
 
 ```
-node tests/tests.js    # 2.000 rastgele + 2.000 dikkatli oyun, kazanma oranları
-node tests/tests2.js   # renkli yollar, ölen botların atlanması, kayıt metinleri
+node tests/engine.test.mjs  # yeni motor: kurallar, botların risk almaması, bot gücü
+node tests/tests.js         # eski demo: 2.000 rastgele + 2.000 dikkatli oyun
+node tests/tests2.js        # eski demo: renkli yollar, ölen botların atlanması, kayıt metinleri
 ```
 
 ## Kurallar

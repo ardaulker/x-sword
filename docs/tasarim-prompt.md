@@ -6,6 +6,8 @@ Oyunun adı **X Sword**. Logoda iki kılıç çaprazlanıp bir "X" oluştursun. 
 
 Ekte oyunun şu anki demosu var: `index.html`. Tek kişilik bir prototip. Kuralları, görsel dili ve renk kodlarını oradan oku. Görünüşü birebir kopyalama. Ruhunu koru ve olgunlaştır.
 
+Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-sword/arena/ — 2–4 koltuk, botlar, daralan arena ve hamle önizlemesi orada denenebilir. Oradaki ekran bir test sahası; tasarım yerine geçmez.
+
 # Oyun
 
 ## Taşlar
@@ -48,17 +50,17 @@ Ekte oyunun şu anki demosu var: `index.html`. Tek kişilik bir prototip. Kurall
 - 3 yıldızda tahta 11×11 olur ve yaklaşık 21 bot vardır.
 - 4 yıldızda tahta 13×13 olur ve yaklaşık 28 bot vardır.
 - Bu sayılar test edilip ayarlanacak.
-- Yıldızlar birbirinden eşit uzaklıktaki adil noktalardan başlar.
+- Yıldızlar köşelerden bir kare içeride, birbirinden eşit uzaklıkta başlar. Arena botları hiçbir yıldızın iki kare yakınına konmaz.
 
 ## Botlar
 - Botlar oyuncuları kovalar. Bir oyuncuyu alamayan bot başka bir oyuncuya yönelir.
 - Bot gitmeden önce şunu düşünür: "Bu karede bir sonraki hamlede alınır mıyım?" Alınacaksa oraya gitmez.
-- Üç zorluk var: Kolay, Normal, Zor. Zor botlar bir sonraki tur için alma hamlesi hazırlar.
+- Üç zorluk var. Kolay: alabiliyorsa alır, yoksa en yakın yıldıza yürür. Normal: alınacağı kareye gitmez, çöken halkada kalmaz, en çabuk ulaşacağı yıldıza yönelir. Zor: buna ek olarak hedef yıldızın kaçış karelerini kapatır.
 - Bot zekâsı kodda çözülecek. Senden istenen iki şey var: zorluk seçimi, bir de botun kimi hedeflediğini okunur gösteren bir işaret. Bu işaret ayarlardan kapatılabilsin.
 
 ## Bitiş
 - Son kalan yıldız kazanır. Sıralamayı alınma sırası belirler.
-- Maç sonsuza kadar sürmesin diye arena daralır. Belirli turlardan sonra en dıştaki halka çöker. O halkada kalan taş oyundan çıkar. Halka çökmeden bir tur önce uyarı görünür.
+- Maç sonsuza kadar sürmesin diye arena daralır. 8. turdan sonra her 4 turda bir, tur sonunda en dıştaki halka çöker. O halkada kalan taş oyundan çıkar. Çökecek halka o tur boyunca uyarı olarak işaretli görünür.
 - Bir maç 5–10 dakika sürmeli.
 - Alınan oyuncu maçı izlemeye devam edebilir ya da çıkabilir.
 

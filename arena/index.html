@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>X Sword — Arena</title>
+<style>
+  :root {
+    --bg: #1a1a2e; --panel: #16213e; --cell: #2d3250; --text: #eef0ff; --muted: #9aa3c7;
+    --accent: #e94560; --red: #ff3333; --blue: #3388ff;
+    --s0: #22d3ee; --s1: #a78bfa; --s2: #facc15; --s3: #f472b6;
+    --walk-mine: #2d5a2d; --walk-mine-glow: #00ff00;
+    --walk-other: #5c3a10; --walk-other-glow: #ff9900;
+    --take: #6a1b1b; --take-glow: #ff0000;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  button, select { font: inherit; color: inherit; }
+  button { cursor: pointer; border: none; border-radius: 8px; padding: 10px 14px; font-weight: 700; background: #2a3563; }
+  button.primary { background: var(--accent); }
+  button:disabled { opacity: .5; cursor: default; }
+
+  .bar {
+    position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: calc(10px + env(safe-area-inset-top)) 16px 10px; background: var(--panel); box-shadow: 0 4px 10px rgba(0,0,0,.4);
+  }
+  .brand { color: #00ff88; font-weight: 900; letter-spacing: 2px; text-decoration: none; margin-right: auto; }
+  .chip { background: #000; border: 1px solid #444; border-radius: 6px; padding: 6px 10px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .chip.mode { border-color: #00ff88; font-size: 1.05em; }
+
+  main { max-width: 640px; margin: 0 auto; padding: 16px; }
+  .panel { background: var(--panel); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .panel h2 { margin: 0 0 12px; font-size: 1.1em; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .seg { display: inline-flex; background: #0f1530; border-radius: 8px; padding: 3px; }
+  .seg button { background: transparent; padding: 8px 12px; }
+  .seg button.on { background: #3a4a8a; }
+  .seat-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-top: 1px solid #263055; }
+  .seat-row b { min-width: 70px; }
+  select { background: #0f1530; border: 1px solid #3a4a8a; border-radius: 8px; padding: 8px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex: none; }
+  .dot.s0 { background: var(--s0); } .dot.s1 { background: var(--s1); } .dot.s2 { background: var(--s2); } .dot.s3 { background: var(--s3); }
+  .note { color: var(--muted); font-size: .9em; line-height: 1.5; }
+
+  .banner { border-left: 6px solid #00ff88; background: var(--panel); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-weight: 600; line-height: 1.4; }
+  .banner.warn-on { box-shadow: inset 0 0 0 2px #facc15; }
+  .seats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .seat { display: flex; align-items: center; gap: 6px; background: var(--panel); border-radius: 999px; padding: 5px 10px; font-size: .85em; border: 2px solid transparent; }
+  .seat.now { border-color: #fff; }
+  .seat.out { opacity: .45; text-decoration: line-through; }
+
+  .board-wrap { display: flex; justify-content: center; }
+  .board {
+    --cellsz: min(44px, calc((100vw - 32px - 16px - (var(--n) - 1) * 3px) / var(--n)));
+    display: grid; grid-template-columns: repeat(var(--n), var(--cellsz)); gap: 3px;
+    padding: 8px; background: #111; border-radius: 10px; box-shadow: 0 0 30px rgba(0,0,0,.8);
+  }
+  .cell {
+    width: var(--cellsz); height: var(--cellsz); background: var(--cell); position: relative;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items: center; justify-content: center;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: background .15s;
+  }
+  .cell.gone { background: #0b0b12; }
+  .cell.warn { background: repeating-linear-gradient(45deg, #4a4a66 0 4px, #24243a 4px 8px); }
+  .cell.walk-mine { background: var(--walk-mine); box-shadow: inset 0 0 10px var(--walk-mine-glow); cursor: pointer; }
+  .cell.walk-other { background: var(--walk-other); box-shadow: inset 0 0 10px var(--walk-other-glow); }
+  .cell.take { background: var(--take); box-shadow: inset 0 0 10px var(--take-glow); cursor: pointer; }
+  .cell.chosen { box-shadow: inset 0 0 0 3px #fff, inset 0 0 12px var(--walk-mine-glow); }
+  .cell.threat { box-shadow: inset 0 0 0 3px var(--red); animation: pulse .8s infinite alternate; }
+  .cell.focus { box-shadow: inset 0 0 0 2px rgba(255,255,255,.7); }
+  @keyframes pulse { to { box-shadow: inset 0 0 0 3px var(--red), inset 0 0 14px var(--red); } }
+
+  .piece {
+    width: calc(var(--cellsz) * .64); height: calc(var(--cellsz) * .64); position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: center; pointer-events: none;
+  }
+  .piece span { color: #fff; font-weight: 900; font-size: calc(var(--cellsz) * .3); z-index: 3;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
+  .piece.diamond { transform: rotate(45deg); }
+  .piece.diamond span { transform: rotate(-45deg); }
+  .piece.red { background: var(--red); box-shadow: inset 0 0 5px #000; }
+  .piece.blue { background: var(--blue); box-shadow: inset 0 0 5px #000; }
+  .piece.s0 { background: var(--s0); } .piece.s1 { background: var(--s1); }
+  .piece.s2 { background: var(--s2); } .piece.s3 { background: var(--s3); }
+  .piece.star { box-shadow: 0 0 10px rgba(255,255,255,.5); }
+  .piece.bot { outline: 2px dashed rgba(255,255,255,.9); outline-offset: 1px; }
+  /* Kılıçlar alma yönünü gösterir: "+" düz, "×" çapraz */
+  .swords { position: absolute; inset: 0; z-index: 1; }
+  .swords i {
+    position: absolute; width: 180%; height: calc(var(--cellsz) * .07); top: 50%; left: -40%;
+    margin-top: calc(var(--cellsz) * -.035);
+    background: linear-gradient(90deg, transparent, #e0e0e0, #fff, #e0e0e0, transparent);
+    clip-path: polygon(0 50%, 10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%);
+  }
+  .swords i + i { transform: rotate(90deg); }
+  .piece.red .swords { transform: rotate(45deg); }
+  .piece.blue .swords { transform: rotate(-45deg); }
+
+  .preview { display: flex; align-items: center; gap: 10px; margin-top: 10px; background: var(--panel); border-radius: 8px; padding: 10px 12px; border: 2px solid #00ff88; }
+  .preview.danger { border-color: var(--red); }
+  .preview span { flex: 1; line-height: 1.35; }
+  .controls { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+  .log { background: var(--panel); border-radius: 10px; padding: 10px 12px; max-height: 32vh; overflow-y: auto; font-family: ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.5; }
+  .log div { border-bottom: 1px dashed #2c355c; padding: 3px 0; }
+  .log .take { color: #ffeb3b; font-weight: 700; }
+  .log .round { color: var(--muted); }
+  .log .big { color: #00ff88; font-weight: 800; }
+
+  .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.8); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .overlay[hidden] { display: none; }
+  .modal { background: var(--panel); border: 2px solid #00ff88; border-radius: 12px; padding: 20px; width: 100%; max-width: 520px; max-height: 85vh; overflow-y: auto; }
+  .modal h2 { margin-top: 0; color: #00ff88; }
+  .modal ol, .modal ul { line-height: 1.7; padding-left: 20px; }
+  .modal li .dot { margin-right: 6px; vertical-align: -2px; }
+  .legend { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; }
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="../">X SWORD</a>
+  <span class="chip" id="roundChip" hidden>Tur 1</span>
+  <span class="chip mode" id="modeChip" hidden>DÜZ +</span>
+  <span class="chip" id="clock" hidden>⏱ 00:00</span>
+  <button id="rulesBtn">Kurallar</button>
+</header>
+
+<main>
+  <section id="setup" class="panel">
+    <h2>Yeni maç</h2>
+    <div class="row">Oyuncu sayısı:
+      <div class="seg" id="countBtns">
+        <button data-n="2">2</button><button data-n="3">3</button><button data-n="4">4</button>
+      </div>
+    </div>
+    <div id="seatRows"></div>
+    <div class="row" style="margin-top:12px">Arena botları:
+      <select id="neutralLevel">
+        <option value="kolay">Kolay</option><option value="normal">Normal</option><option value="zor">Zor</option>
+      </select>
+    </div>
+    <p class="note" id="setupInfo"></p>
+    <p class="note">Bu deneme sürümünde insanlar aynı telefonda sırayla oynar. Çevrimiçi oda bir sonraki adım.</p>
+    <button class="primary" id="startBtn">Başlat</button>
+  </section>
+
+  <section id="game" hidden>
+    <div class="banner" id="banner"></div>
+    <div class="seats" id="seats"></div>
+    <div class="board-wrap"><div class="board" id="board"></div></div>
+    <div class="preview" id="preview" hidden><span id="previewText"></span><button class="primary" id="confirmBtn">Onayla</button></div>
+    <div class="controls">
+      <button id="fastBtn">Bot turunu hızlandır</button>
+      <button id="newBtn">Ayarlar / yeni maç</button>
+    </div>
+    <div class="log" id="log"></div>
+  </section>
+</main>
+
+<div class="overlay" id="overOverlay" hidden>
+  <div class="modal">
+    <h2 id="overTitle"></h2>
+    <ol id="overList"></ol>
+    <p class="note" id="overMeta"></p>
+    <div class="controls"><button class="primary" id="againBtn">Tekrar oyna</button><button id="setupBtn">Ayarlar</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="rulesOverlay" hidden>
+  <div class="modal">
+    <h2>Kurallar</h2>
+    <ul>
+      <li><b>Amaç:</b> Arenada son kalan yıldız ol.</li>
+      <li><b>Yıldızlar:</b> 2–4 oyuncu, herkesin bir yıldızı var. Boş koltuğa bot yıldız ("İkiz") oturur; kenarı kesik çizgilidir.</li>
+      <li><b>Tahta:</b> 2 kişide 9×9, 3 kişide 11×11, 4 kişide 13×13.</li>
+      <li><b>Mod:</b> Her tur ya DÜZ ya ÇAPRAZ, her tur değişir. Yıldızlar o yönde gider ve o yönde alır.</li>
+      <li><b>Kırmızı bot:</b> düz yürür, çapraz alır. <b>Mavi bot:</b> çapraz yürür, düz alır.</li>
+      <li><b>Hamle:</b> Herkes tek kare gider. Almak, hedefin karesine geçmektir. Herkes herkesi alabilir.</li>
+      <li><b>Sıra:</b> Önce yıldızlar oynar; her tur başlayan değişir. Sonra arena botları numara sırasıyla oynar. Alınan botun sırası atlanır.</li>
+      <li><b>Arena daralır:</b> 8. turdan sonra her 4 turda dış halka çöker. Çökecek halka o tur çizgili görünür. Orada kalan taş düşer.</li>
+      <li><b>Renkler:</b> <span class="legend" style="background:#2d5a2d;box-shadow:inset 0 0 4px #0f0"></span> yeşil senin yolların, <span class="legend" style="background:#5c3a10;box-shadow:inset 0 0 4px #f90"></span> turuncu dokunduğun taşın yolları, <span class="legend" style="background:#6a1b1b;box-shadow:inset 0 0 4px #f00"></span> kırmızı alma noktaları.</li>
+      <li><b>Önizleme:</b> Bir kareye dokun. O karede seni alabilecek taşlar kırmızı çerçeveyle yanar. Onayla'ya ya da aynı kareye tekrar dokun.</li>
+      <li><b>Botlar:</b> Kolay — alabiliyorsa alır, yoksa en yakın yıldıza yürür. Normal — alınacağı kareye gitmez, çöken halkada kalmaz, en çabuk ulaşacağı yıldıza yönelir. Zor — buna ek olarak hedefinin kaçış karelerini kapatır.</li>
+    </ul>
+    <button class="primary" id="rulesClose">Anladım</button>
+  </div>
+</div>
+
+<script type="module">
+import {
+  createGame, play, currentActor, legalMoves, threatsFor, collapseDue, nextCollapseRound, ringOf,
+  modeLabel, nameOf, pieceAt, pieceById, ranking, SIZE_BY_STARS, NEUTRALS_BY_STARS, SEAT_NAMES,
+} from '../engine/rules.js';
+import { chooseMove } from '../engine/bots.js';
+
+const $ = id => document.getElementById(id);
+const LEVELS = [['kolay', 'Kolay'], ['normal', 'Normal'], ['zor', 'Zor']];
+const LEVEL_NAME = Object.fromEntries(LEVELS);
+
+let setup = loadSetup();
+let state = null, gameId = 0, timer = null, fast = false, ui = null, cells = [];
+const clock = { start: 0, iv: null };
+
+function loadSetup() {
+  try {
+    const s = JSON.parse(localStorage.getItem('xsword-setup'));
+    if (s && Array.isArray(s.seats) && s.seats.length === 4) return s;
+  } catch {}
+  return {
+    count: 2,
+    seats: [{ kind: 'human', level: 'zor' }, { kind: 'bot', level: 'zor' }, { kind: 'bot', level: 'zor' }, { kind: 'bot', level: 'zor' }],
+    neutralLevel: 'normal',
+  };
+}
+function saveSetup() { try { localStorage.setItem('xsword-setup', JSON.stringify(setup)); } catch {} }
+
+// ------------------------------------------------------------ kurulum
+
+function renderSetup() {
+  const n = setup.count;
+  $('countBtns').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.n === n));
+  $('seatRows').replaceChildren();
+  for (let i = 0; i < n; i++) {
+    const s = setup.seats[i];
+    const row = document.createElement('div');
+    row.className = 'seat-row';
+    row.innerHTML = `<span class="dot s${i}"></span><b>${SEAT_NAMES[i]}</b>
+      <div class="seg"><button data-k="human" class="${s.kind === 'human' ? 'on' : ''}">İnsan</button><button data-k="bot" class="${s.kind === 'bot' ? 'on' : ''}">İkiz (bot)</button></div>
+      <select ${s.kind === 'bot' ? '' : 'hidden'}>${LEVELS.map(([v, t]) => `<option value="${v}" ${s.level === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+    row.querySelectorAll('.seg button').forEach(b => { b.onclick = () => { s.kind = b.dataset.k; saveSetup(); renderSetup(); }; });
+    row.querySelector('select').onchange = e => { s.level = e.target.value; saveSetup(); };
+    $('seatRows').appendChild(row);
+  }
+  $('neutralLevel').value = setup.neutralLevel;
+  const size = SIZE_BY_STARS[n];
+  $('setupInfo').textContent = `Tahta ${size}×${size} · ${NEUTRALS_BY_STARS[n]} arena botu · arena 8. turdan sonra her 4 turda bir daralır.`;
+}
+
+$('countBtns').querySelectorAll('button').forEach(b => { b.onclick = () => { setup.count = +b.dataset.n; saveSetup(); renderSetup(); }; });
+$('neutralLevel').onchange = e => { setup.neutralLevel = e.target.value; saveSetup(); };
+
+// ------------------------------------------------------------ oyun döngüsü
+
+function startGame() {
+  clearTimeout(timer);
+  gameId++;
+  fast = false; ui = null;
+  state = createGame({ seats: setup.seats.slice(0, setup.count).map(s => ({ ...s })), neutralLevel: setup.neutralLevel });
+  $('setup').hidden = true; $('game').hidden = false; $('overOverlay').hidden = true;
+  ['roundChip', 'modeChip', 'clock'].forEach(id => { $(id).hidden = false; });
+  buildBoard();
+  clock.start = Date.now();
+  clearInterval(clock.iv);
+  clock.iv = setInterval(tickClock, 1000);
+  tickClock();
+  render();
+  advance();
+}
+
+function showSetup() {
+  clearTimeout(timer);
+  clearInterval(clock.iv);
+  gameId++;
+  state = null;
+  $('game').hidden = true; $('overOverlay').hidden = true; $('setup').hidden = false;
+  ['roundChip', 'modeChip', 'clock'].forEach(id => { $(id).hidden = true; });
+  renderSetup();
+}
+
+const humanActor = () => {
+  const a = state && !state.over ? currentActor(state) : null;
+  return a && a.kind === 'star' && state.seats[a.seat].kind === 'human' ? a : null;
+};
+
+function advance() {
+  clearTimeout(timer);
+  if (!state) return;
+  if (state.over) return finish();
+  const id = gameId;
+  const human = humanActor();
+  if (human) {
+    fast = false;
+    render();
+    if (!legalMoves(state, human, state.mode).length) {
+      timer = setTimeout(() => { if (id === gameId) { play(state, null); ui = null; render(); advance(); } }, 1200);
+    }
+    return;
+  }
+  const a = currentActor(state);
+  const watching = !state.seats.some(s => s.kind === 'human' && !s.out);
+  const delay = fast || watching ? (a.kind === 'star' ? 150 : 30) : (a.kind === 'star' ? 500 : 140);
+  timer = setTimeout(() => {
+    if (id !== gameId) return;
+    play(state, chooseMove(state, a));
+    render();
+    advance();
+  }, delay);
+}
+
+function onCell(r, c) {
+  if (!state || state.over) return;
+  const human = humanActor();
+  if (human) {
+    const move = legalMoves(state, human, state.mode).find(m => m.r === r && m.c === c);
+    if (move) {
+      if (ui?.type === 'preview' && ui.move.r === r && ui.move.c === c) return confirmMove();
+      ui = { type: 'preview', move, ...threatsFor(state, human, move) };
+      return render();
+    }
+  }
+  const p = pieceAt(state, r, c);
+  ui = p && (!human || p.id !== human.id) ? { type: 'inspect', id: p.id } : null;
+  render();
+}
+
+function confirmMove() {
+  if (ui?.type !== 'preview' || !humanActor()) return;
+  const m = ui.move;
+  ui = null;
+  play(state, m);
+  render();
+  advance();
+}
+
+// ------------------------------------------------------------ çizim
+
+function buildBoard() {
+  const b = $('board');
+  b.replaceChildren();
+  b.style.setProperty('--n', state.size);
+  cells = [];
+  for (let r = 0; r < state.size; r++) {
+    for (let c = 0; c < state.size; c++) {
+      const el = document.createElement('div');
+      el.className = 'cell';
+      el.onclick = () => onCell(r, c);
+      b.appendChild(el);
+      cells.push(el);
+    }
+  }
+}
+
+function pieceEl(p) {
+  const el = document.createElement('div');
+  const diamond = p.kind === 'blue' || (p.kind === 'star' && state.mode === 'CAPRAZ');
+  el.className = `piece ${p.kind} ${diamond ? 'diamond' : 'square'}`
+    + (p.kind === 'star' ? ` s${p.seat}${state.seats[p.seat].kind === 'bot' ? ' bot' : ''}` : '');
+  el.innerHTML = `<div class="swords"><i></i><i></i></div><span>${p.kind === 'star' ? '★' : p.label}</span>`;
+  return el;
+}
+
+function render() {
+  if (!state) return;
+  const n = state.size, human = humanActor(), warn = collapseDue(state);
+  const at = (r, c) => cells[r * n + c];
+  cells.forEach((el, i) => {
+    const ring = ringOf(state, Math.floor(i / n), i % n);
+    el.className = 'cell' + (ring < state.ring ? ' gone' : warn && ring === state.ring ? ' warn' : '');
+    el.replaceChildren();
+  });
+  for (const p of state.pieces) if (p.alive) at(p.r, p.c).appendChild(pieceEl(p));
+
+  if (ui?.type === 'inspect' && !pieceById(state, ui.id)?.alive) ui = null;
+  if (ui?.type === 'preview' && !human) ui = null;
+
+  if (ui?.type === 'inspect') {
+    // Dokunulan taşın yolları turuncu, alabilecekleri kırmızı
+    const p = pieceById(state, ui.id);
+    for (const m of legalMoves(state, p)) at(m.r, m.c).classList.add(m.type === 'take' ? 'take' : 'walk-other');
+    at(p.r, p.c).classList.add('focus');
+  } else if (human) {
+    // Sıra sendeyse yolların kendiliğinden yeşil, alabileceklerin kırmızı
+    for (const m of legalMoves(state, human, state.mode)) at(m.r, m.c).classList.add(m.type === 'take' ? 'take' : 'walk-mine');
+    if (ui?.type === 'preview') {
+      at(ui.move.r, ui.move.c).classList.add('chosen');
+      for (const a of ui.attackers) at(a.r, a.c).classList.add('threat');
+    }
+  }
+
+  $('roundChip').textContent = `Tur ${state.round}`;
+  $('modeChip').textContent = `${modeLabel(state.mode)} ${state.mode === 'DUZ' ? '+' : '×'}`;
+  renderBanner(human, warn);
+  renderSeats();
+  renderPreview(human);
+  renderLog();
+}
+
+function renderBanner(human, warn) {
+  const a = state.over ? null : currentActor(state);
+  let text;
+  if (state.over) text = 'Oyun bitti.';
+  else if (human) text = `Sıra sende — ${state.seats[human.seat].name}. Yeşil ya da kırmızı bir kareye dokun, sonra onayla.`;
+  else if (a.kind === 'star') text = `${state.seats[a.seat].name} (İkiz) düşünüyor…`;
+  else text = 'Arena botları oynuyor…';
+  const next = nextCollapseRound(state);
+  if (!state.over && warn) text += ' ⚠️ Bu tur sonunda çizgili halka çöküyor!';
+  else if (!state.over && next) text += ` Arena ${next}. tur sonunda daralacak.`;
+  const b = $('banner');
+  b.textContent = text;
+  b.style.borderLeftColor = a?.kind === 'star' ? `var(--s${a.seat})` : '#9aa3c7';
+  b.classList.toggle('warn-on', !state.over && warn);
+}
+
+function renderSeats() {
+  const a = state.over ? null : currentActor(state);
+  $('seats').innerHTML = state.seats.map(s => `
+    <div class="seat ${s.out ? 'out' : ''} ${a?.kind === 'star' && a.seat === s.index ? 'now' : ''}">
+      <span class="dot s${s.index}"></span>${s.name}${s.kind === 'bot' ? ` · İkiz ${LEVEL_NAME[s.level]}` : ''} · ${s.takes} alma
+    </div>`).join('');
+}
+
+function renderPreview(human) {
+  const box = $('preview');
+  if (!human || ui?.type !== 'preview') { box.hidden = true; return; }
+  box.hidden = false;
+  let t = '';
+  if (ui.move.type === 'take') t += `${nameOf(state, pieceById(state, ui.move.targetId))} alınacak. `;
+  if (ui.doomed) t += 'Bu kare tur sonunda çöküyor; burada kalırsan düşersin.';
+  else if (ui.attackers.length) t += `Burada alınabilirsin: ${ui.attackers.map(x => nameOf(state, x)).join(', ')}.`;
+  else t += 'Bu karede seni şu an kimse alamaz.';
+  $('previewText').textContent = t;
+  box.classList.toggle('danger', ui.doomed || ui.attackers.length > 0);
+}
+
+function renderLog() {
+  $('log').innerHTML = state.log.slice(-60).reverse().map(l => {
+    const cls = l.text.startsWith('⚔️') ? 'take' : l.text.startsWith('—') ? 'round' : /🏆|Berabere|🌀/.test(l.text) ? 'big' : '';
+    return `<div class="${cls}">${l.text}</div>`;
+  }).join('');
+}
+
+const fmt = ms => { const s = Math.floor(ms / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+function tickClock() { $('clock').textContent = `⏱ ${fmt(Date.now() - clock.start)}`; }
+
+function finish() {
+  clearInterval(clock.iv);
+  tickClock();
+  render();
+  $('overTitle').textContent = state.winner == null ? 'Berabere!' : `🏆 ${state.seats[state.winner].name} kazandı!`;
+  $('overList').innerHTML = ranking(state).map(i => {
+    const s = state.seats[i];
+    return `<li><span class="dot s${i}"></span>${s.name}${s.kind === 'bot' ? ' (İkiz)' : ''} — ${s.takes} alma</li>`;
+  }).join('');
+  $('overMeta').textContent = `${state.round}. turda bitti · maç süresi ${fmt(Date.now() - clock.start)}`;
+  $('overOverlay').hidden = false;
+}
+
+$('startBtn').onclick = startGame;
+$('againBtn').onclick = startGame;
+$('setupBtn').onclick = showSetup;
+$('newBtn').onclick = showSetup;
+$('confirmBtn').onclick = confirmMove;
+$('fastBtn').onclick = () => { fast = true; advance(); };
+$('rulesBtn').onclick = () => { $('rulesOverlay').hidden = false; };
+$('rulesClose').onclick = () => { $('rulesOverlay').hidden = true; };
+
+renderSetup();
+</script>
+</body>
+</html>
