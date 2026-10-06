@@ -6,7 +6,7 @@ Sıra tabanlı bir arena oyunu. 9×9 sekizgen karelik bir tahtada 17 bota karş�
 
 ## Oynamak
 
-Canlı: **https://ardaulker.github.io/x-sword/** — `main`'e her push GitHub Pages'te yayına girer.
+Canlı: **https://ardaulker.github.io/x-sword/** — `main`'e her push GitHub Pages'te yayına girer (`.github/workflows/pages.yml`).
 
 Bilgisayarda: `index.html` dosyasını tarayıcıda aç. Kurulum yok, sunucu yok.
 
@@ -17,6 +17,18 @@ daralan arena, hamle önizlemesi ve üç zorlukta bot. İnsanlar şimdilik aynı
 
 - `engine/rules.js`: kurallar. Ekrana dokunmaz; ileride çevrimiçi sunucu da bunu kullanacak.
 - `engine/bots.js`: Kolay / Normal / Zor botlar.
+
+## Oyun (yeni arayüz, yapım aşamasında)
+
+**https://ardaulker.github.io/x-sword/oyun/** — `app/` klasörü, `design/` klasöründeki tasarıma göre kurulan oyun: React + TypeScript + Vite.
+Kural motoru olarak `engine/` kullanılır. Şimdilik mobil oyun ekranı var: sen + İkiz(ler) + arena botları.
+`main`'e her push'ta GitHub Actions motor testlerini koşar, oyunu derler ve bütün siteyi Pages'e yayınlar.
+
+```
+npm --prefix app install
+npm --prefix app run dev     # http://localhost:5173
+npm --prefix app run build   # tip denetimi + app/dist
+```
 
 ## Test
 

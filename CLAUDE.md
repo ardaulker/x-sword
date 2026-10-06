@@ -1,9 +1,11 @@
 # X Sword
 
 - `engine/rules.js` kural motoru, `engine/bots.js` botlar. İkisi de ekrana dokunmaz; tarayıcıda, testlerde ve ileride çevrimiçi sunucuda aynı kod çalışır. Ekran kodu kurala ancak motorun fonksiyonlarıyla erişir.
+- `engine/*.d.ts` motorun TypeScript tipleri. Motorun dışa açtığı bir şey değişirse bunları da güncelle.
+- `app/` tasarıma göre kurulan oyun: React + TypeScript + Vite. Şimdilik yalnız mobil oyun ekranı var. Maçın akışı `app/src/game/controller.ts`'te; kuralı yalnız motorun fonksiyonlarıyla sorar. Kurulum `npm --prefix app install`, geliştirme `npm --prefix app run dev` (5173), tip denetimi ve derleme `npm --prefix app run build`.
 - `arena/` motoru deneyen test sahası (https://ardaulker.github.io/x-sword/arena/). `index.html` kuzenden gelen ilk demo; motoru kullanmaz.
 - Testler: `node tests/engine.test.mjs` (kurallar + bot gücü), `node tests/tests.js` ve `node tests/tests2.js` (eski demo). Kurala ya da bota dokunduysan önce bunları çalıştır.
-- Derleme adımı yok. `main`'e push GitHub Pages'te yayına girer; sonra canlı sayfayı aç ve console'u oku.
+- Yayın: `main`'e push `.github/workflows/pages.yml`'ı çalıştırır. İş akışı motor testlerini koşar, `app/`'i derler, siteyi GitHub Pages'e yayınlar. Kökteki sayfalar (`index.html`, `arena/`, `engine/`) olduğu gibi gider; oyun https://ardaulker.github.io/x-sword/oyun/ adresine gider. Push'tan sonra Actions'ta işin bittiğini gör, canlı sayfayı aç ve console'u oku.
 - Oyun metinlerinde "yemek" geçmez. Taş satrançtaki gibi alınır: "5 numarayı aldın!", "3 numara seni aldı!".
 - Tasarım kaynağı `design/`: önce `design/CLAUDE_CODE_HANDOFF.md`, sonra `design/tokens/tokens.css` ve `design/reference/*.dc.html` (okunacak referans, çalışan uygulama değil; nasıl okunacağı `design/reference/DC_FORMAT.md`'de).
 - Tasarım ilk brief'le yapıldı; şu üç karar onda yok, kodda tasarımın önüne geçer:
