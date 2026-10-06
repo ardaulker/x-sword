@@ -37,6 +37,7 @@ export interface Seat {
   bonus: number;
   bonuses: Record<BonusKind, number>;
   scoreTier: number;
+  swapGiven: boolean;
   out: boolean;
   outRound?: number;
 }
@@ -104,7 +105,7 @@ export const BONUS_SCORES: number[];
 export const SOLO_SIZES: number[];
 export function maxNeutrals(size: number): number;
 export const TWIN_TAKE_MULT: number;
-export const SWAP_RANGE: number;
+export const SWAP_SCORE: number;
 export const BONUS_NAMES: Record<BonusKind, string>;
 
 export function flip(mode: Mode): Mode;

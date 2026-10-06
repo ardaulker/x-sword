@@ -15,12 +15,13 @@ export const POINTS = { star: 50, twin: 30, red: 10, blue: 10 };
 export const SURVIVOR_BONUS = 30;
 
 // Bonuslar şartla kazanılır: 20 puan çift adım, 40 puan çift hamle, 60 puan ikisinden biri (tohumdan),
-// ilk daralmayı atlatınca zırh, İkiz bir taş alınca ayna (yer değiştirme).
+// 50 puan ayna (istediğin taşla yer değiştir), ilk daralmayı atlatınca zırh, ikinci daralmayı atlatınca çift hamle.
+// Tek oyunculuda İkiz bir taş alınca da ayna gelir.
 // Zırh kendiliğinden çalışır (seni alan taş geri döner). Diğerleri sırandayken hamleyle birlikte kullanılır.
 export const BONUS_KINDS = ['armor', 'step', 'double', 'swap'];
 export const BONUS_SCORES = [20, 40, 60];
 export const TWIN_TAKE_MULT = 2;
-export const SWAP_RANGE = 3;
+export const SWAP_SCORE = 50;
 // Herkes bir çift adımla başlar: köşeden erken sıkışmamak için.
 const startBonuses = () => ({ armor: 0, step: 1, double: 0, swap: 0 });
 const SEAT_NAMES_ACC = ["Turkuaz'ı", "Mor'u", "Sarı'yı", "Pembe'yi"];
@@ -112,7 +113,7 @@ export function createGame({
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
       level: s.level || 'normal', takes: 0, score: 0, bonus: 0, out: false,
-      bonuses: startBonuses(), scoreTier: 0,
+      bonuses: startBonuses(), scoreTier: 0, swapGiven: false,
     })),
     pieces: [], order: [], turn: 0, over: false, winner: null, outOrder: [], log: [],
     solo: n === 1, lastStep: null, matchOrder: [], keepGoing: !!keepGoing, decided: false,
@@ -200,7 +201,7 @@ export function legalMoves(state, piece, mode = nextMode(state, piece), bonus = 
   }
   if (bonus === 'swap') {
     const out = state.pieces
-      .filter(p => p.alive && p.id !== piece.id && Math.max(Math.abs(p.r - piece.r), Math.abs(p.c - piece.c)) <= SWAP_RANGE)
+      .filter(p => p.alive && p.id !== piece.id && p.kind !== 'twin')
       .map(p => ({ r: p.r, c: p.c, type: 'swap', targetId: p.id, bonus }));
     return [...moves, ...out];
   }
@@ -352,6 +353,7 @@ function addScore(state, seat, points) {
     const tier = seat.scoreTier++;
     grantBonus(state, seat, tier === 0 ? 'step' : tier === 1 ? 'double' : random(state) < 0.5 ? 'step' : 'double');
   }
+  if (!seat.swapGiven && seat.score >= SWAP_SCORE) { seat.swapGiven = true; grantBonus(state, seat, 'swap'); }
 }
 
 function grantBonus(state, seat, kind) {
@@ -445,6 +447,8 @@ function collapse(state) {
   fallen.filter(p => p.kind === 'star').forEach(p => starOut(state, p));
   // İlk daralmayı atlatan her yıldız bir zırh kazanır.
   if (state.ring === 1) state.seats.filter(s => !s.out).forEach(s => grantBonus(state, s, 'armor'));
+  // İkinci daralmayı atlatan her yıldıza bir çift hamle.
+  if (state.ring === 2) state.seats.filter(s => !s.out).forEach(s => grantBonus(state, s, 'double'));
   checkOver(state);
 }
 

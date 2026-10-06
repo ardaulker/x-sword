@@ -442,3 +442,26 @@ test('tek oyunculu: 13×13 tahta ve en çok bot', () => {
   }
   assert.equal(createGame({ seats: seats(2), seed: 1, size: 13 }).size, 9); // yalnız tek oyunculuda
 });
+
+test('ayna: 50 puanda gelir, tahtanın her yerindeki taşla yer değiştirir', () => {
+  const st = position([{ kind: 'blue', r: 2, c: 1 }, { kind: 'red', r: 8, c: 8 }]);
+  const seat = st.seats[0];
+  seat.score = 40; seat.scoreTier = 2;
+  play(st, { r: 2, c: 1 }); // +10 → 50
+  assert.equal(seat.bonuses.swap, 1);
+  const me = pieceById(st, 's0');
+  const far = legalMoves(st, me, st.mode, 'swap').find(m => m.type === 'swap' && m.targetId === 'b2');
+  assert.ok(far, 'uzaktaki bota geçiş olmalı');
+  assert.equal(legalMoves(st, me, st.mode, 'swap').some(m => m.targetId === 'tw'), false);
+});
+
+test('ikinci daralmayı atlatan yıldıza çift hamle gelir', () => {
+  const g = createGame({ seats: seats(2), seed: 9, neutrals: 0, shrinkStart: 1, shrinkEvery: 1 });
+  const mid = (g.size - 1) / 2;
+  const walk = () => play(g, legalMoves(g, currentActor(g), g.mode).filter(m => m.type === 'walk')
+    .sort((x, y) => Math.hypot(x.r - mid, x.c - mid) - Math.hypot(y.r - mid, y.c - mid))[0] ?? null);
+  let guard = 0;
+  while (g.ring < 2 && !g.over && guard++ < 50) walk();
+  assert.equal(g.ring, 2);
+  g.seats.filter(s => !s.out).forEach(s => { assert.equal(s.bonuses.armor, 1); assert.equal(s.bonuses.double, 1); });
+});

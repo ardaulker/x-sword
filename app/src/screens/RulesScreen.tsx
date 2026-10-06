@@ -110,11 +110,11 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         </Card>
         <Card title={tr('Çift hamle')} visual={<Icon d="M3 5 L12 12 L3 19 Z M12 5 L21 12 L12 19 Z" size={36} stroke={2} />}>
           <p>{tr('Hamlenden sonra hemen bir hamle daha yaparsın.')}</p>
-          <p className="rule-when">{rich('**Nasıl kazanılır:** 40 puana ulaşınca. 60 puanda çift adımla birlikte rastgele gelir.')}</p>
+          <p className="rule-when">{rich('**Nasıl kazanılır:** 40 puana ulaşınca ve ikinci daralmayı atlatınca. 60 puanda çift adımla birlikte rastgele gelir.')}</p>
         </Card>
         <Card title={tr('Ayna')} visual={<Icon d="M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19" size={36} stroke={2} />}>
-          <p>{tr('En fazla 3 kare uzaktaki bir taşla yer değiştirirsin.')}</p>
-          <p className="rule-when">{rich('**Nasıl kazanılır:** tek oyunculu modda İkiz bir taş alınca. Aynı alma sana çift puan da yazar.')}</p>
+          <p>{tr('Tahtanın herhangi bir yerindeki bir taşla (rakip yıldız ya da bot) yer değiştirirsin.')}</p>
+          <p className="rule-when">{rich('**Nasıl kazanılır:** 50 puana ulaşınca. Tek oyunculu modda İkiz bir taş alınca da gelir; o alma sana çift puan da yazar.')}</p>
         </Card>
         <p className="rules-foot">{tr('Herkes maça bir çift adımla başlar. Sıran gelince paneldeki bonusa dokun, kareler ona göre yanar.')}</p>
       </div>
