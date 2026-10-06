@@ -26,7 +26,32 @@ export function chooseMove(state, piece, level = levelOf(state, piece)) {
     const score = scoreMove(state, piece, m, level) + random(state);
     if (score > bestScore) { bestScore = score; best = m; }
   }
+  // Yapay zekâ oyuncular bonus da kullanır, ama bedeli var: ancak kazancı büyükse (bir yıldızı almak, ölümden kaçmak).
+  if (piece.kind === 'star') {
+    for (const m of bonusMoves(state, piece, level)) {
+      const score = scoreMove(state, piece, m, level) + random(state) - BONUS_COST[m.bonus];
+      if (score > bestScore) { bestScore = score; best = m; }
+    }
+  }
   return best;
+}
+
+const BONUS_COST = { step: 220, swap: 320, double: 200 };
+
+// Zırh kendiliğinden çalışır. Çift adım ve ayna normalde; çift hamle yalnız zorda ve yıldız alırken kullanılır.
+function bonusMoves(state, piece, level) {
+  if (level === 'kolay') return [];
+  const have = state.seats[piece.seat].bonuses;
+  const out = [];
+  for (const kind of ['step', 'swap', 'double']) {
+    if (!(have[kind] > 0) || (kind === 'double' && level !== 'zor')) continue;
+    for (const m of legalMoves(state, piece, state.mode, kind)) {
+      if (!m.bonus) continue;
+      if (kind === 'double' && !(m.type === 'take' && state.pieces.find(p => p.id === m.targetId)?.kind === 'star')) continue;
+      out.push(m);
+    }
+  }
+  return out;
 }
 
 function easyMove(state, piece, moves) {
