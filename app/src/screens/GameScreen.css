@@ -144,3 +144,34 @@
 .game.is-compact .panel { padding: 10px 12px; }
 .game.is-compact .panel-stack { gap: 8px; }
 .game.is-compact .btn { height: 48px; }
+
+/* ------------------------------------------------------------ sıra göstergesi */
+
+.queue {
+  margin: 0 12px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 6px 0 12px;
+  border-radius: 14px; background: var(--yuzey-1); border: 1px solid var(--cizgi);
+  transition: background 200ms, border-color 200ms;
+}
+.queue.is-mine { background: var(--me-soft); border-color: var(--me); animation: queue-pulse 900ms ease-in-out 2; }
+@keyframes queue-pulse { 50% { box-shadow: 0 0 0 4px var(--me-soft); } }
+.queue-now { width: 84px; flex: none; display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.queue-caption { font: 700 9px var(--font-display); letter-spacing: .14em; color: var(--metin-2); white-space: nowrap; }
+.queue.is-mine .queue-caption { color: var(--me); }
+.queue-name { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.queue-track { position: relative; flex: 1; height: 100%; overflow-x: clip; overflow-y: visible; }
+.queue-item {
+  position: absolute; left: 0; top: 0; height: 100%; display: flex; align-items: center; justify-content: center;
+  transition: transform calc(260ms * var(--hiz-carpan)) var(--ease-kay), opacity calc(200ms * var(--hiz-carpan));
+  animation: queue-in calc(200ms * var(--hiz-carpan)) ease-out;
+}
+@keyframes queue-in { from { opacity: 0; } }
+.queue-item .pg { transition: transform calc(260ms * var(--hiz-carpan)) var(--ease-yay); }
+.queue-item.is-head .pg { transform: scale(1.3); }
+.queue-item.is-gone { opacity: 0; }
+.queue-round { font: 700 9px var(--font-display); color: var(--metin-3); letter-spacing: .04em; border-left: 1px dashed var(--cizgi-2); }
+.queue-no {
+  position: absolute; left: -4px; top: -4px; z-index: 1; min-width: 12px; height: 12px; padding: 0 2px; border-radius: 6px;
+  background: var(--yuzey-3); color: var(--metin-1); font: 700 8px/12px var(--font-display); text-align: center;
+  box-shadow: 0 0 0 1px var(--murekkep);
+}
+.queue-item.is-head .queue-no { background: var(--ice); color: var(--murekkep); }

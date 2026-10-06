@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import {
-  collapseDue, legalMoves, pieceById, pieceAt, ringOf, threatsFor,
+  collapseDue, legalMoves, pieceAt, ringOf, threatsFor,
 } from '../../../engine/rules.js';
 import type { Move, Piece } from '../../../engine/rules.js';
 import { targetOf } from '../../../engine/bots.js';
@@ -12,6 +12,7 @@ import {
 } from '../game/look';
 import { attackersOfMe } from '../game/threats';
 import { labelOf, modeWord } from '../game/names';
+import { orderNo, upcoming } from '../game/order';
 import { PieceGlyph } from './PieceGlyph';
 import { CenterBanner } from './CenterBanner';
 import { ModeOverlay } from './ModeOverlay';
@@ -99,16 +100,9 @@ export function Board({ ctl, view, cell }: Props) {
 
   // ---------------------------------------------------------- taşlar
   const myThreats = myTurn ? attackersOfMe(st, me).length : 0;
-  const pips = new Map<string, string>();
-  if (view.phase === 'bot') {
-    const cur = view.bots.currentId ? pieceById(st, view.bots.currentId) : null;
-    if (cur && cur.alive && cur.kind !== 'star' && isBot(cur)) pips.set(cur.id, cur.label);
-    st.order.slice(st.turn)
-      .map(id => pieceById(st, id))
-      .filter((p): p is Piece => !!p && p.alive && isBot(p))
-      .slice(0, 3)
-      .forEach(p => { if (p.kind !== 'star') pips.set(p.id, p.label); });
-  }
+  // Her taşın üstünde sıra numarası: şu an oynayan parlak, sıradaki 3 taş yarı parlak.
+  const queue = upcoming(st, view, 4);
+  const pipState = new Map(queue.map((q, i) => [q.id, i === 0 ? 'now' : 'next']));
   const pinned = view.sheet?.type === 'bilgi' ? view.sheet.id : null;
 
   const haloOf = (p: Piece) => {
@@ -307,7 +301,7 @@ export function Board({ ctl, view, cell }: Props) {
         {st.pieces.map(p => {
           const halo = haloOf(p);
           const target = isBot(p) && p.alive ? targetOf(st, p) : null;
-          const pip = pips.get(p.id);
+          const pip = p.alive && !st.over ? pipState.get(p.id) ?? 'idle' : null;
           const badge = p.id === me.id && myThreats ? myThreats : 0;
           return (
             <PieceGlyph
@@ -324,7 +318,7 @@ export function Board({ ctl, view, cell }: Props) {
               svgExtra={target && <path d={notchPath(p, target)} fill={PLAYER_COLORS[target.seat]} stroke="#0B1026" strokeWidth="4" strokeLinejoin="round" />}
             >
               {halo && <div className={`halo halo-${halo}`} style={halo === 'turn' ? { borderColor: myColor } : undefined} />}
-              {pip && <div className="pip">{pip}</div>}
+              {pip && <div className={`pip pip-${pip}`}>{orderNo(st, p.id)}</div>}
               {badge > 0 && <div className="threat-badge">{badge}</div>}
             </PieceGlyph>
           );

@@ -7,6 +7,7 @@ import { ActionPanel } from '../components/ActionPanel';
 import { BOARD_PAD, Board, boardGap, boardOuter } from '../components/Board';
 import { CompactBar, ModeIndicator, TopBar } from '../components/Header';
 import { PlayerStrip } from '../components/PlayerStrip';
+import { TurnQueue } from '../components/TurnQueue';
 import { InfoSheet, LogSheet, MenuSheet } from '../components/Sheets';
 import { Icon } from '../components/bits';
 import './GameScreen.css';
@@ -71,6 +72,7 @@ export function GameScreen({ ctl, onNewGame }: { ctl: GameController; onNewGame:
           <ModeIndicator mode={st.mode} />
         </>
       )}
+      <TurnQueue ctl={ctl} view={view} compact={compact} />
       <PlayerStrip ctl={ctl} view={view} compact={compact} />
 
       <div ref={stageRef} className="stage">

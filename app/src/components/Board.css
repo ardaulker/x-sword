@@ -54,11 +54,16 @@
 .halo-current { border: 2px solid #FFFFFF; }
 .halo-pinned { border: 2.5px solid #FFFFFF; box-shadow: 0 0 0 4px rgba(255, 255, 255, .2); }
 
+/* Sıra numarası: hep görünür. Şu an oynayan buz renginde, sıradaki 3 taş açık, diğerleri sönük. */
 .pip {
-  position: absolute; left: -5px; top: -5px; z-index: 1; min-width: 15px; height: 15px; padding: 0 3px;
-  border-radius: 8px; background: var(--metin-1); color: var(--murekkep);
-  font: 700 10px/15px var(--font-display); text-align: center; box-shadow: 0 0 0 1.5px var(--murekkep);
+  position: absolute; left: -4px; top: -4px; z-index: 1; min-width: 13px; height: 13px; padding: 0 2px;
+  border-radius: 7px; font: 700 8.5px/13px var(--font-display); text-align: center;
+  box-shadow: 0 0 0 1.5px var(--murekkep); pointer-events: none;
+  transition: background 160ms, color 160ms, transform 160ms;
 }
+.pip-idle { background: var(--yuzey-3); color: var(--metin-2); }
+.pip-next { background: #6F7FB8; color: var(--metin-1); }
+.pip-now { background: var(--ice); color: var(--murekkep); transform: scale(1.2); }
 .threat-badge {
   position: absolute; right: -6px; top: -6px; z-index: 1; width: 16px; height: 16px; border-radius: 8px;
   background: var(--danger); color: var(--murekkep); font: 800 11px/16px var(--font-display); text-align: center;
