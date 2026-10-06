@@ -33,7 +33,8 @@
   .brand { color: #00ff88; font-weight: 900; letter-spacing: 2px; text-decoration: none; margin-right: auto; }
   .chip { background: #000; border: 1px solid #444; border-radius: 6px; padding: 6px 10px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .chip.mode { border-color: #00ff88; font-size: 1.05em; }
-  /* Dar telefonda üst çubuk tek satıra sığsın */
+  .bar .short { display: none; }
+  /* Dar telefonda üst çubuk tek satıra sığsın; bu blok yukarıdaki kuralı ezmek için ondan sonra gelir */
   @media (max-width: 420px) {
     .bar { gap: 6px; padding-left: 12px; padding-right: 12px; }
     .brand { font-size: 13px; letter-spacing: 1px; }
@@ -43,7 +44,6 @@
     .bar .long { display: none; }
     .bar .short { display: inline; }
   }
-  .bar .short { display: none; }
 
   main { max-width: 640px; margin: 0 auto; padding: 16px; }
   .panel { background: var(--panel); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
