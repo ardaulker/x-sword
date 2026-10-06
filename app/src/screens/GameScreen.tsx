@@ -8,7 +8,7 @@ import { BOARD_PAD, Board, boardGap, boardOuter } from '../components/Board';
 import { CompactBar, ModeIndicator, TopBar } from '../components/Header';
 import { PlayerStrip } from '../components/PlayerStrip';
 import { TurnQueue } from '../components/TurnQueue';
-import { LeaveSheet, LogSheet, ResultsSheet, SetupSheet } from '../components/Sheets';
+import { CoachSheet, LeaveSheet, LogSheet, ResultsSheet, SetupSheet } from '../components/Sheets';
 import { useMatchTime } from '../components/bits';
 import { RulesScreen } from './RulesScreen';
 import { InfoChip } from '../components/InfoChip';
@@ -103,6 +103,7 @@ export function GameScreen({ ctl, onNewGame, onHome, net }: {
         <ActionPanel ctl={ctl} view={view} net={net} />
       </div>
 
+      {sheet?.type === 'ipucu' && <CoachSheet step={sheet.step} onDone={() => ctl.closeCoach()} />}
       {sheet?.type === 'kayit' && <LogSheet ctl={ctl} events={view.events} />}
       {sheet?.type === 'sonuc' && (
         <ResultsSheet

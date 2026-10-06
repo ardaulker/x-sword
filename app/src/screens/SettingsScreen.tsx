@@ -53,6 +53,8 @@ export function SettingsScreen({ onBack, onRules }: { onBack: () => void; onRule
           onChange={v => { update({ sound: v }); if (v) feel('select'); }} />
         <Toggle label={tr('Müzik')} sub={tr('Arena daralacak turlarda çalan gergin müzik.')} on={s.music}
           onChange={v => update({ music: v })} />
+        <Toggle label={tr('İpuçları')} sub={tr('İlk üç maçın başında kısa bir ipucu kartı gösterir.')} on={s.tips}
+          onChange={v => update({ tips: v })} />
         <div className="rule set-col">
           <div className="rule-text"><h3>{tr('Ses seviyesi')}</h3></div>
           <input type="range" className="vol" min={0} max={100} value={Math.round(s.volume * 100)} aria-label={tr('Ses seviyesi')}

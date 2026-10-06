@@ -73,6 +73,41 @@ export function LogSheet({ ctl, events }: { ctl: GameController; events: TakeEve
   );
 }
 
+// ------------------------------------------------------------ ipucu (ilk üç maç)
+
+export function CoachSheet({ step, onDone }: { step: number; onDone: () => void }) {
+  const tips: [string, string[]][] = [
+    [tr('Başlarken'), [
+      tr('Yanan karelerden birine dokun, önizlemeyi gör, Onayla\'ya bas.'),
+      tr('Şekil yönü söyler: kare düz, elmas çapraz. Her tur mod değişir.'),
+      tr('Çizgili kare tehlikeli: orada bir taş seni alabilir.'),
+    ]],
+    [tr('Botları oku'), [
+      tr('Bir bota dokun: yolları ve kimi kovaladığı tahtada görünür.'),
+      tr('Kızıl bot düz yürür, çapraz alır. Çelik bot çapraz yürür, düz alır.'),
+      tr('Taşın üstündeki numara sıradaki yeridir: küçük numara önce oynar.'),
+    ]],
+    [tr('Arena ve bonuslar'), [
+      tr('Her 6 turda dış halka çöker. Turuncu çizgili halkada kalma.'),
+      tr('Bonuslar puan ve hayatta kalmayla gelir. Paneldeki bonusa dokun, sonra kareyi seç.'),
+      tr('Tek oyunculuda bütün botları temizle: İkiz seni taklit eder, seni alamaz.'),
+    ]],
+  ];
+  const [title, lines] = tips[Math.min(step, tips.length - 1)];
+  return (
+    <SheetFrame label={title} onClose={onDone}>
+      <div className="sheet-head">
+        <div className="sheet-title">{title}</div>
+        <div className="coach-step">{step + 1} / {tips.length}</div>
+      </div>
+      <ul className="coach-list">{lines.map(l => <li key={l}>{l}</li>)}</ul>
+      <div className="btn-row">
+        <button type="button" className="btn btn-main" onClick={onDone}>{tr('Anladım')}</button>
+      </div>
+    </SheetFrame>
+  );
+}
+
 // ------------------------------------------------------------ menü (ana menü gelene kadar)
 
 const levelLabels = (): [Level, string][] => [['kolay', tr('Kolay')], ['normal', tr('Normal')], ['zor', tr('Zor')]];

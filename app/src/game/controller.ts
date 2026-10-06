@@ -7,6 +7,7 @@ import {
 import type { BonusKind, GameState, Level, Move, Piece } from '../../../engine/rules.js';
 import { chooseMove } from '../../../engine/bots.js';
 import { BUZZ, feel, sound, startTension, stopTension } from './haptics';
+import { coachStep, markCoachSeen } from './coach';
 import { SPEED, settings } from './settings';
 import { HAZARD, PLAYER_COLORS, colorOf, isBot } from './look';
 import { ME, labelOf, objectOf, seatName, setMe, subjectOf } from './names';
@@ -50,7 +51,7 @@ export interface Toast { key: number; text: string; icon: 'sword' | 'clock' | 'i
 export interface Banner { key: number; title: string; sub: string; color: string; pieceId: string | null }
 // attackerId null: taş çöken halkada düştü.
 export interface TakeEvent { key: number; round: number; attackerId: string | null; victimId: string }
-export type Sheet = { type: 'kayit' } | { type: 'menu' } | { type: 'sonuc' } | null;
+export type Sheet = { type: 'kayit' } | { type: 'menu' } | { type: 'sonuc' } | { type: 'ipucu'; step: number } | null;
 
 export interface View {
   phase: Phase;
@@ -119,7 +120,16 @@ export class GameController {
   // ------------------------------------------------------------ maç
 
   start() {
+    // İlk üç yerel maçta kısa bir ipucu kartı; "Anladım" deyince maç başlar.
+    const step = this.net || !settings.tips ? null : coachStep();
+    if (step != null) { this.later(500, () => this.emit({ sheet: { type: 'ipucu', step } })); return; }
     this.later(600, () => this.advance());
+  }
+
+  closeCoach() {
+    markCoachSeen();
+    this.emit({ sheet: null });
+    this.later(300, () => this.advance());
   }
 
   newGame(setup: Setup = this.setup) {

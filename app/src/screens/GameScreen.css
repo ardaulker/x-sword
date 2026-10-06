@@ -235,3 +235,6 @@
 .bonus.is-on { background: var(--ice); color: var(--murekkep); border-color: var(--ice); }
 
 .rules-overlay { position: fixed; inset: 0; z-index: 60; background: var(--zemin); }
+
+.coach-step { font: 700 13px var(--font-display); color: var(--metin-3); }
+.coach-list { margin: 4px 0 16px; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.4; color: var(--metin-1); }
