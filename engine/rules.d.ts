@@ -35,15 +35,20 @@ export interface Seat {
   takes: number;
   score: number;
   bonus: number;
+  bonuses: Record<BonusKind, number>;
+  nextBonusAt: number;
   out: boolean;
   outRound?: number;
 }
 
+export type BonusKind = 'armor' | 'step' | 'double' | 'swap';
+
 export interface Move {
   r: number;
   c: number;
-  type: 'walk' | 'take';
+  type: 'walk' | 'take' | 'swap';
   targetId?: string;
+  bonus?: BonusKind;
 }
 
 export interface GameState {
@@ -89,6 +94,10 @@ export const NEUTRALS_BY_STARS: Record<number, number>;
 export const SEAT_NAMES: string[];
 export const POINTS: Record<Piece['kind'], number>;
 export const SURVIVOR_BONUS: number;
+export const BONUS_KINDS: BonusKind[];
+export const BONUS_EVERY: number;
+export const SWAP_RANGE: number;
+export const BONUS_NAMES: Record<BonusKind, string>;
 
 export function flip(mode: Mode): Mode;
 export function modeLabel(mode: Mode): string;
@@ -108,7 +117,7 @@ export function roundOrder(state: GameState): string[];
 export function currentActor(state: GameState): Piece | null;
 export function isBotTurn(state: GameState): boolean;
 export function nextMode(state: GameState, p: Piece): Mode;
-export function legalMoves(state: GameState, piece: Piece, mode?: Mode): Move[];
+export function legalMoves(state: GameState, piece: Piece, mode?: Mode, bonus?: BonusKind | null): Move[];
 export function attackersOf(state: GameState, r: number, c: number, except?: string[]): Piece[];
 export function collapseDue(state: GameState): boolean;
 export function nextCollapseRound(state: GameState): number | null;

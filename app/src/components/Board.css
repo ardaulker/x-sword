@@ -88,6 +88,10 @@
 .pip-idle { background: var(--yuzey-3); color: var(--metin-2); }
 .pip-next { background: #6F7FB8; color: var(--metin-1); }
 .pip-now { background: var(--ice); color: var(--murekkep); transform: scale(1.2); }
+.armor-badge {
+  position: absolute; right: -4px; bottom: -4px; z-index: 1; width: 14px; height: 14px; border-radius: 4px 4px 7px 7px;
+  background: var(--ice); box-shadow: 0 0 0 1.5px var(--murekkep);
+}
 .threat-badge {
   position: absolute; right: -6px; top: -6px; z-index: 1; width: 16px; height: 16px; border-radius: 8px;
   background: var(--danger); color: var(--murekkep); font: 800 11px/16px var(--font-display); text-align: center;

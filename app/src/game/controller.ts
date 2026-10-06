@@ -2,9 +2,9 @@
 // Kuralı motor (engine/) bilir; burası yalnız onun fonksiyonlarını çağırır ve ekrana ne olduğunu söyler.
 
 import {
-  POINTS, collapseDue, createGame, play, currentActor, legalMoves, pieceById, starOf,
+  BONUS_NAMES, POINTS, collapseDue, createGame, play, currentActor, legalMoves, pieceById, starOf,
 } from '../../../engine/rules.js';
-import type { GameState, Level, Move, Piece } from '../../../engine/rules.js';
+import type { BonusKind, GameState, Level, Move, Piece } from '../../../engine/rules.js';
 import { chooseMove } from '../../../engine/bots.js';
 import { BUZZ, buzz } from './haptics';
 import { HAZARD, PLAYER_COLORS, colorOf, isBot } from './look';
@@ -59,7 +59,8 @@ export interface View {
   banner: Banner | null;
   modeOverlay: boolean;
   sheet: Sheet;
-  inspect: string | null; // dokunulan taş: yolları ve hedefi tahtada görünür, büyük kart açılmaz
+  inspect: string | null;
+  bonus: BonusKind | null; // sırandayken seçtiğin bonus: gidilebilir kareler ona göre // dokunulan taş: yolları ve hedefi tahtada görünür, büyük kart açılmaz
   bots: { done: number; total: number; currentId: string | null };
   events: TakeEvent[];
   clockStart: number;
@@ -165,7 +166,7 @@ export class GameController {
     this.fast = false;
     this.view = {
       phase: 'hazir', sel: null, showThreats: false, timer: this.setup.moveSeconds,
-      trails: [], bursts: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null,
+      trails: [], bursts: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null, bonus: null,
       bots: { done: 0, total: 0, currentId: null }, events: [],
       clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, hit: 0, version: 0,
     };
@@ -195,8 +196,8 @@ export class GameController {
     const st = this.state;
     const a = currentActor(st);
     if (this.waitingSeat !== seat || !a || a.kind !== 'star' || a.seat !== seat) return;
-    const moves = legalMoves(st, a, st.mode);
-    const legal = move ? moves.find(m => m.r === move.r && m.c === move.c) : null;
+    const moves = legalMoves(st, a, st.mode, move?.bonus ?? null);
+    const legal = move ? moves.find(m => m.r === move.r && m.c === move.c && (m.bonus ?? null) === (move.bonus ?? null)) : null;
     if (move ? !legal : moves.length) return; // geçersiz hamle ya da hamlesi varken pas: yok sayılır
     this.commitRemote(legal ?? null);
   }
@@ -280,7 +281,7 @@ export class GameController {
   // ------------------------------------------------------------ senin sıran
 
   private myTurn() {
-    this.emit({ phase: 'sen', sel: null, showThreats: false, timer: this.setup.moveSeconds });
+    this.emit({ phase: 'sen', sel: null, showThreats: false, bonus: null, timer: this.setup.moveSeconds });
     if (!legalMoves(this.state, this.myStar(), this.state.mode).length) {
       this.toast('Gidecek kare yok · sıra geçti', 'info');
       this.emit();
@@ -311,6 +312,13 @@ export class GameController {
     this.commitMine(sel);
   }
 
+  // Bonusu seç ya da bırak. Zırh seçilmez, kendiliğinden çalışır.
+  selectBonus(kind: BonusKind) {
+    if (!this.isMyMove() || kind === 'armor' || !this.state.seats[ME].bonuses[kind]) return;
+    buzz(BUZZ.select);
+    this.emit({ phase: 'sen', sel: null, showThreats: false, bonus: this.view.bonus === kind ? null : kind });
+  }
+
   cancel() {
     if (this.view.phase === 'onizleme') this.emit({ phase: 'sen', sel: null });
   }
@@ -334,7 +342,7 @@ export class GameController {
       return;
     }
     const o = this.apply(move);
-    this.emit({ phase: 'bekle', sel: null, showThreats: false });
+    this.emit({ phase: 'bekle', sel: null, showThreats: false, bonus: null });
     if (o) this.continueAfter(o, 500);
   }
 
@@ -455,8 +463,20 @@ export class GameController {
     const aliveBefore = new Set(st.pieces.filter(p => p.alive).map(p => p.id));
     const round = st.round, ring = st.ring;
     const victim = move?.type === 'take' && move.targetId ? pieceById(st, move.targetId) ?? null : null;
+    const myBonuses = { ...st.seats[ME].bonuses };
 
     play(st, move);
+
+    // Bonus: kullanma, zırhla kurtulma, kazanma.
+    if (move?.bonus && actor.kind === 'star' && actor.seat === ME) { this.toast(`${BONUS_NAMES[move.bonus]}!`, 'info'); buzz(BUZZ.select); }
+    if (victim?.alive && victim.kind === 'star') {
+      this.toast(victim.seat === ME ? 'Zırhın seni korudu!' : `${labelOf(st, victim)} zırhıyla kurtuldu`, 'info');
+      this.burst(victim.r, victim.c, '#E9F0FF');
+      buzz(BUZZ.take);
+    }
+    for (const k of Object.keys(myBonuses) as BonusKind[]) {
+      if (st.seats[ME].bonuses[k] > myBonuses[k]) { this.toast(`Bonus kazandın: ${BONUS_NAMES[k]}`, 'info'); buzz([15, 40, 15]); }
+    }
     this.moves.push(move);
     if (this.net?.role === 'host') this.net.broadcast?.(this.moves.length, move);
 
@@ -466,7 +486,7 @@ export class GameController {
 
     if (move) this.trail(from, { r: move.r, c: move.c }, colorOf(actor));
 
-    if (victim && move) {
+    if (victim && move && !victim.alive) {
       events.push({ key: this.key(), round, attackerId: actor.id, victimId: victim.id });
       this.burst(move.r, move.c, colorOf(actor));
       this.view = { ...this.view, shake: this.view.shake + 1 };

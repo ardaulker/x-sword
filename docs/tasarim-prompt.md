@@ -61,6 +61,10 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 - Üç zorluk var. Kolay: alabiliyorsa alır, yoksa en yakın yıldıza yürür. Normal: alınacağı kareye gitmez, çöken halkada kalmaz, en çabuk ulaşacağı yıldıza yönelir. Zor: buna ek olarak hedef yıldızın kaçış karelerini kapatır.
 - Bot zekâsı kodda çözülecek. Senden istenen iki şey var: zorluk seçimi, bir de botun kimi hedeflediğini okunur gösteren bir işaret. Bu işaret ayarlardan kapatılabilsin.
 
+## Bonuslar
+- Her 50 puanda bir ve her 6 tur ayakta kalınca bir bonus kazanılır; türü rastgeledir.
+- Zırh: bir kez alınmaktan korur, kendiliğinden çalışır. Çift adım: iki kare git. Çift hamle: hemen bir hamle daha. Ayna: 3 kare içindeki bir taşla yer değiştir.
+
 ## Bitiş
 - Maç, tek yıldız kalınca biter. Kazananı skor belirler: oyuncu almak 50, İkiz'i almak 30, bot almak 10 puan; ayakta kalan yıldız +30 bonus alır. Sıralama: skor, sonra alma sayısı, sonra hayatta kalma süresi. Saklanmak tek başına kazandırmaz.
 - Maç sonsuza kadar sürmesin diye arena daralır. Her 6 turda bir (6., 12., 18. … tur), tur sonunda en dıştaki halka çöker. O halkada kalan taş oyundan çıkar. Bir tur önce halka uyarılır; çökecek tur boyunca halka işaretli görünür.

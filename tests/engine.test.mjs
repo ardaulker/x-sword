@@ -153,6 +153,42 @@ test('eşit skorda alma sayısı, o da eşitse geç elenen önde', () => {
   assert.deepEqual(ranking(st), [2, 1, 0]);
 });
 
+test('bonus: her 50 puanda ve her 6 turda bir bonus kazanılır', () => {
+  const st = position([{ kind: 'blue', r: 2, c: 1 }]);
+  st.seats[0].score = 40;
+  play(st, { r: 2, c: 1 }); // +10 → 50
+  const total = s => Object.values(s.bonuses).reduce((a, b) => a + b, 0);
+  assert.equal(total(st.seats[0]), 1);
+  assert.equal(st.seats[0].nextBonusAt, 100);
+  const g = createGame({ seats: seats(2), seed: 9, neutrals: 0, shrinkStart: 99 });
+  g.round = 6;
+  while (g.round === 6) play(g, legalMoves(g, currentActor(g), g.mode).find(m => m.type === 'walk') ?? null);
+  assert.ok(g.seats.every(s => total(s) === 1));
+});
+
+test('zırh: alınan yıldız kurtulur, saldıran yerinde kalır', () => {
+  const st = position([]);
+  pieceById(st, 's1').r = 2; pieceById(st, 's1').c = 1;
+  st.seats[1].bonuses.armor = 1;
+  play(st, { r: 2, c: 1 });
+  assert.equal(pieceById(st, 's1').alive, true);
+  assert.deepEqual([pieceById(st, 's0').r, pieceById(st, 's0').c], [1, 1]);
+  assert.equal(st.seats[1].bonuses.armor, 0);
+});
+
+test('çift adım iki kare gider, çift hamle sırayı bırakmaz, ayna yer değiştirir', () => {
+  const st = position([{ kind: 'red', r: 4, c: 3 }]);
+  st.seats[0].bonuses = { armor: 0, step: 1, double: 1, swap: 1 };
+  assert.ok(!legalMoves(st, pieceById(st, 's0'), 'DUZ').some(m => m.r === 3));
+  assert.ok(legalMoves(st, pieceById(st, 's0'), 'DUZ', 'step').some(m => m.r === 3 && m.c === 1));
+  play(st, { r: 1, c: 2, bonus: 'double' });
+  assert.equal(currentActor(st).id, 's0');
+  assert.equal(st.seats[0].bonuses.double, 0);
+  play(st, { r: 4, c: 3, bonus: 'swap' }); // (1,2) ↔ kırmızı (4,3): 3 kare uzakta
+  assert.deepEqual([pieceById(st, 's0').r, pieceById(st, 's0').c], [4, 3]);
+  assert.deepEqual([pieceById(st, 'b1').r, pieceById(st, 'b1').c], [1, 2]);
+});
+
 test('arena daralır: dış halkadakiler düşer, oraya artık gidilemez', () => {
   const st = createGame({ seats: seats(2), seed: 5, shrinkStart: 1, shrinkEvery: 1 });
   assert.equal(collapseDue(st), true);

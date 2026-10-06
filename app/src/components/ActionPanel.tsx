@@ -1,7 +1,7 @@
 import {
-  collapseDue, currentActor, nextMode, pieceById, ranking, starOf, takeDirs, threatsFor,
+  BONUS_NAMES, collapseDue, currentActor, nextMode, pieceById, ranking, starOf, takeDirs, threatsFor,
 } from '../../../engine/rules.js';
-import type { GameState, Piece } from '../../../engine/rules.js';
+import type { BonusKind, GameState, Piece } from '../../../engine/rules.js';
 import type { GameController, View } from '../game/controller';
 import type { NetActions } from '../screens/GameScreen';
 import {
@@ -131,7 +131,9 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
       <section className="panel" aria-label="Hamle önizlemesi">
         <div className="panel-stack">
           <div className="panel-row">
-            <div className="panel-title-sm">{victim ? `${labelOf(st, victim)} alınacak` : 'Hamle önizlemesi'}</div>
+            <div className="panel-title-sm">
+              {sel.bonus ? `${BONUS_NAMES[sel.bonus]} · ` : ''}{sel.type === 'swap' && sel.targetId ? `${labelOf(st, pieceById(st, sel.targetId)!)} ile yer değiş` : victim ? `${labelOf(st, victim)} alınacak` : 'Hamle önizlemesi'}
+            </div>
             <div className="panel-timer-sm" style={{ color: timerColor }}>{t} sn</div>
           </div>
           <div className={`risk-row${risky ? ' is-risky' : ''}`}>
@@ -270,8 +272,35 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
           </div>
         )}
         <div className="panel-hint" style={{ color: hintColor }}>{hint}</div>
+        {view.phase === 'sen' && <BonusBar ctl={ctl} view={view} />}
       </div>
     </section>
+  );
+}
+
+const BONUS_ICONS: Record<BonusKind, string> = {
+  armor: 'M12 3 L20 6 V12 C20 16.5 16.5 20 12 21 C7.5 20 4 16.5 4 12 V6 Z',
+  step: 'M4 12 H12 M9 8 L13 12 L9 16 M12 12 H20 M17 8 L21 12 L17 16',
+  double: 'M3 5 L12 12 L3 19 Z M12 5 L21 12 L12 19 Z',
+  swap: 'M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19',
+};
+
+// Sırandayken elindeki bonuslar. Zırh kendiliğinden çalışır; diğerine dokun, kareler ona göre yanar.
+function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
+  const b = ctl.state.seats[ME].bonuses;
+  if (!Object.values(b).some(n => n > 0)) return null;
+  return (
+    <div className="bonus-bar" role="group" aria-label="Bonuslar">
+      {(Object.keys(BONUS_ICONS) as BonusKind[]).map(k => (
+        <button key={k} type="button" disabled={!b[k] || k === 'armor'} aria-pressed={view.bonus === k}
+          className={`bonus${view.bonus === k ? ' is-on' : ''}${k === 'armor' && b[k] ? ' is-passive' : ''}`}
+          onClick={() => ctl.selectBonus(k)} aria-label={`${BONUS_NAMES[k]}: ${b[k]}`}>
+          <Icon d={BONUS_ICONS[k]} size={18} stroke={2} fill={k === 'double' ? 'currentColor' : 'none'} />
+          <span>{BONUS_NAMES[k]}</span>
+          {b[k] > 0 && <b>{b[k]}</b>}
+        </button>
+      ))}
+    </div>
   );
 }
 

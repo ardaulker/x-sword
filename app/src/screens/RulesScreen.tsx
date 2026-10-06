@@ -98,19 +98,19 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         </Card>
 
         <h2>Bonuslar</h2>
-        <Card soon title="Zırh" visual={<Icon d="M12 3 L20 6 V12 C20 16.5 16.5 20 12 21 C7.5 20 4 16.5 4 12 V6 Z" size={36} stroke={2} />}>
-          <p>+1 can: seni bir kez alınmaktan korur.</p>
+        <Card title="Zırh" visual={<Icon d="M12 3 L20 6 V12 C20 16.5 16.5 20 12 21 C7.5 20 4 16.5 4 12 V6 Z" size={36} stroke={2} />}>
+          <p>+1 can: seni bir kez alınmaktan korur. Kendiliğinden çalışır; seni alan taş geri döner.</p>
         </Card>
-        <Card soon title="Çift adım" visual={<Icon d="M4 12 H12 M9 8 L13 12 L9 16 M12 12 H20 M17 8 L21 12 L17 16" size={36} stroke={2} />}>
-          <p>Bir turda iki kare gidersin.</p>
+        <Card title="Çift adım" visual={<Icon d="M4 12 H12 M9 8 L13 12 L9 16 M12 12 H20 M17 8 L21 12 L17 16" size={36} stroke={2} />}>
+          <p>Bu hamlede iki kare gidersin (aradaki kare boş olmalı).</p>
         </Card>
-        <Card soon title="Çift hamle" visual={<Icon d="M3 5 L12 12 L3 19 Z M12 5 L21 12 L12 19 Z" size={36} stroke={2} />}>
-          <p>Aynı turda iki kez hamle yaparsın.</p>
+        <Card title="Çift hamle" visual={<Icon d="M3 5 L12 12 L3 19 Z M12 5 L21 12 L12 19 Z" size={36} stroke={2} />}>
+          <p>Hamlenden sonra hemen bir hamle daha yaparsın.</p>
         </Card>
-        <Card soon title="Ayna" visual={<Icon d="M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19" size={36} stroke={2} />}>
-          <p>Seçtiğin bir rakiple yer değiştirirsin.</p>
+        <Card title="Ayna" visual={<Icon d="M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19" size={36} stroke={2} />}>
+          <p>En fazla 3 kare uzaktaki bir taşla yer değiştirirsin.</p>
         </Card>
-        <p className="rules-foot">Bonuslar skor, hayatta kalma ve oyundaki başarıyla kazanılacak.</p>
+        <p className="rules-foot">Her 50 puanda bir ve her 6 tur ayakta kalınca bir bonus kazanırsın; türü rastgele. Sıran gelince paneldeki bonusa dokun, kareler ona göre yanar.</p>
       </div>
     </div>
   );

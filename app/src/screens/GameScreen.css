@@ -219,3 +219,15 @@
 @keyframes hit-flash { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0; } }
 .game:has(.hit-flash) .board-frame { animation: hit-grey calc(900ms * var(--hiz-carpan)) ease-out; }
 @keyframes hit-grey { 0%, 40% { filter: saturate(.2) brightness(.8); } 100% { filter: none; } }
+
+/* Bonus çubuğu */
+.bonus-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.bonus {
+  position: relative; height: 40px; border-radius: 12px; border: 1.5px solid var(--cizgi-2); background: var(--yuzey-2);
+  color: var(--metin-1); display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 0 4px;
+}
+.bonus span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bonus b { position: absolute; top: -6px; right: -4px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--ice); color: var(--murekkep); font: 800 10px/16px var(--font-display); }
+.bonus:disabled { opacity: .35; }
+.bonus.is-passive { opacity: 1; border-style: dashed; }
+.bonus.is-on { background: var(--ice); color: var(--murekkep); border-color: var(--ice); }

@@ -10,6 +10,13 @@ export const SEAT_NAMES = ['Turkuaz', 'Mor', 'Sarı', 'Pembe'];
 // Maçın sonunda ayakta kalan yıldız +30 hayatta kalma bonusu alır.
 export const POINTS = { star: 50, twin: 30, red: 10, blue: 10 };
 export const SURVIVOR_BONUS = 30;
+
+// Bonuslar: her BONUS_EVERY puanda bir ve her 6 tur ayakta kalınca bir tane kazanılır; türü tohumdan gelir.
+// Zırh kendiliğinden çalışır (seni alan taş geri döner). Diğerleri sırandayken hamleyle birlikte kullanılır.
+export const BONUS_KINDS = ['armor', 'step', 'double', 'swap'];
+export const BONUS_EVERY = 50;
+export const SWAP_RANGE = 3;
+const noBonuses = () => ({ armor: 0, step: 0, double: 0, swap: 0 });
 const SEAT_NAMES_ACC = ["Turkuaz'ı", "Mor'u", "Sarı'yı", "Pembe'yi"];
 
 const STRAIGHT = [[-1, 0], [1, 0], [0, -1], [0, 1]];
@@ -99,6 +106,7 @@ export function createGame({
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
       level: s.level || 'normal', takes: 0, score: 0, bonus: 0, out: false,
+      bonuses: noBonuses(), nextBonusAt: BONUS_EVERY,
     })),
     pieces: [], order: [], turn: 0, over: false, winner: null, outOrder: [], log: [],
     solo: n === 1, lastStep: null, matchOrder: [],
@@ -168,7 +176,32 @@ export function nextMode(state, p) {
   return state.order.indexOf(p.id) >= state.turn ? state.mode : flip(state.mode);
 }
 
-export function legalMoves(state, piece, mode = nextMode(state, piece)) {
+// bonus: yıldızın elindeki bir bonusla açılan hamleler de eklenir (hamle o bonusu taşır).
+export function legalMoves(state, piece, mode = nextMode(state, piece), bonus = null) {
+  const moves = baseMoves(state, piece, mode);
+  if (!bonus || piece.kind !== 'star' || !(state.seats[piece.seat].bonuses[bonus] > 0)) return moves;
+  if (bonus === 'double') return moves.map(m => ({ ...m, bonus }));
+  if (bonus === 'step') {
+    // İki kare: aradaki kare boş olmalı; ikinci kare boşsa yürür, doluysa alır.
+    const out = [];
+    for (const [dr, dc] of walkDirs(piece, mode)) {
+      const r1 = piece.r + dr, c1 = piece.c + dc, r = piece.r + 2 * dr, c = piece.c + 2 * dc;
+      if (!inArena(state, r1, c1) || pieceAt(state, r1, c1) || !inArena(state, r, c)) continue;
+      const t = pieceAt(state, r, c);
+      out.push(t ? { r, c, type: 'take', targetId: t.id, bonus } : { r, c, type: 'walk', bonus });
+    }
+    return [...moves, ...out];
+  }
+  if (bonus === 'swap') {
+    const out = state.pieces
+      .filter(p => p.alive && p.id !== piece.id && Math.max(Math.abs(p.r - piece.r), Math.abs(p.c - piece.c)) <= SWAP_RANGE)
+      .map(p => ({ r: p.r, c: p.c, type: 'swap', targetId: p.id, bonus }));
+    return [...moves, ...out];
+  }
+  return moves;
+}
+
+function baseMoves(state, piece, mode) {
   const moves = [];
   for (const [dr, dc] of walkDirs(piece, mode)) {
     const r = piece.r + dr, c = piece.c + dc;
@@ -251,11 +284,25 @@ export function play(state, move) {
   const actor = currentActor(state);
   if (!actor) return state;
   if (move) {
-    const m = legalMoves(state, actor, state.mode).find(x => x.r === move.r && x.c === move.c);
+    const m = legalMoves(state, actor, state.mode, move.bonus ?? null)
+      .find(x => x.r === move.r && x.c === move.c && (x.bonus ?? null) === (move.bonus ?? null));
     if (!m) throw new Error(`Geçersiz hamle: ${nameOf(state, actor)} → ${move.r},${move.c}`);
+    if (m.bonus) {
+      state.seats[actor.seat].bonuses[m.bonus]--;
+      log(state, `✨ ${nameOf(state, actor)} bonus kullandı: ${BONUS_NAMES[m.bonus]}.`);
+    }
     state.lastStep = { id: actor.id, dr: m.r - actor.r, dc: m.c - actor.c };
-    if (m.type === 'take') takePiece(state, actor, pieceById(state, m.targetId));
-    actor.r = m.r; actor.c = m.c;
+    if (m.type === 'swap') {
+      const other = pieceById(state, m.targetId);
+      [other.r, other.c] = [actor.r, actor.c];
+      actor.r = m.r; actor.c = m.c;
+    } else if (m.type === 'take' && !takePiece(state, actor, pieceById(state, m.targetId))) {
+      // Zırh aldı: hamle boşa gider, alan taş yerinde kalır.
+    } else {
+      actor.r = m.r; actor.c = m.c;
+    }
+    // Çift hamle: aynı yıldız bir kez daha oynar.
+    if (m.bonus === 'double' && !state.over && actor.alive) { state.lastStep = { id: actor.id, dr: 0, dc: 0 }; return state; }
   } else {
     state.lastStep = { id: actor.id, dr: 0, dc: 0 };
     if (actor.kind === 'star') log(state, `${nameOf(state, actor)} hamle yapamadı, sıra geçti.`);
@@ -265,15 +312,32 @@ export function play(state, move) {
   return state;
 }
 
+export const BONUS_NAMES = { armor: 'Zırh', step: 'Çift adım', double: 'Çift hamle', swap: 'Ayna' };
+
+// Alma gerçekleşirse true. Zırhlı yıldız alınmaz: zırhı gider, saldıran geri döner.
 function takePiece(state, actor, target) {
+  if (target.kind === 'star' && state.seats[target.seat].bonuses.armor > 0) {
+    state.seats[target.seat].bonuses.armor--;
+    log(state, `🛡️ ${nameOf(state, target)} zırhıyla kurtuldu!`);
+    return false;
+  }
   target.alive = false;
   if (actor.kind === 'star') {
     state.seats[actor.seat].takes++;
     state.seats[actor.seat].score += POINTS[target.kind];
+    const seat = state.seats[actor.seat];
+    while (seat.score >= seat.nextBonusAt) { grantBonus(state, seat); seat.nextBonusAt += BONUS_EVERY; }
   }
   log(state, `⚔️ ${nameOf(state, actor)}, ${accOf(state, target)} aldı!`);
   if (target.kind === 'star') starOut(state, target);
   checkOver(state);
+  return true;
+}
+
+function grantBonus(state, seat) {
+  const kind = BONUS_KINDS[Math.floor(random(state) * BONUS_KINDS.length)];
+  seat.bonuses[kind]++;
+  log(state, `🎁 ${seat.name} bonus kazandı: ${BONUS_NAMES[kind]}.`);
 }
 
 function starOut(state, star) {
@@ -322,6 +386,8 @@ function settle(state) {
 function endRound(state) {
   if (collapseDue(state)) collapse(state);
   if (state.over) return;
+  // Hayatta kalma: her 6 turda ayakta kalan yıldıza bir bonus.
+  if (state.round % 6 === 0) state.seats.filter(s => !s.out).forEach(s => grantBonus(state, s));
   state.round++;
   state.mode = flip(state.mode);
   state.order = roundOrder(state);

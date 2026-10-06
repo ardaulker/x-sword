@@ -49,7 +49,7 @@ export function Board({ ctl, view, cell }: Props) {
   const me = ctl.myStar();
   const myColor = PLAYER_COLORS[me.seat];
   const myTurn = me.alive && (view.phase === 'sen' || view.phase === 'onizleme');
-  const moves = myTurn ? legalMoves(st, me, st.mode) : [];
+  const moves = myTurn ? legalMoves(st, me, st.mode, view.bonus).filter(m => !view.bonus || m.bonus) : [];
   const sel = myTurn && view.phase === 'onizleme' ? view.sel : null;
   const warn = collapseDue(st);
   // Bir tur önce: çökecek halka ince turuncu kenarla uyarılır.
@@ -248,7 +248,9 @@ export function Board({ ctl, view, cell }: Props) {
         const danger = rc.doomed || rc.attackers > 0;
         background = danger ? 'var(--pat-danger)' : `linear-gradient(${reach18}, ${reach18}), var(--kare)`;
         frame = { stroke: myColor, width: 7 };
-        mark = rc.move.type === 'take'
+        mark = rc.move.type === 'swap'
+          ? { d: 'M28 40 H72 M62 30 L72 40 L62 50 M72 60 H28 M38 50 L28 60 L38 70', fill: 'none', stroke: '#FFFFFF', width: 7 }
+          : rc.move.type === 'take'
           ? { d: MARK_AIM, fill: 'none', stroke: '#FFFFFF', width: 8 }
           : { d: st.mode === 'DUZ' ? MARK_SQUARE : MARK_DIAMOND, fill: myColor, stroke: 'none', width: 0 };
         if (sel && sel.r === r && sel.c === c) frame = { stroke: '#FFFFFF', width: 11 };
@@ -350,6 +352,7 @@ export function Board({ ctl, view, cell }: Props) {
               {halo && <div className={`halo halo-${halo}`} style={halo === 'turn' ? { borderColor: myColor } : undefined} />}
               {pip && <div className={`pip pip-${pip}`}>{orderNo(st, p.id)}</div>}
               {badge > 0 && <div className="threat-badge">{badge}</div>}
+              {p.kind === 'star' && p.alive && st.seats[p.seat].bonuses.armor > 0 && <div className="armor-badge" aria-label="Zırhlı" />}
             </PieceGlyph>
           );
         })}
