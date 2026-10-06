@@ -15,5 +15,5 @@
   - Tasarımdaki "İkiz" (boş koltuktaki bot oyuncu) artık **yapay zekâ oyuncu**dur ve insan gibi **"Oyuncu N"** diye anılır. "İkiz" adı yalnız tek oyunculu moddaki aynaya aittir.
   - Üst çubukta **maç saati** vardır: maç başlar başlamaz 00:00'dan sayar, bitince durur; oyun sonunda maç süresi yazar.
 - Renkler tasarıma göre (Arda 6 Ekim 2026'da seçti): gidilebilir kareler oyuncunun **kendi renginde**, gidilebilir ama tehlikeli kare kırmızı çizgili, kırmızı (`--danger`) yalnız tehlike ve tehdit, turuncu (`--hazard`) yalnız çökecek halka. Önceki "yeşil = senin yolun, turuncu = botun yolu" kuralı geçersiz.
-- Kural ya da bot zekâsı değişince oyundaki Kurallar penceresini aynı değişiklikte güncelle. `docs/tasarim-prompt.md` içindeki oyun bölümünü de güncelle. Oyuncu rehberi kodla birlikte değişir.
+- Kural ya da bot zekâsı değişince kural metinlerini aynı değişiklikte güncelle: oyundaki "Nasıl oynanır?" ekranı (`app/src/screens/RulesScreen.tsx`) ve arenadaki Kurallar penceresi (`arena/index.html`). `docs/tasarim-prompt.md` içindeki oyun bölümünü de güncelle. Oyuncu rehberi kodla birlikte değişir.
 - `index.html` Windows satır sonları (CRLF) ve BOM ile geldi. Dosyayı baştan yazan bir araç kullanırsan satır sonlarını koru. Yoksa diff bütün dosyayı değişmiş gösterir.

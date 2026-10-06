@@ -1,0 +1,64 @@
+/* Nasıl oynanır? — kartlar, küçük çizimler ve kısa döngü animasyonları. */
+
+.rules {
+  width: 100%; max-width: 480px; height: 100vh; height: 100dvh; margin: 0 auto;
+  display: flex; flex-direction: column; background: var(--zemin-degrade);
+  padding-top: env(safe-area-inset-top);
+}
+.rules-head { display: flex; align-items: center; gap: 12px; padding: 10px 12px; flex: none; }
+.rules-head h1 { margin: 0; font: 800 22px var(--font-display); letter-spacing: .04em; }
+.rules-body { flex: 1; overflow-y: auto; padding: 0 12px calc(env(safe-area-inset-bottom) + 24px); }
+.rules-body h2 {
+  margin: 18px 4px 8px; font: 700 12px var(--font-display); letter-spacing: .16em; color: var(--metin-2); text-transform: uppercase;
+}
+
+.rule {
+  display: flex; gap: 14px; align-items: flex-start; padding: 14px; margin-bottom: 8px;
+  border-radius: 18px; background: var(--yuzey-1); border: 1px solid var(--cizgi);
+}
+.rule.is-soon { opacity: .75; }
+.rule-visual { width: 84px; min-height: 64px; flex: none; display: flex; align-items: center; justify-content: center; color: var(--ice); }
+.rule-text { flex: 1; min-width: 0; }
+.rule-text h3 { margin: 0 0 6px; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.rule-text p { margin: 0 0 6px; font-size: 14px; line-height: 1.4; color: var(--metin-2); }
+.rule-text p b { color: var(--metin-1); }
+.rules-foot { margin: 8px 4px; font-size: 13px; color: var(--metin-3); }
+
+/* 3×3 küçük tahta */
+.mini { display: grid; grid-template-columns: repeat(3, 26px); gap: 2px; }
+.mini-cell {
+  position: relative; width: 26px; height: 26px; background: var(--kare); display: flex; align-items: center; justify-content: center;
+  clip-path: polygon(26% 0, 74% 0, 100% 26%, 100% 74%, 74% 100%, 26% 100%, 0 74%, 0 26%);
+}
+.mini-cell svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mini-cell .pg { position: absolute; left: -2px; top: -2px; }
+
+/* Mod: kare ↔ elmas */
+.anim-morph .pg-shape { animation: morph 2.4s var(--ease-yay) infinite; }
+@keyframes morph { 0%, 40% { transform: rotate(0deg); } 50%, 90% { transform: rotate(45deg) scale(.95); } 100% { transform: rotate(0deg); } }
+
+/* Sıra: numaralar sola kayar */
+.anim-queue { display: flex; gap: 4px; overflow: hidden; width: 84px; }
+.anim-queue span {
+  flex: none; width: 22px; height: 22px; border-radius: 6px; background: var(--yuzey-3); color: var(--metin-1);
+  font: 700 11px/22px var(--font-display); text-align: center; animation: queue-slide 2s var(--ease-kay) infinite;
+}
+.anim-queue span:first-child { background: var(--ice); color: var(--murekkep); }
+@keyframes queue-slide { 0%, 60% { transform: translateX(0); } 100% { transform: translateX(-26px); } }
+
+/* Halka: dış kareler akan turuncu şerit */
+.anim-ring { display: grid; grid-template-columns: repeat(5, 14px); gap: 2px; }
+.anim-ring div { width: 14px; height: 14px; clip-path: polygon(26% 0, 74% 0, 100% 26%, 100% 74%, 74% 100%, 26% 100%, 0 74%, 0 26%); }
+
+/* Puan: süzülen +50 */
+.anim-float { font: 800 24px var(--font-display); color: var(--oyuncu-1); animation: rule-float 1.8s ease-out infinite; }
+@keyframes rule-float { 0% { transform: translateY(10px); opacity: 0; } 25% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-12px); opacity: 0; } }
+
+.rule-points { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--metin-2); }
+.rule-points b { font: 800 15px var(--font-display); color: var(--metin-1); margin-left: 4px; }
+.rule-rank { margin: 0; padding-left: 18px; font-size: 12px; color: var(--metin-1); line-height: 1.6; }
+.rule-pair { display: flex; gap: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-morph .pg-shape, .anim-queue span, .anim-float { animation: none; }
+}

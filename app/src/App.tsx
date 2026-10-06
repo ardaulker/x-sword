@@ -3,6 +3,7 @@ import { DEFAULT_SETUP, GameController } from './game/controller';
 import type { Setup } from './game/controller';
 import { GameScreen } from './screens/GameScreen';
 import { MainMenu } from './screens/MainMenu';
+import { RulesScreen } from './screens/RulesScreen';
 
 const SETUP_KEY = 'xsword-app-setup';
 
@@ -25,8 +26,8 @@ function saveSetup(s: Setup) {
 }
 
 // Ekranlar adres çubuğundaki #/ ile seçilir; telefonun geri tuşu menüye döndürür.
-type Screen = 'menu' | 'oyun';
-const readScreen = (): Screen => (location.hash === '#/oyun' ? 'oyun' : 'menu');
+type Screen = 'menu' | 'oyun' | 'kurallar';
+const readScreen = (): Screen => (location.hash === '#/oyun' ? 'oyun' : location.hash === '#/kurallar' ? 'kurallar' : 'menu');
 const go = (s: Screen) => { location.hash = s === 'menu' ? '/' : `/${s}`; };
 
 export function App() {
@@ -54,5 +55,6 @@ export function App() {
   };
 
   if (screen === 'oyun') return <GameScreen ctl={ctl} onNewGame={start} onHome={() => go('menu')} />;
-  return <MainMenu setup={ctl.setup} onStart={start} />;
+  if (screen === 'kurallar') return <RulesScreen onBack={() => go('menu')} />;
+  return <MainMenu setup={ctl.setup} onStart={start} onRules={() => go('kurallar')} />;
 }
