@@ -99,6 +99,24 @@ function huntDistance(state, piece, star, grid) {
   return Infinity;
 }
 
+// Bir arena botunun şu an kovaladığı yıldız; ekrandaki hedef işareti bunu gösterir.
+// Kolay en yakın yıldıza yürür. Normal ve zor, en az hamlede alabileceği yıldıza yönelir;
+// hiçbirine yolu yoksa en yakınına sokulur.
+export function targetOf(state, piece, level = levelOf(state, piece)) {
+  if (piece.kind === 'star' || !piece.alive) return null;
+  const stars = state.pieces.filter(p => p.kind === 'star' && p.alive);
+  if (!stars.length) return null;
+  const nearest = dist => stars.reduce((a, b) => (dist(b) < dist(a) ? b : a));
+  if (level === 'kolay') return nearest(s => Math.abs(s.r - piece.r) + Math.abs(s.c - piece.c));
+  const grid = occupancy(state);
+  let best = Infinity, target = null;
+  for (const st of stars) {
+    const d = huntDistance(state, piece, st, grid);
+    if (d < best) { best = d; target = st; }
+  }
+  return target || nearest(s => Math.max(Math.abs(s.r - piece.r), Math.abs(s.c - piece.c)));
+}
+
 // Yıldızın verilen moddaki güvenli seçenek sayısı: yürüyebileceği ya da alabileceği,
 // ve orada bir sonraki hamlesinden önce alınmayacağı kareler.
 function escapes(state, star, mode, grid) {

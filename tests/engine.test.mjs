@@ -4,7 +4,7 @@ import {
   createGame, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
   roundOrder, random, pieceById, SIZE_BY_STARS, NEUTRALS_BY_STARS,
 } from '../engine/rules.js';
-import { chooseMove } from '../engine/bots.js';
+import { chooseMove, targetOf } from '../engine/bots.js';
 
 let passed = 0;
 function test(name, fn) {
@@ -133,6 +133,19 @@ test('oyun her zaman biter (daralan arena sayesinde)', () => {
 });
 
 // ---------------------------------------------------------------- botlar
+
+test('hedef: bot, en az hamlede alabileceği yıldızı kovalar; kolay en yakına gider', () => {
+  // Mavi çapraz yürür, düz alır: (3,3)'ten s0'ın (1,1) düz komşularına hiç varamaz,
+  // s1'in (7,6) komşularına varır. s0 daha yakın olsa da hedefi s1'dir.
+  const st = position([{ kind: 'blue', r: 3, c: 3 }]);
+  const s1 = pieceById(st, 's1');
+  s1.r = 7; s1.c = 6;
+  const blue = pieceById(st, 'b1');
+  assert.equal(targetOf(st, blue, 'normal').id, 's1');
+  assert.equal(targetOf(st, blue, 'zor').id, 's1');
+  assert.equal(targetOf(st, blue, 'kolay').id, 's0');
+  assert.equal(targetOf(st, pieceById(st, 's0')), null);
+});
 
 // "Dikkatli oyuncu": güvenli kare varsa oraya gider, güvenli alma varsa onu yapar.
 function carefulMove(st, piece) {
