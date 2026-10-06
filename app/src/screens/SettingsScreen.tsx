@@ -21,7 +21,7 @@ function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: 
   );
 }
 
-export function SettingsScreen({ onBack }: { onBack: () => void }) {
+export function SettingsScreen({ onBack, onRules }: { onBack: () => void; onRules?: () => void }) {
   const [s, setS] = useState(settings);
   const update = (patch: Partial<Settings>) => { const next = { ...s, ...patch }; setS(next); saveSettings(next); };
   return (
@@ -31,6 +31,11 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
         <h1>Ayarlar</h1>
       </header>
       <div className="rules-body">
+        {onRules && (
+          <button type="button" className="rule set-row" onClick={onRules}>
+            <div className="rule-text"><h3>Nasıl oynanır?</h3><p>Kurallar, puanlar ve bonusların nasıl kazanıldığı.</p></div>
+          </button>
+        )}
         <Toggle label="Ses" sub="Hamle, alma, puan, sıra, bonus ve maç sonu sesleri." on={s.sound}
           onChange={v => { update({ sound: v }); if (v) feel('select'); }} />
         <Toggle label="Titreşim" sub="Desteklenen telefonlarda. iPhone'da tarayıcı titreşime izin vermez." on={s.haptics}

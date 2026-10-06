@@ -83,6 +83,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         <Card title="Puan" visual={<div className="rule-points"><span>Oyuncu <b>{POINTS.star}</b></span><span>İkiz <b>{POINTS.twin}</b></span><span>Bot <b>{POINTS.red}</b></span></div>}>
           <p>Almak puan kazandırır. Skor tablosu anında güncellenir; puan, aldığın karede de belirir.</p>
           <p>Ayakta kalan son yıldız +{SURVIVOR_BONUS} hayatta kalma bonusu alır.</p>
+          <p>2–4 oyunculu maçta rakip yıldızlar gidince kazanan belli olur; istersen botlarla savaşa devam edersin.</p>
         </Card>
         <Card title="Sıralama" visual={<ol className="rule-rank"><li>Skor</li><li>Alma sayısı</li><li>Hayatta kalma</li></ol>}>
           <p>Önce skor bakılır. Eşitse daha çok alan, o da eşitse daha uzun ayakta kalan önde olur. Erken elenen ama çok alan oyuncu da birinci olabilir.</p>
@@ -94,23 +95,27 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
           <p>Botun kenarındaki üçgen, kovaladığı oyuncunun yönünde ve renginde durur.</p>
         </Card>
         <Card title="Tek oyunculu: İkiz" visual={<div className="rule-pair"><PieceGlyph {...star} size={34} diamond={false} /><PieceGlyph kind="twin" seat={0} size={34} diamond={false} /></div>}>
-          <p>İkiz senin aynandır: senden hemen sonra, senin yaptığın yönün aynısını oynar. O kare doluysa oradaki taşı alır, yol kapalıysa yerinde kalır. Seni hiç alamaz. İkiz ve bütün botlar gidince kazanırsın.</p>
+          <p>İkiz senin aynandır: senden hemen sonra, senin yaptığın yönün aynısını oynar. O kare doluysa oradaki taşı alır, yol kapalıysa yerinde kalır. Seni hiç alamaz. Bütün botlar gidince kazanırsın; İkiz'i almana gerek yok. İkiz bir taş alırsa sana çift puan ve bir Ayna bonusu verir.</p>
         </Card>
 
         <h2>Bonuslar</h2>
         <Card title="Zırh" visual={<Icon d="M12 3 L20 6 V12 C20 16.5 16.5 20 12 21 C7.5 20 4 16.5 4 12 V6 Z" size={36} stroke={2} />}>
           <p>+1 can: seni bir kez alınmaktan korur. Kendiliğinden çalışır; seni alan taş geri döner.</p>
+          <p className="rule-when"><b>Nasıl kazanılır:</b> arena ilk kez daraldığında hâlâ ayaktaysan.</p>
         </Card>
         <Card title="Çift adım" visual={<Icon d="M4 12 H12 M9 8 L13 12 L9 16 M12 12 H20 M17 8 L21 12 L17 16" size={36} stroke={2} />}>
           <p>Bu hamlede iki kare gidersin (aradaki kare boş olmalı).</p>
+          <p className="rule-when"><b>Nasıl kazanılır:</b> 20 puana ulaşınca. 60 puanda ikisinden biri rastgele gelir. Maça bir tane ile başlarsın.</p>
         </Card>
         <Card title="Çift hamle" visual={<Icon d="M3 5 L12 12 L3 19 Z M12 5 L21 12 L12 19 Z" size={36} stroke={2} />}>
           <p>Hamlenden sonra hemen bir hamle daha yaparsın.</p>
+          <p className="rule-when"><b>Nasıl kazanılır:</b> 40 puana ulaşınca. 60 puanda çift adımla birlikte rastgele gelir.</p>
         </Card>
         <Card title="Ayna" visual={<Icon d="M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19" size={36} stroke={2} />}>
           <p>En fazla 3 kare uzaktaki bir taşla yer değiştirirsin.</p>
+          <p className="rule-when"><b>Nasıl kazanılır:</b> tek oyunculu modda İkiz bir taş alınca. Aynı alma sana çift puan da yazar.</p>
         </Card>
-        <p className="rules-foot">Herkes maça bir çift adımla başlar. Her 50 puanda bir ve her 6 tur ayakta kalınca bir bonus daha kazanırsın; türü rastgele. Sıran gelince paneldeki bonusa dokun, kareler ona göre yanar.</p>
+        <p className="rules-foot">Herkes maça bir çift adımla başlar. Sıran gelince paneldeki bonusa dokun, kareler ona göre yanar.</p>
       </div>
     </div>
   );

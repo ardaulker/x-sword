@@ -10,6 +10,7 @@ import { PlayerStrip } from '../components/PlayerStrip';
 import { TurnQueue } from '../components/TurnQueue';
 import { LeaveSheet, LogSheet, ResultsSheet, SetupSheet } from '../components/Sheets';
 import { useMatchTime } from '../components/bits';
+import { RulesScreen } from './RulesScreen';
 import { InfoChip } from '../components/InfoChip';
 import { Icon } from '../components/bits';
 import './GameScreen.css';
@@ -74,6 +75,7 @@ export function GameScreen({ ctl, onNewGame, onHome, net }: {
   const boardTop = Math.max(0, Math.min(availH - outer, Math.floor((stage.h - usual - GAP - outer) / 2)));
 
   const sheet = view.sheet;
+  const [rulesOpen, setRulesOpen] = useState(false);
   const matchTime = useMatchTime(view.clockStart, view.clockEnd);
   return (
     <div ref={rootRef} className={`game${compact ? ' is-compact' : ''}`}>
@@ -107,7 +109,9 @@ export function GameScreen({ ctl, onNewGame, onHome, net }: {
           onAgain={net ? net.onRematch : () => ctl.newGame()} againLabel={net ? 'Lobiye dön' : 'Rövanş'}
         />
       )}
-      {sheet?.type === 'menu' && !net && <SetupSheet setup={ctl.setup} onStart={onNewGame} onClose={() => ctl.closeSheet()} onHome={onHome} />}
+      {sheet?.type === 'menu' && !net && <SetupSheet setup={ctl.setup} onStart={onNewGame} onClose={() => ctl.closeSheet()} onHome={onHome}
+        onRules={() => setRulesOpen(true)} onEnd={ctl.state.decided && !ctl.state.over ? () => ctl.endNow() : undefined} />}
+      {rulesOpen && <div className="rules-overlay"><RulesScreen onBack={() => setRulesOpen(false)} /></div>}
       {sheet?.type === 'menu' && net && <LeaveSheet onLeave={net.onLeave} onClose={() => ctl.closeSheet()} />}
 
       {view.hit > 0 && <div key={view.hit} className="hit-flash" aria-hidden="true" />}

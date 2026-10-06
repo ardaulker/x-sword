@@ -36,7 +36,7 @@ export interface Seat {
   score: number;
   bonus: number;
   bonuses: Record<BonusKind, number>;
-  nextBonusAt: number;
+  scoreTier: number;
   out: boolean;
   outRound?: number;
 }
@@ -71,6 +71,8 @@ export interface GameState {
   solo: boolean;
   lastStep: { id: string; dr: number; dc: number } | null;
   matchOrder: string[];
+  keepGoing: boolean;
+  decided: boolean;
 }
 
 export interface SeatSetup {
@@ -87,6 +89,7 @@ export interface GameOptions {
   neutrals?: number;
   firstSeat?: number | null;
   shuffle?: boolean;
+  keepGoing?: boolean;
 }
 
 export const SIZE_BY_STARS: Record<number, number>;
@@ -95,7 +98,8 @@ export const SEAT_NAMES: string[];
 export const POINTS: Record<Piece['kind'], number>;
 export const SURVIVOR_BONUS: number;
 export const BONUS_KINDS: BonusKind[];
-export const BONUS_EVERY: number;
+export const BONUS_SCORES: number[];
+export const TWIN_TAKE_MULT: number;
 export const SWAP_RANGE: number;
 export const BONUS_NAMES: Record<BonusKind, string>;
 
@@ -112,6 +116,7 @@ export function ringOf(state: GameState, r: number, c: number): number;
 export function inArena(state: GameState, r: number, c: number): boolean;
 export function nameOf(state: GameState, p: Piece): string;
 
+export function endMatch(state: GameState): GameState;
 export function createGame(options: GameOptions): GameState;
 export function roundOrder(state: GameState): string[];
 export function currentActor(state: GameState): Piece | null;

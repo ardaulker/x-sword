@@ -109,7 +109,7 @@ export function App() {
 
   if (screen === 'oyun') return <GameScreen ctl={ctl} onNewGame={start} onHome={() => go('menu')} />;
   if (screen === 'kurallar') return <RulesScreen onBack={() => go('menu')} />;
-  if (screen === 'ayarlar') return <SettingsScreen onBack={() => go('menu')} />;
+  if (screen === 'ayarlar') return <SettingsScreen onBack={() => go('menu')} onRules={() => go('kurallar')} />;
   if (screen === 'mac' && room) {
     return (
       <GameScreen

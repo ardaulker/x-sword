@@ -85,3 +85,84 @@ export function feel(name: SoundName, pattern?: number | readonly number[]) {
   sound(name);
   if (pattern != null) buzz(pattern);
 }
+
+// ------------------------------------------------------------ gerilim müziği
+// Arena daralacak turda çalar, halka çökünce ya da maç bitince susar: alçak bir uğultu,
+// ağırlaşan bir kalp atışı ve arada tiz, uyumsuz bir çınlama. Hepsi sentezlenir.
+
+let tension: { master: GainNode; stops: (() => void)[]; timer: number } | null = null;
+
+export function startTension() {
+  if (tension || !settings.sound) return;
+  const ac = audio();
+  if (!ac || ac.state !== 'running') return;
+  const master = ac.createGain();
+  master.gain.setValueAtTime(0.0001, ac.currentTime);
+  master.gain.exponentialRampToValueAtTime(1, ac.currentTime + 0.8);
+  master.connect(ac.destination);
+  const stops: (() => void)[] = [];
+
+  // Uğultu: iki hafif ayrık testere dişi, alçak geçiren süzgeçten.
+  const lp = ac.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 180;
+  const hum = ac.createGain(); hum.gain.value = 0.07;
+  lp.connect(hum).connect(master);
+  for (const f of [55, 58.3]) {
+    const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f;
+    o.connect(lp); o.start(); stops.push(() => o.stop());
+  }
+  // Süzgeç yavaşça açılıp kapanır.
+  const lfo = ac.createOscillator(), lfoG = ac.createGain();
+  lfo.frequency.value = 0.18; lfoG.gain.value = 70;
+  lfo.connect(lfoG).connect(lp.frequency); lfo.start(); stops.push(() => lfo.stop());
+
+  // Kalp atışı ve çınlama, ileri zamanlanır.
+  let beat = 0, next = ac.currentTime + 0.1;
+  const BEAT = 0.55;
+  const tick = () => {
+    while (next < ac.currentTime + 0.3) {
+      const thump = (at: number, vol: number) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(95, at); o.frequency.exponentialRampToValueAtTime(38, at + 0.16);
+        g.gain.setValueAtTime(0.0001, at);
+        g.gain.exponentialRampToValueAtTime(vol, at + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + 0.2);
+        o.connect(g).connect(master); o.start(at); o.stop(at + 0.22);
+      };
+      thump(next, 0.3);
+      thump(next + 0.17, 0.18);
+      if (beat % 4 === 3) {
+        for (const f of [466, 659]) { // tritonlu çınlama
+          const o = ac.createOscillator(), g = ac.createGain();
+          o.type = 'triangle'; o.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, next + 0.3);
+          g.gain.exponentialRampToValueAtTime(0.025, next + 0.33);
+          g.gain.exponentialRampToValueAtTime(0.0001, next + 1.2);
+          o.connect(g).connect(master); o.start(next + 0.3); o.stop(next + 1.25);
+        }
+      }
+      beat++; next += BEAT;
+    }
+  };
+  const timer = window.setInterval(() => { if (!settings.sound) stopTension(); else tick(); }, 120);
+  tick();
+  tension = { master, stops, timer };
+}
+
+export function stopTension() {
+  if (!tension) return;
+  const { master, stops, timer } = tension;
+  tension = null;
+  clearInterval(timer);
+  const ac = ctx;
+  if (!ac) return;
+  try {
+    master.gain.cancelScheduledValues(ac.currentTime);
+    master.gain.setValueAtTime(master.gain.value, ac.currentTime);
+    master.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.3);
+  } catch { /* yoksay */ }
+  setTimeout(() => { stops.forEach(s => { try { s(); } catch { /* durmuş */ } }); master.disconnect(); }, 400);
+}
+
+if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => { if (document.hidden) stopTension(); });

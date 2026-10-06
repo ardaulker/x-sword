@@ -77,8 +77,8 @@ export function LogSheet({ ctl, events }: { ctl: GameController; events: TakeEve
 const LEVEL_LABELS: [Level, string][] = [['kolay', 'Kolay'], ['normal', 'Normal'], ['zor', 'Zor']];
 
 // Maç ayarı: ana menüden "Oyuna başla" ile ve oyun içindeki menü düğmesiyle açılır.
-export function SetupSheet({ setup, onStart, onClose, onHome }: {
-  setup: Setup; onStart: (s: Setup) => void; onClose: () => void; onHome?: () => void;
+export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: {
+  setup: Setup; onStart: (s: Setup) => void; onClose: () => void; onHome?: () => void; onRules?: () => void; onEnd?: () => void;
 }) {
   const [players, setPlayers] = useState(setup.players);
   const [level, setLevel] = useState<Level>(setup.level);
@@ -107,10 +107,16 @@ export function SetupSheet({ setup, onStart, onClose, onHome }: {
       </div>
       <div className="menu-note">
         {players === 1
-          ? `Sen, aynan İkiz ve ${NEUTRALS_BY_STARS[1]} arena botu · tahta ${size}×${size}. Son kalan sen ol.`
+          ? `Sen, aynan İkiz ve ${NEUTRALS_BY_STARS[1]} arena botu · tahta ${size}×${size}. Bütün botları temizle.`
           : `Sen ve ${players - 1} yapay zekâ oyuncu · tahta ${size}×${size} · ${NEUTRALS_BY_STARS[players]} arena botu.`}
         {level === 'kolay' ? ' İlk sen oynarsın.' : level === 'zor' ? ' Botların hedefi gizli.' : ''}
       </div>
+      {(onRules || onEnd) && (
+        <div className="btn-row" style={{ marginBottom: 8 }}>
+          {onRules && <button type="button" className="btn btn-ghost" onClick={onRules}>Nasıl oynanır?</button>}
+          {onEnd && <button type="button" className="btn btn-ghost" onClick={onEnd}>Maçı bitir</button>}
+        </div>
+      )}
       <div className="btn-row">
         {onHome
           ? <button type="button" className="btn btn-ghost" onClick={onHome}>Ana menü</button>
@@ -147,12 +153,13 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose }: {
   const won = st.winner === ME;
   const order = ranking(st);
   const lasted = (i: number) => (st.seats[i].out ? st.seats[i].outRound ?? st.round : st.round);
+  const pending = st.decided && !st.over;
   const title = won ? 'Kazandın!' : st.solo ? 'Alındın' : `${seatName(st, st.winner ?? order[0])} kazandı`;
   return (
     <SheetFrame label="Maç sonucu" onClose={onClose}>
       <div className="res-head">
         <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{title}</div>
-        <div className="res-sub">{st.solo ? (won ? 'Arenada tek sen kaldın' : 'Bir dahaki sefere') : `${order.indexOf(ME) + 1}. oldun`} · {time}</div>
+        <div className="res-sub">{pending ? 'Rakip yıldız kalmadı. Botlarla savaşa devam edebilirsin' : st.solo ? (won ? 'Arenada bot kalmadı' : 'Bir dahaki sefere') : `${order.indexOf(ME) + 1}. oldun`} · {time}</div>
       </div>
       <div className="res-stats">
         <div><b>{me.score}</b><span>Skor</span></div>
@@ -176,8 +183,15 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose }: {
         </ol>
       )}
       <div className="btn-row">
-        <button type="button" className="btn btn-ghost" onClick={onClose}>Tahtaya bak</button>
-        {onAgain && <button type="button" className="btn btn-main" onClick={onAgain}>{againLabel}</button>}
+        {pending ? (
+          <>
+            <button type="button" className="btn btn-ghost" onClick={() => ctl.endNow()}>Bitir</button>
+            <button type="button" className="btn btn-main" onClick={() => ctl.resume()}>Devam et</button>
+          </>
+        ) : (
+          <button type="button" className="btn btn-ghost" onClick={onClose}>Tahtaya bak</button>
+        )}
+        {!pending && onAgain && <button type="button" className="btn btn-main" onClick={onAgain}>{againLabel}</button>}
       </div>
     </SheetFrame>
   );

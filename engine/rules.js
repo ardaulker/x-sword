@@ -11,10 +11,12 @@ export const SEAT_NAMES = ['Turkuaz', 'Mor', 'Sarı', 'Pembe'];
 export const POINTS = { star: 50, twin: 30, red: 10, blue: 10 };
 export const SURVIVOR_BONUS = 30;
 
-// Bonuslar: her BONUS_EVERY puanda bir ve her 6 tur ayakta kalınca bir tane kazanılır; türü tohumdan gelir.
+// Bonuslar şartla kazanılır: 20 puan çift adım, 40 puan çift hamle, 60 puan ikisinden biri (tohumdan),
+// ilk daralmayı atlatınca zırh, İkiz bir taş alınca ayna (yer değiştirme).
 // Zırh kendiliğinden çalışır (seni alan taş geri döner). Diğerleri sırandayken hamleyle birlikte kullanılır.
 export const BONUS_KINDS = ['armor', 'step', 'double', 'swap'];
-export const BONUS_EVERY = 50;
+export const BONUS_SCORES = [20, 40, 60];
+export const TWIN_TAKE_MULT = 2;
 export const SWAP_RANGE = 3;
 // Herkes bir çift adımla başlar: köşeden erken sıkışmamak için.
 const startBonuses = () => ({ armor: 0, step: 1, double: 0, swap: 0 });
@@ -96,7 +98,7 @@ function randomSymmetry(state, size) {
 // firstSeat: bu koltuk hep ilk oynar (kolay zorlukta oyuncu). Verilmezse herkesin yeri rastgeledir.
 // shuffle: false ise köşeler ve sıra sabit kalır (yalnız testler için).
 export function createGame({
-  seats, neutralLevel = 'normal', seed, shrinkStart = 6, shrinkEvery = 6, neutrals, firstSeat = null, shuffle: mix = true,
+  seats, neutralLevel = 'normal', seed, shrinkStart = 6, shrinkEvery = 6, neutrals, firstSeat = null, shuffle: mix = true, keepGoing = false,
 } = {}) {
   const n = seats?.length;
   if (!(n >= 1 && n <= 4)) throw new Error('Bir maçta 1–4 yıldız olur.');
@@ -107,10 +109,10 @@ export function createGame({
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
       level: s.level || 'normal', takes: 0, score: 0, bonus: 0, out: false,
-      bonuses: startBonuses(), nextBonusAt: BONUS_EVERY,
+      bonuses: startBonuses(), scoreTier: 0,
     })),
     pieces: [], order: [], turn: 0, over: false, winner: null, outOrder: [], log: [],
-    solo: n === 1, lastStep: null, matchOrder: [],
+    solo: n === 1, lastStep: null, matchOrder: [], keepGoing: !!keepGoing, decided: false,
   };
 
   let starts = startCells(n, size);
@@ -325,9 +327,15 @@ function takePiece(state, actor, target) {
   target.alive = false;
   if (actor.kind === 'star') {
     state.seats[actor.seat].takes++;
-    state.seats[actor.seat].score += POINTS[target.kind];
-    const seat = state.seats[actor.seat];
-    while (seat.score >= seat.nextBonusAt) { grantBonus(state, seat); seat.nextBonusAt += BONUS_EVERY; }
+    addScore(state, state.seats[actor.seat], POINTS[target.kind]);
+  } else if (actor.kind === 'twin') {
+    // İkiz'in aldığı taş zor bir iştir: sahibine çift puan ve bir ayna bonusu getirir.
+    const seat = state.seats[pieceById(state, actor.mirrors).seat];
+    if (!seat.out) {
+      addScore(state, seat, POINTS[target.kind] * TWIN_TAKE_MULT);
+      seat.bonuses.swap++;
+      log(state, `🎁 ${seat.name} bonus kazandı: ${BONUS_NAMES.swap}.`);
+    }
   }
   log(state, `⚔️ ${nameOf(state, actor)}, ${accOf(state, target)} aldı!`);
   if (target.kind === 'star') starOut(state, target);
@@ -335,8 +343,15 @@ function takePiece(state, actor, target) {
   return true;
 }
 
-function grantBonus(state, seat) {
-  const kind = BONUS_KINDS[Math.floor(random(state) * BONUS_KINDS.length)];
+function addScore(state, seat, points) {
+  seat.score += points;
+  while (seat.scoreTier < BONUS_SCORES.length && seat.score >= BONUS_SCORES[seat.scoreTier]) {
+    const tier = seat.scoreTier++;
+    grantBonus(state, seat, tier === 0 ? 'step' : tier === 1 ? 'double' : random(state) < 0.5 ? 'step' : 'double');
+  }
+}
+
+function grantBonus(state, seat, kind) {
   seat.bonuses[kind]++;
   log(state, `🎁 ${seat.name} bonus kazandı: ${BONUS_NAMES[kind]}.`);
 }
@@ -354,20 +369,41 @@ function starOut(state, star) {
 function checkOver(state) {
   if (state.over) return;
   const alive = state.pieces.filter(p => p.kind === 'star' && p.alive);
+  const botsLeft = state.pieces.some(p => p.alive && p.kind !== 'star' && p.kind !== 'twin');
   if (state.solo) {
-    if (alive.length && state.pieces.some(p => p.alive && p.kind !== 'star')) return;
+    // İkiz tek başına kalınca da kazanırsın: onu almana gerek yok.
+    if (alive.length && botsLeft) return;
     state.over = true;
     if (alive.length) survivorBonus(state, 0);
     state.winner = alive.length ? 0 : null;
-    log(state, alive.length ? '🏆 Kazandın! Arenada tek sen kaldın.' : '❌ Alındın! Oyun bitti.');
+    log(state, alive.length ? '🏆 Kazandın! Arenada bot kalmadı.' : '❌ Alındın! Oyun bitti.');
+    return;
+  }
+  if (state.decided) {
+    // Kazanan belli; tek yıldız botlarla savaşmaya devam ediyor.
+    if (alive.length === 1 && botsLeft) return;
+    state.over = true;
     return;
   }
   if (alive.length > 1) return;
+  if (state.keepGoing && alive.length === 1 && botsLeft) {
+    state.decided = true;
+    survivorBonus(state, alive[0].seat);
+    state.winner = ranking(state)[0];
+    log(state, `🏆 ${state.seats[state.winner].name} kazandı! (${state.seats[state.winner].score} puan)`);
+    return;
+  }
   state.over = true;
   if (alive.length) survivorBonus(state, alive[0].seat);
   state.winner = ranking(state)[0];
   const w = state.seats[state.winner];
   log(state, `🏆 ${w.name} kazandı! (${w.score} puan)`);
+}
+
+// Kazananı belli olmuş maçı bitirir (oyuncu "Bitir" derse).
+export function endMatch(state) {
+  if (state.decided) state.over = true;
+  return state;
 }
 
 function survivorBonus(state, seat) {
@@ -387,8 +423,6 @@ function settle(state) {
 function endRound(state) {
   if (collapseDue(state)) collapse(state);
   if (state.over) return;
-  // Hayatta kalma: her 6 turda ayakta kalan yıldıza bir bonus.
-  if (state.round % 6 === 0) state.seats.filter(s => !s.out).forEach(s => grantBonus(state, s));
   state.round++;
   state.mode = flip(state.mode);
   state.order = roundOrder(state);
@@ -406,6 +440,8 @@ function collapse(state) {
     ? `🌀 Arena daraldı (${side}×${side})! Dışarıda kalan düştü: ${fallen.map(p => nameOf(state, p)).join(', ')}.`
     : `🌀 Arena daraldı (${side}×${side}).`);
   fallen.filter(p => p.kind === 'star').forEach(p => starOut(state, p));
+  // İlk daralmayı atlatan her yıldız bir zırh kazanır.
+  if (state.ring === 1) state.seats.filter(s => !s.out).forEach(s => grantBonus(state, s, 'armor'));
   checkOver(state);
 }
 

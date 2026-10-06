@@ -47,7 +47,7 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 - Her oyuncunun hamle süresi 20 saniyedir. Bu süre lobide değiştirilebilir. Süre biterse oyun, oyuncunun yerine güvenli bir hamle yapar.
 
 ## Oyuncu sayısı ve tahta
-- Tek oyunculu modda tahtada bir de **İkiz** olur: oyuncunun aynası. Oyuncudan hemen sonra, onun yaptığı yönün aynısını oynar; o kare boşsa yürür, doluysa oradaki taşı alır, kapalıysa yerinde kalır. Oyuncuyu hiç alamaz. Oyuncu, İkiz ve bütün botlar gidince kazanır.
+- Tek oyunculu modda tahtada bir de **İkiz** olur: oyuncunun aynası. Oyuncudan hemen sonra, onun yaptığı yönün aynısını oynar; o kare boşsa yürür, doluysa oradaki taşı alır, kapalıysa yerinde kalır. Oyuncuyu hiç alamaz. Bütün botlar gidince oyuncu kazanır; İkiz'i almak gerekmez. İkiz bir taş alırsa oyuncuya çift puan ve ayna bonusu verir.
 - Bir maçta 2–4 yıldız olur. Boş koltuğa yapay zekâ oyuncu oturabilir. Onun adı da "Oyuncu N"dir ve bir oyuncu gibi sırasını oynar.
 - 2 yıldızda tahta 9×9 olur ve yaklaşık 14 bot vardır.
 - 3 yıldızda tahta 11×11 olur ve yaklaşık 21 bot vardır.
@@ -62,7 +62,7 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 - Bot zekâsı kodda çözülecek. Senden istenen iki şey var: zorluk seçimi, bir de botun kimi hedeflediğini okunur gösteren bir işaret. Bu işaret ayarlardan kapatılabilsin.
 
 ## Bonuslar
-- Herkes maça bir çift adımla başlar. Her 50 puanda bir ve her 6 tur ayakta kalınca bir bonus daha kazanılır; türü rastgeledir.
+- Herkes maça bir çift adımla başlar. Bonuslar şartla kazanılır: 20 puan çift adım, 40 puan çift hamle, 60 puan ikisinden biri; ilk daralmayı atlatınca zırh; tek oyunculuda İkiz bir taş alınca ayna bonusu ve çift puan. Tek oyunculuda bütün botlar gidince kazanılır; 2–4 oyunculuda kazanan belli olunca botlarla savaşa devam edilebilir.
 - Zırh: bir kez alınmaktan korur, kendiliğinden çalışır. Çift adım: iki kare git. Çift hamle: hemen bir hamle daha. Ayna: 3 kare içindeki bir taşla yer değiştir.
 
 ## Bitiş

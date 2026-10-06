@@ -1,7 +1,7 @@
 // Kural motoru ve botların testleri: node tests/engine.test.mjs
 import assert from 'node:assert/strict';
 import {
-  createGame, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
+  createGame, endMatch, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
   roundOrder, random, pieceById, threatsFor, ranking, SIZE_BY_STARS, NEUTRALS_BY_STARS, POINTS, SURVIVOR_BONUS,
 } from '../engine/rules.js';
 import { chooseMove, targetOf } from '../engine/bots.js';
@@ -153,18 +153,31 @@ test('eşit skorda alma sayısı, o da eşitse geç elenen önde', () => {
   assert.deepEqual(ranking(st), [2, 1, 0]);
 });
 
-test('bonus: her 50 puanda ve her 6 turda bir bonus kazanılır', () => {
+test('bonus: 20 puan çift adım, 40 puan çift hamle', () => {
   const st = position([{ kind: 'blue', r: 2, c: 1 }]);
-  st.seats[0].score = 40;
-  play(st, { r: 2, c: 1 }); // +10 → 50
+  const seat = st.seats[0];
+  seat.score = 10;
+  play(st, { r: 2, c: 1 }); // +10 → 20
+  assert.equal(seat.bonuses.step, 2); // başlangıçtaki + 20 puan
+  assert.equal(seat.bonuses.double, 0);
+  assert.equal(seat.scoreTier, 1);
+  const g = position([{ kind: 'blue', r: 2, c: 1 }]);
+  g.seats[0].score = 30; g.seats[0].scoreTier = 1;
+  play(g, { r: 2, c: 1 }); // 40
+  assert.equal(g.seats[0].bonuses.double, 1);
+});
+
+test('zırh: ilk daralmayı atlatan yıldız bir zırh kazanır, 6 tur geçmek bonus vermez', () => {
+  const g = createGame({ seats: seats(2), seed: 9, neutrals: 0, shrinkStart: 1, shrinkEvery: 99 });
   const total = s => Object.values(s.bonuses).reduce((a, b) => a + b, 0);
-  assert.equal(st.seats[0].bonuses.step >= 1, true); // başlangıçtaki çift adım
-  assert.equal(total(st.seats[0]), 2);
-  assert.equal(st.seats[0].nextBonusAt, 100);
-  const g = createGame({ seats: seats(2), seed: 9, neutrals: 0, shrinkStart: 99 });
-  g.round = 6;
-  while (g.round === 6) play(g, legalMoves(g, currentActor(g), g.mode).find(m => m.type === 'walk') ?? null);
-  assert.ok(g.seats.every(s => total(s) === 2));
+  const walk = () => play(g, legalMoves(g, currentActor(g), g.mode).find(m => m.type === 'walk') ?? null);
+  while (g.round === 1 && !g.over) walk();
+  assert.equal(g.ring, 1);
+  g.seats.filter(s => !s.out).forEach(s => assert.equal(s.bonuses.armor, 1));
+  const before = g.seats.map(total);
+  g.round = 6; g.turn = 0;
+  while (g.round === 6 && !g.over) walk();
+  assert.deepEqual(g.seats.map(total), before);
 });
 
 test('zırh: alınan yıldız kurtulur, saldıran yerinde kalır', () => {
@@ -284,9 +297,10 @@ test('İkiz seni alamaz; önizleme bunu kesin bilir', () => {
   assert.deepEqual(threatsFor(st, me, { r: 1, c: 2, type: 'walk' }).attackers, []);
 });
 
-test('tek oyunculu: İkiz ve botlar gidince kazanırsın, alınınca kaybedersin', () => {
-  const win = soloPosition({ me: [1, 1], twin: [1, 2] });
-  play(win, { r: 1, c: 2 }); // İkiz'i al
+test('tek oyunculu: botlar gidince kazanırsın (İkiz kalsa da), alınınca kaybedersin', () => {
+  const win = soloPosition({ me: [1, 1], twin: [6, 7], bots: [{ kind: 'red', r: 1, c: 2 }] });
+  play(win, { r: 1, c: 2 }); // son botu al: İkiz hayatta olsa da kazanırsın
+  assert.equal(pieceById(win, 'tw').alive, true);
   assert.equal(win.over, true);
   assert.equal(win.winner, 0);
 
@@ -392,3 +406,29 @@ test('yapay zekâ oyuncu: normal ve zor, kolaydan çok daha sık kazanır', () =
 });
 
 console.log(`\n${passed} test geçti.`);
+
+test('İkiz bir taş alınca sahibi çift puan ve ayna bonusu kazanır', () => {
+  const st = soloPosition({ me: [1, 1], twin: [5, 5], bots: [{ kind: 'red', r: 5, c: 6 }, { kind: 'blue', r: 8, c: 8 }] });
+  play(st, { r: 1, c: 2 });
+  play(st, chooseMove(st, currentActor(st)));
+  assert.equal(pieceById(st, 'b1').alive, false);
+  assert.equal(st.seats[0].score, POINTS.red * 2);
+  assert.equal(st.seats[0].bonuses.swap, 1);
+  assert.equal(st.seats[0].bonuses.step, 2);
+});
+
+test('çok oyunculu, devam açıkken: tek yıldız kalınca kazanan belli olur, maç sürer', () => {
+  const mk = keep => {
+    const st = position([{ kind: 'blue', r: 8, c: 8 }]);
+    st.keepGoing = keep;
+    Object.assign(pieceById(st, 's1'), { r: 2, c: 1 });
+    play(st, { r: 2, c: 1 }); // s0, s1'i alır
+    return st;
+  };
+  const st = mk(true);
+  assert.equal(st.decided, true);
+  assert.equal(st.over, false);
+  assert.equal(st.winner, 0);
+  assert.equal(endMatch(st).over, true);
+  assert.equal(mk(false).over, true);
+});

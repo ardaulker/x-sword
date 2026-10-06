@@ -2,11 +2,11 @@
 // Kuralı motor (engine/) bilir; burası yalnız onun fonksiyonlarını çağırır ve ekrana ne olduğunu söyler.
 
 import {
-  BONUS_NAMES, POINTS, collapseDue, createGame, play, currentActor, legalMoves, pieceById, starOf,
+  BONUS_NAMES, POINTS, TWIN_TAKE_MULT, collapseDue, createGame, endMatch, play, currentActor, legalMoves, pieceById, starOf,
 } from '../../../engine/rules.js';
 import type { BonusKind, GameState, Level, Move, Piece } from '../../../engine/rules.js';
 import { chooseMove } from '../../../engine/bots.js';
-import { BUZZ, feel, sound } from './haptics';
+import { BUZZ, feel, sound, startTension, stopTension } from './haptics';
 import { SPEED, settings } from './settings';
 import { HAZARD, PLAYER_COLORS, colorOf, isBot } from './look';
 import { ME, labelOf, objectOf, seatName, setMe, subjectOf } from './names';
@@ -93,6 +93,8 @@ export class GameController {
   private banners: Omit<Banner, 'key'>[] = [];
   private bannerUntil = 0;
   private fast = false;
+  private decisionShown = false;
+  private bonusShown = false;
   private seq = 0;
   private net: NetRole | null = null;
   private moves: (Move | null)[] = []; // maçın bütün hamleleri, sırayla
@@ -145,9 +147,15 @@ export class GameController {
     this.timers.forEach(id => clearTimeout(id));
     this.timers.clear();
     this.stopTicker();
+    stopTension();
     this.botTimer = null;
     this.banners = [];
     this.waitingSeat = null;
+  }
+
+  // Maç bitti ya da kazanan belli oldu ve sonuç kartı henüz gösterilmedi: oyun akışı durur.
+  private get halted() {
+    return this.state.over || (this.state.decided && !this.decisionShown);
   }
 
   myStar() {
@@ -161,10 +169,13 @@ export class GameController {
       const seats = Array.from({ length: this.setup.players }, (_, i) =>
         i === ME ? { kind: 'human' as const } : { kind: 'bot' as const, level: this.setup.level });
       // Kolayda ilk sen oynarsın; normal ve zorda sıradaki yerin de rastgele.
-      this.state = createGame({ seats, neutralLevel: this.setup.level, firstSeat: this.setup.level === 'kolay' ? ME : null });
+      this.state = createGame({ seats, neutralLevel: this.setup.level, firstSeat: this.setup.level === 'kolay' ? ME : null, keepGoing: true });
     }
     this.moves = [];
     this.fast = false;
+    this.decisionShown = false;
+    this.bonusShown = false;
+    stopTension();
     this.view = {
       phase: 'hazir', sel: null, showThreats: false, timer: this.setup.moveSeconds,
       trails: [], bursts: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null, bonus: null,
@@ -176,7 +187,7 @@ export class GameController {
   private advance() {
     if (this.net?.role === 'guest') return this.guestAdvance();
     const st = this.state;
-    if (st.over) return this.finish();
+    if (this.halted) return this.finish();
     const a = currentActor(st)!;
     if (a.kind === 'twin') return this.twinTurn(a);
     if (a.kind !== 'star') return this.botTurn();
@@ -270,15 +281,36 @@ export class GameController {
 
   private finish() {
     this.stopTicker();
+    stopTension();
+    // Kazanan belli ama botlar var: sonuç kartı "Devam et / Bitir" sorar, saat durmaz.
+    const pending = this.state.decided && !this.state.over;
+    if (pending) this.decisionShown = true;
     const me = this.myStar();
-    if (this.state.seats[ME].bonus && me) {
+    if (this.state.seats[ME].bonus && me && !this.bonusShown) {
+      this.bonusShown = true;
       this.float(me.r, me.c, `+${this.state.seats[ME].bonus}`, PLAYER_COLORS[ME]);
       this.toast(`Hayatta kalma bonusu +${this.state.seats[ME].bonus}`, 'sword');
     }
-    this.emit({ phase: 'bitti', clockEnd: this.view.clockEnd ?? Date.now(), sel: null, showThreats: false, modeOverlay: false });
+    this.emit({
+      phase: 'bitti', clockEnd: pending ? null : this.view.clockEnd ?? Date.now(), sel: null, showThreats: false, modeOverlay: false,
+    });
     // Son hamleyi ve bantları gördükten sonra sonuç kartı açılır.
     this.later(1600, () => { if (this.view.phase === 'bitti' && !this.view.sheet) this.emit({ sheet: { type: 'sonuc' } }); });
     feel(this.state.winner === ME ? 'win' : 'lose', this.state.winner === ME ? BUZZ.take : BUZZ.takenOrOut);
+  }
+
+  // Kazanan belliyken botlarla savaşa devam et.
+  resume() {
+    if (!this.state.decided || this.state.over) return;
+    this.emit({ sheet: null, phase: 'bekle' });
+    this.advance();
+  }
+
+  // Kazanan belliyken maçı bitir.
+  endNow() {
+    endMatch(this.state);
+    this.emit({ sheet: null });
+    this.finish();
   }
 
   // ------------------------------------------------------------ senin sıran
@@ -403,12 +435,12 @@ export class GameController {
       const done = this.botQueue.indexOf(a.id) + 1;
       o = this.apply(chooseMove(st, a));
       this.view = { ...this.view, bots: { ...this.view.bots, done, currentId: a.id } };
-      if (!o || o.roundEnded || st.over) break;
+      if (!o || o.roundEnded || this.halted) break;
     } while (this.fast);
     this.emit();
 
     const next = currentActor(st);
-    if (o && !o.roundEnded && !st.over && next && isBot(next)) {
+    if (o && !o.roundEnded && !this.halted && next && isBot(next)) {
       const stagger = Math.max(60, Math.min(110, Math.floor(1200 / Math.max(1, this.view.bots.total)))) * SPEED[settings.speed];
       this.botTimer = this.later(this.fast ? 0 : stagger, () => this.botStep());
       return;
@@ -433,7 +465,7 @@ export class GameController {
   // ------------------------------------------------------------ hamle ve sonuçları
 
   private continueAfter(o: Outcome, pause: number) {
-    if (this.state.over) {
+    if (this.halted) {
       this.later(pause, () => this.finish());
     } else if (o.roundEnded) {
       // Mod kartı, tur sonundaki bantlar (halka çöktü, elendin) okunduktan sonra gelir.
@@ -451,6 +483,7 @@ export class GameController {
       if (collapseDue(this.state)) {
         this.toast('Dış halka bu tur sonunda çöküyor!', 'ring');
         feel('collapse', BUZZ.collapse);
+        startTension();
       }
       this.emit({ modeOverlay: false });
       this.advance();
@@ -468,6 +501,7 @@ export class GameController {
     const round = st.round, ring = st.ring;
     const victim = move?.type === 'take' && move.targetId ? pieceById(st, move.targetId) ?? null : null;
     const myBonuses = { ...st.seats[ME].bonuses };
+    const scoreBefore = st.seats[ME].score;
 
     play(st, move);
 
@@ -499,6 +533,12 @@ export class GameController {
       const me = victim.kind === 'star' && victim.seat === ME;
       // Yalnız yıldızlar puan toplar: alınan taşın değeri tahtada uçar, skor tablosu anında güncellenir.
       if (actor.kind === 'star') this.float(move.r, move.c, `+${POINTS[victim.kind]}`, colorOf(actor));
+      if (actor.kind === 'twin' && st.seats[ME].score > scoreBefore) {
+        const pts = POINTS[victim.kind] * TWIN_TAKE_MULT;
+        this.float(move.r, move.c, `+${pts}`, PLAYER_COLORS[ME]);
+        this.toast(`Aynan ${objectOf(st, victim)} aldı! +${pts} (2×)`, 'sword');
+        this.later(120, () => sound('points'));
+      }
       if (mine) { this.toast(`${objectOf(st, victim)} aldın! +${POINTS[victim.kind]}`, 'sword'); feel('take', BUZZ.take); this.later(120, () => sound('points')); }
       if (me) {
         this.toast(`${subjectOf(st, actor)} seni aldı!`, 'sword');
@@ -512,6 +552,7 @@ export class GameController {
     }
 
     if (collapsed) {
+      stopTension();
       this.view = { ...this.view, fall: { key: this.key(), ring: st.ring - 1 } };
       for (const p of fallen) {
         events.push({ key: this.key(), round, attackerId: null, victimId: p.id });
