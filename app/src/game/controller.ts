@@ -186,7 +186,7 @@ export class GameController {
 
   private reset(match?: MatchStart) {
     if (match) {
-      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed });
+      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals });
     } else {
       const daily = this.setup.daily ?? null;
       const seats = Array.from({ length: daily ? 1 : this.setup.players }, (_, i) =>

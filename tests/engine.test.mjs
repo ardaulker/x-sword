@@ -75,7 +75,7 @@ test('sıra maç başında bir kez karılır, bütün maç aynı kalır; mod her
   assert.deepEqual(st.order, first.filter(id => pieceById(st, id).alive));
   // Farklı maçlarda sıra ve köşeler değişir; yıldızlar botların arasına da düşer.
   const starFirst = new Set(), corners = new Set();
-  for (let seed = 1; seed <= 40; seed++) {
+  for (let seed = 1; seed <= 200; seed++) { // 1/16 şansla ilk sıra; 40 tohum bazen yetmez
     const g = createGame({ seats: seats(2), seed });
     starFirst.add(g.order.indexOf('s0') === 0);
     corners.add(`${pieceById(g, 's0').r},${pieceById(g, 's0').c}`);
@@ -492,4 +492,23 @@ test('ikinci daralmayı atlatan yıldıza çift hamle gelir', () => {
   while (g.ring < 2 && !g.over && guard++ < 50) walk();
   assert.equal(g.ring, 2);
   g.seats.filter(s => !s.out).forEach(s => { assert.equal(s.bonuses.armor, 1); assert.equal(s.bonuses.double, 1); });
+});
+
+test('kızıl ve çelik botlar eşit sayıda ve yıldızların çevresinde dengeli dağılır', () => {
+  let total = 0, n = 0, worst = 0;
+  for (let seed = 1; seed <= 200; seed++) {
+    for (const stars of [1, 2, 4]) {
+      const st = createGame({ seats: seats(stars), seed });
+      const bots = st.pieces.filter(p => p.kind === 'red' || p.kind === 'blue');
+      const reds = bots.filter(p => p.kind === 'red').length;
+      assert.ok(Math.abs(reds - (bots.length - reds)) <= 1);
+      for (const star of st.pieces.filter(p => p.kind === 'star')) {
+        const near = bots.filter(p => Math.max(Math.abs(p.r - star.r), Math.abs(p.c - star.c)) <= 4);
+        const diff = Math.abs(near.filter(p => p.kind === 'red').length - near.filter(p => p.kind === 'blue').length);
+        total += diff; n++; worst = Math.max(worst, diff);
+      }
+    }
+  }
+  console.log(`   yıldız çevresinde kızıl-çelik farkı: ortalama ${(total / n).toFixed(2)}, en kötü ${worst}`);
+  assert.ok(total / n < 0.8 && worst <= 3);
 });

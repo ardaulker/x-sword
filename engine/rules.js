@@ -141,16 +141,68 @@ export function createGame({
     state.pieces.push({ id: 'tw', kind: 'twin', mirrors: 's0', label: 'İkiz', r, c, alive: true });
   }
   const count = Math.min(neutrals ?? defaultNeutrals(n, size), free.length, maxNeutrals(size));
-  const reds = Math.ceil(count / 2);
+  const kinds = balancedKinds(state, free.slice(0, count), starts);
   for (let i = 0; i < count; i++) {
     const [r, c] = free[i];
-    state.pieces.push({ id: `b${i + 1}`, kind: i < reds ? 'red' : 'blue', label: String(i + 1), r, c, alive: true });
+    state.pieces.push({ id: `b${i + 1}`, kind: kinds[i], label: String(i + 1), r, c, alive: true });
   }
 
   state.matchOrder = matchOrder(state, firstSeat, mix);
   state.order = roundOrder(state);
   log(state, 'Oyun başladı. Mod: DÜZ.');
   return state;
+}
+
+// Kızıl ve Çelik botlar toplamda eşit, ama yakın çevrede de dengeli dağılır: hiçbir yıldızın etrafı tek renk olmaz.
+// Her bot, kendi yakınındaki ve yakınındaki yıldızların çevresindeki farka bakıp azınlıktaki rengi alır.
+function balancedKinds(state, cells, starts) {
+  const reds = Math.ceil(cells.length / 2);
+  let redLeft = reds, blueLeft = cells.length - reds;
+  const placed = []; // { r, c, v } v: kızıl +1, çelik -1
+  const near = (r, c, a, b, d) => Math.max(Math.abs(r - a), Math.abs(c - b)) <= d;
+  const kinds = [];
+  for (const [r, c] of cells) {
+    let local = 0;
+    for (const p of placed) if (near(r, c, p.r, p.c, 3)) local += p.v;
+    // Yıldızın çevresindeki fark daha ağır basar.
+    for (const [sr, sc] of starts) {
+      if (!near(r, c, sr, sc, 4)) continue;
+      for (const p of placed) if (near(p.r, p.c, sr, sc, 4)) local += p.v;
+    }
+    let want = local > 0 ? 'blue' : local < 0 ? 'red' : random(state) < 0.5 ? 'red' : 'blue';
+    if (want === 'red' && !redLeft) want = 'blue';
+    else if (want === 'blue' && !blueLeft) want = 'red';
+    if (want === 'red') redLeft--; else blueLeft--;
+    placed.push({ r, c, v: want === 'red' ? 1 : -1 });
+    kinds.push(want);
+  }
+  // İyileştirme: bir kızılla bir çeliğin yerini değiştirmek dengeyi artırıyorsa değiştir.
+  const cost = () => {
+    let sum = 0;
+    for (const [sr, sc] of starts) {
+      let d = 0;
+      for (const p of placed) if (near(p.r, p.c, sr, sc, 4)) d += p.v;
+      sum += 3 * d * d;
+    }
+    for (const p of placed) {
+      let d = 0;
+      for (const q of placed) if (near(p.r, p.c, q.r, q.c, 3)) d += q.v;
+      sum += d * d;
+    }
+    return sum;
+  };
+  if (placed.length > 3) {
+    let best = cost();
+    for (let it = 0; it < 250; it++) {
+      const i = Math.floor(random(state) * placed.length), j = Math.floor(random(state) * placed.length);
+      if (placed[i].v === placed[j].v) continue;
+      placed[i].v *= -1; placed[j].v *= -1;
+      const c = cost();
+      if (c < best) best = c; else { placed[i].v *= -1; placed[j].v *= -1; }
+    }
+    placed.forEach((p, i) => { kinds[i] = p.v > 0 ? 'red' : 'blue'; });
+  }
+  return kinds;
 }
 
 // Hamle sırası maç başında bir kez karılır ve bütün maç aynı kalır: yıldızlar ve botlar tek sırada.

@@ -1,9 +1,10 @@
 import { useState, useSyncExternalStore } from 'react';
+import { BOARD_SIZES, SIZE_BY_STARS, defaultNeutrals, maxNeutrals } from '../../../engine/rules.js';
 import type { Level } from '../../../engine/rules.js';
 import { Icon } from '../components/bits';
 import { PieceGlyph } from '../components/PieceGlyph';
 import { cleanCode, isCode } from '../net/protocol';
-import { GuestRoom, HostRoom } from '../net/room';
+import { GuestRoom, HostRoom, lobbySize } from '../net/room';
 import type { AnyRoom } from '../net/room';
 import './Lobby.css';
 import { tr } from '../i18n';
@@ -53,6 +54,11 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
   const hostRoom = room instanceof HostRoom ? room : null;
   const guestRoom = room instanceof GuestRoom ? room : null;
   const host = !!hostRoom;
+  const filled = Math.min(4, Math.max(2, v.seats.filter(s => s.kind !== 'empty').length));
+  const minSize = SIZE_BY_STARS[filled];
+  const size = lobbySize(v);
+  const maxBots = maxNeutrals(size);
+  const botCount = Math.min(v.bots ?? defaultNeutrals(filled, size), maxBots);
   const [copied, setCopied] = useState(false);
   const me = v.seats[v.you];
   const link = v.code ? inviteLink(v.code) : '';
@@ -143,6 +149,22 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
               </div>
             );
           })}
+        </div>
+
+        <div className="field-label">{tr('TAHTA')}</div>
+        <div className="seg" role="radiogroup" aria-label={tr('Tahta boyutu')}>
+          {BOARD_SIZES.map(n => (
+            <button key={n} type="button" role="radio" aria-checked={size === n} disabled={!host || n < minSize}
+              className={size === n ? 'is-on' : ''} onClick={() => hostRoom?.setSize(n)}>
+              <b>{n}×{n}</b>
+            </button>
+          ))}
+        </div>
+        <div className="field-label">{tr('ARENA BOTU: {n}', { n: botCount })}</div>
+        <div className="bots-row">
+          <input type="range" min={2} max={maxBots} value={botCount} disabled={!host} aria-label={tr('Arena botu sayısı')}
+            onChange={e => hostRoom?.setBots(Number(e.target.value))} />
+          {host && <button type="button" className="btn btn-ghost bots-max" onClick={() => hostRoom?.setBots(maxBots)}>{tr('Maks {n}', { n: maxBots })}</button>}
         </div>
 
         <div className="field-label">{tr('BOT ZORLUĞU')}</div>

@@ -16,6 +16,8 @@ export interface MatchStart {
   seats: { kind: 'human' | 'bot'; level?: Level }[];
   level: Level;
   moveSeconds: number;
+  size: number;      // tahta kenarı
+  neutrals: number;  // arena botu sayısı
 }
 
 export type ToHost =
@@ -25,7 +27,7 @@ export type ToHost =
   | { t: 'move'; move: Move | null };
 
 export type ToGuest =
-  | { t: 'lobby'; code: string; you: number; seats: LobbySeat[]; level: Level }
+  | { t: 'lobby'; code: string; you: number; seats: LobbySeat[]; level: Level; size: number; bots: number | null }
   | { t: 'start'; match: MatchStart; you: number }
   // n: maçtaki kaçıncı hamle (1'den başlar). Misafir sırayı kaçırırsa baştan eşitlenir.
   | { t: 'move'; n: number; move: Move | null }
