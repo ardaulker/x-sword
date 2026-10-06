@@ -62,7 +62,12 @@ export const starOf = (state, seat) => state.pieces.find(p => p.kind === 'star' 
 export const pieceAt = (state, r, c) => state.pieces.find(p => p.alive && p.r === r && p.c === c) || null;
 export const ringOf = (state, r, c) => Math.min(r, c, state.size - 1 - r, state.size - 1 - c);
 export const inArena = (state, r, c) =>
-  r >= 0 && c >= 0 && r < state.size && c < state.size && ringOf(state, r, c) >= state.ring;
+  r >= 0 && c >= 0 && r < state.size && c < state.size && ringOf(state, r, c) >= state.ring
+  && !(state.blocked && state.blocked.has(r * state.size + c));
+
+// Takımlı maçta aynı takımdaki iki yıldız birbirini almaz.
+export const friendly = (state, a, b) =>
+  !!state.teams && a.kind === 'star' && b.kind === 'star' && a.id !== b.id && state.teams[a.seat] === state.teams[b.seat];
 
 export const nameOf = (state, p) =>
   p.kind === 'star' ? state.seats[p.seat].name : p.kind === 'twin' ? 'İkiz' : `${p.label} numara`;
@@ -106,7 +111,7 @@ function randomSymmetry(state, size) {
 // firstSeat: bu koltuk hep ilk oynar (kolay zorlukta oyuncu). Verilmezse herkesin yeri rastgeledir.
 // shuffle: false ise köşeler ve sıra sabit kalır (yalnız testler için).
 export function createGame({
-  seats, neutralLevel = 'normal', seed, shrinkStart = 6, shrinkEvery = 6, neutrals, firstSeat = null, shuffle: mix = true, keepGoing = false, size: sizeOpt = null,
+  seats, neutralLevel = 'normal', seed, shrinkStart = 6, shrinkEvery = 6, neutrals, firstSeat = null, shuffle: mix = true, keepGoing = false, size: sizeOpt = null, personas = false, obstacles = false, teams = false,
 } = {}) {
   const n = seats?.length;
   if (!(n >= 1 && n <= 4)) throw new Error('Bir maçta 1–4 yıldız olur.');
@@ -117,11 +122,19 @@ export function createGame({
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
       level: s.level || 'normal', takes: 0, score: 0, bonus: 0, out: false,
-      bonuses: startBonuses(), scoreTier: 0, swapGiven: false,
+      bonuses: startBonuses(), scoreTier: 0, swapGiven: false, persona: null, team: null,
     })),
     pieces: [], order: [], turn: 0, over: false, winner: null, outOrder: [], log: [],
     solo: n === 1, lastStep: null, matchOrder: [], keepGoing: !!keepGoing, decided: false,
+    blocked: null, teams: teams && n === 4 ? [0, 1, 0, 1] : null, winTeam: null, puzzle: null,
   };
+
+  if (state.teams) state.seats.forEach((s, i) => { s.team = state.teams[i]; });
+  // Yapay zekâ rakiplere kişilik: avcı, temkinli, fırsatçı (sıra tohumdan).
+  if (personas) {
+    const kinds = shuffle(state, ['hunter', 'careful', 'opportunist']);
+    state.seats.filter(s => s.kind === 'bot').forEach((s, i) => { s.persona = kinds[i % kinds.length]; });
+  }
 
   let starts = startCells(n, size);
   if (mix) starts = shuffle(state, starts.map(randomSymmetry(state, size)));
@@ -135,6 +148,16 @@ export function createGame({
     }
   }
   shuffle(state, free);
+  // Engel kareleri: birbirine değmeyen sütunlar, tahta hiç bölünmez.
+  if (obstacles) {
+    const want = Math.floor(size * size / 14), chosen = [];
+    for (const [r, c] of free) {
+      if (chosen.length >= want) break;
+      if (chosen.every(([a, b]) => Math.max(Math.abs(a - r), Math.abs(b - c)) >= 2)) chosen.push([r, c]);
+    }
+    state.blocked = new Set(chosen.map(([r, c]) => r * size + c));
+    for (let i = free.length - 1; i >= 0; i--) if (state.blocked.has(free[i][0] * size + free[i][1])) free.splice(i, 1);
+  }
   // Tek oyunculu modda oyuncunun aynası İkiz de rastgele bir kareden başlar.
   if (state.solo) {
     const [r, c] = free.pop();
@@ -205,6 +228,22 @@ function balancedKinds(state, cells, starts) {
   return kinds;
 }
 
+// Bulmaca: elle kurulmuş küçük pozisyon. Amaç, en çok `limit` hamlede bütün arena botlarını almak.
+export function createPuzzle({ me, bots, limit, mode = 'DUZ', size = 9 }) {
+  const st = createGame({ seats: [{ kind: 'human' }], size, neutrals: 0, seed: 1, shuffle: false, shrinkStart: 999, neutralLevel: 'normal' });
+  st.pieces = st.pieces.filter(p => p.kind !== 'twin');
+  const star = st.pieces.find(p => p.kind === 'star');
+  [star.r, star.c] = me;
+  st.seats[0].bonuses = { armor: 0, step: 0, double: 0, swap: 0 };
+  bots.forEach((b, i) => st.pieces.push({ id: `b${i + 1}`, kind: b.kind, label: String(i + 1), r: b.r, c: b.c, alive: true }));
+  st.mode = mode;
+  st.matchOrder = st.pieces.map(p => p.id);
+  st.order = roundOrder(st);
+  st.puzzle = { limit, used: 0 };
+  st.log = [];
+  return st;
+}
+
 // Hamle sırası maç başında bir kez karılır ve bütün maç aynı kalır: yıldızlar ve botlar tek sırada.
 // İkiz hep aynası olduğu yıldızdan hemen sonra gelir. Botun numarası bu sıradaki yeridir.
 function matchOrder(state, firstSeat, mix) {
@@ -251,6 +290,7 @@ export function legalMoves(state, piece, mode = nextMode(state, piece), bonus = 
       const r1 = piece.r + dr, c1 = piece.c + dc, r = piece.r + 2 * dr, c = piece.c + 2 * dc;
       if (!inArena(state, r1, c1) || pieceAt(state, r1, c1) || !inArena(state, r, c)) continue;
       const t = pieceAt(state, r, c);
+      if (t && friendly(state, piece, t)) continue;
       out.push(t ? { r, c, type: 'take', targetId: t.id, bonus } : { r, c, type: 'walk', bonus });
     }
     return [...moves, ...out];
@@ -273,7 +313,7 @@ function baseMoves(state, piece, mode) {
   for (const [dr, dc] of takeDirs(piece, mode)) {
     const r = piece.r + dr, c = piece.c + dc;
     const target = inArena(state, r, c) && pieceAt(state, r, c);
-    if (target && target.id !== piece.id) moves.push({ r, c, type: 'take', targetId: target.id });
+    if (target && target.id !== piece.id && !friendly(state, piece, target)) moves.push({ r, c, type: 'take', targetId: target.id });
   }
   return moves;
 }
@@ -292,10 +332,11 @@ const twinOf = (state, piece) =>
 // (r, c)'deki bir taşı, onun bir sonraki hamlesinden önce alabilecek taşlar.
 // İki hamle arasında herkes bir kez oynar ve bir taş ya yürür ya alır; bu yüzden
 // alabilecek olan, şu an o kareye kendi alma yönünde komşu olan taştır.
-export function attackersOf(state, r, c, except = []) {
+export function attackersOf(state, r, c, except = [], victim = null) {
   const out = [];
   for (const p of state.pieces) {
     if (!p.alive || except.includes(p.id)) continue;
+    if (victim && friendly(state, p, victim)) continue;
     if (Math.abs(p.r - r) > 1 || Math.abs(p.c - c) > 1) continue;
     if (takeDirs(p, nextMode(state, p)).some(([dr, dc]) => p.r + dr === r && p.c + dc === c)) out.push(p);
   }
@@ -328,7 +369,7 @@ export function threatsFor(state, piece, move) {
   if (target) target.alive = false;
   try {
     const twin = twinOf(state, piece);
-    const attackers = attackersOf(state, move.r, move.c, twin ? [piece.id, twin.id] : [piece.id]);
+    const attackers = attackersOf(state, move.r, move.c, twin ? [piece.id, twin.id] : [piece.id], piece);
     if (twin && twin.r + move.r - from[0] === move.r && twin.c + move.c - from[1] === move.c) attackers.push(twin);
     return { attackers, doomed: doomedAt(state, move.r, move.c) };
   } finally {
@@ -354,6 +395,7 @@ export function play(state, move) {
       state.seats[actor.seat].bonuses[m.bonus]--;
       log(state, `✨ ${nameOf(state, actor)} bonus kullandı: ${BONUS_NAMES[m.bonus]}.`);
     }
+    if (state.puzzle && actor.id === 's0') state.puzzle.used++;
     state.lastStep = { id: actor.id, dr: m.r - actor.r, dc: m.c - actor.c };
     if (m.type === 'swap') {
       const other = pieceById(state, m.targetId);
@@ -372,6 +414,11 @@ export function play(state, move) {
   }
   state.turn++;
   settle(state);
+  // Bulmaca: hamle hakkı bitti ve bot kaldıysa bulmaca başarısız.
+  if (state.puzzle && !state.over && state.puzzle.used >= state.puzzle.limit && currentActor(state)?.id === 's0') {
+    state.over = true; state.winner = null;
+    log(state, '❌ Hamle hakkın bitti.');
+  }
   return state;
 }
 
@@ -440,25 +487,39 @@ function checkOver(state) {
     log(state, alive.length ? '🏆 Kazandın! Arenada bot kalmadı.' : '❌ Alındın! Oyun bitti.');
     return;
   }
+  // Takımlı maçta rakip kalmaması için tek bir takımın ayakta olması yeter.
+  const teamsAlive = new Set(alive.map(p => (state.teams ? state.teams[p.seat] : p.seat))).size;
   if (state.decided) {
-    // Kazanan belli; tek yıldız botlarla savaşmaya devam ediyor.
-    if (alive.length === 1 && botsLeft) return;
+    // Kazanan belli; kalan yıldız(lar) botlarla savaşmaya devam ediyor.
+    if (alive.length >= 1 && teamsAlive === 1 && botsLeft) return;
     state.over = true;
     return;
   }
-  if (alive.length > 1) return;
-  if (state.keepGoing && alive.length === 1 && botsLeft) {
-    state.decided = true;
-    survivorBonus(state, alive[0].seat);
+  if (teamsAlive > 1) return;
+  const finish = () => {
+    for (const p of alive) survivorBonus(state, p.seat);
     state.winner = ranking(state)[0];
-    log(state, `🏆 ${state.seats[state.winner].name} kazandı! (${state.seats[state.winner].score} puan)`);
+    state.winTeam = state.teams ? state.teams[state.winner] : null;
+    const w = state.seats[state.winner];
+    log(state, state.teams
+      ? `🏆 Takım ${state.winTeam + 1} kazandı! (${w.score} puan)`
+      : `🏆 ${w.name} kazandı! (${w.score} puan)`);
+  };
+  if (state.keepGoing && alive.length >= 1 && botsLeft) {
+    state.decided = true;
+    if (state.teams) state.winTeam = state.teams[alive[0].seat];
+    finish();
     return;
   }
   state.over = true;
-  if (alive.length) survivorBonus(state, alive[0].seat);
-  state.winner = ranking(state)[0];
-  const w = state.seats[state.winner];
-  log(state, `🏆 ${w.name} kazandı! (${w.score} puan)`);
+  if (state.teams && alive.length) state.winTeam = state.teams[alive[0].seat];
+  finish();
+}
+
+// Bu koltuk kazananlar arasında mı? (Takımlı maçta kazanan takımın herkesi kazanır.)
+export function isWinner(state, seat) {
+  if (state.winner == null) return false;
+  return state.teams ? state.teams[seat] === state.teams[state.winner] : seat === state.winner;
 }
 
 // Kazananı belli olmuş maçı bitirir (oyuncu "Bitir" derse).
@@ -512,7 +573,9 @@ function collapse(state) {
 // Sıralama: önce skor, sonra alma sayısı, sonra hayatta kalma (ayakta kalan > geç elenen > erken elenen).
 export function ranking(state) {
   const lasted = s => (s.out ? state.outOrder.indexOf(s.index) : state.seats.length);
+  const wt = state.over || state.decided ? state.winTeam : null;
+  const side = s => (wt != null && s.team === wt ? 1 : 0);
   return [...state.seats]
-    .sort((a, b) => b.score - a.score || b.takes - a.takes || lasted(b) - lasted(a))
+    .sort((a, b) => side(b) - side(a) || b.score - a.score || b.takes - a.takes || lasted(b) - lasted(a))
     .map(s => s.index);
 }

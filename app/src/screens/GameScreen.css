@@ -255,3 +255,7 @@
 
 .walk-take { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
 .walk-take-sep { margin: 0 4px; opacity: .5; }
+
+.coach-dots { display: flex; justify-content: center; gap: 8px; }
+.coach-dots button { width: 10px; height: 10px; padding: 0; border: 0; border-radius: 5px; background: var(--cizgi-2); }
+.coach-dots button.is-on { width: 24px; background: var(--ice); }

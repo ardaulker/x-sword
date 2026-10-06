@@ -100,6 +100,15 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
           <p>{tr("İkiz senin aynandır: senden hemen sonra, senin yaptığın yönün aynısını oynar. O kare doluysa oradaki taşı alır, yol kapalıysa yerinde kalır. Seni hiç alamaz. Bütün botlar gidince kazanırsın; İkiz'i almana gerek yok. İkiz bir taş alırsa sana çift puan ve bir Ayna bonusu verir.")}</p>
         </Card>
 
+        <Card title={tr('Seçenekler')} visual={<Icon d="M4 7 H14 M18 7 H20 M4 17 H8 M12 17 H20 M16 5 V9 M10 15 V19" size={36} stroke={2} />}>
+          <p>{rich("**Takımlı (2'ye 2):** 4 oyuncuda karşılıklı köşeler takım olur. Takım arkadaşını alamazsın; karşı takımın iki yıldızı da gidince kazanırsın.")}</p>
+          <p>{rich('**Engel kareleri:** tahtada birbirine değmeyen kapalı kareler olur; taşlar oraya giremez.')}</p>
+          <p>{rich('**Rakip kişilikleri:** yapay zekâ rakipler avcı, temkinli ya da fırsatçı oynar.')}</p>
+        </Card>
+        <Card title={tr('Bulmacalar')} visual={<Icon d="M10 3 H14 V6 A2 2 0 1 0 18 6 V3 H21 V9 H18 A2 2 0 1 0 18 13 H21 V21 H3 V13 H6 A2 2 0 1 1 6 9 H3 V3 Z" size={36} stroke={2} />}>
+          <p>{tr('Sınırlı hamlede bütün botları al. Az hamlede çözmek daha çok yıldız verir.')}</p>
+        </Card>
+
         <h2>{tr('Bonuslar')}</h2>
         <Card title={tr('Zırh')} visual={<Icon d="M12 3 L20 6 V12 C20 16.5 16.5 20 12 21 C7.5 20 4 16.5 4 12 V6 Z" size={36} stroke={2} />}>
           <p>{tr('+1 can: seni bir kez alınmaktan korur. Kendiliğinden çalışır; seni alan taş geri döner.')}</p>

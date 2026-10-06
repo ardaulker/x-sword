@@ -10,6 +10,9 @@ import { LobbyScreen, MultiplayerEntry } from './screens/Lobby';
 import { MainMenu } from './screens/MainMenu';
 import { RulesScreen } from './screens/RulesScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
+import { StatsScreen } from './screens/StatsScreen';
+import { PuzzleScreen } from './screens/PuzzleScreen';
+import { ReplayScreen } from './screens/ReplayScreen';
 
 const SETUP_KEY = 'xsword-app-setup';
 
@@ -36,11 +39,12 @@ function saveSetup(s: Setup) {
 
 // Ekranlar adres çubuğundaki #/ ile seçilir; telefonun geri tuşu bir önceki ekrana döndürür.
 // #/katil/KOD davet linkidir: açınca o odaya katılır.
-type Screen = 'menu' | 'oyun' | 'kurallar' | 'ayarlar' | 'cok' | 'oda' | 'mac' | 'katil';
-const SCREENS: Screen[] = ['oyun', 'kurallar', 'ayarlar', 'cok', 'oda', 'mac'];
+type Screen = 'menu' | 'oyun' | 'kurallar' | 'ayarlar' | 'cok' | 'oda' | 'mac' | 'katil' | 'istatistik' | 'bulmaca' | 'izle';
+const SCREENS: Screen[] = ['oyun', 'kurallar', 'ayarlar', 'cok', 'oda', 'mac', 'istatistik', 'bulmaca'];
 function readScreen(): Screen {
   const h = location.hash.replace(/^#\//, '');
   if (h.startsWith('katil/')) return 'katil';
+  if (h.startsWith('izle/')) return 'izle';
   return SCREENS.find(s => s === h) ?? 'menu';
 }
 const go = (s: Screen, replace = false) => {
@@ -55,6 +59,7 @@ export function App() {
   const [ctl] = useState(() => new GameController(loadSetup()));
   const [screen, setScreen] = useState<Screen>(readScreen);
   const [room, setRoom] = useState<AnyRoom | null>(null);
+  const [, setTick] = useState(0);
   if (import.meta.env.DEV) (window as unknown as { xsword: GameController }).xsword = ctl;
   const roomView = useSyncExternalStore(room?.subscribe ?? noRoom.subscribe, room?.getSnapshot ?? noRoom.getSnapshot);
 
@@ -64,11 +69,11 @@ export function App() {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
-  // Tek cihazda oyun: ekrana girince maç başlar, çıkınca durur.
+  // Tek cihazda oyun: ekrana girince maç başlar (saklanan varsa sürer), çıkınca duraklatılıp saklanır.
   useEffect(() => {
     if (screen !== 'oyun') return;
-    ctl.newGame(ctl.setup);
-    return () => ctl.dispose();
+    if (ctl.canResume) ctl.unpark(); else ctl.newGame(ctl.setup);
+    return () => { ctl.leave(); setTick(n => n + 1); }; // menüde "Devam et" görünsün
   }, [ctl, screen]);
 
   // Oda ekranlarından (lobi, maç) başka bir ekrana geçince oda kapanır. Yalnız ekran değişince bakılır:
@@ -104,14 +109,19 @@ export function App() {
   }, [room, roomView?.status, screen]);
 
   const start = (s: Setup) => {
-    if (!s.daily) saveSetup(s);
+    if (!s.daily && s.puzzle == null) saveSetup(s);
     if (screen === 'oyun') ctl.newGame(s);
-    else { ctl.setup = s; go('oyun'); }
+    else { ctl.discardParked(); ctl.setup = s; go('oyun'); }
   };
 
   const hostRoom = room instanceof HostRoom ? room : null;
 
-  if (screen === 'oyun') return <GameScreen ctl={ctl} onNewGame={start} onHome={() => go('menu')} />;
+  if (screen === 'oyun') return <GameScreen ctl={ctl} onNewGame={start} onHome={() => go('menu')} onPuzzles={() => go('bulmaca')} />;
+  if (screen === 'istatistik') return <StatsScreen onBack={() => go('menu')} />;
+  if (screen === 'bulmaca') {
+    return <PuzzleScreen onBack={() => go('menu')} onPick={id => start({ ...ctl.setup, players: 1, daily: null, puzzle: id })} />;
+  }
+  if (screen === 'izle') return <ReplayScreen code={location.hash.replace(/^#\/izle\//, '')} onBack={() => go('menu')} />;
   if (screen === 'kurallar') return <RulesScreen onBack={() => go('menu')} />;
   if (screen === 'ayarlar') return <SettingsScreen onBack={() => go('menu')} onRules={() => go('kurallar')} />;
   if (screen === 'mac' && room) {
@@ -135,5 +145,7 @@ export function App() {
       />
     );
   }
-  return <MainMenu setup={ctl.setup} onStart={start} onDaily={() => start({ ...ctl.setup, players: 1, level: 'normal', daily: todayKey() })} onRules={() => go('kurallar')} onMultiplayer={() => go('cok')} onSettings={() => go('ayarlar')} />;
+  return <MainMenu setup={ctl.setup} onStart={start} onResume={ctl.canResume ? () => go('oyun') : undefined} resumeInfo={ctl.canResume ? ctl.resumeInfo : undefined}
+    onPuzzles={() => go('bulmaca')} onStats={() => go('istatistik')}
+    onDaily={() => start({ ...ctl.setup, players: 1, level: 'normal', daily: todayKey(), puzzle: null })} onRules={() => go('kurallar')} onMultiplayer={() => go('cok')} onSettings={() => go('ayarlar')} />;
 }

@@ -1,16 +1,19 @@
 // Maç sonu paylaşım kartı: tuvale çizilir, PNG olarak paylaşılır (olmazsa indirilir).
 
+import { isWinner } from '../../../engine/rules.js';
 import type { GameState } from '../../../engine/rules.js';
 import { tr } from '../i18n';
-import { ME, seatName } from './names';
+import type { GameController } from './controller';
+import { replayUrl } from './record';
+import { ME, winnerLine } from './names';
 
 export interface ShareInfo { st: GameState; time: string; daily: string | null }
 
 const URL_TEXT = 'ardaulker.github.io/x-sword/oyun';
 
 function headline({ st }: ShareInfo) {
-  const won = st.winner === ME;
-  return won ? tr('Kazandın!') : st.solo ? tr('Alındın') : tr('{name} kazandı', { name: seatName(st, st.winner ?? 0) });
+  const won = isWinner(st, ME);
+  return won ? tr('Kazandın!') : st.solo ? tr('Alındın') : winnerLine(st);
 }
 
 export function shareText(info: ShareInfo) {
@@ -53,7 +56,7 @@ async function draw(info: ShareInfo): Promise<HTMLCanvasElement> {
   g.fillStyle = '#8FA0D8'; g.font = font(600, 24);
   g.fillText(daily ? tr('Günlük {date}', { date: daily }) : `${st.size}×${st.size}${st.solo ? ' · ' + tr('Tek') : ''}`, W / 2, 400);
 
-  const won = st.winner === ME;
+  const won = isWinner(st, ME);
   g.fillStyle = won ? '#3BFF8F' : '#E9F0FF'; g.font = font(800, 64); g.fillText(headline(info), W / 2, 500);
 
   g.fillStyle = '#FFFFFF'; g.font = font(800, 150); g.fillText(String(me.score), W / 2, 650);
@@ -67,6 +70,17 @@ async function draw(info: ShareInfo): Promise<HTMLCanvasElement> {
   });
   g.fillStyle = '#5A6BA8'; g.font = font(600, 22); g.fillText(URL_TEXT, W / 2, 860);
   return c;
+}
+
+// Maç tekrarı bağlantısı: paylaşım penceresi ya da panoya kopyalama.
+export async function shareReplay(ctl: GameController) {
+  const spec = ctl.replaySpec();
+  if (!spec) return;
+  const url = replayUrl(spec);
+  try {
+    if (navigator.share) { await navigator.share({ title: 'X Sword', text: tr('Bu maçı izle'), url }); return; }
+    await navigator.clipboard.writeText(url);
+  } catch { /* vazgeçti */ }
 }
 
 // Tarayıcı dosya paylaşımını destekliyorsa paylaşır, yoksa PNG'yi indirir.

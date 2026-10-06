@@ -1,7 +1,7 @@
 // Kural motoru ve botların testleri: node tests/engine.test.mjs
 import assert from 'node:assert/strict';
 import {
-  createGame, endMatch, maxNeutrals, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
+  createGame, endMatch, maxNeutrals, createPuzzle, isWinner, friendly, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
   roundOrder, random, pieceById, threatsFor, ranking, SIZE_BY_STARS, NEUTRALS_BY_STARS, POINTS, SURVIVOR_BONUS,
 } from '../engine/rules.js';
 import { chooseMove, targetOf } from '../engine/bots.js';
@@ -511,4 +511,74 @@ test('kızıl ve çelik botlar eşit sayıda ve yıldızların çevresinde denge
   }
   console.log(`   yıldız çevresinde kızıl-çelik farkı: ortalama ${(total / n).toFixed(2)}, en kötü ${worst}`);
   assert.ok(total / n < 0.8 && worst <= 3);
+});
+
+function simulate(opts, guard = 6000) {
+  const st = createGame(opts);
+  let n = 0;
+  while (!st.over && n++ < guard) {
+    const a = currentActor(st);
+    play(st, chooseMove(st, a));
+  }
+  return st;
+}
+
+test('takımlı maç: takım arkadaşı alınmaz, bir takım kalınca maç biter', () => {
+  const st = createGame({ seats: seats(4, 'bot', 'normal'), seed: 5, teams: true, shuffle: false, neutrals: 0 });
+  assert.deepEqual(st.teams, [0, 1, 0, 1]);
+  const s0 = pieceById(st, 's0'), s2 = pieceById(st, 's2'), s1 = pieceById(st, 's1');
+  assert.ok(friendly(st, s0, s2) && !friendly(st, s0, s1));
+  Object.assign(s2, { r: s0.r, c: s0.c + 1 });
+  st.mode = 'DUZ';
+  assert.equal(legalMoves(st, s0, 'DUZ').some(m => m.type === 'take' && m.targetId === 's2'), false);
+  // takım 1'in iki yıldızı da gidince takım 0 kazanır
+  const wins = [0, 0];
+  for (let seed = 1; seed <= 20; seed++) {
+    const g = simulate({ seats: seats(4, 'bot', 'normal'), seed, teams: true });
+    assert.ok(g.over);
+    if (g.winner != null) { wins[g.winTeam]++; assert.ok(isWinner(g, g.winner)); }
+  }
+  console.log(`   takım galibiyetleri (20 maç): A ${wins[0]} · B ${wins[1]}`);
+});
+
+test('engel kareleri: birbirine değmez, taş üstüne gelmez, hamle içine girmez', () => {
+  for (let seed = 1; seed <= 30; seed++) {
+    for (const n of [1, 2, 4]) {
+      const st = createGame({ seats: seats(n), seed, obstacles: true });
+      assert.ok(st.blocked.size >= 4);
+      const cells = [...st.blocked].map(k => [Math.floor(k / st.size), k % st.size]);
+      for (const [r, c] of cells) {
+        assert.equal(st.pieces.some(p => p.r === r && p.c === c), false);
+        for (const [a, b] of cells) if (a !== r || b !== c) assert.ok(Math.max(Math.abs(a - r), Math.abs(b - c)) >= 2);
+      }
+      for (const p of st.pieces) for (const m of legalMoves(st, p, st.mode)) assert.equal(st.blocked.has(m.r * st.size + m.c), false);
+    }
+  }
+  const g = simulate({ seats: seats(3, 'bot', 'zor'), seed: 7, obstacles: true });
+  assert.ok(g.over);
+});
+
+test('kişilikler: yapay zekâ rakiplere dağıtılır, maç tamamlanır', () => {
+  const st = createGame({ seats: seats(4, 'bot', 'normal'), seed: 3, personas: true });
+  assert.ok(st.seats.every(s => ['hunter', 'careful', 'opportunist'].includes(s.persona)));
+  const wins = { hunter: 0, careful: 0, opportunist: 0 };
+  for (let seed = 1; seed <= 90; seed++) {
+    const g = simulate({ seats: seats(4, 'bot', 'zor'), seed, personas: true });
+    if (g.winner != null) wins[g.seats[g.winner].persona]++;
+  }
+  console.log(`   kişilik galibiyetleri (90 maç, 4 Zor): avcı ${wins.hunter} · temkinli ${wins.careful} · fırsatçı ${wins.opportunist}`);
+  assert.ok(Object.values(wins).every(w => w >= 8), 'bir kişilik neredeyse hiç kazanmıyor');
+});
+
+test('bulmaca: hamle hakkı bitince kaybedersin, botlar bitince kazanırsın', () => {
+  const st = createPuzzle({ me: [4, 4], bots: [{ kind: 'red', r: 4, c: 5 }], limit: 2 });
+  assert.equal(st.puzzle.limit, 2);
+  play(st, { r: 4, c: 5 }); // botu al
+  assert.equal(st.over, true);
+  assert.equal(st.winner, 0);
+  const lose = createPuzzle({ me: [0, 0], bots: [{ kind: 'blue', r: 8, c: 8 }], limit: 1 });
+  play(lose, { r: 0, c: 1 });
+  for (let i = 0; i < 4 && !lose.over; i++) play(lose, chooseMove(lose, currentActor(lose)));
+  assert.equal(lose.over, true);
+  assert.equal(lose.winner, null);
 });

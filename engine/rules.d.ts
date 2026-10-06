@@ -38,6 +38,8 @@ export interface Seat {
   bonuses: Record<BonusKind, number>;
   scoreTier: number;
   swapGiven: boolean;
+  persona: 'hunter' | 'careful' | 'opportunist' | null;
+  team: number | null;
   out: boolean;
   outRound?: number;
 }
@@ -74,6 +76,10 @@ export interface GameState {
   matchOrder: string[];
   keepGoing: boolean;
   decided: boolean;
+  blocked: Set<number> | null;     // engel kareleri (r * size + c)
+  teams: number[] | null;          // takımlı maç: koltuk → takım
+  winTeam: number | null;
+  puzzle: { limit: number; used: number } | null;
 }
 
 export interface SeatSetup {
@@ -91,6 +97,9 @@ export interface GameOptions {
   firstSeat?: number | null;
   shuffle?: boolean;
   keepGoing?: boolean;
+  personas?: boolean;
+  obstacles?: boolean;
+  teams?: boolean;
   /** 9, 11, 13 ya da 15; oyuncu sayısının varsayılanından küçükse yok sayılır. */
   size?: number;
 }
@@ -123,13 +132,16 @@ export function inArena(state: GameState, r: number, c: number): boolean;
 export function nameOf(state: GameState, p: Piece): string;
 
 export function endMatch(state: GameState): GameState;
+export function isWinner(state: GameState, seat: number): boolean;
+export function friendly(state: GameState, a: Piece, b: Piece): boolean;
+export function createPuzzle(def: { me: [number, number]; bots: { kind: 'red' | 'blue'; r: number; c: number }[]; limit: number; mode?: Mode; size?: number }): GameState;
 export function createGame(options: GameOptions): GameState;
 export function roundOrder(state: GameState): string[];
 export function currentActor(state: GameState): Piece | null;
 export function isBotTurn(state: GameState): boolean;
 export function nextMode(state: GameState, p: Piece): Mode;
 export function legalMoves(state: GameState, piece: Piece, mode?: Mode, bonus?: BonusKind | null): Move[];
-export function attackersOf(state: GameState, r: number, c: number, except?: string[]): Piece[];
+export function attackersOf(state: GameState, r: number, c: number, except?: string[], victim?: Piece | null): Piece[];
 export function collapseDue(state: GameState): boolean;
 export function nextCollapseRound(state: GameState): number | null;
 export function doomedAt(state: GameState, r: number, c: number): boolean;

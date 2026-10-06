@@ -16,6 +16,14 @@ export const seatName = (_state: GameState, seat: number) => tr('Oyuncu {n}', { 
 // Türkçede belirtme hâli eki gerekir; öteki dillerde ad olduğu gibi kalır.
 const seatAcc = (state: GameState, seat: number) => seatName(state, seat) + (tr_() ? SEAT_ACC[seat] : '');
 
+// "X kazandı" satırı: takımlı maçta takım adı, değilse oyuncu adı.
+export const winnerLine = (st: GameState, fallback = 0) =>
+  st.winTeam != null ? tr('Takım {n} kazandı', { n: st.winTeam + 1 }) : tr('{name} kazandı', { name: seatName(st, st.winner ?? fallback) });
+
+// Yapay zekâ rakibin kişiliği (kurulumda açıldıysa).
+export const personaName = (p: string | null | undefined) =>
+  p === 'hunter' ? tr('Avcı') : p === 'careful' ? tr('Temkinli') : p === 'opportunist' ? tr('Fırsatçı') : '';
+
 export const botName = (kind: 'red' | 'blue') => kind === 'red' ? tr('Kızıl') : tr('Çelik');
 
 // Kısa etiket: şerit, çip, kayıt satırı.

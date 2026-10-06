@@ -6,7 +6,7 @@
 
 import {
   legalMoves, attackersOf, threatsFor, random, ringOf, inArena,
-  walkDirs, takeDirs, nextMode, flip, twinMove,
+  walkDirs, takeDirs, nextMode, flip, twinMove, friendly,
 } from './rules.js';
 
 export const LEVELS = ['kolay', 'normal', 'zor'];
@@ -65,7 +65,7 @@ function easyMove(state, piece, moves) {
     const star = takes.find(m => state.pieces.find(p => p.id === m.targetId).kind === 'star');
     return star || takes[Math.floor(random(state) * takes.length)];
   }
-  const stars = state.pieces.filter(p => p.kind === 'star' && p.alive && p.id !== piece.id);
+  const stars = state.pieces.filter(p => p.kind === 'star' && p.alive && p.id !== piece.id && !friendly(state, piece, p));
   if (!stars.length) return moves[Math.floor(random(state) * moves.length)];
   const dist = m => Math.min(...stars.map(s => Math.abs(m.r - s.r) + Math.abs(m.c - s.c)));
   return moves.reduce((a, b) => (dist(b) < dist(a) ? b : a));
@@ -75,6 +75,8 @@ function scoreMove(state, piece, m, level) {
   const target = m.type === 'take' ? state.pieces.find(p => p.id === m.targetId) : null;
   let s = 0;
   if (target) s += target.kind === 'star' ? 1000 : piece.kind === 'star' ? 120 : 10;
+  // Fırsatçı kişilik: her almayı fazla sever.
+  if (target && piece.kind === 'star' && state.seats[piece.seat].persona === 'opportunist') s += 90;
 
   // Güvenlik: bir sonraki hamlemden önce burada alınır mıyım, kare çöker mi?
   const { attackers, doomed } = threatsFor(state, piece, m);
@@ -157,7 +159,7 @@ function escapes(state, star, mode, grid) {
     const from = [star.r, star.c];
     star.r = r; star.c = c;
     if (victim) victim.alive = false;
-    const safe = attackersOf(state, r, c, [star.id]).length === 0;
+    const safe = attackersOf(state, r, c, [star.id], star).length === 0;
     [star.r, star.c] = from;
     if (victim) victim.alive = true;
     return safe;
@@ -195,26 +197,31 @@ function hunterPlan(state, piece, level) {
 
 // Yapay zekâ oyuncu (bot yıldız): önce hayatta kal — gelecek turda güvenli seçeneği bol, ortaya yakın kareler.
 function starPlan(state, piece, level) {
+  const persona = state.seats[piece.seat].persona;
   const grid = occupancy(state);
   const next = flip(state.mode);
-  let s = 8 * escapes(state, piece, next, grid);
-  s += 5 * ringOf(state, piece.r, piece.c);
-  if (level === 'zor') {
+  // Temkinli: kaçış ve merkezi daha çok önemser. Avcı: kaçışı daha az, rakibi kovalamayı daha çok.
+  const escW = persona === 'careful' ? 16 : persona === 'hunter' ? 5 : 8;
+  const ringW = persona === 'careful' ? 10 : 5;
+  let s = escW * escapes(state, piece, next, grid);
+  s += ringW * ringOf(state, piece.r, piece.c);
+  const hunting = (level === 'zor' && persona !== 'careful') || persona === 'hunter';
+  if (hunting) {
+    const rivals = state.pieces.filter(o => o.kind === 'star' && o.alive && o.id !== piece.id && !friendly(state, piece, o));
     // Başka bir yıldızı bir sonraki hamlede alabileceği yerde dur: rakip kaçmak zorunda kalır.
-    for (const o of state.pieces) {
-      if (o.kind !== 'star' || !o.alive || o.id === piece.id) continue;
+    for (const o of rivals) {
       if (takeDirs(piece, next).some(([dr, dc]) => piece.r + dr === o.r && piece.c + dc === o.c)) s += 25;
     }
     // Avcı gibi davran: en çabuk ulaşabildiği rakip yıldıza sokul ve onun güvenli kaçışlarını daralt.
+    const boost = persona === 'hunter' ? 1.5 : 1;
     let best = Infinity, target = null;
-    for (const o of state.pieces) {
-      if (o.kind !== 'star' || !o.alive || o.id === piece.id) continue;
+    for (const o of rivals) {
       const d = huntDistance(state, piece, o, grid);
       if (d < best) { best = d; target = o; }
     }
     if (target) {
-      s -= HUNT_PULL * best;
-      s -= HUNT_SQUEEZE * escapes(state, target, nextMode(state, target), grid);
+      s -= HUNT_PULL * boost * best;
+      s -= HUNT_SQUEEZE * boost * escapes(state, target, nextMode(state, target), grid);
     }
   }
   return s;

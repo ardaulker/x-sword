@@ -2,13 +2,17 @@
 // Kuralı motor (engine/) bilir; burası yalnız onun fonksiyonlarını çağırır ve ekrana ne olduğunu söyler.
 
 import {
-  BONUS_NAMES, POINTS, TWIN_TAKE_MULT, collapseDue, createGame, endMatch, play, currentActor, legalMoves, pieceById, starOf,
+  BONUS_NAMES, POINTS, isWinner, TWIN_TAKE_MULT, collapseDue, createGame, createPuzzle, endMatch, play, currentActor, legalMoves, pieceById, starOf,
 } from '../../../engine/rules.js';
 import type { BonusKind, GameState, Level, Move, Piece } from '../../../engine/rules.js';
 import { chooseMove } from '../../../engine/bots.js';
 import { BUZZ, feel, sound, startTension, stopTension } from './haptics';
 import { coachStep, markCoachSeen } from './coach';
 import { DAILY, saveDaily, seedOf } from './daily';
+import { PUZZLES } from './puzzles';
+import { clearSave, decodeMoves, encodeMoves, readSave, writeSave } from './record';
+import type { Opts, ReplaySpec } from './record';
+import { recordMatch, recordPuzzle } from './stats';
 import { SPEED, settings } from './settings';
 import { HAZARD, PLAYER_COLORS, colorOf, isBot } from './look';
 import { ME, clockText, labelOf, objectOf, seatName, setMe, subjectOf } from './names';
@@ -43,6 +47,12 @@ export interface Setup {
   bots: number;
   /** Günlük meydan okuma: tarih yazısı (YYYY-AA-GG). Doluysa tahta, bot ve zorluk sabittir. */
   daily?: string | null;
+  /** Bulmaca numarası; doluysa maç o bulmacadır. */
+  puzzle?: number | null;
+  /** Seçenekler (varsayılan kapalı): rakip kişilikleri, engel kareleri, takımlı (yalnız 4 oyuncu). */
+  personas?: boolean;
+  obstacles?: boolean;
+  teams?: boolean;
 }
 // players 1: tek oyunculu mod (sen + aynan İkiz + botlar). 2–4: yapay zekâ oyunculara karşı.
 export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', aiLevel: 'normal', moveSeconds: 20, boardSize: 9, bots: 14 };
@@ -110,10 +120,19 @@ export class GameController {
   private moves: (Move | null)[] = []; // maçın bütün hamleleri, sırayla
   private waitingSeat: number | null = null; // kurucu: hamlesi beklenen uzak oyuncu
   private away = new Set<number>(); // kurucu: bağlantısı kopmuş, dönmesi beklenen koltuklar
+  private paused = false;
+  private pausedAt = 0;
+  private deferred: (() => void)[] = []; // duraklatılmışken ateşlenen zamanlayıcılar, devam edince çalışır
+  private parked = false;   // ana menüye dönüldü, maç duraklatılıp saklanıyor
+  private restored = false; // maç cihazdaki kayıttan geldi: devam edince sıradaki adım başlatılmalı
+  private opts: Opts | null = null; // bu maçı kuran createGame seçenekleri (kayıt ve tekrar için)
+  private statsDone = false;
+  replay: { opts: Opts; moves: (Move | null)[]; i: number } | null = null;
 
   constructor(setup: Setup = DEFAULT_SETUP) {
     this.setup = setup;
     this.reset();
+    this.restoreFromStorage();
   }
 
   subscribe = (fn: () => void) => {
@@ -139,18 +158,138 @@ export class GameController {
     this.later(300, () => this.advance());
   }
 
-  newGame(setup: Setup = this.setup) {
+  newGame(setup: Setup = this.setup, opts?: Opts) {
     this.dispose();
+    clearSave();
     this.net = null;
+    this.replay = null;
     setMe(0);
     this.setup = setup;
-    this.reset();
+    this.reset(undefined, opts ? { opts, moves: [] } : undefined);
     this.emit();
     this.start();
   }
 
+  // Aynı tahtayla baştan başla (günlük, bulmaca ve normal maçta da aynı yerleşim).
+  restart() {
+    this.newGame(this.setup, this.opts ?? undefined);
+  }
+
+  // ------------------------------------------------------------ duraklatma, saklama, sürdürme
+
+  pause() {
+    if (this.net || this.paused || this.replay || this.state.over) return;
+    this.paused = true;
+    this.pausedAt = Date.now();
+    this.stopTicker();
+    stopTension();
+    this.emit({ clockEnd: this.pausedAt });
+  }
+
+  unpause() {
+    if (!this.paused) return;
+    this.paused = false;
+    const dt = Date.now() - this.pausedAt;
+    this.emit({ clockStart: this.view.clockStart + dt, clockEnd: null });
+    const fns = this.deferred.splice(0);
+    fns.forEach(f => f());
+    if (!this.halted && ['sen', 'onizleme', 'rakip'].includes(this.view.phase)) this.startTicker();
+    if (!this.halted && collapseDue(this.state)) startTension();
+  }
+
+  // Oyun ekranından çıkılırken: yarım kalan yerel maç saklanır, yoksa temizlenir.
+  leave() {
+    if (!this.net && !this.replay && !this.state.over && !this.parked) {
+      this.pause();
+      this.parked = true;
+      this.saveGame();
+    } else if (!this.parked) {
+      this.dispose();
+    }
+  }
+
+  // Maç tekrarı bağlantısı için kayıt (yalnız yerel maç).
+  replaySpec(): ReplaySpec | null {
+    return !this.net && this.opts ? { opts: this.opts, moves: encodeMoves(this.moves) } : null;
+  }
+
+  get canResume() { return !this.net && this.parked && !this.state.over; }
+
+  // Ana menüde "Devam et" için kısa özet.
+  get resumeInfo() { return { round: this.state.round, score: this.state.seats[ME]?.score ?? 0 }; }
+
+  unpark() {
+    if (!this.parked) return;
+    this.parked = false;
+    this.emit({ sheet: null });
+    this.unpause();
+    if (this.restored) { this.restored = false; this.later(300, () => this.advance()); }
+  }
+
+  // Saklanan maçı bırak (yeni maç başlıyor).
+  discardParked() {
+    if (!this.parked) return;
+    this.dispose();
+    clearSave();
+  }
+
+  private saveGame() {
+    if (this.net || !this.opts || this.state.over || this.replay) return;
+    writeSave({ v: 1, opts: this.opts, setup: this.setup, moves: encodeMoves(this.moves), elapsed: (this.view.clockEnd ?? Date.now()) - this.view.clockStart });
+  }
+
+  // Uygulama yeniden açılınca yarım kalan maç saklı durur; ana menüde "Devam et" çıkar.
+  private restoreFromStorage() {
+    const s = readSave();
+    if (!s) return false;
+    try {
+      setMe(0);
+      this.setup = { ...DEFAULT_SETUP, ...s.setup };
+      this.reset(undefined, { opts: s.opts, moves: decodeMoves(s.moves) });
+      if (this.state.over) { clearSave(); return false; }
+      const now = Date.now();
+      this.view = { ...this.view, phase: 'bekle', clockStart: now - s.elapsed, clockEnd: now };
+      this.parked = true;
+      this.restored = true;
+      this.paused = true;
+      this.pausedAt = now;
+      return true;
+    } catch {
+      clearSave();
+      return false;
+    }
+  }
+
+  // ------------------------------------------------------------ maç tekrarı
+
+  loadReplay(spec: ReplaySpec) {
+    this.dispose();
+    this.net = null;
+    setMe(0);
+    this.setup = { ...DEFAULT_SETUP };
+    this.opts = spec.opts;
+    this.replay = { opts: spec.opts, moves: decodeMoves(spec.moves), i: 0 };
+    this.seek(0);
+  }
+
+  seek(i: number) {
+    const r = this.replay;
+    if (!r) return;
+    const n = Math.max(0, Math.min(r.moves.length, i));
+    this.state = this.makeState(r.opts);
+    let done = 0;
+    try {
+      for (; done < n; done++) play(this.state, r.moves[done]);
+    } catch { /* bozuk kayıt: gelinen yere kadar */ }
+    r.i = done;
+    this.view = { ...this.freshView(), phase: 'bitti', clockEnd: Date.now(), version: this.view.version + 1 };
+    this.listeners.forEach(fn => fn());
+  }
+
   // Çok oyunculu maç: herkes aynı başlangıçla aynı tahtayı kurar. Sonradan katılan misafir eski hamleleri sessizce oynar.
   startMatch(match: MatchStart, me: number, net: NetRole, replay: (Move | null)[] = []) {
+    if (this.parked) clearSave();
+    this.replay = null;
     this.dispose();
     this.net = net;
     setMe(me);
@@ -173,6 +312,10 @@ export class GameController {
     this.banners = [];
     this.waitingSeat = null;
     this.away.clear();
+    this.paused = false;
+    this.deferred = [];
+    this.parked = false;
+    this.restored = false;
   }
 
   // Maç bitti ya da kazanan belli oldu ve sonuç kartı henüz gösterilmedi: oyun akışı durur.
@@ -184,30 +327,52 @@ export class GameController {
     return starOf(this.state, ME)!;
   }
 
-  private reset(match?: MatchStart) {
-    if (match) {
-      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals });
-    } else {
-      const daily = this.setup.daily ?? null;
-      const seats = Array.from({ length: daily ? 1 : this.setup.players }, (_, i) =>
-        i === ME ? { kind: 'human' as const } : { kind: 'bot' as const, level: this.setup.aiLevel });
-      // Kolayda ilk sen oynarsın; normal ve zorda sıradaki yerin de rastgele.
-      this.state = daily
-        ? createGame({ seats, neutralLevel: 'normal', seed: seedOf(daily), size: DAILY.boardSize, neutrals: DAILY.bots })
-        : createGame({ seats, neutralLevel: this.setup.level, firstSeat: this.setup.level === 'kolay' ? ME : null, keepGoing: true,
-          size: this.setup.boardSize, neutrals: this.setup.bots });
+  private buildOpts(): Opts {
+    const s = this.setup;
+    if (s.puzzle != null) {
+      const def = PUZZLES.find(p => p.id === s.puzzle) ?? PUZZLES[0];
+      return { puzzle: { me: def.me, bots: def.bots, limit: def.par + 1, mode: def.mode } };
     }
-    this.moves = [];
-    this.fast = false;
-    this.decisionShown = false;
-    this.bonusShown = false;
-    stopTension();
-    this.view = {
+    if (s.daily) return { seats: [{ kind: 'human' }], neutralLevel: 'normal', seed: seedOf(s.daily), size: DAILY.boardSize, neutrals: DAILY.bots };
+    const seats = Array.from({ length: s.players }, (_, i) =>
+      i === ME ? { kind: 'human' } : { kind: 'bot', level: s.aiLevel });
+    // Kolayda ilk sen oynarsın; normal ve zorda sıradaki yerin de rastgele.
+    return {
+      seats, neutralLevel: s.level, seed: Math.floor(Math.random() * 2 ** 31), firstSeat: s.level === 'kolay' ? ME : null, keepGoing: true,
+      size: s.boardSize, neutrals: s.bots,
+      personas: s.players > 1 && !!s.personas, obstacles: !!s.obstacles, teams: s.players === 4 && !!s.teams,
+    };
+  }
+
+  private makeState(o: Opts): GameState {
+    return (o.puzzle ? createPuzzle(o.puzzle as unknown as Parameters<typeof createPuzzle>[0]) : createGame(o as unknown as Parameters<typeof createGame>[0])) as GameState;
+  }
+
+  private freshView(): View {
+    return {
       phase: 'hazir', sel: null, showThreats: false, timer: this.setup.moveSeconds,
       trails: [], bursts: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null, bonus: null,
       bots: { done: 0, total: 0, currentId: null }, events: [],
       clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, hit: 0, version: 0,
     };
+  }
+
+  private reset(match?: MatchStart, preset?: { opts: Opts; moves: (Move | null)[] }) {
+    if (match) {
+      this.opts = null;
+      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals });
+    } else {
+      this.opts = preset?.opts ?? this.buildOpts();
+      this.state = this.makeState(this.opts);
+    }
+    this.moves = [];
+    for (const m of preset?.moves ?? []) { play(this.state, m); this.moves.push(m); }
+    this.fast = false;
+    this.decisionShown = false;
+    this.bonusShown = false;
+    this.statsDone = false;
+    stopTension();
+    this.view = this.freshView();
   }
 
   private advance() {
@@ -341,10 +506,11 @@ export class GameController {
     // Kazanan belli ama botlar var: sonuç kartı "Devam et / Bitir" sorar, saat durmaz.
     const pending = this.state.decided && !this.state.over;
     if (pending) this.decisionShown = true;
+    if (this.state.over && !this.statsDone && !this.replay) this.recordResult();
     const daily = this.setup.daily;
     if (daily && this.state.over) {
       const s = this.state;
-      saveDaily({ date: daily, score: s.seats[ME].score, won: s.winner === ME, round: s.round, time: clockText((this.view.clockEnd ?? Date.now()) - this.view.clockStart) });
+      saveDaily({ date: daily, score: s.seats[ME].score, won: isWinner(s, ME), round: s.round, time: clockText((this.view.clockEnd ?? Date.now()) - this.view.clockStart) });
     }
     const me = this.myStar();
     if (this.state.seats[ME].bonus && me && !this.bonusShown) {
@@ -357,7 +523,23 @@ export class GameController {
     });
     // Son hamleyi ve bantları gördükten sonra sonuç kartı açılır.
     this.later(1600, () => { if (this.view.phase === 'bitti' && !this.view.sheet) this.emit({ sheet: { type: 'sonuc' } }); });
-    feel(this.state.winner === ME ? 'win' : 'lose', this.state.winner === ME ? BUZZ.take : BUZZ.takenOrOut);
+    feel(isWinner(this.state, ME) ? 'win' : 'lose', isWinner(this.state, ME) ? BUZZ.take : BUZZ.takenOrOut);
+  }
+
+  // Maç bitince: istatistik, bulmaca yıldızı, yarım kalan kaydın silinmesi.
+  private recordResult() {
+    this.statsDone = true;
+    const s = this.state, won = isWinner(s, ME);
+    clearSave();
+    if (s.puzzle) {
+      const def = PUZZLES.find(p => p.id === this.setup.puzzle);
+      if (won && def) recordPuzzle(def.id, s.puzzle.used <= def.par ? 3 : 2);
+      return;
+    }
+    recordMatch({
+      won, score: s.seats[ME].score, takes: s.seats[ME].takes, rounds: s.round,
+      ms: Date.now() - this.view.clockStart, daily: !!this.setup.daily,
+    });
   }
 
   // Kazanan belliyken botlarla savaşa devam et.
@@ -577,6 +759,7 @@ export class GameController {
       if (st.seats[ME].bonuses[k] > myBonuses[k]) { this.toast(tr('Bonus kazandın: {name}', { name: tr(BONUS_NAMES[k]) }), 'info'); feel('bonusGain', BUZZ.bonusGain); }
     }
     this.moves.push(move);
+    this.saveGame();
     if (this.net?.role === 'host') this.net.broadcast?.(this.moves.length, move);
 
     const fallen = st.pieces.filter(p => aliveBefore.has(p.id) && !p.alive && p !== victim);
@@ -694,14 +877,20 @@ export class GameController {
   closeInspect() { if (this.view.inspect) this.emit({ inspect: null }); }
   openResults() { this.emit({ sheet: { type: 'sonuc' } }); }
   openLog() { this.emit({ sheet: { type: 'kayit' } }); }
-  openMenu() { this.emit({ sheet: { type: 'menu' } }); }
-  closeSheet() { if (this.view.sheet) this.emit({ sheet: null }); }
+  openMenu() { this.pause(); this.emit({ sheet: { type: 'menu' } }); }
+  closeSheet() {
+    if (!this.view.sheet) return;
+    const wasMenu = this.view.sheet.type === 'menu';
+    this.emit({ sheet: null });
+    if (wasMenu) this.unpause();
+  }
   watch() { this.emit({ watching: true }); }
 
   // ------------------------------------------------------------ zamanlayıcılar
 
   private startTicker() {
     this.stopTicker();
+    if (this.state.puzzle) return; // bulmacada süre yok
     this.ticker = window.setInterval(() => {
       const t = this.view.timer - 1;
       if (this.isMyMove()) {
@@ -734,7 +923,7 @@ export class GameController {
   private later(ms: number, fn: () => void) {
     const id = window.setTimeout(() => {
       this.timers.delete(id);
-      fn();
+      if (this.paused) this.deferred.push(fn); else fn();
     }, ms);
     this.timers.add(id);
     return id;

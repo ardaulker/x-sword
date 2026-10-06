@@ -9,6 +9,10 @@ import { tr } from '../i18n';
 
 // Halka çipi. Üst çubukta maç saati de olduğu için yazı kısa tutulur; dar ekranda ve izlerken daha da kısalır.
 function ringInfo(st: GameState) {
+  if (st.puzzle) {
+    const text = tr('Hamle {a}/{b}', { a: Math.min(st.puzzle.used + 1, st.puzzle.limit), b: st.puzzle.limit });
+    return { long: text, short: text, full: text, warn: st.puzzle.used + 1 >= st.puzzle.limit, soon: false };
+  }
   const next = nextCollapseRound(st);
   if (next == null) return { long: tr('Arena en dar'), short: tr('En dar'), full: tr('Arena daha fazla daralmaz'), warn: false, soon: false };
   if (next === st.round) return { long: tr('Halka çöküyor'), short: tr('Çöküyor'), full: tr('Dış halka bu turun sonunda çöküyor'), warn: collapseDue(st), soon: false };

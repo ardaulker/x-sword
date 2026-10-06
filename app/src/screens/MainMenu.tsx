@@ -23,8 +23,8 @@ export function XSwordLogo({ size }: { size: number }) {
   );
 }
 
-export function MainMenu({ setup, onStart, onDaily, onRules, onMultiplayer, onSettings }: {
-  setup: Setup; onStart: (s: Setup) => void; onDaily?: () => void; onRules?: () => void; onMultiplayer?: () => void; onSettings?: () => void;
+export function MainMenu({ setup, onStart, onResume, resumeInfo, onPuzzles, onStats, onDaily, onRules, onMultiplayer, onSettings }: {
+  setup: Setup; onStart: (s: Setup) => void; onResume?: () => void; resumeInfo?: { round: number; score: number }; onPuzzles?: () => void; onStats?: () => void; onDaily?: () => void; onRules?: () => void; onMultiplayer?: () => void; onSettings?: () => void;
 }) {
   const [setupOpen, setSetupOpen] = useState(false);
   const best = loadDaily();
@@ -39,14 +39,23 @@ export function MainMenu({ setup, onStart, onDaily, onRules, onMultiplayer, onSe
         <h1 className="menu-title">X SWORD</h1>
         <div className="menu-pill">
           <svg width="16" height="16" viewBox="0 0 100 100" aria-hidden="true"><polygon points="17,17 83,17 83,83 17,83" fill="none" stroke="#E9F0FF" strokeWidth="10" /></svg>
-          <span>{tr('Her tur değişir: düz, sonra çapraz')}</span>
+          <span>{tr('Düz mü, çapraz mı? Her tur yeni yön.')}</span>
           <svg width="16" height="16" viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,5 95,50 50,95 5,50" fill="none" stroke="#E9F0FF" strokeWidth="10" /></svg>
         </div>
       </div>
 
       <nav className="menu-actions" aria-label={tr('Ana menü')}>
-        <button type="button" className="menu-play" onClick={() => setSetupOpen(true)}>
-          <Icon d="M7 4.5 L19 12 L7 19.5 Z" size={26} fill="#0B1026" />
+        {onResume && (
+          <button type="button" className="menu-play" onClick={onResume}>
+            <Icon d="M7 4.5 L19 12 L7 19.5 Z" size={26} fill="#0B1026" />
+            <span className="menu-play-text">
+              <b>{tr('Devam et')}</b>
+              <span>{tr('Duraklatılan maç · Tur {n} · {p} puan', { n: resumeInfo?.round ?? 1, p: resumeInfo?.score ?? 0 })}</span>
+            </span>
+          </button>
+        )}
+        <button type="button" className={onResume ? 'menu-btn menu-daily' : 'menu-play'} onClick={() => setSetupOpen(true)}>
+          <Icon d="M7 4.5 L19 12 L7 19.5 Z" size={onResume ? 20 : 26} fill={onResume ? 'currentColor' : '#0B1026'} />
           <span className="menu-play-text">
             <b>{tr('Oyuna başla')}</b>
             <span>{tr('Botlara karşı · tek ya da 2–4 oyuncu')}</span>
@@ -58,6 +67,16 @@ export function MainMenu({ setup, onStart, onDaily, onRules, onMultiplayer, onSe
             <span className="menu-play-text"><b>{tr('Günlük meydan okuma')}</b><span>{best ? tr('Bugünkü en iyin: {n} puan', { n: best.score }) : tr('Herkes bugün aynı tahtada oynar')}</span></span>
           </button>
         )}
+        <div className="menu-row">
+          <button type="button" className="menu-btn" onClick={onPuzzles}>
+            <Icon d="M10 3 H14 V6 A2 2 0 1 0 18 6 V3 H21 V9 H18 A2 2 0 1 0 18 13 H21 V21 H3 V13 H6 A2 2 0 1 1 6 9 H3 V3 Z" size={20} stroke={2} />
+            <span>{tr('Bulmacalar')}</span>
+          </button>
+          <button type="button" className="menu-btn" onClick={onStats}>
+            <Icon d="M5 20 V11 M12 20 V4 M19 20 V14" size={20} stroke={2.4} />
+            <span>{tr('İstatistikler')}</span>
+          </button>
+        </div>
         <div className="menu-row">
           <button type="button" className="menu-btn" disabled={!onMultiplayer} onClick={onMultiplayer}>
             <Icon d="M9 11 A4 4 0 1 0 9.01 11 Z M2 21 C2 17 5 15 9 15 C11 15 12.5 15.5 13.5 16.3 M19 8 V14 M16 11 H22" size={20} stroke={2.2} />

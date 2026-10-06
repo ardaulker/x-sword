@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { POINTS, SIZE_BY_STARS, BOARD_SIZES, defaultNeutrals, maxNeutrals, pieceById, ranking, starOf } from '../../../engine/rules.js';
+import { POINTS, isWinner, SIZE_BY_STARS, BOARD_SIZES, defaultNeutrals, maxNeutrals, pieceById, ranking, starOf } from '../../../engine/rules.js';
 import type { GameState, Level, Piece } from '../../../engine/rules.js';
 import type { GameController, Setup, TakeEvent } from '../game/controller';
 import { HAZARD_TXT, ICON, TXT, colorOf, diamondOf, seatOf } from '../game/look';
-import { ME, labelOf, seatName } from '../game/names';
+import { ME, labelOf, seatName, winnerLine } from '../game/names';
 import { PLAYER_COLORS } from '../game/look';
 import { Icon, RingIcon } from './bits';
 import { PieceGlyph } from './PieceGlyph';
-import { shareResult } from '../game/share';
+import { shareReplay, shareResult } from '../game/share';
+import { PUZZLES } from '../game/puzzles';
 import { tr } from '../i18n';
 
 // Alttan açılan kart; arka plan kararır, dışına dokununca kapanır.
@@ -95,16 +96,27 @@ export function CoachSheet({ step, onDone }: { step: number; onDone: () => void 
       tr('Tek oyunculuda bütün botları temizle: İkiz seni taklit eder, seni alamaz.'),
     ]],
   ];
-  const [title, lines] = tips[Math.min(step, tips.length - 1)];
+  const [page, setPage] = useState(Math.min(step, tips.length - 1));
+  const [title, lines] = tips[page];
+  const last = page === tips.length - 1;
   return (
     <SheetFrame label={title} onClose={onDone}>
       <div className="sheet-head">
         <div className="sheet-title">{title}</div>
-        <div className="coach-step">{step + 1} / {tips.length}</div>
+        <div className="coach-step">{page + 1} / {tips.length}</div>
       </div>
       <ul className="coach-list">{lines.map(l => <li key={l}>{l}</li>)}</ul>
+      <div className="coach-dots" role="tablist" aria-label={tr('İpucu sayfaları')}>
+        {tips.map((_, i) => (
+          <button key={i} type="button" role="tab" aria-selected={i === page} aria-label={tr('Sayfa {n}', { n: i + 1 })}
+            className={i === page ? 'is-on' : ''} onClick={() => setPage(i)} />
+        ))}
+      </div>
       <div className="btn-row">
-        <button type="button" className="btn btn-main" onClick={onDone}>{tr('Anladım')}</button>
+        {page > 0 && <button type="button" className="btn btn-ghost" onClick={() => setPage(page - 1)}>{tr('Geri')}</button>}
+        {last
+          ? <button type="button" className="btn btn-main" onClick={onDone}>{tr('Anladım')}</button>
+          : <button type="button" className="btn btn-main" onClick={() => setPage(page + 1)}>{tr('İleri')}</button>}
       </div>
     </SheetFrame>
   );
@@ -114,6 +126,40 @@ export function CoachSheet({ step, onDone }: { step: number; onDone: () => void 
 
 const levelLabels = (): [Level, string][] => [['kolay', tr('Kolay')], ['normal', tr('Normal')], ['zor', tr('Zor')]];
 
+function Opt({ label, sub, on, onChange }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button type="button" className="opt-row" role="switch" aria-checked={on} onClick={() => onChange(!on)}>
+      <span className="opt-text"><b>{label}</b><small>{sub}</small></span>
+      <span className={`switch${on ? ' is-on' : ''}`} aria-hidden="true"><span /></span>
+    </button>
+  );
+}
+
+// Duraklatma menüsü: yerel maçta menü düğmesine basınca açılır; oyun bu sırada durur.
+export function PauseSheet({ onResume, onNew, onRestart, onSettings, onHome, onEnd }: {
+  onResume: () => void; onNew: () => void; onRestart: () => void; onSettings: () => void; onHome: () => void; onEnd?: () => void;
+}) {
+  const row = (label: string, on: () => void, main = false) => (
+    <button type="button" className={`btn ${main ? 'btn-main' : 'btn-ghost'} pause-btn`} onClick={on}>{label}</button>
+  );
+  return (
+    <SheetFrame label={tr('Duraklatıldı')} onClose={onResume}>
+      <div className="sheet-head">
+        <div className="sheet-title">{tr('Duraklatıldı')}</div>
+        <button type="button" className="round-btn" aria-label={tr('Kapat')} onClick={onResume}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
+      </div>
+      <div className="pause-list">
+        {row(tr('Devam et'), onResume, true)}
+        {onEnd && row(tr('Maçı bitir'), onEnd)}
+        {row(tr('Yeniden başlat'), onRestart)}
+        {row(tr('Yeni oyun'), onNew)}
+        {row(tr('Ayarlar'), onSettings)}
+        {row(tr('Ana menü'), onHome)}
+      </div>
+    </SheetFrame>
+  );
+}
+
 // Maç ayarı: ana menüden "Oyuna başla" ile ve oyun içindeki menü düğmesiyle açılır.
 export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: {
   setup: Setup; onStart: (s: Setup) => void; onClose: () => void; onHome?: () => void; onRules?: () => void; onEnd?: () => void;
@@ -121,6 +167,9 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
   const [players, setPlayers] = useState(setup.players);
   const [level, setLevel] = useState<Level>(setup.level);
   const [aiLevel, setAiLevel] = useState<Level>(setup.aiLevel);
+  const [personas, setPersonas] = useState(!!setup.personas);
+  const [obstacles, setObstacles] = useState(!!setup.obstacles);
+  const [teams, setTeams] = useState(!!setup.teams);
   const [pickedSize, setBoardSize] = useState(setup.boardSize);
   // Bot sayısına dokunulmadıysa (null) tahtaya ve oyuncu sayısına göre varsayılan kalabalık kullanılır.
   const [picked, setBots] = useState<number | null>(
@@ -180,6 +229,12 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
           </button>
         ))}
       </div>
+      <div className="field-label">{tr('SEÇENEKLER')}</div>
+      <div className="opts">
+        {players > 1 && <Opt label={tr('Rakip kişilikleri')} sub={tr('Yapay zekâ rakipler avcı, temkinli ya da fırsatçı oynar.')} on={personas} onChange={setPersonas} />}
+        {players === 4 && <Opt label={tr("Takımlı (2'ye 2)")} sub={tr('Karşılıklı köşeler takım olur; takım arkadaşını alamazsın.')} on={teams} onChange={setTeams} />}
+        <Opt label={tr('Engel kareleri')} sub={tr('Tahtaya birbirine değmeyen kapalı kareler koyar.')} on={obstacles} onChange={setObstacles} />
+      </div>
       <div className="menu-note">
         {players === 1
           ? tr('Sen, aynan İkiz ve {bots} arena botu · tahta {size}×{size}. Bütün botları temizle.', { bots: botCount, size })
@@ -196,7 +251,7 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
         {onHome
           ? <button type="button" className="btn btn-ghost" onClick={onHome}>{tr('Ana menü')}</button>
           : <button type="button" className="btn btn-ghost" onClick={onClose}>{tr('Kapat')}</button>}
-        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, aiLevel, boardSize: size, bots: botCount, daily: null })}>{tr('Başlat')}</button>
+        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, aiLevel, boardSize: size, bots: botCount, daily: null, puzzle: null, personas: players > 1 && personas, obstacles, teams: players === 4 && teams })}>{tr('Başlat')}</button>
       </div>
     </SheetFrame>
   );
@@ -220,18 +275,41 @@ export function LeaveSheet({ onLeave, onClose }: { onLeave: () => void; onClose:
 }
 
 // Maç sonu özeti: başlık, senin istatistiklerin, sıralama.
-export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose }: {
+export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle }: {
   ctl: GameController; time: string; onAgain?: () => void; againLabel: string; onClose: () => void;
+  onPuzzle?: (id: number | null) => void; // bulmaca bitti: sonraki bulmaca (id) ya da liste (null)
 }) {
   const st = ctl.state;
   const me = st.seats[ME];
-  const won = st.winner === ME;
+  const won = isWinner(st, ME);
   const [shared, setShared] = useState(false);
+  const [linked, setLinked] = useState(false);
   const daily = ctl.setup.daily ?? null;
   const order = ranking(st);
   const lasted = (i: number) => (st.seats[i].out ? st.seats[i].outRound ?? st.round : st.round);
   const pending = st.decided && !st.over;
-  const title = won ? tr('Kazandın!') : st.solo ? tr('Alındın') : tr('{name} kazandı', { name: seatName(st, st.winner ?? order[0]) });
+  const title = won ? tr('Kazandın!') : st.solo ? tr('Alındın') : winnerLine(st, order[0]);
+  if (st.puzzle && onPuzzle) {
+    const id = ctl.setup.puzzle ?? 1;
+    const def = PUZZLES.find(p => p.id === id);
+    const stars = won && def ? (st.puzzle.used <= def.par ? 3 : 2) : 0;
+    const next = PUZZLES.find(p => p.id === id + 1);
+    return (
+      <SheetFrame label={tr('Bulmaca')} onClose={onClose}>
+        <div className="res-head">
+          <div className="res-daily">{tr('Bulmaca {n}', { n: id })}</div>
+          <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{won ? tr('Çözüldü!') : tr('Çözülemedi')}</div>
+          <div className="puzzle-stars res-stars" aria-label={tr('{n} yıldız', { n: stars })}>{'★'.repeat(stars)}{'☆'.repeat(3 - stars)}</div>
+          <div className="res-sub">{tr('{a}/{b} hamle kullandın', { a: st.puzzle.used, b: st.puzzle.limit })}</div>
+        </div>
+        <div className="btn-row">
+          <button type="button" className="btn btn-ghost" onClick={() => onPuzzle(null)}>{tr('Bulmacalar')}</button>
+          <button type="button" className="btn btn-ghost" onClick={() => ctl.restart()}>{tr('Tekrar dene')}</button>
+          {won && next && <button type="button" className="btn btn-main" onClick={() => onPuzzle(next.id)}>{tr('Sonraki')}</button>}
+        </div>
+      </SheetFrame>
+    );
+  }
   return (
     <SheetFrame label={tr('Maç sonucu')} onClose={onClose}>
       <div className="res-head">
@@ -276,6 +354,11 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose }: {
         )}
         {!pending && onAgain && <button type="button" className="btn btn-main" onClick={onAgain}>{daily ? tr('Tekrar dene') : againLabel}</button>}
       </div>
+      {!pending && ctl.replaySpec() && (
+        <button type="button" className="link-btn res-link" onClick={async () => { await shareReplay(ctl); setLinked(true); }}>
+          {linked ? tr('Bağlantı kopyalandı') : tr('Maçın tekrarını paylaş')}
+        </button>
+      )}
     </SheetFrame>
   );
 }

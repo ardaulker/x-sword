@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { currentActor, starOf } from '../../../engine/rules.js';
 import type { GameController, View } from '../game/controller';
 import { PLAYER_COLORS, TXT2, alpha, diamondOf } from '../game/look';
-import { ME, seatName } from '../game/names';
+import { ME, personaName, seatName } from '../game/names';
 import { PieceGlyph } from './PieceGlyph';
 import { tr } from '../i18n';
 
@@ -40,6 +40,7 @@ export function PlayerStrip({ ctl, view, compact }: { ctl: GameController; view:
         return (
           <div
             key={seat.index}
+            title={personaName(seat.persona) || undefined}
             className={`strip-item${star.alive ? '' : ' is-out'}`}
             style={{
               height: compact ? 40 : 48, gap: four ? 5 : 8, padding: `0 ${four ? 6 : 10}px`,
@@ -48,7 +49,7 @@ export function PlayerStrip({ ctl, view, compact }: { ctl: GameController; view:
           >
             <PieceGlyph kind="star" seat={seat.index} size={four ? 22 : 26} diamond={diamondOf(star, st.mode)} grey={!star.alive} />
             <div className="strip-text">
-              <span className="strip-name" style={{ fontSize: four ? 11 : 13 }}>{seatName(st, seat.index)}</span>
+              <span className="strip-name" style={{ fontSize: four ? 11 : 13 }}>{seatName(st, seat.index)}{seat.team != null ? ` · ${'AB'[seat.team]}` : ''}</span>
               {narrow
                 ? <Score value={seat.score} size={compact ? 14 : 15} color={color} />
                 : <span className="strip-sub" style={{ color: TXT2 }}>{seat.index === ME && star.alive ? `${tr('Sen')} · ${sub}` : sub}</span>}

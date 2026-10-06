@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { currentActor } from '../../../engine/rules.js';
+import { currentActor, isWinner } from '../../../engine/rules.js';
 import type { GameController, Setup, View } from '../game/controller';
 import { ICON } from '../game/look';
 import { labelOf, modeWord } from '../game/names';
@@ -8,9 +8,10 @@ import { BOARD_PAD, Board, boardGap, boardOuter } from '../components/Board';
 import { CompactBar, ModeIndicator, TopBar } from '../components/Header';
 import { PlayerStrip } from '../components/PlayerStrip';
 import { TurnQueue } from '../components/TurnQueue';
-import { CoachSheet, LeaveSheet, LogSheet, ResultsSheet, SetupSheet } from '../components/Sheets';
+import { CoachSheet, LeaveSheet, LogSheet, PauseSheet, ResultsSheet, SetupSheet } from '../components/Sheets';
 import { useMatchTime } from '../components/bits';
 import { RulesScreen } from './RulesScreen';
+import { SettingsScreen } from './SettingsScreen';
 import { InfoChip } from '../components/InfoChip';
 import { Icon } from '../components/bits';
 import './GameScreen.css';
@@ -26,7 +27,7 @@ const GAP = 6;
 
 function announce(ctl: GameController, view: View) {
   const st = ctl.state;
-  if (view.phase === 'bitti') return st.winner === 0 ? tr('Kazandın!') : tr('Maç bitti.');
+  if (view.phase === 'bitti') return isWinner(st, 0) ? tr('Kazandın!') : tr('Maç bitti.');
   if (view.phase === 'sen') return tr('Senin sıran.');
   if (view.phase === 'bot') return tr('Botlar oynuyor.');
   if (view.phase === 'mod') return tr('Yeni tur. Mod {mode}.', { mode: modeWord(st.mode) });
@@ -43,8 +44,8 @@ export interface NetActions {
   onRematch?: () => void;
 }
 
-export function GameScreen({ ctl, onNewGame, onHome, net }: {
-  ctl: GameController; onNewGame: (s: Setup) => void; onHome: () => void; net?: NetActions;
+export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
+  ctl: GameController; onNewGame: (s: Setup) => void; onHome: () => void; onPuzzles?: () => void; net?: NetActions;
 }) {
   const view = useSyncExternalStore(ctl.subscribe, ctl.getSnapshot);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -77,6 +78,7 @@ export function GameScreen({ ctl, onNewGame, onHome, net }: {
 
   const sheet = view.sheet;
   const [rulesOpen, setRulesOpen] = useState(false);
+  const [sub, setSub] = useState<null | 'yeni' | 'ayar'>(null);
   const matchTime = useMatchTime(view.clockStart, view.clockEnd);
   return (
     <div ref={rootRef} className={`game${compact ? ' is-compact' : ''}`}>
@@ -109,10 +111,16 @@ export function GameScreen({ ctl, onNewGame, onHome, net }: {
         <ResultsSheet
           ctl={ctl} time={matchTime} onClose={() => ctl.closeSheet()}
           onAgain={net ? net.onRematch : () => ctl.newGame()} againLabel={net ? tr('Lobiye dön') : tr('Rövanş')}
+          onPuzzle={id => (id == null ? onPuzzles?.() : onNewGame({ ...ctl.setup, puzzle: id }))}
         />
       )}
-      {sheet?.type === 'menu' && !net && <SetupSheet setup={ctl.setup} onStart={onNewGame} onClose={() => ctl.closeSheet()} onHome={onHome}
-        onRules={() => setRulesOpen(true)} onEnd={ctl.state.decided && !ctl.state.over ? () => ctl.endNow() : undefined} />}
+      {sheet?.type === 'menu' && !net && (sub === 'yeni'
+        ? <SetupSheet setup={ctl.setup} onStart={s => { setSub(null); onNewGame(s); }} onClose={() => setSub(null)} />
+        : <PauseSheet onResume={() => ctl.closeSheet()} onNew={() => setSub('yeni')} onRestart={() => ctl.restart()} onSettings={() => setSub('ayar')}
+          onHome={onHome} onEnd={ctl.state.decided && !ctl.state.over ? () => ctl.endNow() : undefined} />)}
+      {sheet?.type === 'menu' && !net && sub === 'ayar' && (
+        <div className="rules-overlay"><SettingsScreen inGame onBack={() => setSub(null)} onRules={() => setRulesOpen(true)} /></div>
+      )}
       {rulesOpen && <div className="rules-overlay"><RulesScreen onBack={() => setRulesOpen(false)} /></div>}
       {sheet?.type === 'menu' && net && <LeaveSheet onLeave={net.onLeave} onClose={() => ctl.closeSheet()} />}
 

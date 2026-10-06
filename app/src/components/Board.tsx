@@ -239,9 +239,11 @@ export function Board({ ctl, view, cell }: Props) {
       let background = (r + c) % 2 ? 'var(--kare-2)' : 'var(--kare)';
       let frame: { stroke: string; width: number; dash?: string } | null = null;
       let mark: { d: string; fill: string; stroke: string; width: number } | null = null;
+      const wall = !gone && !!st.blocked?.has(r * n + c);
       if (gone) { background = 'var(--bosluk)'; frame = { stroke: '#2B3670', width: 4, dash: '6 7' }; }
+      else if (wall) { background = 'repeating-linear-gradient(45deg, #2A3570 0 5px, #121936 5px 10px)'; frame = { stroke: '#5566B8', width: 6 }; }
       else if (doomedRing) background = 'var(--pat-hazard)';
-      if (heat?.has(`${r},${c}`) && !gone && !doomedRing) background = `linear-gradient(rgba(255,59,92,.17), rgba(255,59,92,.17)), ${background}`;
+      if (heat?.has(`${r},${c}`) && !gone && !doomedRing && !wall) background = `linear-gradient(rgba(255,59,92,.17), rgba(255,59,92,.17)), ${background}`;
       if (im) {
         // Başka bir taşın yolu: buz renginde kesik çerçeve; alabileceği taş nişanla, o taş sensen kırmızı.
         frame = { stroke: 'rgba(233,240,255,.6)', width: 5, dash: '5 6' };
@@ -265,6 +267,7 @@ export function Board({ ctl, view, cell }: Props) {
       if (occupant) label += `, ${labelOf(st, occupant)}`;
       if (rc) label += rc.move.type === 'take' ? tr(', alınabilir') : tr(', gidilebilir');
       if (rc?.attackers) label += tr(', {n} taş seni alabilir', { n: rc.attackers });
+      if (wall) label += tr(', engel');
       if (gone) label += tr(', çöktü');
       else if (doomedRing) label += tr(', tur sonunda çökecek');
       else if (soonRing) label += tr(', gelecek tur çökecek');

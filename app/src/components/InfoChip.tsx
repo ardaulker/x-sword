@@ -2,7 +2,7 @@ import { nextMode, pieceById, takeDirs, walkDirs } from '../../../engine/rules.j
 import { targetOf } from '../../../engine/bots.js';
 import type { GameController } from '../game/controller';
 import { CROSS, DANGER, ICE, ICON, PLAYER_COLORS, PLUS, colorOf, diamondOf, isBot, seatOf } from '../game/look';
-import { ME, labelOf } from '../game/names';
+import { ME, labelOf, personaName } from '../game/names';
 import { orderNo } from '../game/order';
 import { attackersOfMe } from '../game/threats';
 import { Icon } from './bits';
@@ -53,6 +53,7 @@ export function InfoChip({ ctl, id }: { ctl: GameController; id: string }) {
       <span className="info-chip-meta">
         {!isBot(p) && `#${orderNo(st, p.id)} · `}
         {p.kind === 'twin' ? how : <WalkTake walkStraight={wStraight} takeStraight={tStraight} />}
+        {p.kind === 'star' && st.seats[p.seat].persona && ` · ${personaName(st.seats[p.seat].persona)}`}
       </span>
       {target && (
         <span className="info-chip-target">

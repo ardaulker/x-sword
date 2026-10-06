@@ -23,7 +23,8 @@ function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: 
   );
 }
 
-export function SettingsScreen({ onBack, onRules }: { onBack: () => void; onRules?: () => void }) {
+// inGame: maç sürerken açıldı; oyunu değiştiren ayarlar gizlenir (yalnız ses, titreşim ve dil kalır).
+export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: () => void; onRules?: () => void; inGame?: boolean }) {
   const lang = useLang();
   const [s, setS] = useState(settings);
   const update = (patch: Partial<Settings>) => { const next = { ...s, ...patch }; setS(next); saveSettings(next); };
@@ -53,8 +54,6 @@ export function SettingsScreen({ onBack, onRules }: { onBack: () => void; onRule
           onChange={v => { update({ sound: v }); if (v) feel('select'); }} />
         <Toggle label={tr('Müzik')} sub={tr('Arena daralacak turlarda çalan gergin müzik.')} on={s.music}
           onChange={v => update({ music: v })} />
-        <Toggle label={tr('İpuçları')} sub={tr('İlk üç maçın başında kısa bir ipucu kartı gösterir.')} on={s.tips}
-          onChange={v => update({ tips: v })} />
         <div className="rule set-col">
           <div className="rule-text"><h3>{tr('Ses seviyesi')}</h3></div>
           <input type="range" className="vol" min={0} max={100} value={Math.round(s.volume * 100)} aria-label={tr('Ses seviyesi')}
@@ -62,6 +61,10 @@ export function SettingsScreen({ onBack, onRules }: { onBack: () => void; onRule
         </div>
         <Toggle label={tr('Titreşim')} sub={tr("Desteklenen telefonlarda. iPhone'da tarayıcı titreşime izin vermez.")} on={s.haptics}
           onChange={v => { update({ haptics: v }); if (v) feel('select', 20); }} />
+        {!inGame && (
+          <>
+        <Toggle label={tr('İpuçları')} sub={tr('İlk üç maçın başında kısa bir ipucu kartı gösterir.')} on={s.tips}
+          onChange={v => update({ tips: v })} />
         <div className="rule set-col">
           <div className="rule-text"><h3>{tr('Animasyon hızı')}</h3><p>{tr('Taş kayması, mod kartı, halka çöküşü: hepsi bu hızla oynar.')}</p></div>
           <div className="seg" role="radiogroup" aria-label={tr('Animasyon hızı')}>
@@ -82,12 +85,14 @@ export function SettingsScreen({ onBack, onRules }: { onBack: () => void; onRule
         <Toggle label={tr('Bot sıra numaraları')} sub={tr('Kapalıyken numara yalnız oynayan ve sıradaki 3 taşta görünür.')} on={s.numbers}
           onChange={v => update({ numbers: v })} />
         <div className="rule set-col">
-          <Toggle label={tr('Renk körü modu')} sub={tr('Oyuncu renkleri birbirinden daha kolay ayrılır. Amblemler zaten farklı.')} on={s.colorBlind}
+          <Toggle label={tr('Renk desteği')} sub={tr('Oyuncu renklerini daha rahat ayırt etmen için ayrı bir renk paleti kullanır. Amblemler zaten farklı.')} on={s.colorBlind}
             onChange={v => update({ colorBlind: v })} />
           <div className="set-swatches" aria-hidden="true">
             {paletteOf(s.colorBlind).map((_, i) => <PieceGlyph key={`${i}${s.colorBlind}`} kind="star" seat={i} size={36} diamond={false} />)}
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
