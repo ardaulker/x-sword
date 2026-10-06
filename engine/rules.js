@@ -51,6 +51,7 @@ function log(state, text) {
 }
 
 // Yıldızlar köşelerden bir kare içeride, birbirinden eşit uzaklıkta başlar; 4 kişide saat yönünde.
+// Maçta bu diziliş rastgele döndürülür ya da aynalanır, koltuklar da köşelere rastgele dağılır.
 function startCells(n, size) {
   const a = 1, b = size - 2, mid = (size - 1) / 2;
   if (n === 1) return [[a, a]];
@@ -59,9 +60,31 @@ function startCells(n, size) {
   return [[a, a], [a, b], [b, b], [b, a]];
 }
 
+function shuffle(state, list) {
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = Math.floor(random(state) * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
+// Tahtanın 8 simetrisinden biri: 4 dönüş × ayna.
+function randomSymmetry(state, size) {
+  const k = Math.floor(random(state) * 8), m = size - 1;
+  return ([r, c]) => {
+    let p = k >= 4 ? [r, m - c] : [r, c];
+    for (let i = 0; i < k % 4; i++) p = [p[1], m - p[0]];
+    return p;
+  };
+}
+
 // seats: [{ kind: 'human' | 'bot', level: 'kolay' | 'normal' | 'zor' }], 1–4 tane.
 // Tek koltuk tek oyunculu moddur: oyuncunun aynası İkiz de tahtaya girer, son kalan kazanır.
-export function createGame({ seats, neutralLevel = 'normal', seed, shrinkStart = 8, shrinkEvery = 4, neutrals } = {}) {
+// firstSeat: bu koltuk hep ilk oynar (kolay zorlukta oyuncu). Verilmezse herkesin yeri rastgeledir.
+// shuffle: false ise köşeler ve sıra sabit kalır (yalnız testler için).
+export function createGame({
+  seats, neutralLevel = 'normal', seed, shrinkStart = 8, shrinkEvery = 4, neutrals, firstSeat = null, shuffle: mix = true,
+} = {}) {
   const n = seats?.length;
   if (!(n >= 1 && n <= 4)) throw new Error('Bir maçta 1–4 yıldız olur.');
   const size = SIZE_BY_STARS[n];
@@ -73,10 +96,11 @@ export function createGame({ seats, neutralLevel = 'normal', seed, shrinkStart =
       level: s.level || 'normal', takes: 0, out: false,
     })),
     pieces: [], order: [], turn: 0, over: false, winner: null, outOrder: [], log: [],
-    solo: n === 1, lastStep: null,
+    solo: n === 1, lastStep: null, matchOrder: [],
   };
 
-  const starts = startCells(n, size);
+  let starts = startCells(n, size);
+  if (mix) starts = shuffle(state, starts.map(randomSymmetry(state, size)));
   starts.forEach(([r, c], i) => state.pieces.push({ id: `s${i}`, kind: 'star', seat: i, r, c, alive: true }));
 
   // Arena botları hiçbir yıldızın iki kare yakınına konmaz: kimse ilk turda alınmaz.
@@ -86,10 +110,7 @@ export function createGame({ seats, neutralLevel = 'normal', seed, shrinkStart =
       if (starts.every(([sr, sc]) => Math.max(Math.abs(r - sr), Math.abs(c - sc)) >= 3)) free.push([r, c]);
     }
   }
-  for (let i = free.length - 1; i > 0; i--) {
-    const j = Math.floor(random(state) * (i + 1));
-    [free[i], free[j]] = [free[j], free[i]];
-  }
+  shuffle(state, free);
   // Tek oyunculu modda oyuncunun aynası İkiz de rastgele bir kareden başlar.
   if (state.solo) {
     const [r, c] = free.pop();
@@ -102,21 +123,28 @@ export function createGame({ seats, neutralLevel = 'normal', seed, shrinkStart =
     state.pieces.push({ id: `b${i + 1}`, kind: i < reds ? 'red' : 'blue', label: String(i + 1), r, c, alive: true });
   }
 
+  state.matchOrder = matchOrder(state, firstSeat, mix);
   state.order = roundOrder(state);
   log(state, 'Oyun başladı. Mod: DÜZ.');
   return state;
 }
 
-// Önce yıldızlar oynar; her tur başlayan koltuk bir kayar. Sonra arena botları numara sırasıyla.
+// Hamle sırası maç başında bir kez karılır ve bütün maç aynı kalır: yıldızlar ve botlar tek sırada.
+// İkiz hep aynası olduğu yıldızdan hemen sonra gelir. Botun numarası bu sıradaki yeridir.
+function matchOrder(state, firstSeat, mix) {
+  let ids = state.pieces.filter(p => p.kind !== 'twin').map(p => p.id);
+  if (mix) shuffle(state, ids);
+  if (firstSeat != null) ids = [`s${firstSeat}`, ...ids.filter(id => id !== `s${firstSeat}`)];
+  for (const tw of state.pieces.filter(p => p.kind === 'twin')) ids.splice(ids.indexOf(tw.mirrors) + 1, 0, tw.id);
+  ids.forEach((id, i) => {
+    const p = pieceById(state, id);
+    if (p.kind === 'red' || p.kind === 'blue') p.label = String(i + 1);
+  });
+  return ids;
+}
+
 export function roundOrder(state) {
-  const n = state.seats.length, rot = (state.round - 1) % n;
-  const stars = [];
-  for (let i = 0; i < n; i++) {
-    const p = starOf(state, (i + rot) % n);
-    if (p.alive) stars.push(p.id);
-  }
-  const bots = state.pieces.filter(p => p.kind !== 'star' && p.alive).map(p => p.id);
-  return [...stars, ...bots];
+  return state.matchOrder.filter(id => pieceById(state, id).alive);
 }
 
 export function currentActor(state) {

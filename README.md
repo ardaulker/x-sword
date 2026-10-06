@@ -45,6 +45,8 @@ node tests/tests2.js        # eski demo: renkli yollar, ölen botların atlanmas
 - Sen yeşil yıldızsın. Her tur mod değişir: DÜZ ya da ÇAPRAZ. O yöne gidersin, o yönde alırsın.
 - Kırmızı bot düz yürür, çapraz alır. Mavi bot çapraz yürür, düz alır.
 - Tek oyunculu modda İkiz senin aynandır: senden hemen sonra, senin yönünde oynar. İkiz ve bütün botlar gidince kazanırsın.
+- Her maçta rastgele bir köşeden, rastgele bir bot dizilişiyle başlarsın.
+- Hamle sırası maç başında bir kez karılır, bütün maç aynı kalır; botun numarası sıradaki yeridir. Kolayda ilk sen oynarsın.
 - Herkes herkesi alabilir. Son kalan sen olursan kazanırsın.
 - Yeşil kareler senin yolların. Bir bota dokununca turuncu kareler onun yollarını gösterir. Kırmızı kareler alınabilecek taşlardır.
 

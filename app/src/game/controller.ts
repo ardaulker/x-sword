@@ -120,7 +120,8 @@ export class GameController {
   private reset() {
     const seats = Array.from({ length: this.setup.players }, (_, i) =>
       i === ME ? { kind: 'human' as const } : { kind: 'bot' as const, level: this.setup.level });
-    this.state = createGame({ seats, neutralLevel: this.setup.level });
+    // Kolayda ilk sen oynarsın; normal ve zorda sıradaki yerin de rastgele.
+    this.state = createGame({ seats, neutralLevel: this.setup.level, firstSeat: this.setup.level === 'kolay' ? ME : null });
     this.fast = false;
     this.view = {
       phase: 'hazir', sel: null, showThreats: false, timer: this.setup.moveSeconds,
@@ -225,11 +226,15 @@ export class GameController {
   }
 
   private botTurn() {
+    // Sıra karışık: bu bölüm, sıradaki yıldıza ya da İkiz'e kadar art arda oynayacak botlardır.
     const st = this.state;
-    this.botQueue = st.order.slice(st.turn).filter(id => {
+    this.botQueue = [];
+    for (const id of st.order.slice(st.turn)) {
       const p = pieceById(st, id);
-      return p && p.alive && isBot(p);
-    });
+      if (!p || !p.alive) continue;
+      if (!isBot(p)) break;
+      this.botQueue.push(id);
+    }
     this.fast = false;
     this.emit({ phase: 'bot', bots: { done: 0, total: this.botQueue.length, currentId: null } });
     this.botTimer = this.later(250, () => this.botStep());

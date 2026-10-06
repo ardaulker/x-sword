@@ -63,6 +63,7 @@ export interface GameState {
   log: { round: number; text: string }[];
   solo: boolean;
   lastStep: { id: string; dr: number; dc: number } | null;
+  matchOrder: string[];
 }
 
 export interface SeatSetup {
@@ -77,6 +78,8 @@ export interface GameOptions {
   shrinkStart?: number;
   shrinkEvery?: number;
   neutrals?: number;
+  firstSeat?: number | null;
+  shuffle?: boolean;
 }
 
 export const SIZE_BY_STARS: Record<number, number>;

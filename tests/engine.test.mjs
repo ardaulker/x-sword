@@ -16,11 +16,13 @@ function test(name, fn) {
 const seats = (n, kind = 'human', level = 'normal') => Array.from({ length: n }, () => ({ kind, level }));
 
 // Elle kurulmuş küçük bir pozisyon: verilen taşlar dışında tahta boş.
+// Köşeler sabit (s0 sol üstte), sıra: önce yıldızlar, sonra botlar numara sırasıyla.
 function position(pieces, { n = 2, mode = 'DUZ' } = {}) {
-  const st = createGame({ seats: seats(n), seed: 1, neutrals: 0 });
+  const st = createGame({ seats: seats(n), seed: 1, neutrals: 0, shuffle: false });
   const stars = st.pieces.filter(p => p.kind === 'star');
   st.pieces = [...stars, ...pieces.map((p, i) => ({ id: `b${i + 1}`, label: String(i + 1), alive: true, ...p }))];
   st.mode = mode;
+  st.matchOrder = st.pieces.map(p => p.id);
   st.order = roundOrder(st);
   return st;
 }
@@ -62,12 +64,33 @@ test('yıldız modun yönünde yürür ve alır', () => {
   assert.deepEqual(legalMoves(st, star, 'CAPRAZ').filter(m => m.type === 'take').map(m => m.targetId), ['b2']);
 });
 
-test('sıra: yıldızlar önce, başlayan koltuk her tur kayar, mod her tur değişir', () => {
+test('sıra maç başında bir kez karılır, bütün maç aynı kalır; mod her tur değişir', () => {
   const st = createGame({ seats: seats(3), seed: 3 });
-  assert.deepEqual(st.order.slice(0, 3), ['s0', 's1', 's2']);
+  const first = [...st.order];
+  assert.equal(first.length, st.pieces.length);
+  // Botun numarası sıradaki yeridir.
+  first.forEach((id, i) => { const p = pieceById(st, id); if (p.kind !== 'star') assert.equal(p.label, String(i + 1)); });
   while (st.round === 1) play(st, legalMoves(st, currentActor(st), st.mode)[0] ?? null);
   assert.equal(st.mode, 'CAPRAZ');
-  assert.deepEqual(st.order.slice(0, 3), ['s1', 's2', 's0']);
+  assert.deepEqual(st.order, first.filter(id => pieceById(st, id).alive));
+  // Farklı maçlarda sıra ve köşeler değişir; yıldızlar botların arasına da düşer.
+  const starFirst = new Set(), corners = new Set();
+  for (let seed = 1; seed <= 40; seed++) {
+    const g = createGame({ seats: seats(2), seed });
+    starFirst.add(g.order.indexOf('s0') === 0);
+    corners.add(`${pieceById(g, 's0').r},${pieceById(g, 's0').c}`);
+  }
+  assert.deepEqual([...starFirst].sort(), [false, true]);
+  assert.equal(corners.size, 4);
+});
+
+test('kolay: ilk sen oynarsın; tek oyunculu modda İkiz hemen arkandan gelir', () => {
+  for (let seed = 1; seed <= 20; seed++) {
+    assert.equal(createGame({ seats: seats(4), seed, firstSeat: 0 }).order[0], 's0');
+    assert.deepEqual(createGame({ seats: seats(1), seed, firstSeat: 0 }).order.slice(0, 2), ['s0', 'tw']);
+    const solo = createGame({ seats: seats(1), seed });
+    assert.equal(solo.order.indexOf('tw'), solo.order.indexOf('s0') + 1);
+  }
 });
 
 test('alınan botun sırası beklenmeden atlanır', () => {
@@ -136,17 +159,18 @@ test('oyun her zaman biter (daralan arena sayesinde)', () => {
 
 // Tek oyunculu pozisyon: s0, İkiz ve verilen botlar.
 function soloPosition({ me, twin, bots = [], mode = 'DUZ' }) {
-  const st = createGame({ seats: [{ kind: 'human' }], seed: 1, neutrals: 0 });
+  const st = createGame({ seats: [{ kind: 'human' }], seed: 1, neutrals: 0, shuffle: false });
   Object.assign(pieceById(st, 's0'), { r: me[0], c: me[1] });
   Object.assign(pieceById(st, 'tw'), { r: twin[0], c: twin[1] });
   st.pieces.push(...bots.map((p, i) => ({ id: `b${i + 1}`, label: String(i + 1), alive: true, ...p })));
   st.mode = mode;
+  st.matchOrder = st.pieces.map(p => p.id);
   st.order = roundOrder(st);
   return st;
 }
 
 test('tek oyunculu mod: 9×9, oyuncu + İkiz + botlar; İkiz oyuncudan hemen sonra oynar', () => {
-  const st = createGame({ seats: [{ kind: 'human' }], seed: 7 });
+  const st = createGame({ seats: [{ kind: 'human' }], seed: 7, shuffle: false });
   assert.equal(st.size, 9);
   assert.equal(st.solo, true);
   assert.equal(st.pieces.filter(p => p.kind === 'twin').length, 1);

@@ -6,7 +6,7 @@ import {
 import type { GameState, Level, Piece } from '../../../engine/rules.js';
 import { targetOf } from '../../../engine/bots.js';
 import type { GameController, Setup, TakeEvent } from '../game/controller';
-import { CROSS, DANGER, HAZARD_TXT, ICE, ICON, PLAYER_COLORS, PLUS, TXT, colorOf, diamondOf, isBot, seatOf } from '../game/look';
+import { CROSS, DANGER, HAZARD_TXT, ICE, ICON, PLAYER_COLORS, PLUS, TXT, colorOf, diamondOf, seatOf } from '../game/look';
 import { attackersOfMe } from '../game/threats';
 import { BOT_NAMES, ME, labelOf, modeLower, seatName } from '../game/names';
 import { Icon, RingIcon } from './bits';
@@ -76,17 +76,15 @@ export function InfoSheet({ ctl, id }: { ctl: GameController; id: string }) {
     const mode = nextMode(st, p);
     title = `${p.seat === ME ? 'Sen' : seatName(st, p.seat)} · yıldız`;
     sub = `${mode === st.mode ? 'Bu tur' : 'Sonraki tur'} ${modeLower(mode)} gider ve alır`;
-    order = st.seats[p.seat].kind === 'human' ? 'Oyuncu' : 'Yapay zekâ';
   } else if (p.kind === 'twin') {
     title = 'İkiz · aynan';
     sub = 'Senden hemen sonra, senin yönünde oynar';
-    order = 'Ayna';
   } else {
     title = `${BOT_NAMES[p.kind]} bot · #${p.label}`;
     sub = p.kind === 'red' ? 'Kare: düz yürür · ×: çapraz alır' : 'Elmas: çapraz yürür · +: düz alır';
-    const bots = st.order.filter(x => { const q = pieceById(st, x); return q && q.alive && isBot(q); });
-    order = `Sıra ${bots.indexOf(p.id) + 1} / ${bots.length}`;
   }
+  // Sıra maç başında bir kez karılır; botun numarası da bu sıradaki yeridir.
+  order = `Sıra ${st.matchOrder.indexOf(p.id) + 1} / ${st.matchOrder.length}`;
   const target = p.alive ? targetOf(st, p) : null;
   const threatensMe = me.alive && p.id !== me.id && attackersOfMe(st, me).some(q => q.id === p.id);
   return (

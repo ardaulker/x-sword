@@ -216,8 +216,9 @@ export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) 
     sub = `Tur ${st.round}${first ? ` · ilk sıra ${labelOf(st, first)}` : ''}`;
     hint = `Yıldızlar artık ${modeLower(st.mode)} gider ve ${modeLower(st.mode)} alır.`;
   } else if (view.phase === 'hazir') {
-    who = me; title = 'Maç başlıyor'; sub = `Tur 1 · ${modeWord(st.mode)}`;
-    hint = 'Sıran gelince gidebileceğin kareler kendiliğinden yanar.';
+    const k = st.matchOrder.indexOf(me.id) + 1;
+    who = me; title = 'Maç başlıyor'; sub = `Tur 1 · ${modeWord(st.mode)} · sıran ${k} / ${st.matchOrder.length}`;
+    hint = k === 1 ? 'İlk sen oynuyorsun. Sıra bütün maç aynı kalır.' : `Senden önce ${k - 1} taş oynuyor. Sıra bütün maç aynı kalır.`;
   } else {
     title = 'Sıra geçiyor…'; sub = `Tur ${st.round}`;
     hint = 'Bot turunda tahtaya dokunarak hızlandırabilirsin.';

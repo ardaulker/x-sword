@@ -41,9 +41,9 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 - Taş renkleri bu üç renkle karışmamalı. Demoda oyuncu taşı yeşil, bir bot tipi kırmızı. Taş renklerini buna göre yeniden kur.
 
 ## Tur akışı
-1. Oyuncular sırayla oynar. Her tur başlayan oyuncu değişir.
-2. Sonra botlar sırayla oynar. Sıra önemlidir, çünkü bir bot diğerini alabilir. Bot turunun tamamı 1–1,5 saniye sürer. Alınmış botun sırası atlanır. Oyuncu ekrana dokunarak bot turunu hızlandırabilir.
-3. Mod değişir ve yeni tur başlar.
+1. Hamle sırası maç başında bir kez karılır ve bütün maç aynı kalır. Yıldızlar ve botlar bu tek sırada, araya karışık oynar. Botun numarası sıradaki yeridir. Kolay zorlukta ilk oyuncu oynar; normal ve zorda oyuncunun yeri de rastgeledir. Tek oyunculu modda İkiz hep oyuncudan hemen sonra gelir.
+2. Sıra önemlidir, çünkü bir bot diğerini alabilir. Art arda gelen botlar hızlı oynar; oyuncu ekrana dokunarak hızlandırabilir. Alınmış taşın sırası atlanır.
+3. Herkes oynayınca mod değişir ve yeni tur başlar.
 - Her oyuncunun hamle süresi 20 saniyedir. Bu süre lobide değiştirilebilir. Süre biterse oyun, oyuncunun yerine güvenli bir hamle yapar.
 
 ## Oyuncu sayısı ve tahta
@@ -53,7 +53,7 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 - 3 yıldızda tahta 11×11 olur ve yaklaşık 21 bot vardır.
 - 4 yıldızda tahta 13×13 olur ve yaklaşık 28 bot vardır.
 - Bu sayılar test edilip ayarlanacak.
-- Yıldızlar köşelerden bir kare içeride, birbirinden eşit uzaklıkta başlar. Arena botları hiçbir yıldızın iki kare yakınına konmaz.
+- Yıldızlar köşelerden bir kare içeride, birbirinden eşit uzaklıkta başlar. Hangi yıldızın hangi köşeden başlayacağı her maçta rastgeledir. Arena botları rastgele dizilir ama hiçbir yıldızın iki kare yakınına konmaz.
 
 ## Botlar
 - Botlar oyuncuları kovalar. Bir oyuncuyu alamayan bot başka bir oyuncuya yönelir.
