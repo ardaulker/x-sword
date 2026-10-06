@@ -93,6 +93,7 @@ export function GameScreen({ ctl, onNewGame, onHome }: { ctl: GameController; on
       {sheet?.type === 'kayit' && <LogSheet ctl={ctl} events={view.events} />}
       {sheet?.type === 'menu' && <SetupSheet setup={ctl.setup} onStart={onNewGame} onClose={() => ctl.closeSheet()} onHome={onHome} />}
 
+      {view.hit > 0 && <div key={view.hit} className="hit-flash" aria-hidden="true" />}
       <div className="sr-only" aria-live="polite">{announce(ctl, view)}</div>
     </div>
   );

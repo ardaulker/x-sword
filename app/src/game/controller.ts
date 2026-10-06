@@ -58,6 +58,7 @@ export interface View {
   watching: boolean;
   shake: number;
   fall: { key: number; ring: number } | null; // az önce çöken halka (animasyon için)
+  hit: number; // sen alındığında ya da düştüğünde artar: ekran kırmızı parlar
   version: number;
 }
 
@@ -131,7 +132,7 @@ export class GameController {
       phase: 'hazir', sel: null, showThreats: false, timer: this.setup.moveSeconds,
       trails: [], bursts: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null,
       bots: { done: 0, total: 0, currentId: null }, events: [],
-      clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, version: 0,
+      clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, hit: 0, version: 0,
     };
   }
 
@@ -343,10 +344,14 @@ export class GameController {
       // Yalnız yıldızlar puan toplar: alınan taşın değeri tahtada uçar, skor tablosu anında güncellenir.
       if (actor.kind === 'star') this.float(move.r, move.c, `+${POINTS[victim.kind]}`, colorOf(actor));
       if (mine) { this.toast(`${objectOf(st, victim)} aldın! +${POINTS[victim.kind]}`, 'sword'); buzz(BUZZ.take); }
-      if (me) { this.toast(`${subjectOf(st, actor)} seni aldı!`, 'sword'); buzz(BUZZ.takenOrOut); }
+      if (me) {
+        this.toast(`${subjectOf(st, actor)} seni aldı!`, 'sword');
+        buzz(BUZZ.takenOrOut);
+        this.view = { ...this.view, hit: this.view.hit + 1 };
+      }
       if (victim.kind === 'star') {
         this.banner(me ? 'Elendin' : `${seatName(st, victim.seat)} elendi`,
-          `${this.placeOf(victim.seat)}. sıra · ${labelOf(st, actor)} aldı`, PLAYER_COLORS[victim.seat], victim.id);
+          `${labelOf(st, actor)} aldı · ${st.seats[victim.seat].score} puanla`, PLAYER_COLORS[victim.seat], victim.id);
       }
     }
 
@@ -360,7 +365,10 @@ export class GameController {
       const stars = fallen.filter(p => p.kind === 'star');
       const iFell = stars.some(p => p.kind === 'star' && p.seat === ME);
       let sub = fallen.length ? `${fallen.length} taş düştü · arena ${side}×${side}` : `Kimse düşmedi · arena ${side}×${side}`;
-      if (iFell) sub = `Halkada kaldın, elendin · ${this.placeOf(ME)}. sıra`;
+      if (iFell) {
+        sub = 'Halkada kaldın, elendin';
+        this.view = { ...this.view, hit: this.view.hit + 1 };
+      }
       else if (stars.length) sub = `${stars.map(p => labelOf(st, p)).join(', ')} düştü · arena ${side}×${side}`;
       this.banner('Dış halka çöktü', sub, HAZARD, null);
       buzz(iFell ? BUZZ.takenOrOut : BUZZ.collapse);
@@ -368,11 +376,6 @@ export class GameController {
 
     this.view = { ...this.view, events };
     return { roundEnded: st.round !== round, collapsed };
-  }
-
-  private placeOf(seat: number) {
-    const i = this.state.outOrder.indexOf(seat);
-    return i < 0 ? 1 : this.state.seats.length - i;
   }
 
   // ------------------------------------------------------------ geçici görseller
