@@ -106,7 +106,7 @@ test('almak: hedef çıkar, yıldızın alma sayısı artar, kayıtta "aldı" ya
   play(st, { r: 2, c: 1 });
   assert.equal(pieceById(st, 'b1').alive, false);
   assert.equal(st.seats[0].takes, 1);
-  assert.match(st.log.at(-1).text, /Turkuaz, 1 numarayı aldı!/);
+  assert.match(st.log.at(-1).text, new RegExp(`Turkuaz, ${pieceById(st, 'b1').label} numarayı aldı!`));
   assert.ok(!st.log.some(l => /yedi|yedin/.test(l.text)));
 });
 
@@ -581,4 +581,14 @@ test('bulmaca: hamle hakkı bitince kaybedersin, botlar bitince kazanırsın', (
   for (let i = 0; i < 4 && !lose.over; i++) play(lose, chooseMove(lose, currentActor(lose)));
   assert.equal(lose.over, true);
   assert.equal(lose.winner, null);
+});
+
+test('numaralar her tur ayakta kalanlara göre baştan verilir, sıra değişmez', () => {
+  const st = createGame({ seats: [{ kind: 'human' }, { kind: 'bot', level: 'normal' }], neutrals: 6, seed: 5, size: 9 });
+  const before = st.order.slice();
+  const dead = before.filter(id => id !== 's0' && id !== 's1' && !id.startsWith('t'))[1];
+  pieceById(st, dead).alive = false;
+  const next = roundOrder(st);
+  assert.deepEqual(next, before.filter(id => id !== dead));
+  next.forEach((id, i) => { const p = pieceById(st, id); if (p.kind === 'red' || p.kind === 'blue') assert.equal(p.label, String(i + 1)); });
 });

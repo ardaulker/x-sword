@@ -63,7 +63,7 @@ export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: V
                 diamond={diamondOf(piece, st.mode)}
                 style={piece.kind === 'star' && piece.seat === ME ? { filter: `drop-shadow(0 0 3px ${myColor})` } : undefined}
               >
-                <span className="queue-no">{orderNo(st, piece.id)}</span>
+                <span className="queue-no">{orderNo(st, piece.id, p.round)}</span>
               </PieceGlyph>
             </div>
           );

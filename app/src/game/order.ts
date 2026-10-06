@@ -1,11 +1,15 @@
 // Hamle sırası: maç başında bir kez karılır, bütün maç aynı kalır (engine/rules.js → matchOrder).
-// Taşın üstündeki numara bu sıradaki yeridir.
+// Taşın üstündeki numara, bu turda ayakta kalanlar arasındaki yeridir; her tur baştan verilir.
 
 import { pieceById } from '../../../engine/rules.js';
 import type { GameState } from '../../../engine/rules.js';
 import type { View } from './controller';
 
-export const orderNo = (st: GameState, id: string) => st.matchOrder.indexOf(id) + 1;
+export function orderNo(st: GameState, id: string, round = st.round) {
+  if (round > st.round) return st.matchOrder.filter(x => alive(st, x)).indexOf(id) + 1;
+  const i = st.order.indexOf(id);
+  return i >= 0 ? i + 1 : st.matchOrder.indexOf(id) + 1;
+}
 
 const alive = (st: GameState, id: string) => !!pieceById(st, id)?.alive;
 

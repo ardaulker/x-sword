@@ -41,7 +41,7 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 - Taş renkleri bu üç renkle karışmamalı. Demoda oyuncu taşı yeşil, bir bot tipi kırmızı. Taş renklerini buna göre yeniden kur.
 
 ## Tur akışı
-1. Hamle sırası maç başında bir kez karılır ve bütün maç aynı kalır. Yıldızlar ve botlar bu tek sırada, araya karışık oynar. Botun numarası sıradaki yeridir. Kolay zorlukta ilk oyuncu oynar; normal ve zorda oyuncunun yeri de rastgeledir. Tek oyunculu modda İkiz hep oyuncudan hemen sonra gelir.
+1. Hamle sırası maç başında bir kez karılır ve bütün maç aynı kalır. Yıldızlar ve botlar bu tek sırada, araya karışık oynar. Taşın numarası, o turda ayakta kalanlar arasındaki yeridir ve her tur baştan verilir (sıra değişmez). Kolay zorlukta ilk oyuncu oynar; normal ve zorda oyuncunun yeri de rastgeledir. Tek oyunculu modda İkiz hep oyuncudan hemen sonra gelir.
 2. Sıra önemlidir, çünkü bir bot diğerini alabilir. Art arda gelen botlar hızlı oynar; oyuncu ekrana dokunarak hızlandırabilir. Alınmış taşın sırası atlanır.
 3. Herkes oynayınca mod değişir ve yeni tur başlar.
 - Her oyuncunun hamle süresi 20 saniyedir. Bu süre lobide değiştirilebilir. Süre biterse oyun, oyuncunun yerine güvenli bir hamle yapar.

@@ -258,8 +258,15 @@ function matchOrder(state, firstSeat, mix) {
   return ids;
 }
 
+// Her tur ayakta kalanlar baştan numaralanır: sıra aynı kalır, numaralar sıkışır (1, 2, 3, ...).
+// Bot adı ("5 numara") da bu numarayı izler.
 export function roundOrder(state) {
-  return state.matchOrder.filter(id => pieceById(state, id).alive);
+  const ids = state.matchOrder.filter(id => pieceById(state, id).alive);
+  ids.forEach((id, i) => {
+    const p = pieceById(state, id);
+    if (p.kind === 'red' || p.kind === 'blue') p.label = String(i + 1);
+  });
+  return ids;
 }
 
 export function currentActor(state) {

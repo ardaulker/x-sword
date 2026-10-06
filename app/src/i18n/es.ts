@@ -330,7 +330,7 @@ const dict: Record<string, string> = {
   'Almak': 'Capturar',
   'Bir taşın karesine geçersen onu alırsın; o taş oyundan çıkar. Herkes herkesi alabilir: oyuncu oyuncuyu, bot oyuncuyu, bot botu.': 'Si pisas la casilla de una ficha, la capturas; esa ficha sale del juego. Todos pueden capturar a todos: jugador a jugador, bot a jugador, bot a bot.',
   'Hamle sırası': 'Orden de juego',
-  'Sıra maç başında bir kez karılır ve bütün maç aynı kalır. Taşın üstündeki numara sıradaki yeridir. Üstteki şerit şu an oynayanı ve sıradakileri gösterir.': 'El orden se baraja una vez al empezar y se mantiene toda la partida. El número de la ficha es su lugar. La franja de arriba muestra quién juega y quién sigue.',
+  'Sıra maç başında bir kez karılır ve bütün maç aynı kalır. Taşın üstündeki numara, o turda ayakta kalanlar arasındaki yeridir; her tur baştan verilir, sıra değişmez. Üstteki şerit şu an oynayanı ve sıradakileri gösterir.': 'El orden se baraja una vez al empezar y se mantiene toda la partida. El número de la ficha es su lugar entre las que siguen vivas; se reparte de nuevo cada ronda, el orden no cambia. La franja de arriba muestra quién juega y quién sigue.',
   'Hamle iki adımdır: kareye dokun, önizlemeyi gör, onayla. Süren 20 saniye; biterse oyun senin yerine güvenli bir hamle yapar.': 'Un movimiento tiene dos pasos: toca una casilla, mira la vista previa y confirma. Tienes 20 segundos; si se acaba, el juego hace un movimiento seguro por ti.',
   'Tahta': 'Tablero',
   'Arena daralır': 'La arena se reduce',

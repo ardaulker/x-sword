@@ -67,7 +67,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
           <p>{tr('Bir taşın karesine geçersen onu alırsın; o taş oyundan çıkar. Herkes herkesi alabilir: oyuncu oyuncuyu, bot oyuncuyu, bot botu.')}</p>
         </Card>
         <Card title={tr('Hamle sırası')} visual={<div className="anim-queue">{[3, 4, 5, 6, 7].map(n => <span key={n}>{n}</span>)}</div>}>
-          <p>{tr('Sıra maç başında bir kez karılır ve bütün maç aynı kalır. Taşın üstündeki numara sıradaki yeridir. Üstteki şerit şu an oynayanı ve sıradakileri gösterir.')}</p>
+          <p>{tr('Sıra maç başında bir kez karılır ve bütün maç aynı kalır. Taşın üstündeki numara, o turda ayakta kalanlar arasındaki yeridir; her tur baştan verilir, sıra değişmez. Üstteki şerit şu an oynayanı ve sıradakileri gösterir.')}</p>
           <p>{tr('Hamle iki adımdır: kareye dokun, önizlemeyi gör, onayla. Süren 20 saniye; biterse oyun senin yerine güvenli bir hamle yapar.')}</p>
         </Card>
 
