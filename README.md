@@ -6,7 +6,18 @@ Sıra tabanlı bir arena oyunu. 9×9 sekizgen karelik bir tahtada 17 bota karş�
 
 ## Oynamak
 
-`index.html` dosyasını tarayıcıda aç. Kurulum yok, sunucu yok.
+Canlı: **https://ardaulker.github.io/x-sword/** — `main`'e her push GitHub Pages'te yayına girer.
+
+Bilgisayarda: `index.html` dosyasını tarayıcıda aç. Kurulum yok, sunucu yok.
+
+## Test
+
+`tests/` oyunu Node'da sahte bir DOM ile binlerce kez otomatik oynatır:
+
+```
+node tests/tests.js    # 2.000 rastgele + 2.000 dikkatli oyun, kazanma oranları
+node tests/tests2.js   # renkli yollar, ölen botların atlanması, kayıt metinleri
+```
 
 ## Kurallar
 
