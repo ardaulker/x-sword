@@ -39,8 +39,11 @@
     .brand { font-size: 13px; letter-spacing: 1px; }
     .chip { padding: 4px 7px; font-size: 13px; }
     .chip.mode { font-size: 13px; }
-    .bar button { padding: 6px 9px; font-size: 13px; }
+    .bar button { padding: 6px 10px; font-size: 13px; }
+    .bar .long { display: none; }
+    .bar .short { display: inline; }
   }
+  .bar .short { display: none; }
 
   main { max-width: 640px; margin: 0 auto; padding: 16px; }
   .panel { background: var(--panel); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
@@ -135,7 +138,7 @@
   <span class="chip" id="roundChip" hidden>Tur 1</span>
   <span class="chip mode" id="modeChip" hidden>DÜZ +</span>
   <span class="chip" id="clock" hidden>⏱ 00:00</span>
-  <button id="rulesBtn">Kurallar</button>
+  <button id="rulesBtn" aria-label="Kurallar"><span class="long">Kurallar</span><span class="short">?</span></button>
 </header>
 
 <main>
