@@ -83,7 +83,7 @@ function randomSymmetry(state, size) {
 // firstSeat: bu koltuk hep ilk oynar (kolay zorlukta oyuncu). Verilmezse herkesin yeri rastgeledir.
 // shuffle: false ise köşeler ve sıra sabit kalır (yalnız testler için).
 export function createGame({
-  seats, neutralLevel = 'normal', seed, shrinkStart = 8, shrinkEvery = 4, neutrals, firstSeat = null, shuffle: mix = true,
+  seats, neutralLevel = 'normal', seed, shrinkStart = 6, shrinkEvery = 6, neutrals, firstSeat = null, shuffle: mix = true,
 } = {}) {
   const n = seats?.length;
   if (!(n >= 1 && n <= 4)) throw new Error('Bir maçta 1–4 yıldız olur.');
@@ -201,7 +201,7 @@ export function attackersOf(state, r, c, except = []) {
   return out;
 }
 
-// Arena 8. turdan sonra her 4 turda bir, tur sonunda dış halkasını kaybeder.
+// Arena her 6 turda bir (6., 12., 18. … turun sonunda) dış halkasını kaybeder.
 export function collapseDue(state) {
   return state.round >= state.shrinkStart
     && (state.round - state.shrinkStart) % state.shrinkEvery === 0

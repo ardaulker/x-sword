@@ -13,6 +13,17 @@
 .cell { position: relative; clip-path: var(--clip); }
 .cell svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 
+/* Bir tur sonra çökecek halka: ince turuncu kenar. */
+.cell-soon { box-shadow: inset 0 0 0 2px rgba(255, 138, 61, .45); }
+
+/* Halka çöküşü: kareler sırayla parlar, içe göçer, karanlık boşluk olarak döner. */
+.cell-fall { animation: cell-fall calc(420ms * var(--hiz-carpan)) ease-in backwards; }
+@keyframes cell-fall {
+  0% { transform: scale(1); background: var(--pat-hazard); filter: brightness(1.8); }
+  55% { transform: scale(.35); opacity: .3; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 /* Çökecek halka: şerit dışa akar. */
 .cell-flow { animation: hazard-flow calc(1200ms * var(--hiz-carpan)) linear infinite; }
 @keyframes hazard-flow { to { background-position: 11.31px 0; } }
@@ -107,5 +118,5 @@
 @keyframes banner-in { from { opacity: 0; transform: translate(-50%, -40%); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .cell-flow, .mode-ov-band, .mode-ov-card { animation: none; }
+  .cell-flow, .cell-fall, .mode-ov-band, .mode-ov-card { animation: none; }
 }

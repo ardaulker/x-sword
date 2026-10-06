@@ -13,7 +13,8 @@ export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: V
   const items = upcoming(st, view, 14);
   const prev = previous(st, view);
   const head = items[0] ? pieceById(st, items[0].id) : null;
-  const mine = head?.kind === 'star' && head.seat === ME && !st.over;
+  const meNext = head?.kind === 'star' && head.seat === ME && !st.over;
+  const mine = meNext && (view.phase === 'sen' || view.phase === 'onizleme');
   const myColor = PLAYER_COLORS[ME];
 
   // Yerleşim: her taş bir yuva; tur değişince araya "TUR n" ayracı girer.
@@ -30,7 +31,7 @@ export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: V
     x += i === 0 ? slot + 6 : slot;
   });
 
-  const caption = st.over ? 'MAÇ BİTTİ' : mine ? 'SENİN SIRAN' : 'ŞİMDİ';
+  const caption = st.over ? 'MAÇ BİTTİ' : mine ? 'SENİN SIRAN' : meNext ? 'SIRADA' : 'ŞİMDİ';
   const name = st.over || !head ? '' : mine ? 'Hamleni seç' : labelOf(st, head);
   const nameColor = head && !isBot(head) ? colorOf(head) : undefined;
 

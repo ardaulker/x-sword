@@ -136,6 +136,13 @@ test('arena daralır: dış halkadakiler düşer, oraya artık gidilemez', () =>
   }
 });
 
+test('arena 6 turda bir daralır: 6., 12., 18. turun sonunda', () => {
+  const st = createGame({ seats: seats(2), seed: 2 });
+  const due = [];
+  for (let r = 1; r <= 20; r++) { st.round = r; if (collapseDue(st)) due.push(r); }
+  assert.deepEqual(due, [6, 12, 18]);
+});
+
 test('tehdit: kim alabilir, modu doğru hesaplar', () => {
   const st = position([{ kind: 'red', r: 4, c: 4 }, { kind: 'blue', r: 6, c: 4 }]);
   assert.deepEqual(attackersOf(st, 5, 5).map(p => p.id), ['b1']);   // kırmızı çapraz alır

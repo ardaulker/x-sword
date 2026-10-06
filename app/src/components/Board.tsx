@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import {
-  collapseDue, legalMoves, pieceAt, ringOf, threatsFor,
+  collapseDue, legalMoves, nextCollapseRound, pieceAt, ringOf, threatsFor,
 } from '../../../engine/rules.js';
 import type { Move, Piece } from '../../../engine/rules.js';
 import { targetOf } from '../../../engine/bots.js';
@@ -52,6 +52,11 @@ export function Board({ ctl, view, cell }: Props) {
   const moves = myTurn ? legalMoves(st, me, st.mode) : [];
   const sel = myTurn && view.phase === 'onizleme' ? view.sel : null;
   const warn = collapseDue(st);
+  // Bir tur önce: çökecek halka ince turuncu kenarla uyarılır.
+  const soon = !warn && nextCollapseRound(st) === st.round + 1;
+  const mid = (n - 1) / 2;
+  const fallDelay = (r: number, c: number) =>
+    Math.round(((Math.atan2(r - mid, c - mid) + Math.PI) / (2 * Math.PI)) * 480);
   const k = chamferOf(n);
   const oct = octPath(k, 6);
 
@@ -213,6 +218,8 @@ export function Board({ ctl, view, cell }: Props) {
       const ring = ringOf(st, r, c);
       const gone = ring < st.ring;
       const doomedRing = !gone && warn && ring === st.ring;
+      const soonRing = soon && ring === st.ring;
+      const falling = gone && view.fall?.ring === ring;
       const rc = reach.get(`${r},${c}`);
       let background = (r + c) % 2 ? 'var(--kare-2)' : 'var(--kare)';
       let frame: { stroke: string; width: number; dash?: string } | null = null;
@@ -235,14 +242,15 @@ export function Board({ ctl, view, cell }: Props) {
       if (rc?.attackers) label += `, ${rc.attackers} taş seni alabilir`;
       if (gone) label += ', çöktü';
       else if (doomedRing) label += ', tur sonunda çökecek';
+      else if (soonRing) label += ', gelecek tur çökecek';
       cells.push(
         <div
           key={c}
           role="gridcell"
           aria-label={label}
           aria-selected={sel ? sel.r === r && sel.c === c : undefined}
-          className={`cell${doomedRing && !rc ? ' cell-flow' : ''}`}
-          style={{ width: cell, height: cell, background }}
+          className={`cell${doomedRing && !rc ? ' cell-flow' : ''}${soonRing ? ' cell-soon' : ''}${falling ? ' cell-fall' : ''}`}
+          style={{ width: cell, height: cell, background, animationDelay: falling ? `${fallDelay(r, c)}ms` : undefined }}
         >
           {(frame || mark) && (
             <svg viewBox="0 0 100 100" aria-hidden="true">

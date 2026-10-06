@@ -9,10 +9,10 @@ import { ModeIcon } from './ModeOverlay';
 // Halka çipi. Üst çubukta maç saati de olduğu için yazı kısa tutulur; dar ekranda ve izlerken daha da kısalır.
 function ringInfo(st: GameState) {
   const next = nextCollapseRound(st);
-  if (next == null) return { long: 'Arena en dar', short: 'En dar', full: 'Arena daha fazla daralmaz', warn: false };
-  if (next === st.round) return { long: 'Halka çöküyor', short: 'Çöküyor', full: 'Dış halka bu turun sonunda çöküyor', warn: collapseDue(st) };
+  if (next == null) return { long: 'Arena en dar', short: 'En dar', full: 'Arena daha fazla daralmaz', warn: false, soon: false };
+  if (next === st.round) return { long: 'Halka çöküyor', short: 'Çöküyor', full: 'Dış halka bu turun sonunda çöküyor', warn: collapseDue(st), soon: false };
   const k = next - st.round;
-  return { long: `Halka ${k} tur sonra`, short: `${k} tur sonra`, full: `Dış halka ${k} tur sonra çökecek`, warn: false };
+  return { long: `Halka ${k} tur sonra`, short: `${k} tur sonra`, full: `Dış halka ${k} tur sonra çökecek`, warn: false, soon: k === 1 };
 }
 
 const watching = (st: GameState) => !st.over && !starOf(st, ME)?.alive;
@@ -48,7 +48,7 @@ export function TopBar({ ctl, view }: { ctl: GameController; view: View }) {
           {watching(st) && <span className="topbar-eye" aria-label="İzleyici"><Icon d={ICON.eye} size={16} stroke={2.2} /></span>}
           TUR {st.round}
         </span>
-        <span className={`ring-chip${ring.warn ? ' is-warn' : ''}${watching(st) ? ' is-short' : ''}`} aria-label={ring.full}>
+        <span className={`ring-chip${ring.warn ? ' is-warn' : ring.soon ? ' is-soon' : ''}${watching(st) ? ' is-short' : ''}`} aria-label={ring.full}>
           <RingIcon />
           <span className="ring-long" aria-hidden="true">{ring.long}</span>
           <span className="ring-short" aria-hidden="true">{ring.short}</span>

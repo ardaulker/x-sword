@@ -2,7 +2,7 @@
 // Kuralı motor (engine/) bilir; burası yalnız onun fonksiyonlarını çağırır ve ekrana ne olduğunu söyler.
 
 import {
-  createGame, play, currentActor, legalMoves, pieceById, starOf,
+  collapseDue, createGame, play, currentActor, legalMoves, pieceById, starOf,
 } from '../../../engine/rules.js';
 import type { GameState, Level, Move, Piece } from '../../../engine/rules.js';
 import { chooseMove } from '../../../engine/bots.js';
@@ -31,7 +31,7 @@ export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', moveSeconds: 
 export interface Spot { r: number; c: number }
 export interface Trail { key: number; from: Spot; to: Spot; color: string }
 export interface Burst { key: number; r: number; c: number; color: string }
-export interface Toast { key: number; text: string; icon: 'sword' | 'clock' | 'info' }
+export interface Toast { key: number; text: string; icon: 'sword' | 'clock' | 'info' | 'ring' }
 export interface Banner { key: number; title: string; sub: string; color: string; pieceId: string | null }
 // attackerId null: taş çöken halkada düştü.
 export interface TakeEvent { key: number; round: number; attackerId: string | null; victimId: string }
@@ -54,6 +54,7 @@ export interface View {
   clockEnd: number | null;
   watching: boolean;
   shake: number;
+  fall: { key: number; ring: number } | null; // az önce çöken halka (animasyon için)
   version: number;
 }
 
@@ -127,7 +128,7 @@ export class GameController {
       phase: 'hazir', sel: null, showThreats: false, timer: this.setup.moveSeconds,
       trails: [], bursts: [], toast: null, banner: null, modeOverlay: false, sheet: null,
       bots: { done: 0, total: 0, currentId: null }, events: [],
-      clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, version: 0,
+      clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, version: 0,
     };
   }
 
@@ -295,6 +296,11 @@ export class GameController {
     buzz(BUZZ.mode);
     this.emit({ phase: 'mod', modeOverlay: true });
     this.later(1300, () => {
+      // Çökecek turun başında açık uyarı: bu tur sonunda dış halkada kalan elenir.
+      if (collapseDue(this.state)) {
+        this.toast('Dış halka bu tur sonunda çöküyor!', 'ring');
+        buzz(BUZZ.collapse);
+      }
       this.emit({ modeOverlay: false });
       this.advance();
     });
@@ -334,6 +340,7 @@ export class GameController {
     }
 
     if (collapsed) {
+      this.view = { ...this.view, fall: { key: this.key(), ring: st.ring - 1 } };
       for (const p of fallen) {
         events.push({ key: this.key(), round, attackerId: null, victimId: p.id });
         this.burst(p.r, p.c, HAZARD);

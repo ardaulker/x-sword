@@ -63,7 +63,7 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 
 ## Bitiş
 - Son kalan yıldız kazanır. Sıralamayı alınma sırası belirler.
-- Maç sonsuza kadar sürmesin diye arena daralır. 8. turdan sonra her 4 turda bir, tur sonunda en dıştaki halka çöker. O halkada kalan taş oyundan çıkar. Çökecek halka o tur boyunca uyarı olarak işaretli görünür.
+- Maç sonsuza kadar sürmesin diye arena daralır. Her 6 turda bir (6., 12., 18. … tur), tur sonunda en dıştaki halka çöker. O halkada kalan taş oyundan çıkar. Bir tur önce halka uyarılır; çökecek tur boyunca halka işaretli görünür.
 - Bir maç 5–10 dakika sürmeli.
 - Alınan oyuncu maçı izlemeye devam edebilir ya da çıkabilir.
 

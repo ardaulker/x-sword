@@ -80,7 +80,7 @@ export function GameScreen({ ctl, onNewGame }: { ctl: GameController; onNewGame:
           {stage.w > 0 && <Board ctl={ctl} view={view} cell={cell} />}
           {view.toast && (
             <div key={view.toast.key} className="toast" role="status">
-              <Icon d={view.toast.icon === 'clock' ? ICON.clock : view.toast.icon === 'info' ? ICON.info : ICON.sword} size={16} stroke={2.2} color="#0B1026" />
+              <Icon d={view.toast.icon === 'clock' ? ICON.clock : view.toast.icon === 'info' ? ICON.info : view.toast.icon === 'ring' ? ICON.warn : ICON.sword} size={16} stroke={2.2} color="#0B1026" />
               <span>{view.toast.text}</span>
             </div>
           )}
