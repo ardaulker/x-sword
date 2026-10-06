@@ -10,7 +10,7 @@
 - Çeviri (`app/src/i18n/`): `tr('Türkçe cümle', {değişken})` çağrısında anahtar Türkçe metnin kendisidir; Türkçede sözlük gerekmez. Dilleri `en de fr es it pt` dosyalarındaki sözlükler çevirir. Çoğul: `{n:tek|çoğul}`; kalın: `rich('**kalın** metin')`. Dil Ayarlar ekranından seçilir ve `xsword-lang` anahtarıyla saklanır. Yeni bir yazı eklersen altı sözlüğe de ekle; `npm run build` içindeki `app/check-i18n.mjs` eksik ya da uyuşmayan değişkeni yakalar. `tr()` çağrısının ilk argümanı düz tırnaklı yazı olmalı (çıkarıcı yalnız onu görür). Motorun `log` metinleri çevrilmez, ekranda görünmezler.
 - Oyuna eklenenler: günlük meydan okuma (`app/src/game/daily.ts`: tarihten tohum, 11×11, 20 bot, en iyi skor cihazda), ilk üç maçta ipucu kartı (`coach.ts`, Ayarlar'dan kapanır), maç sonu paylaşım kartı (`share.ts`, tuvale PNG çizer), çok oyunculuda kopan misafire 15 sn geri dönme hakkı (`net/room.ts`: misafirin gizli `token`'ı, kurucu kopan koltuğa güvenli hamle oynar, dönene `sync` yollar), geniş ekranda tahta solda sağda bilgi (`GameScreen.css` sonundaki medya sorgusu), müzik ve ses seviyesi ayarı, yapay zekâ oyuncuların bonus kullanması (`engine/bots.js` → `bonusMoves`).
 - Yeni maçta tahta (9/11/13/15; en az oyuncu sayısının varsayılanı) ve arena botu sayısı her oyuncu sayısında seçilir (`BOARD_SIZES`, `defaultNeutrals`). Zekâ iki ayrı ayardır: `Setup.aiLevel` yapay zekâ rakipler, `Setup.level` arena botları. Yapay zekâ rakipte Normal ara sıra ikinci en iyi hamleyi seçer (`SLIP`), Zor hiç hata yapmaz ve rakip yıldızı avlar (`HUNT_PULL`); ölçüm: Zor, Normal'e %75 kazanır, dikkatli oyuncu Normal'e %37, Zor'a %15 kazanır (`tests/engine.test.mjs`). Tehlike haritası (`threats.ts` → `heatMap`) ayardan ya da ilk iki maçta kendiliğinden açılır.
-- Duraklatma: yerel maçta menü düğmesi maçı durdurur (`GameController.pause/unpause`, zamanlayıcılar `deferred` listesine düşer). Ana menüye dönünce maç silinmez, `park` edilir; ana menüde "Devam et" çıkar. Yarım maç `xsword-save` anahtarıyla cihaza yazılır (seçenekler + hamle listesi, `game/record.ts`) ve uygulama yeniden açılınca aynen sürer. Çok oyunculu başlayınca saklı maç silinir. Maç tekrarı bağlantısı `#/izle/KOD` (tohum + hamleler, ekran `ReplayScreen`). İstatistikler `game/stats.ts`, bulmacalar `game/puzzles.ts` (üretici: `node tools/make-puzzles.mjs`, çözücü motoru kullanır; her bulmaca par hamlede çözülür, hak par+1). Kurulum seçenekleri (varsayılan kapalı): `personas`, `obstacles`, `teams` (yalnız 4 oyuncu); motor: `state.blocked`, `state.teams`, `friendly()`, `isWinner()`.
+- Duraklatma: yerel maçta menü düğmesi maçı durdurur (`GameController.pause/unpause`, zamanlayıcılar `deferred` listesine düşer). Ana menüye dönünce maç silinmez, `park` edilir; ana menüde "Devam et" çıkar. Yarım maç `xsword-save` anahtarıyla cihaza yazılır (seçenekler + hamle listesi, `game/record.ts`) ve uygulama yeniden açılınca aynen sürer. Çok oyunculu başlayınca saklı maç silinir. Maç tekrarı bağlantısı `#/izle/KOD` (tohum + hamleler, ekran `ReplayScreen`). İstatistikler `game/stats.ts`, bulmacalar `game/puzzles.ts` (aşağıda "Bulmaca haritaları"). Kurulum seçenekleri (varsayılan kapalı): `personas`, `obstacles`, `teams` (yalnız 4 oyuncu); motor: `state.blocked`, `state.teams`, `friendly()`, `isWinner()`.
 - **İkiz** yalnız tek oyunculu moddadır ve oyuncunun aynasıdır: oyuncudan hemen sonra, onun yaptığı yönün aynısını oynar. O kare boşsa yürür, doluysa oradaki taşı alır, kapalıysa yerinde kalır. Bu yüzden oyuncuyu hiç alamaz. Tek oyunculu modda bütün botlar gidince kazanırsın (İkiz'i almana gerek yok). İkiz bir taş alırsa sana çift puan ve ayna bonusu gelir. Arda 6 Ekim 2026'da böyle seçti. Bonuslar şartla gelir: 20 puan çift adım, 40 çift hamle, 60 ikisinden biri, 50 ayna (tahtadaki herhangi bir taşla yer değiştir), ilk daralma zırh, ikinci daralma çift hamle, tek oyunculuda İkiz'in aldığı taş ayna. 2–4 oyunculu yerel maçta kazanan belli olunca "Devam et / Bitir" sorulur (`keepGoing`, çevrimiçide kapalı). Daralacak turda gerilim müziği çalar (`startTension` / `stopTension`). `npm run build` sonunda `app/check-css.mjs` CSS parantezlerini denetler. Kuzenin ilk dosyasında İkiz başkaydı: oyuncunun kurallarıyla oynuyordu ama hamlesini kendi seçen bir avcıydı.
 - Oyun metinlerinde "yemek" geçmez. Taş satrançtaki gibi alınır: "5 numarayı aldın!", "3 numara seni aldı!".
 - Tasarım kaynağı `design/`: önce `design/CLAUDE_CODE_HANDOFF.md`, sonra `design/tokens/tokens.css` ve `design/reference/*.dc.html` (okunacak referans, çalışan uygulama değil; nasıl okunacağı `design/reference/DC_FORMAT.md`'de).
@@ -43,7 +43,7 @@
 - Tek oyunculu: **İkiz** oyuncunun aynasıdır (oyuncudan hemen sonra aynı yönü oynar, oyuncuyu alamaz). Bütün botlar gidince kazanırsın. İkiz bir taş alırsa çift puan + ayna bonusu.
 - Bonuslar: maça bir çift adımla başlanır. 20 puan çift adım, 40 çift hamle, 60 ikisinden biri rastgele, 50 ayna (tahtada herhangi bir taşla yer değiştir). İlk daralmayı atlatan zırh (1 can), ikinci daralmayı atlatan çift hamle. Yapay zekâ da bonus kullanır (`bonusMoves`, `BONUS_COST`).
 - Zorluk: Kolay (sen ilk oynarsın), Normal (yer rastgele), Zor (yer rastgele, bot hedef üçgeni gizli). Rakip yapay zekâ (`Setup.aiLevel`) ile arena botları (`Setup.level`) ayrı ayarlanır. Normal rakip %30 ikinci en iyi hamleyi seçer, Zor avlar.
-- Seçenekler (varsayılan kapalı): kişilikler (avcı/temkinli/fırsatçı), engel kareleri, takım (2'ye 2, yalnız 4 oyuncu). Bulmacalar (11 adet), günlük meydan okuma, istatistikler, maç tekrarı bağlantısı, çok oyunculu lobi (tahta + bot sayısı).
+- Seçenekler (varsayılan kapalı): kişilikler (avcı/temkinli/fırsatçı), engel kareleri, takım (2'ye 2, yalnız 4 oyuncu). Bulmacalar (10 haritalı bulmaca, botlar yürümez), günlük meydan okuma, istatistikler, maç tekrarı bağlantısı, çok oyunculu lobi (tahta + bot sayısı).
 - Duraklatma: menü düğmesi durdurur; ana menüde "Devam et"; yarım maç `xsword-save` ile cihaza yazılır. Duraklatma menüsü: Devam et, Yeniden başlat, Yeni oyun, Ayarlar (maç içinde yalnız ses, titreşim, dil), Ana menü.
 
 ## Ölçümler (`tests/engine.test.mjs` yazdırır)
@@ -59,10 +59,10 @@
 - Çeviri 7 dilde (tr + en de fr es it pt), bayraklı seçici, Ayarlar'dan.
 - 7 öneri yapıldı: günlük meydan okuma, ipucu kartı, bonus dengesi + yapay zekâ bonusu, paylaşım kartı, kopan misafire 15 sn, geniş ekran düzeni, ses ayarları. Arda önerilerden birini (3.) istemedi.
 - Zor yapay zekâ ilk başta Normal ile eşitti (99–101); Normal'e hata payı, Zor'a avlama eklenince ayrıştı.
-- Bulmaca üretici ilk başta bulmaca bulamadı (rastgele pozisyonlar kayıp); 2–4 bot, mesafe ≤5, çözüm sayısı gevşetilerek çözüldü.
+- İlk 11 bulmaca rastgele 9×9 pozisyonlardı; Arda "yetersiz ve mantıksız" buldu (7 Ekim 2026). Sebep: botlar kaçıyordu, hamleleri öngörülemiyordu. Yerine 10 elle çizilmiş harita geldi; bulmacada botlar yürümez, yalnız menzile gireni alır (`bots.js → chooseMove`, `state.puzzle`). Kişilikler (3. öneri) ve engel kareleri (6. öneri) zaten Yeni oyun → Seçenekler'deydi; Arda görmemişti.
 - Slogan: "Yön her tur el değiştirir." (Arda 1. seçeneği seçti). Renk körü modu adı "Renk desteği" (nazik dil).
 - Duraklatma ana menüye dönünce de korunur ve uygulama yeniden açılınca sürer.
-- Yapılmadı ama konuşuldu: TestFlight/Capacitor yolu (hafıza notu var), daha çeşitli bulmacalar, çok oyunculu lobiye kişilik/takım seçeneği, temalar.
+- Yapılmadı ama konuşuldu: TestFlight/Capacitor yolu (hafıza notu var), çok oyunculu lobiye kişilik/takım seçeneği, temalar.
 
 ## Kural değişince (kontrol listesi)
 1. `engine/rules.js` / `bots.js` + `engine/rules.d.ts` tipleri.
@@ -75,9 +75,116 @@
 ## Kod haritası (hızlı)
 - Motor: `engine/rules.js` (`createGame`, `play`, `roundOrder`, `matchOrder`, `createPuzzle`, `isWinner`, `friendly`, `ranking`, `attackersOf`), `engine/bots.js` (`chooseMove`, `SLIP`, `HUNT_*`, persona ağırlıkları). Tohumlu (`mulberry32`), tekrar = seçenekler + tohum + hamle listesi.
 - Uygulama: `app/src/App.tsx` (hash yönlendirme: `#/ #/oyun #/kurallar #/ayarlar #/cok #/oda #/mac #/katil/KOD #/istatistik #/bulmaca #/izle/KOD`), `game/controller.ts` (maç akışı, pause/park/save/restart/replay), `game/{settings,order,names,record,stats,daily,share,coach,haptics,threats,puzzles}.ts`, `components/{Board,Sheets,InfoChip,PlayerStrip,ActionPanel,TurnQueue,Header,Flag}.tsx`, `screens/*`, `net/{room,protocol,transport}.ts`, `i18n/`.
-- Araçlar: `tools/make-puzzles.mjs` → `app/src/game/puzzles.ts`.
+- Araçlar: `tools/puzzle-maps.mjs` (elle çizilen haritalar) → `node tools/make-puzzles.mjs [id]` → `app/src/game/puzzles.ts` + `tools/puzzles-out.mjs`.
 
 ## Dikkat
 - `tr()` ilk argümanı düz tırnaklı yazı olmalı. Motorun `log` metinleri çevrilmez ama bot adı (`label`) oyun metinlerinde görünür.
 - `index.html` CRLF + BOM; `arena/index.html` düzenlerken satır sonlarını koru (`newline=''` ile oku/yaz).
 - Test kurulumları (`position()` gibi) `roundOrder` çağırınca bot `label`'ı yeniden hesaplanır; testte sabit numara varsayma, `pieceById(...).label` kullan.
+
+## Bulmaca haritaları
+- Kurallar: hedef, en çok par+1 hamlede bütün botları almak; par'da çözmek 3 yıldız, par+1 2 yıldız. Botlar yürümez, menzile giren yıldızı alır. Mod her tur değişir. Sayaç yok, ipucu kartı yok, hedef üçgeni yok.
+- Harita dili: `.` zemin, `#` engel, `-` harita dışı (tahta şekli kare olmak zorunda değil; motor kısa kenarı boşlukla doldurur, `state.holes`), `S` sen, `K` Kızıl, `C` Çelik.
+- Akış: haritayı `tools/puzzle-maps.mjs`'e çiz (ad, ipucu, mod, bot sayısı, hedef par, bonus, `needBonus`, `botCols`), `node tools/make-puzzles.mjs <id>` taşları yerleştirir ve çözücüyle doğrular (tam par, ilk hamlede en çok 2 doğru seçenek, botları oyuncu alır, `needBonus` ise bonussuz çözülmez). Ad ve ipucu `app/src/game/puzzleText.ts`'e ve altı sözlüğe eklenir. Bulmaca kimliği 101'den başlar (eski yıldız kayıtları karışmasın); ekranda sıra numarası görünür.
+- Tasarım dersleri: tek-tek (tek satır, tek sütun) karelerde engel dizisi çapraz turda taşı dört yandan kapatır, kaçın. Ayna seninle botun yerini değiştirir; bot senin eski karene gider, bu yüzden "ayrı adalar" bulmacası çözülemez.
+- **Yeni bulmaca eklerken aşağıdaki fikirleri ve şekilleri tekrar etme.** Henüz kullanılmayan fikirler: zırh, dört bot, çökme halkası, 2 bonus birlikte, simetrik ayna haritası, L/U şekli.
+
+### 101 · Koridor — DUZ, par 3, bonus - — fikir: mod değişimi (düz/çapraz) öğretir
+```
+#.....#
+.......
+.KC....
+.......
+#..S..#
+```
+### 102 · Haç — CAPRAZ, par 4, bonus - — fikir: dar kollar, alma sırası
+```
+--...--
+--...--
+.......
+.......
+....CK.
+--...--
+--.S.--
+```
+### 103 · Halka — DUZ, par 5, bonus - — fikir: ortası boş halka; kenardan dolaşma
+```
+-.CK..-
+.......
+.C---..
+..---..
+S.---..
+.......
+-.....-
+```
+### 104 · Sütunlar — CAPRAZ, par 5, bonus - — fikir: tek engel sütunları; engelin arkası
+```
+.......
+.#...#.
+...#C..
+.......
+.#KC.#.
+...#.S.
+.......
+```
+### 105 · Merdiven — DUZ, par 5, bonus - — fikir: çapraz şerit; düz turda yol daralır
+```
+...-----
+K.C.----
+-...C---
+--....--
+---..S.-
+----....
+-----...
+```
+### 106 · Çift adım — DUZ, par 3, bonus step:1 — fikir: Çift adım bonusu şart
+```
+....---
+...S---
+..#..K.
+..#K...
+.......
+```
+### 107 · Ayna — CAPRAZ, par 4, bonus swap:1 — fikir: Ayna bonusu şart (yön/kare rengi değiştirmek için)
+```
+.........
+..KK.....
+---...---
+---.S.---
+---...---
+---...---
+```
+### 108 · Elmas — CAPRAZ, par 4, bonus double:1 — fikir: Çift hamle bonusu şart
+```
+---.---
+--...--
+-...C.-
+....KC.
+-.S...-
+--...--
+---.---
+```
+### 109 · Kale — DUZ, par 6, bonus - — fikir: kapılı kale duvarları
+```
+.........
+.###.###.
+.#.....#.
+.#.....#.
+S...C....
+.#..K..#.
+.#.C...#.
+.###.###.
+.........
+```
+### 110 · Labirent — CAPRAZ, par 6, bonus step:1 — fikir: labirent + çift adım, 3 bot
+```
+-...#...-
+.#.....#.
+...##....
+.#.....#S
+....#K...
+.#..C..#.
+....##...
+.#K....#.
+-...#...-
+```

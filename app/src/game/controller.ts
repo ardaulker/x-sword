@@ -146,7 +146,7 @@ export class GameController {
 
   start() {
     // İlk üç yerel maçta kısa bir ipucu kartı; "Anladım" deyince maç başlar.
-    const step = this.net || !settings.tips ? null : coachStep();
+    const step = this.net || !settings.tips || this.setup.puzzle != null ? null : coachStep();
     this.autoMap = step != null && step < 2;
     if (step != null) { this.later(500, () => this.emit({ sheet: { type: 'ipucu', step } })); return; }
     this.later(600, () => this.advance());
@@ -331,7 +331,7 @@ export class GameController {
     const s = this.setup;
     if (s.puzzle != null) {
       const def = PUZZLES.find(p => p.id === s.puzzle) ?? PUZZLES[0];
-      return { puzzle: { me: def.me, bots: def.bots, limit: def.par + 1, mode: def.mode } };
+      return { puzzle: { map: def.map, limit: def.par + 1, mode: def.mode, bonuses: def.bonuses } };
     }
     if (s.daily) return { seats: [{ kind: 'human' }], neutralLevel: 'normal', seed: seedOf(s.daily), size: DAILY.boardSize, neutrals: DAILY.bots };
     const seats = Array.from({ length: s.players }, (_, i) =>

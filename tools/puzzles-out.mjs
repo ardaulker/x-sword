@@ -1,18 +1,5 @@
-// Bu dosya tools/make-puzzles.mjs ile üretildi (haritalar tools/puzzle-maps.mjs). Her bulmaca en çok par+1 hamlede çözülür; par'da çözmek 3 yıldız.
-// map: '.' zemin, '#' engel, '-' harita dışı, 'S' sen, 'K' Kızıl bot, 'C' Çelik bot.
-import type { BonusKind, Mode } from '../../../engine/rules.js';
-
-export interface PuzzleDef {
-  id: number;
-  title: string;
-  hint: string;
-  mode: Mode;
-  par: number;
-  bonuses: Partial<Record<BonusKind, number>> | null;
-  map: string[];
-}
-
-export const PUZZLES: PuzzleDef[] = [
+// make-puzzles.mjs'in son çıktısı (tek harita yeniden üretilirken diğerleri buradan alınır).
+export const PUZZLES = [
   {
     "id": 101,
     "title": "Koridor",

@@ -1,8 +1,13 @@
-// Bulmaca üretici: rastgele pozisyonlar dener, çözücüyle en az kaç hamlede çözüldüğünü bulur ve app/src/game/puzzles.ts'e yazar.
-// Çalıştır: node tools/make-puzzles.mjs
+// Bulmaca üretici: tools/puzzle-maps.mjs'teki elle çizilmiş haritalara taş yerleştirir,
+// çözücüyle en az kaç hamlede çözüldüğünü bulur ve app/src/game/puzzles.ts'e yazar.
+// Bir yerleşim kabul edilir: tam par hamlede çözülür, ilk hamlede en çok 2 doğru seçenek vardır,
+// çözümde bütün botları oyuncu alır (botlar birbirini alarak çözmez), needBonus varsa bonussuz çözülmez.
+// Çalıştır: node tools/make-puzzles.mjs   (tek harita: node tools/make-puzzles.mjs 107)
 import { writeFileSync } from 'node:fs';
 import { createPuzzle, currentActor, legalMoves, play } from '../engine/rules.js';
 import { chooseMove } from '../engine/bots.js';
+import { MAPS } from './puzzle-maps.mjs';
+import { PUZZLES as OLD } from './puzzles-out.mjs';
 
 let seed = 20261007;
 const rnd = () => { seed = (seed + 0x6d2b79f5) >>> 0; let t = seed; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -17,50 +22,113 @@ function afterMine(st) {
   }
 }
 
-// Kalan hamle hakkıyla kazanılabilir mi? Kazandıran ilk hamle sayısını da döndürür.
-function solve(st, depth) {
-  let wins = 0;
-  for (const m of legalMoves(st, currentActor(st), st.mode)) {
-    const c = structuredClone(st);
-    play(c, m);
-    afterMine(c);
-    if (c.over) { if (c.winner === 0) wins++; continue; }
-    if (depth > 1 && solve(c, depth - 1).wins) wins++;
-  }
-  return { wins };
+function myMoves(st) {
+  const a = currentActor(st), out = [...legalMoves(st, a, st.mode)];
+  for (const b of ['step', 'double', 'swap']) if (st.seats[0].bonuses[b] > 0) out.push(...legalMoves(st, a, st.mode, b));
+  return out;
 }
 
-const found = { 2: [], 3: [], 4: [] };
-const want = { 2: 5, 3: 5, 4: 4 };
-console.log('başladı');
-const t0 = Date.now();
-let tried = 0;
-while (Object.keys(want).some(k => found[k].length < want[k]) && Date.now() - t0 < 420000) {
-  tried++;
-  const me = [1 + pick(7), 1 + pick(7)];
-  const n = 2 + pick(3); // 2–4 bot
-  const bots = [], used = new Set([`${me}`]);
-  for (let i = 0; i < n; i++) {
-    for (let k = 0; k < 20; k++) {
-      const r = pick(9), c = pick(9);
-      const dist = Math.max(Math.abs(r - me[0]), Math.abs(c - me[1]));
-      if (used.has(`${r},${c}`) || dist < 2 || dist > 5) continue;
-      used.add(`${r},${c}`); bots.push({ kind: rnd() < 0.5 ? 'red' : 'blue', r, c }); break;
+const bots = st => st.pieces.filter(p => p.kind === 'red' || p.kind === 'blue').length;
+
+// depth hamlede kazanılabilir mi? mine: bütün botları oyuncu mu almalı.
+function wins(st, depth, mine) {
+  for (const m of myMoves(st)) {
+    const c = structuredClone(st);
+    play(c, m);
+    if (currentActor(c)?.id !== 's0' || c.over) afterMine(c); // çift hamlede sıra yine bizde
+    if (c.over) { if (c.winner === 0 && (!mine || c.seats[0].takes === bots(c))) return true; continue; }
+    if (depth > 1 && wins(c, depth - 1, mine)) return true;
+  }
+  return false;
+}
+
+// İlk hamlede kaç doğru seçenek var (3'te durur).
+function firstChoices(st, depth) {
+  let n = 0;
+  for (const m of myMoves(st)) {
+    const c = structuredClone(st);
+    play(c, m);
+    if (currentActor(c)?.id !== 's0' || c.over) afterMine(c);
+    const ok = c.over ? c.winner === 0 && c.seats[0].takes === bots(c) : depth > 1 && wins(c, depth - 1, true);
+    if (ok && ++n >= 3) break;
+  }
+  return n;
+}
+
+// Haritaya sen ve botları koy; sabit taşlar haritada kalır.
+function place(def) {
+  const grid = def.map.map(row => [...row]);
+  const floor = [];
+  grid.forEach((row, r) => row.forEach((ch, c) => { if (ch === '.') floor.push([r, c]); }));
+  const take = () => floor.splice(pick(floor.length), 1)[0];
+  let me = null;
+  grid.forEach((row, r) => row.forEach((ch, c) => { if (ch === 'S') me = [r, c]; }));
+  if (!me) { me = take(); grid[me[0]][me[1]] = 'S'; }
+
+  for (let i = 0; i < def.bots; i++) {
+    for (let k = 0; k < 30; k++) {
+      const j = pick(floor.length), [r, c] = floor[j];
+      const d = Math.max(Math.abs(r - me[0]), Math.abs(c - me[1]));
+      if (d < 2) continue;
+      floor.splice(j, 1);
+      grid[r][c] = rnd() < 0.5 ? 'K' : 'C';
+      break;
     }
   }
-  if (bots.length < 2) continue;
-  const mode = rnd() < 0.5 ? 'DUZ' : 'CAPRAZ';
-  const st = createPuzzle({ me, bots, limit: 99, mode });
-  let par = 0, firstWins = 0;
-  for (let d = 2; d <= 4; d++) {
-    const r = solve(st, d);
-    if (r.wins) { par = d; firstWins = r.wins; break; }
-  }
-  if (!par || firstWins > 3 || found[par].length >= want[par]) continue;
-  found[par].push({ me, bots, par, mode });
-  console.log(`bulmaca: ${n} bot, ${par} hamle, ${firstWins} çözüm (${tried}. deneme)`);
+  // botCols: en az bir bot bu sütun aralığında olmalı (ör. karşı ada); yoksa yerleşim geçersiz.
+  if (def.botCols && !grid.some(row => row.some((ch, c) => (ch === 'K' || ch === 'C') && c >= def.botCols[0] && c <= def.botCols[1]))) return null;
+  return grid.map(row => row.join(''));
 }
-const all = [...found[2], ...found[3], ...found[4]].map((p, i) => ({ id: i + 1, ...p }));
-const body = `// Bu dosya tools/make-puzzles.mjs ile üretildi. Her bulmaca en çok par+1 hamlede çözülür; par'da çözmek 3 yıldız.\nimport type { Mode } from '../../../engine/rules.js';\n\nexport interface PuzzleDef {\n  id: number;\n  me: [number, number];\n  bots: { kind: 'red' | 'blue'; r: number; c: number }[];\n  par: number;\n  mode: Mode;\n}\n\nexport const PUZZLES: PuzzleDef[] = ${JSON.stringify(all, null, 2)};\n`;
+
+const only = process.argv[2] ? Number(process.argv[2]) : null;
+const out = [];
+for (const def of MAPS) {
+  if (only && def.id !== only) { const old = OLD.find(p => p.id === def.id); if (old) out.push(old); continue; }
+  const t0 = Date.now();
+  let best = null, tried = 0;
+  const why = {};
+  const no = k => { why[k] = (why[k] ?? 0) + 1; };
+  while (Date.now() - t0 < (process.env.T ? Number(process.env.T) : 60000)) {
+    tried++;
+    const map = place(def);
+    if (!map) continue;
+    const st = createPuzzle({ map, limit: 99, mode: def.mode, bonuses: def.bonuses });
+    if (bots(st) < def.bots) { no('az bot'); continue; }
+    let par = 0;
+    for (let d = def.bots; d <= def.par; d++) if (wins(st, d, false)) { par = d; break; }
+    if (!par) { no('çözümsüz'); continue; }
+    if (par < def.par - 1) { no('kısa'); continue; } // hedeften çok kısa
+    const n = firstChoices(st, par);
+    if (!n) { no('botları sen almıyorsun'); continue; }
+    if (def.needBonus) {
+      const bare = createPuzzle({ map, limit: 99, mode: def.mode });
+      if (wins(bare, par + 1, false)) { no('bonussuz da çözülüyor'); continue; }
+    }
+    if (!best || n < best.n || (n === best.n && par > best.par)) best = { map, n, par };
+    if (n === 1 && par === def.par) break;
+  }
+  if (!best) { console.log(`${def.id} ${def.title}: bulunamadı (${tried} deneme)`, why); continue; }
+  console.log(`${def.id} ${def.title}: ${best.par} hamle, ilk hamlede ${best.n} doğru seçenek (${tried} deneme)`);
+  console.log(best.map.map(r => '   ' + r).join('\n'));
+  out.push({ id: def.id, title: def.title, hint: def.hint, mode: def.mode, par: best.par, bonuses: def.bonuses ?? null, map: best.map });
+}
+
+const body = `// Bu dosya tools/make-puzzles.mjs ile üretildi (haritalar tools/puzzle-maps.mjs). Her bulmaca en çok par+1 hamlede çözülür; par'da çözmek 3 yıldız.
+// map: '.' zemin, '#' engel, '-' harita dışı, 'S' sen, 'K' Kızıl bot, 'C' Çelik bot.
+import type { BonusKind, Mode } from '../../../engine/rules.js';
+
+export interface PuzzleDef {
+  id: number;
+  title: string;
+  hint: string;
+  mode: Mode;
+  par: number;
+  bonuses: Partial<Record<BonusKind, number>> | null;
+  map: string[];
+}
+
+export const PUZZLES: PuzzleDef[] = ${JSON.stringify(out, null, 2)};
+`;
 writeFileSync(new URL('../app/src/game/puzzles.ts', import.meta.url), body);
-console.log(`${all.length} bulmaca yazıldı (${tried} deneme, ${((Date.now() - t0) / 1000).toFixed(0)} sn)`);
+writeFileSync(new URL('./puzzles-out.mjs', import.meta.url), `// make-puzzles.mjs'in son çıktısı (tek harita yeniden üretilirken diğerleri buradan alınır).\nexport const PUZZLES = ${JSON.stringify(out, null, 2)};\n`);
+console.log(`${out.length} bulmaca yazıldı.`);

@@ -1,3 +1,5 @@
+import { PUZZLES } from '../game/puzzles';
+import { puzzleHint } from '../game/puzzleText';
 import {
   BONUS_NAMES, collapseDue, currentActor, isWinner, nextMode, pieceById, ranking, starOf, takeDirs, threatsFor,
 } from '../../../engine/rules.js';
@@ -221,6 +223,7 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
     who = me; timer = t; title = tr('Senin sıran'); sub = tr('Yanan karelerden birine dokun');
     const threats = attackersOfMe(st, me).length;
     if (threats) { hint = tr('Şu an {n} taş seni alabilir. Çizgili kareler tehlikeli.', { n: threats }); hintColor = DANGER_TXT; }
+    else if (st.puzzle) hint = puzzleHint(PUZZLES.find(p => p.id === ctl.setup.puzzle)?.hint ?? '');
     else hint = tr('Bir taşa dokun: yolları ve kimi kovaladığı tahtada görünür.');
     if (collapseDue(st)) {
       sub = tr('Dış halka bu turun sonunda çöküyor');

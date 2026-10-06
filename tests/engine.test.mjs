@@ -592,3 +592,19 @@ test('numaralar her tur ayakta kalanlara göre baştan verilir, sıra değişmez
   assert.deepEqual(next, before.filter(id => id !== dead));
   next.forEach((id, i) => { const p = pieceById(st, id); if (p.kind === 'red' || p.kind === 'blue') assert.equal(p.label, String(i + 1)); });
 });
+
+test('bulmaca haritası: şekil ve engel kapalı, botlar yürümez, menzile gireni alır', async () => {
+  const { PUZZLES } = await import('../tools/puzzles-out.mjs');
+  assert.ok(PUZZLES.length >= 10);
+  for (const def of PUZZLES) {
+    const st = createPuzzle({ map: def.map, limit: def.par + 1, mode: def.mode, bonuses: def.bonuses });
+    const me = currentActor(st);
+    assert.equal(me.id, 's0');
+    for (const m of legalMoves(st, me, st.mode)) assert.ok(!st.blocked.has(m.r * st.size + m.c));
+  }
+  const st = createPuzzle({ map: ['S....', '.....', '..K..'], limit: 5, mode: 'DUZ' });
+  const bot = st.pieces.find(p => p.kind === 'red');
+  play(st, { r: st.pieces[0].r, c: 1 }); // botun menzili dışında kal
+  assert.deepEqual([bot.r, bot.c], [3, 2]);
+  assert.ok(st.holes.size > 0);
+});

@@ -39,7 +39,7 @@ export function InfoChip({ ctl, id }: { ctl: GameController; id: string }) {
   const wStraight = straight(walkDirs(p, mode)), tStraight = straight(takeDirs(p, mode));
   const how = p.kind === 'twin' ? tr('senin yönünde oynar') : walk === take ? tr('{w} gider, {t} alır', { w: walk, t: take }) : tr('{w} yürür, {t} alır', { w: walk, t: take });
   const hard = ctl.setup.level === 'zor';
-  const target = isBot(p) && !hard ? targetOf(st, p) : null;
+  const target = isBot(p) && !hard && !st.puzzle ? targetOf(st, p) : null;
   const danger = me.alive && p.id !== me.id && attackersOfMe(st, me).some(q => q.id === p.id);
   return (
     <button

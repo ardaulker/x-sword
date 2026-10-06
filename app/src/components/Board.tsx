@@ -108,7 +108,7 @@ export function Board({ ctl, view, cell }: Props) {
   for (const t of view.trails) seg(`tr${t.key}`, t.from, t.to, 'trail', t.color);
 
   // Dokunulan taş: yolları ve alabilecekleri tahtada, botun hedefi çizgiyle. Zor modda hedef gizli.
-  const showTargets = ctl.setup.level !== 'zor' && settings.targets;
+  const showTargets = ctl.setup.level !== 'zor' && settings.targets && !st.puzzle; // bulmacada botlar kovalamaz
   const inspected = view.inspect ? pieceById(st, view.inspect) : null;
   const inspectMoves = new Map<string, Move>();
   if (inspected?.alive && inspected.id !== me.id) {
@@ -239,8 +239,10 @@ export function Board({ ctl, view, cell }: Props) {
       let background = (r + c) % 2 ? 'var(--kare-2)' : 'var(--kare)';
       let frame: { stroke: string; width: number; dash?: string } | null = null;
       let mark: { d: string; fill: string; stroke: string; width: number } | null = null;
-      const wall = !gone && !!st.blocked?.has(r * n + c);
-      if (gone) { background = 'var(--bosluk)'; frame = { stroke: '#2B3670', width: 4, dash: '6 7' }; }
+      const hole = !!st.holes?.has(r * n + c);
+      const wall = !gone && !hole && !!st.blocked?.has(r * n + c);
+      if (hole) background = 'transparent';
+      else if (gone) { background = 'var(--bosluk)'; frame = { stroke: '#2B3670', width: 4, dash: '6 7' }; }
       else if (wall) { background = 'repeating-linear-gradient(45deg, #2A3570 0 5px, #121936 5px 10px)'; frame = { stroke: '#5566B8', width: 6 }; }
       else if (doomedRing) background = 'var(--pat-hazard)';
       if (heat?.has(`${r},${c}`) && !gone && !doomedRing && !wall) background = `linear-gradient(rgba(255,59,92,.17), rgba(255,59,92,.17)), ${background}`;
@@ -268,6 +270,7 @@ export function Board({ ctl, view, cell }: Props) {
       if (rc) label += rc.move.type === 'take' ? tr(', alınabilir') : tr(', gidilebilir');
       if (rc?.attackers) label += tr(', {n} taş seni alabilir', { n: rc.attackers });
       if (wall) label += tr(', engel');
+      if (hole) label = tr('Satır {r}, sütun {c}', { r: r + 1, c: c + 1 }) + tr(', harita dışı');
       if (gone) label += tr(', çöktü');
       else if (doomedRing) label += tr(', tur sonunda çökecek');
       else if (soonRing) label += tr(', gelecek tur çökecek');
@@ -298,6 +301,8 @@ export function Board({ ctl, view, cell }: Props) {
     boxShadow: `inset 0 0 0 ${warn ? `2px ${HAZARD}` : '1.5px rgba(233,240,255,.22)'}, 0 18px 40px rgba(0,0,0,.35)`,
     cursor: myTurn ? 'pointer' : 'default',
   };
+  // Şekilli bulmaca haritası: çerçeve yok, tahta yalnız kendi karelerinden oluşur.
+  if (st.holes) { frameStyle.background = 'transparent'; frameStyle.boxShadow = 'none'; }
 
   return (
     <div

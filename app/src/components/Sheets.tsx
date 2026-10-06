@@ -10,6 +10,7 @@ import { Icon, RingIcon } from './bits';
 import { PieceGlyph } from './PieceGlyph';
 import { shareReplay, shareResult } from '../game/share';
 import { PUZZLES } from '../game/puzzles';
+import { puzzleTitle } from '../game/puzzleText';
 import { tr } from '../i18n';
 
 // Alttan açılan kart; arka plan kararır, dışına dokununca kapanır.
@@ -293,11 +294,12 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
     const id = ctl.setup.puzzle ?? 1;
     const def = PUZZLES.find(p => p.id === id);
     const stars = won && def ? (st.puzzle.used <= def.par ? 3 : 2) : 0;
-    const next = PUZZLES.find(p => p.id === id + 1);
+    const no = PUZZLES.findIndex(p => p.id === id) + 1;
+    const next = PUZZLES[no];
     return (
       <SheetFrame label={tr('Bulmaca')} onClose={onClose}>
         <div className="res-head">
-          <div className="res-daily">{tr('Bulmaca {n}', { n: id })}</div>
+          <div className="res-daily">{tr('Bulmaca {n}', { n: no })}{def ? ` · ${puzzleTitle(def.title)}` : ''}</div>
           <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{won ? tr('Çözüldü!') : tr('Çözülemedi')}</div>
           <div className="puzzle-stars res-stars" aria-label={tr('{n} yıldız', { n: stars })}>{'★'.repeat(stars)}{'☆'.repeat(3 - stars)}</div>
           <div className="res-sub">{tr('{a}/{b} hamle kullandın', { a: st.puzzle.used, b: st.puzzle.limit })}</div>

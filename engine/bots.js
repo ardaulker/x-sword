@@ -6,7 +6,7 @@
 
 import {
   legalMoves, attackersOf, threatsFor, random, ringOf, inArena,
-  walkDirs, takeDirs, nextMode, flip, twinMove, friendly,
+  walkDirs, takeDirs, nextMode, flip, twinMove, friendly, pieceById,
 } from './rules.js';
 
 export const LEVELS = ['kolay', 'normal', 'zor'];
@@ -19,6 +19,8 @@ export function chooseMove(state, piece, level = levelOf(state, piece)) {
   if (piece.kind === 'twin') return twinMove(state, piece);
   const moves = legalMoves(state, piece, state.mode);
   if (!moves.length) return null;
+  // Bulmacada botlar yürümez: yalnız menzillerine giren yıldızı alır, yoksa yerinde bekler.
+  if (state.puzzle && piece.kind !== 'star') return moves.find(m => m.type === 'take' && pieceById(state, m.targetId).kind === 'star') ?? null;
   if (level === 'kolay') return easyMove(state, piece, moves);
   let best = moves[0], bestScore = -Infinity, second = null, secondScore = -Infinity;
   for (const m of moves) {

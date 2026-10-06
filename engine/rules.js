@@ -126,7 +126,7 @@ export function createGame({
     })),
     pieces: [], order: [], turn: 0, over: false, winner: null, outOrder: [], log: [],
     solo: n === 1, lastStep: null, matchOrder: [], keepGoing: !!keepGoing, decided: false,
-    blocked: null, teams: teams && n === 4 ? [0, 1, 0, 1] : null, winTeam: null, puzzle: null,
+    blocked: null, holes: null, teams: teams && n === 4 ? [0, 1, 0, 1] : null, winTeam: null, puzzle: null,
   };
 
   if (state.teams) state.seats.forEach((s, i) => { s.team = state.teams[i]; });
@@ -229,13 +229,37 @@ function balancedKinds(state, cells, starts) {
 }
 
 // Bulmaca: elle kurulmuş küçük pozisyon. Amaç, en çok `limit` hamlede bütün arena botlarını almak.
-export function createPuzzle({ me, bots, limit, mode = 'DUZ', size = 9 }) {
-  const st = createGame({ seats: [{ kind: 'human' }], size, neutrals: 0, seed: 1, shuffle: false, shrinkStart: 999, neutralLevel: 'normal' });
+// map: satır dizisi. '.' zemin, '#' engel, '-' harita dışı (boşluk), 'S' sen, 'K' Kızıl bot, 'C' Çelik bot.
+// Harita kare olmak zorunda değil; kısa kenar iki yandan boşlukla doldurulur. Eski biçim (me + bots) de çalışır.
+export function createPuzzle({ map = null, me = null, bots = [], limit, mode = 'DUZ', size = 9, bonuses = null }) {
+  let holes = null, walls = null;
+  if (map) {
+    const h = map.length, w = Math.max(...map.map(row => row.length));
+    size = Math.max(h, w);
+    const top = Math.floor((size - h) / 2), left = Math.floor((size - w) / 2);
+    holes = new Set(); walls = new Set(); bots = [];
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const ch = map[r - top]?.[c - left] ?? '-';
+        const i = r * size + c;
+        if (ch === '-' || ch === ' ') holes.add(i);
+        else if (ch === '#') walls.add(i);
+        else if (ch === 'S') me = [r, c];
+        else if (ch === 'K' || ch === 'C') bots.push({ kind: ch === 'K' ? 'red' : 'blue', r, c });
+      }
+    }
+  }
+  const st = createGame({ seats: [{ kind: 'human' }], size: 9, neutrals: 0, seed: 1, shuffle: false, shrinkStart: 999, neutralLevel: 'normal' });
+  st.size = size;
   st.pieces = st.pieces.filter(p => p.kind !== 'twin');
   const star = st.pieces.find(p => p.kind === 'star');
   [star.r, star.c] = me;
-  st.seats[0].bonuses = { armor: 0, step: 0, double: 0, swap: 0 };
+  st.seats[0].bonuses = { armor: 0, step: 0, double: 0, swap: 0, ...bonuses };
   bots.forEach((b, i) => st.pieces.push({ id: `b${i + 1}`, kind: b.kind, label: String(i + 1), r: b.r, c: b.c, alive: true }));
+  if (holes) {
+    st.holes = holes;
+    st.blocked = new Set([...holes, ...walls]);
+  }
   st.mode = mode;
   st.matchOrder = st.pieces.map(p => p.id);
   st.order = roundOrder(st);

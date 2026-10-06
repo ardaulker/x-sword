@@ -1,5 +1,6 @@
 import { Icon } from '../components/bits';
 import { PUZZLES } from '../game/puzzles';
+import { puzzleTitle } from '../game/puzzleText';
 import { loadStats } from '../game/stats';
 import { tr } from '../i18n';
 import './RulesScreen.css';
@@ -13,13 +14,14 @@ export function PuzzleScreen({ onBack, onPick }: { onBack: () => void; onPick: (
         <h1>{tr('Bulmacalar')}</h1>
       </header>
       <div className="rules-body">
-        <p className="rules-foot" style={{ marginTop: 0 }}>{tr('Sınırlı hamlede bütün botları al. Az hamlede çözmek daha çok yıldız verir.')}</p>
+        <p className="rules-foot" style={{ marginTop: 0 }}>{tr('Sınırlı hamlede bütün botları al. Botlar yürümez ama menziline girersen seni alır. Az hamlede çözmek daha çok yıldız verir.')}</p>
         <div className="puzzle-grid">
-          {PUZZLES.map(p => {
+          {PUZZLES.map((p, i) => {
             const got = stars[p.id] ?? 0;
             return (
               <button key={p.id} type="button" className="puzzle-btn" onClick={() => onPick(p.id)}>
-                <b>{p.id}</b>
+                <b>{i + 1}</b>
+                <span className="puzzle-name">{puzzleTitle(p.title)}</span>
                 <span className="puzzle-stars" aria-label={tr('{n} yıldız', { n: got })}>{'★'.repeat(got)}{'☆'.repeat(3 - got)}</span>
                 <span className="puzzle-par">{tr('{n} hamle', { n: p.par })}</span>
               </button>
