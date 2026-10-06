@@ -1,3 +1,5 @@
+> **Not (6 Ekim 2026):** Bu brief'in ilk hâliyle yapılan tasarım geldi ve `design/` klasöründe. Artık kaynak o. Renk kodları tasarımdaki gibi oldu: yollar oyuncunun kendi renginde, turuncu çökecek halka, kırmızı tehlike. Ad (X Sword), "almak" ve maç saati bu brief'teki gibi kalır.
+
 # Görev
 
 Telefon için çok oyunculu, sıra tabanlı bir strateji oyununun tasarım dosyasını hazırla. Tasarım sistemi, tüm ekranlar ve tıklanabilir bir prototip istiyorum.

@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Masaüstü · Lobi</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; box-sizing: border-box; padding: 32px 48px; background: radial-gradient(90% 60% at 50% 0%, #141E48 0%, #0B1026 62%); color: #EEF2FF; font-family: 'Barlow', system-ui, sans-serif; display: flex; flex-direction: column; gap: 24px">
+  <div style="height: 52px; display: flex; align-items: center; gap: 14px">
+    <a href="MasaustuMenu.dc.html" aria-label="Geri" style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #EEF2FF; background: #121A3A; border: 1px solid #26306A">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 L8 12 L15 19"></path></svg>
+    </a>
+    <span style="font-family: 'Oxanium', sans-serif; font-size: 30px; font-weight: 800">Lobi</span>
+    <span style="font-size: 15px; font-weight: 500; color: #A9B4DA">Odayı sen kurdun · arkadaşların linkle, kodla ya da QR ile gelir</span>
+  </div>
+
+  <div style="flex: 1; min-height: 0; display: flex; gap: 24px">
+    <div style="width: 340px; flex: none; display: flex; flex-direction: column; gap: 14px">
+      <div style="padding: 20px; border-radius: 22px; background: #121A3A; border: 1px solid #26306A; display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; color: #A9B4DA">ODA KODU</span>
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <span style="font-family: 'Oxanium', sans-serif; font-size: 52px; font-weight: 800; letter-spacing: 0.14em">K7Q2M</span>
+          <button type="button" aria-label="Kodu kopyala" style="width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid #3A4785; background: transparent; color: #EEF2FF; display: flex; align-items: center; justify-content: center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9 H19 V19 H9 Z M5 15 V5 H15"></path></svg>
+          </button>
+        </div>
+        <button type="button" onClick="{{copyLink}}" style="height: 52px; border-radius: 14px; border: 0; background: #E9F0FF; color: #0B1026; display: flex; align-items: center; justify-content: center; gap: 10px; font: 700 16px 'Barlow', sans-serif">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B1026" stroke-width="2.2" stroke-linecap="round"><path d="M10 14 A4 4 0 0 0 15.7 14 L19 10.7 A4 4 0 0 0 13.3 5 L12 6.3 M14 10 A4 4 0 0 0 8.3 10 L5 13.3 A4 4 0 0 0 10.7 19 L12 17.7"></path></svg>
+          <span>{{linkTxt}}</span>
+        </button>
+        <button type="button" style="height: 48px; border-radius: 14px; border: 1.5px solid #3A4785; background: transparent; color: #EEF2FF; display: flex; align-items: center; justify-content: center; gap: 10px; font: 600 15px 'Barlow', sans-serif">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 L5.3 16.2 A8 8 0 1 1 8 18.8 Z M9 9.5 C9 12.5 11.5 15 14.5 15"></path></svg>
+          <span>WhatsApp Web'de paylaş</span>
+        </button>
+      </div>
+      <div style="padding: 20px; border-radius: 22px; background: #121A3A; border: 1px solid #26306A; display: flex; gap: 16px; align-items: center">
+        <div style="padding: 8px; border-radius: 10px; background: #E9F0FF; display: grid; gap: 0; {{qr.gridSt}}">
+          <sc-for list="{{qr.cells}}" as="q" hint-placeholder-count="441">
+            <div style="{{q.st}}"></div>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 16px; font-weight: 700">Telefonla tara</span>
+          <span style="font-size: 13px; line-height: 1.45; color: #A9B4DA">Yanındaki arkadaş kamerayla okutur, uygulama gerekmez. (QR yer tutucudur.)</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 16px">
+      <sc-for list="{{seats}}" as="s" hint-placeholder-count="4">
+        <div style="border-radius: 22px; padding: 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; {{s.box}}">
+          <div style="font-family: 'Oxanium', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #A9B4DA">{{s.seatLabel}}</div>
+          <sc-if value="{{s.filled}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; align-items: center; gap: 16px">
+              <div style="position: relative; width: 64px; height: 64px; flex: none">
+                <div style="position: absolute; left: 17%; top: 17%; width: 66%; height: 66%; border-radius: 10%; box-shadow: 0 0 0 3px #FFFFFF, 0 0 24px {{s.col}}AA; background: {{s.col}}"></div>
+                <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{s.emb.d}}" fill="{{s.emb.f}}" stroke="{{s.emb.s}}" stroke-width="{{s.emb.w}}" stroke-linecap="round"></path></svg>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <span style="font-size: 24px; font-weight: 700">{{s.name}}</span>
+                <span style="font-size: 14px; font-weight: 600; color: #A9B4DA">{{s.tag}}</span>
+              </div>
+            </div>
+            <div style="margin-top: auto; display: flex; align-items: center; justify-content: space-between">
+              <span style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 17px; font-size: 14px; font-weight: 700; {{s.readySt}}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{s.readyIcon}}"></path></svg>
+                <span>{{s.readyTxt}}</span>
+              </span>
+              <sc-if value="{{s.canRemove}}" hint-placeholder-val="{{ false }}">
+                <button type="button" onClick="{{s.remove}}" style="height: 40px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #3A4785; background: transparent; color: #A9B4DA; font: 600 14px 'Barlow', sans-serif">Koltuğu boşalt</button>
+              </sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{s.empty}}" hint-placeholder-val="{{ false }}">
+            <div style="font-size: 18px; font-weight: 600; color: #A9B4DA">{{s.emptyTxt}}</div>
+            <div style="margin-top: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+              <button type="button" onClick="{{s.invite}}" style="height: 56px; border-radius: 12px; border: 0; background: #1A2452; color: #EEF2FF; display: flex; align-items: center; justify-content: center; gap: 8px; font: 600 14px 'Barlow', sans-serif">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11 A4 4 0 1 0 9.01 11 Z M2 21 C2 17 5 15 9 15 C11 15 12.5 15.5 13.5 16.3 M19 8 V14 M16 11 H22"></path></svg>
+                <span>Davet et</span>
+              </button>
+              <button type="button" onClick="{{s.ikiz}}" style="height: 56px; border-radius: 12px; border: 0; background: #1A2452; color: #EEF2FF; display: flex; align-items: center; justify-content: center; gap: 8px; font: 600 14px 'Barlow', sans-serif">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8 H18 V18 H6 Z M12 4 V8 M9.5 12.5 V13 M14.5 12.5 V13 M3 12 V14 M21 12 V14"></path></svg>
+                <span>İkiz ekle</span>
+              </button>
+              <button type="button" onClick="{{s.close}}" style="height: 56px; border-radius: 12px; border: 0; background: #1A2452; color: #EEF2FF; display: flex; align-items: center; justify-content: center; gap: 8px; font: 600 14px 'Barlow', sans-serif">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11 H18 V20 H6 Z M8.5 11 V8 A3.5 3.5 0 0 1 15.5 8 V11"></path></svg>
+                <span>Kapat</span>
+              </button>
+            </div>
+          </sc-if>
+          <sc-if value="{{s.closed}}" hint-placeholder-val="{{ false }}">
+            <div style="font-size: 18px; font-weight: 600; color: #8591BE">Kapalı koltuk</div>
+            <button type="button" onClick="{{s.remove}}" style="margin-top: auto; height: 48px; border-radius: 12px; border: 1.5px dashed #3A4785; background: transparent; color: #A9B4DA; font: 600 15px 'Barlow', sans-serif">Koltuğu aç</button>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="width: 360px; flex: none; display: flex; flex-direction: column; gap: 14px">
+      <div style="padding: 20px; border-radius: 22px; background: #121A3A; border: 1px solid #26306A; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 14px; font-weight: 700; color: #A9B4DA">Bot zorluğu</span>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 3px; border-radius: 12px; background: #0B1026">
+            <sc-for list="{{diffs}}" as="o" hint-placeholder-count="3">
+              <button type="button" onClick="{{o.pick}}" style="height: 42px; border-radius: 9px; border: 0; font: 700 15px 'Barlow', sans-serif; {{o.st}}">{{o.label}}</button>
+            </sc-for>
+          </div>
+          <span style="font-size: 13px; font-weight: 500; color: #A9B4DA">{{diffHint}}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 14px; font-weight: 700; color: #A9B4DA">Hamle süresi</span>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 3px; border-radius: 12px; background: #0B1026">
+            <sc-for list="{{times}}" as="o" hint-placeholder-count="3">
+              <button type="button" onClick="{{o.pick}}" style="height: 42px; border-radius: 9px; border: 0; font: 700 15px 'Barlow', sans-serif; {{o.st}}">{{o.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <div style="flex: 1; min-height: 0; padding: 20px; border-radius: 22px; background: #121A3A; border: 1px solid #26306A; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px">
+        <div style="display: grid; gap: 2px; padding: 6px; border-radius: 10px; background: #0D1431; box-shadow: inset 0 0 0 1px rgba(233,240,255,.2); {{mini.gridSt}}">
+          <sc-for list="{{mini.cells}}" as="c" hint-placeholder-count="81">
+            <div style="border-radius: 2px; {{c.st}}"></div>
+          </sc-for>
+        </div>
+        <span style="font-family: 'Oxanium', sans-serif; font-size: 24px; font-weight: 800">{{mini.title}}</span>
+        <span style="font-size: 14px; font-weight: 600; color: #A9B4DA">{{mini.sub}}</span>
+      </div>
+      <a href="{{startHref}}" style="height: 68px; flex: none; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 20px; font-weight: 700; text-decoration: none; {{startSt}}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5 L19 12 L7 19.5 Z"></path></svg>
+        <span>{{startTxt}}</span>
+      </a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var S = { seats: s.seats || ['me', 'p', 'empty', 'empty'], diff: s.diff === undefined ? 1 : s.diff, time: s.time === undefined ? 1 : s.time, inv: s.inv || {}, copied: !!s.copied };
+    var INK = '#0B1026', PC = ['#3BFF8F', '#FFC53D', '#FF5CC0', '#B392FF'];
+    var EMB = [
+      { d: 'M50 36 A14 14 0 1 1 49.99 36 Z', f: INK, s: 'none', w: 0 },
+      { d: 'M50 33 L66 62 L34 62 Z', f: INK, s: INK, w: 3 },
+      { d: 'M33 42 H67 M33 58 H67', f: 'none', s: INK, w: 9 },
+      { d: 'M50 37 A13 13 0 1 1 49.99 37 Z', f: 'none', s: INK, w: 8 }
+    ];
+    var set = function (i, v) { var a = S.seats.slice(); a[i] = v; var inv = Object.assign({}, S.inv); delete inv[i]; self.setState({ seats: a, inv: inv }); };
+    var stars = 0;
+    var seats = S.seats.map(function (t, i) {
+      var filled = t === 'me' || t === 'p' || t === 'ikiz'; if (filled) stars++;
+      var name = t === 'me' ? 'Oyuncu 1 (sen)' : t === 'p' ? 'Oyuncu 2' : t === 'ikiz' ? 'İkiz' : '';
+      var tag = t === 'me' ? 'Kurucu · masaüstü' : t === 'p' ? 'Oyuncu · telefon' : t === 'ikiz' ? 'Bot yıldız · sırasını oynar' : '';
+      return {
+        seatLabel: 'KOLTUK ' + (i + 1),
+        filled: filled, empty: t === 'empty', closed: t === 'closed',
+        box: filled ? 'background: #121A3A; border: 1.5px solid ' + PC[i] + '66' : (t === 'closed' ? 'background: transparent; border: 1.5px dashed #26306A' : 'background: #0E1534; border: 1.5px dashed #3A4785'),
+        col: PC[i], emb: EMB[i], name: name, tag: tag,
+        readySt: 'background: rgba(59,255,143,.14); color: #3BFF8F', readyIcon: 'M5 12.5 L10 17 L19 7', readyTxt: 'Hazır',
+        canRemove: t === 'ikiz',
+        emptyTxt: S.inv[i] ? 'Davet gönderildi…' : 'Boş koltuk',
+        invite: function () { var inv = Object.assign({}, S.inv); inv[i] = 1; self.setState({ inv: inv }); },
+        ikiz: function () { set(i, 'ikiz'); }, close: function () { set(i, 'closed'); }, remove: function () { set(i, 'empty'); }
+      };
+    });
+    var segSt = function (on) { return on ? 'background: #E9F0FF; color: #0B1026' : 'background: transparent; color: #A9B4DA'; };
+    var DL = ['Kolay', 'Normal', 'Zor'], DH = ['Botlar kovalar, hata yapar.', 'Bir sonraki hamlede yenecekleri kareye gitmez.', 'Bir sonraki tur için vuruş hazırlar.'];
+    var diffs = DL.map(function (l, i) { return { label: l, st: segSt(S.diff === i), pick: function () { self.setState({ diff: i }); } }; });
+    var times = ['10 sn', '20 sn', '30 sn'].map(function (l, i) { return { label: l, st: segSt(S.time === i), pick: function () { self.setState({ time: i }); } }; });
+    var n = stars <= 2 ? 9 : stars === 3 ? 11 : 13, bots = n === 9 ? 14 : n === 11 ? 21 : 28;
+    var starts = n === 9 ? [[1, 4], [7, 4]] : n === 11 ? [[1, 5], [8, 1], [8, 9]] : [[1, 6], [6, 11], [11, 6], [6, 1]];
+    var filledIdx = []; S.seats.forEach(function (t, i) { if (t === 'me' || t === 'p' || t === 'ikiz') filledIdx.push(i); });
+    var cs = Math.floor(220 / n), cells = [];
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) {
+      var k = -1; starts.forEach(function (p, j) { if (p[0] === r && p[1] === c) k = j; });
+      cells.push({ st: 'width:' + cs + 'px;height:' + cs + 'px;background:' + (k >= 0 && filledIdx[k] !== undefined ? PC[filledIdx[k]] : (((r + c) % 2) ? '#1D2858' : '#1A2452')) });
+    }
+    var qrc = [], seed = 7;
+    var rnd = function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    for (var y = 0; y < 21; y++) for (var x = 0; x < 21; x++) {
+      var finder = (x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13);
+      var on;
+      if (finder) { var fx = x > 13 ? x - 14 : x, fy = y > 13 ? y - 14 : y; on = fx === 0 || fy === 0 || fx === 6 || fy === 6 || (fx >= 2 && fx <= 4 && fy >= 2 && fy <= 4); }
+      else on = rnd() > 0.55;
+      qrc.push({ st: 'width:5px;height:5px;background:' + (on ? '#0B1026' : 'transparent') });
+    }
+    var can = stars >= 2;
+    return {
+      seats: seats, diffs: diffs, times: times, diffHint: DH[S.diff],
+      mini: { gridSt: 'grid-template-columns: repeat(' + n + ', ' + cs + 'px)', cells: cells, title: n + '×' + n + ' · ' + stars + ' yıldız', sub: '~' + bots + ' bot · 5–10 dk · renkli kareler başlangıç noktaları' },
+      qr: { gridSt: 'grid-template-columns: repeat(21, 5px)', cells: qrc },
+      linkTxt: S.copied ? 'Link kopyalandı' : 'Davet linkini kopyala',
+      copyLink: function () { self.setState({ copied: true }); },
+      startHref: can ? 'MasaustuPrototip.dc.html' : '#',
+      startSt: can ? 'background: #3BFF8F; color: #0B1026; box-shadow: 0 10px 30px rgba(59,255,143,.25)' : 'background: #232D5E; color: #A9B4DA',
+      startTxt: can ? 'Başlat' : 'En az 2 yıldız gerekli'
+    };
+  }
+}
+</script>
+</body>
+</html>

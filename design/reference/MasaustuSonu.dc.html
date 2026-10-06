@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Masaüstü · Oyun sonu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; box-sizing: border-box; padding: 48px 96px; background: radial-gradient(60% 70% at 25% 40%, #1B3A3A 0%, #0B1026 65%); color: #EEF2FF; font-family: 'Barlow', system-ui, sans-serif; display: flex; gap: 72px">
+  <div style="width: 440px; flex: none; display: flex; flex-direction: column; justify-content: center; gap: 22px">
+    <span style="font-family: 'Oxanium', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.18em; color: #A9B4DA">MAÇ BİTTİ · 11×11 · 14 TUR · 8:12</span>
+    <div style="position: relative; width: 200px; height: 200px">
+      <svg viewBox="0 0 200 200" style="position: absolute; inset: -30px; width: 260px; height: 260px; overflow: visible" aria-hidden="true">
+        <rect x="44" y="44" width="112" height="112" rx="6" fill="none" stroke="rgba(233,240,255,.35)" stroke-width="2.5"></rect>
+        <polygon points="100,21 179,100 100,179 21,100" fill="none" stroke="rgba(59,255,143,.5)" stroke-width="2.5"></polygon>
+      </svg>
+      <div style="position: absolute; left: 20%; top: 20%; width: 60%; height: 60%; border-radius: 10%; background: #3BFF8F; box-shadow: 0 0 0 5px #FFFFFF, 0 0 70px #3BFF8FAA"></div>
+      <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="M50 38 A12 12 0 1 1 49.99 38 Z" fill="#0B1026"></path></svg>
+    </div>
+    <span style="font-family: 'Oxanium', sans-serif; font-size: 64px; font-weight: 800; color: #3BFF8F; line-height: 1">Kazandın!</span>
+    <span style="font-size: 18px; font-weight: 500; color: #A9B4DA">Oyuncu 1 · son kalan yıldız</span>
+  </div>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 20px">
+    <div style="border-radius: 22px; background: #121A3A; border: 1px solid #26306A; overflow: hidden">
+      <div style="display: grid; grid-template-columns: 60px minmax(0, 1fr) 110px 150px 220px; gap: 12px; padding: 14px 22px; background: #1A2452; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #A9B4DA">
+        <span>SIRA</span><span>OYUNCU</span><span>VURUŞ</span><span>HAYATTA</span><span>ELENME</span>
+      </div>
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+        <div style="display: grid; grid-template-columns: 60px minmax(0, 1fr) 110px 150px 220px; gap: 12px; align-items: center; padding: 0 22px; height: 72px; border-top: 1px solid #1E2754; {{r.rowSt}}">
+          <span style="font-family: 'Oxanium', sans-serif; font-size: 28px; font-weight: 800; color: {{r.col}}">{{r.place}}</span>
+          <span style="display: flex; align-items: center; gap: 14px">
+            <span style="position: relative; width: 34px; height: 34px; flex: none">
+              <span style="position: absolute; left: 17%; top: 17%; width: 66%; height: 66%; border-radius: 10%; box-shadow: 0 0 0 2px #FFFFFF; {{r.shape}}"></span>
+              <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{r.d}}" fill="{{r.f}}" stroke="{{r.s}}" stroke-width="{{r.w}}" stroke-linecap="round"></path></svg>
+            </span>
+            <span style="font-size: 18px; font-weight: 700">{{r.name}}</span>
+          </span>
+          <span style="font-family: 'Oxanium', sans-serif; font-size: 22px; font-weight: 700">{{r.kills}}</span>
+          <span style="font-size: 16px; font-weight: 600">{{r.alive}}</span>
+          <span style="font-size: 15px; font-weight: 500; color: #A9B4DA">{{r.note}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+      <sc-for list="{{stats}}" as="s" hint-placeholder-count="3">
+        <div style="padding: 18px 20px; border-radius: 18px; background: #121A3A; border: 1px solid #26306A; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-family: 'Oxanium', sans-serif; font-size: 36px; font-weight: 800; line-height: 1">{{s.v}}</span>
+          <span style="font-size: 14px; font-weight: 600; color: #A9B4DA">{{s.l}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display: flex; gap: 12px">
+      <a href="MasaustuLobi.dc.html" style="flex: 2; height: 64px; border-radius: 18px; background: #3BFF8F; color: #0B1026; display: flex; align-items: center; justify-content: center; gap: 12px; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B1026" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 A8 8 0 0 1 18 6.5 M18 3 V7 H14 M20 12 A8 8 0 0 1 6 17.5 M6 21 V17 H10"></path></svg>
+        <span style="font-size: 20px; font-weight: 700; color: #0B1026">Rövanş</span>
+        <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: rgba(11,16,38,.15); display: flex; align-items: center; font-size: 14px; font-weight: 700; color: #0B1026">Oyuncu 2 hazır · 1/3</span>
+      </a>
+      <button type="button" style="flex: 1; height: 64px; border-radius: 18px; border: 1.5px solid #3A4785; background: transparent; color: #EEF2FF; display: flex; align-items: center; justify-content: center; gap: 10px; font: 600 17px 'Barlow', sans-serif">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 V15 M7 9 L12 4 L17 9 M5 14 V20 H19 V14"></path></svg>
+        <span>Paylaş</span>
+      </button>
+      <a href="MasaustuMenu.dc.html" style="flex: 1; height: 64px; border-radius: 18px; border: 1.5px solid #3A4785; color: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600; text-decoration: none">Ana menü</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var INK = '#0B1026';
+    return {
+      rows: [
+        { place: '1', name: 'Oyuncu 1 (sen)', kills: '4', alive: '14 tur', note: 'Son kalan yıldız', col: '#3BFF8F', rowSt: 'background: rgba(59,255,143,.06)', shape: 'background:#3BFF8F', d: 'M50 36 A14 14 0 1 1 49.99 36 Z', f: INK, s: 'none', w: 0 },
+        { place: '2', name: 'Oyuncu 2', kills: '3', alive: '14 tur', note: 'Tur 14 · Kızıl #3 vurdu', col: '#EEF2FF', rowSt: '', shape: 'background:#FFC53D', d: 'M50 33 L66 62 L34 62 Z', f: INK, s: INK, w: 3 },
+        { place: '3', name: 'Oyuncu 3', kills: '1', alive: '11 tur', note: 'Tur 11 · Çelik #18 vurdu', col: '#EEF2FF', rowSt: '', shape: 'background:#FF5CC0', d: 'M33 42 H67 M33 58 H67', f: 'none', s: INK, w: 9 }
+      ],
+      stats: [{ v: '14', l: 'tur hayatta kaldın' }, { v: '2', l: 'riskli hamleden sağ çıktın' }, { v: '0', l: 'kez süren doldu' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

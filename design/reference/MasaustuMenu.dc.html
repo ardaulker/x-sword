@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Masaüstü · Ana menü</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: radial-gradient(80% 90% at 30% 40%, #17225A 0%, #0B1026 65%); color: #EEF2FF; font-family: 'Barlow', system-ui, sans-serif">
+  <div style="position: absolute; right: -120px; top: -80px; display: grid; grid-template-columns: repeat(11, 64px); gap: 6px; transform: rotate(-8deg); pointer-events: none">
+    <sc-for list="{{deco}}" as="d" hint-placeholder-count="121">
+      <div style="width: 64px; height: 64px; clip-path: polygon(26% 0,74% 0,100% 26%,100% 74%,74% 100%,26% 100%,0 74%,0 26%); {{d.st}}"></div>
+    </sc-for>
+  </div>
+
+  <div style="position: absolute; left: 0; top: 0; right: 0; height: 88px; display: flex; align-items: center; justify-content: space-between; padding: 0 56px">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <svg width="36" height="36" viewBox="0 0 200 200" aria-hidden="true" style="overflow: visible"><rect x="44" y="44" width="112" height="112" rx="6" fill="#0B1026" stroke="#E9F0FF" stroke-width="10"></rect><polygon points="100,21 179,100 100,179 21,100" fill="none" stroke="#3BFF8F" stroke-width="10" stroke-linejoin="round"></polygon><polygon points="86,66 114,66 134,86 134,114 114,134 86,134 66,114 66,86" fill="#3BFF8F"></polygon></svg>
+      <span style="font-family: 'Oxanium', sans-serif; font-size: 16px; font-weight: 800; letter-spacing: 0.08em">SATRANÇ ARENASI</span>
+    </div>
+    <a href="MasaustuAyarlar.dc.html" style="display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 16px 0 8px; border-radius: 24px; background: rgba(18,26,58,.85); border: 1px solid #2B3670; color: #EEF2FF; text-decoration: none">
+      <span style="position: relative; width: 32px; height: 32px">
+        <span style="position: absolute; left: 17%; top: 17%; width: 66%; height: 66%; border-radius: 10%; background: #3BFF8F; box-shadow: 0 0 0 2px #FFFFFF, 0 0 10px #3BFF8FAA"></span>
+        <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="M50 36 A14 14 0 1 1 49.99 36 Z" fill="#0B1026"></path></svg>
+      </span>
+      <span style="display: flex; flex-direction: column; line-height: 1.15"><span style="font-size: 15px; font-weight: 700">Oyuncu 1</span><span style="font-size: 12px; font-weight: 500; color: #A9B4DA">Ad ve renk</span></span>
+    </a>
+  </div>
+
+  <div style="position: absolute; left: 120px; top: 190px; width: 620px; display: flex; flex-direction: column; gap: 26px">
+    <svg width="180" height="180" viewBox="0 0 200 200" aria-hidden="true" style="overflow: visible">
+      <rect x="44" y="44" width="112" height="112" rx="6" fill="#0B1026" stroke="#E9F0FF" stroke-width="6"></rect>
+      <polygon points="100,21 179,100 100,179 21,100" fill="none" stroke="#3BFF8F" stroke-width="6" stroke-linejoin="round"></polygon>
+      <polygon points="86,66 114,66 134,86 134,114 114,134 86,134 66,114 66,86" fill="#3BFF8F"></polygon>
+      <path d="M100 82 V118 M82 100 H118" stroke="#0B1026" stroke-width="7" stroke-linecap="round"></path>
+    </svg>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-family: 'Oxanium', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.42em; color: #3BFF8F">TAKTİKSEL</span>
+      <span style="font-family: 'Oxanium', sans-serif; font-size: 76px; font-weight: 800; line-height: 0.98">SATRANÇ<br>ARENASI</span>
+    </div>
+    <div style="font-size: 20px; font-weight: 500; line-height: 1.5; color: #A9B4DA; max-width: 520px">Tek taşın var. Her tur kural değişir: önce düz, sonra çapraz. Botları ve arkadaşlarını devir, daralan arenada son kalan ol.</div>
+    <div style="display: flex; gap: 10px">
+      <span style="display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 18px; background: #E9F0FF; color: #0B1026; font-family: 'Oxanium', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.08em"><svg width="16" height="16" viewBox="0 0 100 100"><polygon points="17,17 83,17 83,83 17,83" fill="none" stroke="#0B1026" stroke-width="11"></polygon><path d="M50 30 V70 M30 50 H70" stroke="#0B1026" stroke-width="11" stroke-linecap="round"></path></svg>DÜZ</span>
+      <span style="display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 18px; background: #0B1026; box-shadow: inset 0 0 0 2px #E9F0FF; font-family: 'Oxanium', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.08em"><svg width="16" height="16" viewBox="0 0 100 100" style="overflow: visible"><polygon points="50,5 95,50 50,95 5,50" fill="none" stroke="#E9F0FF" stroke-width="11"></polygon><path d="M35 35 L65 65 M65 35 L35 65" stroke="#E9F0FF" stroke-width="11" stroke-linecap="round"></path></svg>ÇAPRAZ</span>
+    </div>
+  </div>
+
+  <div style="position: absolute; right: 120px; top: 170px; width: 460px; padding: 28px; box-sizing: border-box; border-radius: 28px; background: rgba(18,26,58,.92); border: 1px solid #2B3670; box-shadow: 0 30px 80px rgba(0,0,0,.45); display: flex; flex-direction: column; gap: 14px">
+    <a href="MasaustuPrototip.dc.html" style="height: 76px; border-radius: 18px; background: #3BFF8F; color: #0B1026; display: flex; align-items: center; gap: 16px; padding: 0 22px; text-decoration: none; box-shadow: 0 10px 30px rgba(59,255,143,.25)">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="#0B1026"><path d="M7 4.5 L19 12 L7 19.5 Z"></path></svg>
+      <span style="display: flex; flex-direction: column; line-height: 1.15"><span style="font-size: 22px; font-weight: 700; color: #0B1026">Hızlı oyun</span><span style="font-size: 14px; font-weight: 600; color: #0B1026; opacity: .75">Botlara karşı, hemen başla</span></span>
+    </a>
+    <a href="MasaustuLobi.dc.html" style="height: 60px; border-radius: 16px; background: #E9F0FF; color: #0B1026; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 18px; font-weight: 700; text-decoration: none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B1026" stroke-width="2.4" stroke-linecap="round"><path d="M12 5 V19 M5 12 H19"></path></svg>
+      <span style="color: #0B1026">Oda kur</span>
+    </a>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 18px; background: #0E1534; border: 1px solid #26306A">
+      <label for="mkod" style="font-size: 14px; font-weight: 700; color: #A9B4DA">Odaya katıl</label>
+      <div style="display: flex; gap: 8px">
+        <input id="mkod" value="{{code}}" onChange="{{onCode}}" maxlength="5" placeholder="KOD" autocomplete="off" style="flex: 1; min-width: 0; height: 52px; box-sizing: border-box; padding: 0 16px; border-radius: 12px; border: 1.5px solid #3A4785; background: #0B1026; color: #EEF2FF; font: 700 22px 'Oxanium', sans-serif; letter-spacing: 0.3em; text-transform: uppercase">
+        <a href="{{joinHref}}" style="width: 110px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; text-decoration: none; {{joinSt}}">Katıl</a>
+      </div>
+      <span style="font-size: 13px; font-weight: 500; color: #8591BE">Linkle geldiysen kod kendiliğinden dolar.</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+      <a href="MasaustuEgitim.dc.html" style="height: 52px; border-radius: 14px; border: 1.5px solid #3A4785; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 600; color: #EEF2FF; text-decoration: none">Nasıl oynanır</a>
+      <a href="MasaustuAyarlar.dc.html" style="height: 52px; border-radius: 14px; border: 1.5px solid #3A4785; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 600; color: #EEF2FF; text-decoration: none">Ayarlar</a>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 120px; bottom: 48px; font-size: 14px; font-weight: 500; color: #8591BE">Telefondaki arkadaşların aynı oda koduyla katılabilir. Hesap gerekmez.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var code = String(s.code === undefined ? '' : s.code).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+    var deco = [];
+    for (var r = 0; r < 11; r++) for (var c = 0; c < 11; c++) {
+      var dx = (c - 3) / 6, dy = (r - 5) / 6, o = Math.max(0, 0.6 - Math.sqrt(dx * dx + dy * dy) * 0.55);
+      var tint = (r === 4 && c === 3) ? '#3BFF8F' : (((r + c) % 2) ? '#1D2858' : '#1A2452');
+      deco.push({ st: 'background:' + tint + ';opacity:' + o.toFixed(2) });
+    }
+    var ok = code.length === 5;
+    return {
+      deco: deco, code: code,
+      onCode: function (e) { self.setState({ code: e.target.value }); },
+      joinHref: ok ? 'MasaustuLobi.dc.html' : '#',
+      joinSt: ok ? 'background: #3BFF8F; color: #0B1026' : 'background: #232D5E; color: #A9B4DA'
+    };
+  }
+}
+</script>
+</body>
+</html>

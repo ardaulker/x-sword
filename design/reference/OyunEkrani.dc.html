@@ -1,0 +1,1500 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Oyun ekranı</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="position: relative; overflow: hidden; background: radial-gradient(130% 55% at 50% 0%, #141E48 0%, #0B1026 62%); color: #EEF2FF; font-family: 'Barlow', system-ui, sans-serif; {{rootSt}}">
+
+<sc-if value="{{mob}}" hint-placeholder-val="{{ true }}">
+<div style="position: relative; display: flex; flex-direction: column; box-sizing: border-box; {{mobSt}}">
+
+  <sc-if value="{{full}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 6px; flex: none">
+      <div style="height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px">
+        <a href="Main.dc.html" aria-label="Menü" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #A9B4DA; border-radius: 12px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>
+        </a>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <div style="font-family: 'Oxanium', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.12em">{{hdr.tur}}</div>
+          <div style="display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 14px; font-size: 12px; font-weight: 600; {{hdr.ringSt}}">
+            <svg width="14" height="14" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="10"><polygon points="30,6 70,6 94,30 94,70 70,94 30,94 6,70 6,30"></polygon><polygon points="42,30 58,30 70,42 70,58 58,70 42,70 30,58 30,42"></polygon></svg>
+            <span>{{hdr.ring}}</span>
+          </div>
+        </div>
+        <button type="button" aria-label="Savaş kaydı" onClick="{{openLog}}" style="width: 44px; height: 44px; border: 0; padding: 0; background: transparent; color: #A9B4DA; display: flex; align-items: center; justify-content: center; position: relative; border-radius: 12px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4 L9.5 14.5 M20 4 V9 M20 4 H15 M6 13 L11 18 M4 20 L8.2 15.8"></path></svg>
+          <span style="position: absolute; top: 5px; right: 3px; min-width: 16px; height: 16px; border-radius: 8px; background: #E9F0FF; color: #0B1026; font: 700 10px/16px 'Oxanium', sans-serif; text-align: center">{{hdr.logN}}</span>
+        </button>
+      </div>
+      <div style="margin: 0 12px; height: 56px; border-radius: 16px; display: flex; align-items: center; gap: 12px; padding: 0 14px; {{md.box}}">
+        <svg width="34" height="34" viewBox="0 0 100 100" style="flex: none; overflow: visible"><polygon points="{{md.shape}}" fill="none" stroke="currentColor" stroke-width="9" stroke-linejoin="round"></polygon><path d="{{md.glyph}}" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"></path></svg>
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <div style="font-family: 'Oxanium', sans-serif; font-weight: 800; font-size: 28px; line-height: 1; letter-spacing: 0.08em">{{md.label}}</div>
+          <div style="font-size: 12px; font-weight: 600">{{md.sub}}</div>
+        </div>
+        <div style="margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 10px; font-weight: 700; letter-spacing: 0.12em">
+          <span>SONRAKİ TUR</span>
+          <span style="display: flex; align-items: center; gap: 5px; font-family: 'Oxanium', sans-serif; font-size: 13px"><svg width="13" height="13" viewBox="0 0 100 100" style="overflow: visible"><polygon points="{{md.nshape}}" fill="none" stroke="currentColor" stroke-width="12"></polygon></svg>{{md.next}}</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{compact}}" hint-placeholder-val="{{ false }}">
+    <div style="height: 48px; margin: 0 6px; display: flex; align-items: center; gap: 4px; flex: none">
+      <a href="Main.dc.html" aria-label="Menü" style="width: 40px; height: 44px; display: flex; align-items: center; justify-content: center; color: #A9B4DA">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>
+      </a>
+      <div style="flex: 1; height: 44px; border-radius: 14px; display: flex; align-items: center; gap: 10px; padding: 0 12px; {{md.box}}">
+        <svg width="24" height="24" viewBox="0 0 100 100" style="flex: none; overflow: visible"><polygon points="{{md.shape}}" fill="none" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></polygon><path d="{{md.glyph}}" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round"></path></svg>
+        <div style="font-family: 'Oxanium', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 0.08em">{{md.label}}</div>
+        <div style="margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; font-size: 11px; font-weight: 700; line-height: 1.25">
+          <span>{{hdr.tur}}</span>
+          <span>{{hdr.ringShort}}</span>
+        </div>
+      </div>
+      <button type="button" aria-label="Savaş kaydı" onClick="{{openLog}}" style="width: 40px; height: 44px; border: 0; padding: 0; background: transparent; color: #A9B4DA; display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4 L9.5 14.5 M20 4 V9 M20 4 H15 M6 13 L11 18 M4 20 L8.2 15.8"></path></svg>
+      </button>
+    </div>
+  </sc-if>
+
+  <div style="display: flex; gap: 6px; padding: 0 12px; flex: none">
+    <sc-for list="{{players}}" as="p" hint-placeholder-count="2">
+      <div style="flex: 1; min-width: 0; display: flex; align-items: center; border-radius: 12px; background: #121A3A; box-sizing: border-box; {{p.st}}">
+        <div style="position: relative; flex: none; width: {{p.msz}}; height: {{p.msz}}">
+          <div style="position: absolute; {{p.m.st}}"></div>
+          <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{p.m.gd}}" fill="{{p.m.gf}}" stroke="{{p.m.gs}}" stroke-width="{{p.m.gw}}" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </div>
+        <div style="min-width: 0; display: flex; flex-direction: column; line-height: 1.2">
+          <span style="font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; {{p.nameSt}}">{{p.name}}</span>
+          <span style="font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: {{p.subCol}}">{{p.sub}}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; position: relative">
+    <div style="position: relative; flex: none; {{bd.frameSt}}">
+      <div style="display: grid; {{bd.gridSt}}">
+        <sc-for list="{{cells}}" as="c" hint-placeholder-count="81">
+          <div style="position: relative; {{c.st}}">
+            <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%">
+              <path d="{{c.d1}}" fill="none" stroke="{{c.s1}}" stroke-width="{{c.w1}}" stroke-dasharray="{{c.da1}}" stroke-linejoin="round" stroke-linecap="round"></path>
+              <path d="{{c.d2}}" fill="{{c.f2}}" stroke="{{c.s2}}" stroke-width="{{c.w2}}" stroke-linecap="round"></path>
+            </svg>
+          </div>
+        </sc-for>
+      </div>
+      <div style="position: absolute; pointer-events: none; {{bd.layerSt}}">
+        <sc-for list="{{lines}}" as="l" hint-placeholder-count="0">
+          <div style="position: absolute; z-index: 1; {{l.st}}"></div>
+        </sc-for>
+        <sc-for list="{{fx}}" as="f" hint-placeholder-count="0">
+          <div style="position: absolute; z-index: 1; {{f.st}}">
+            <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; overflow: visible">
+              <path d="M50 0 L57 37 L85 15 L63 43 L100 50 L63 57 L85 85 L57 63 L50 100 L43 63 L15 85 L37 57 L0 50 L37 43 L15 15 L43 37 Z" fill="#FFF6C9" fill-opacity="0.9" stroke="{{f.col}}" stroke-width="2.5" stroke-linejoin="round"></path>
+              <circle cx="50" cy="50" r="44" fill="none" stroke="{{f.col}}" stroke-width="3" stroke-dasharray="5 6"></circle>
+            </svg>
+          </div>
+        </sc-for>
+        <sc-for list="{{pcs}}" as="p" hint-placeholder-count="15">
+          <div style="position: absolute; left: 0; top: 0; {{p.st}}">
+            <div style="position: absolute; inset: -6%; border-radius: 50%; box-sizing: border-box; {{p.halo}}"></div>
+            <div style="position: absolute; {{p.shape}}"></div>
+            <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible">
+              <path d="{{p.gd}}" fill="{{p.gf}}" stroke="{{p.gs}}" stroke-width="{{p.gw}}" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="{{p.nd}}" fill="{{p.nf}}" stroke="#0B1026" stroke-width="4" stroke-linejoin="round"></path>
+            </svg>
+            <sc-if value="{{p.pip}}" hint-placeholder-val="{{ false }}">
+              <div style="position: absolute; left: -5px; top: -5px; min-width: 15px; height: 15px; padding: 0 3px; box-sizing: border-box; border-radius: 8px; background: #EEF2FF; color: #0B1026; font: 700 10px/15px 'Oxanium', sans-serif; text-align: center; box-shadow: 0 0 0 1.5px #0B1026">{{p.pip}}</div>
+            </sc-if>
+            <sc-if value="{{p.badge}}" hint-placeholder-val="{{ false }}">
+              <div style="position: absolute; right: -6px; top: -6px; width: 16px; height: 16px; border-radius: 8px; background: #FF3B5C; color: #0B1026; font: 800 11px/16px 'Oxanium', sans-serif; text-align: center; box-shadow: 0 0 0 2px #0B1026">{{p.badge}}</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{modeOv}}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; inset: 0; z-index: 6; border-radius: 16px; overflow: hidden; background: rgba(11,16,38,.58); display: flex; align-items: center; justify-content: center">
+          <div style="position: absolute; left: -30%; top: 40%; width: 160%; height: 84px; background: repeating-linear-gradient(90deg, rgba(233,240,255,.24) 0 3px, transparent 3px 12px); {{md.band}}"></div>
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 28px; border-radius: 22px; background: #0B1026; box-shadow: inset 0 0 0 2px #E9F0FF, 0 20px 50px rgba(0,0,0,.6)">
+            <svg width="64" height="64" viewBox="0 0 100 100" style="overflow: visible; color: #E9F0FF"><polygon points="{{md.shape}}" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"></polygon><path d="{{md.glyph}}" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"></path></svg>
+            <div style="font-family: 'Oxanium', sans-serif; font-weight: 800; font-size: 46px; letter-spacing: 0.08em; line-height: 1; color: #E9F0FF">{{md.label}}</div>
+            <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: #A9B4DA">{{md.ovSub}}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{banner}}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 6; display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: 16px; background: rgba(11,16,38,.94); white-space: nowrap; box-shadow: inset 0 0 0 1.5px {{banner.col}}, 0 16px 40px rgba(0,0,0,.55)">
+          <sc-if value="{{banner.m}}" hint-placeholder-val="{{ false }}">
+            <div style="position: relative; width: 32px; height: 32px; flex: none">
+              <div style="position: absolute; {{banner.m.st}}"></div>
+              <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{banner.m.gd}}" fill="{{banner.m.gf}}" stroke="{{banner.m.gs}}" stroke-width="{{banner.m.gw}}" stroke-linecap="round"></path></svg>
+            </div>
+          </sc-if>
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 17px; font-weight: 700; color: {{banner.col}}">{{banner.title}}</span>
+            <span style="font-size: 13px; font-weight: 500; color: #A9B4DA">{{banner.sub}}</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{tapLayer}}" hint-placeholder-val="{{ false }}">
+        <button type="button" aria-label="Tahta: kareye dokun" onClick="{{boardTap}}" style="position: absolute; inset: 0; z-index: 8; background: transparent; border: 0; padding: 0; cursor: pointer; border-radius: 16px"></button>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; top: 2px; left: 50%; transform: translateX(-50%); z-index: 9; display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 18px; background: #E9F0FF; color: #0B1026; font-size: 14px; font-weight: 700; white-space: nowrap; box-shadow: 0 6px 20px rgba(0,0,0,.45)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B1026" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="{{toastIcon}}"></path></svg>
+        <span>{{toast}}</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="margin: 0 10px; flex: none; background: #121A3A; border: 1px solid #26306A; border-radius: 20px; padding: 12px 14px; display: flex; flex-direction: column; {{pn.boxSt}}">
+    <sc-if value="{{pn.isGen}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <sc-if value="{{pn.who}}" hint-placeholder-val="{{ true }}">
+            <div style="position: relative; width: 34px; height: 34px; flex: none">
+              <div style="position: absolute; {{pn.who.st}}"></div>
+              <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{pn.who.gd}}" fill="{{pn.who.gf}}" stroke="{{pn.who.gs}}" stroke-width="{{pn.who.gw}}" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+          </sc-if>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <div style="font-size: 18px; font-weight: 700; line-height: 1.15; color: {{pn.titleCol}}">{{pn.title}}</div>
+            <div style="font-size: 13px; font-weight: 500; color: #A9B4DA">{{pn.sub}}</div>
+          </div>
+          <div style="font-family: 'Oxanium', sans-serif; font-weight: 700; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; color: {{pn.timerCol}}">{{pn.timer}}</div>
+        </div>
+        <sc-if value="{{pn.hasBar}}" hint-placeholder-val="{{ true }}">
+          <div style="height: 6px; border-radius: 3px; background: #232D5E; overflow: hidden"><div style="height: 100%; border-radius: 3px; transition: width 1s linear; width: {{pn.bar}}%; background: {{pn.barCol}}"></div></div>
+        </sc-if>
+        <div style="font-size: 13px; font-weight: 500; line-height: 1.35; color: {{pn.hintCol}}">{{pn.hint}}</div>
+        <sc-if value="{{pn.endLink}}" hint-placeholder-val="{{ false }}">
+          <a href="OyunSonu.dc.html" style="height: 44px; border-radius: 12px; border: 1.5px dashed #3A4785; color: #A9B4DA; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; text-decoration: none">Prototip: oyun sonuna geç</a>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{pn.isOnz}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <div style="font-size: 16px; font-weight: 700; flex: 1">{{pn.title}}</div>
+          <div style="font-family: 'Oxanium', sans-serif; font-weight: 700; font-size: 18px; color: {{pn.timerCol}}">{{pn.timer}}</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px; {{pn.riskSt}}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="{{pn.riskIcon}}"></path></svg>
+          <span style="font-size: 14px; font-weight: 700">{{pn.risk}}</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{pn.chips}}" as="ch" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 4px; border-radius: 15px; background: #1A2452; border: 1px solid #2B3670">
+              <div style="position: relative; width: 22px; height: 22px; flex: none">
+                <div style="position: absolute; {{ch.st}}"></div>
+                <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{ch.gd}}" fill="{{ch.gf}}" stroke="{{ch.gs}}" stroke-width="{{ch.gw}}" stroke-linecap="round"></path></svg>
+              </div>
+              <span style="font-size: 13px; font-weight: 700">{{ch.label}}</span>
+              <span style="font-size: 12px; font-weight: 500; color: #A9B4DA">{{ch.how}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <button type="button" onClick="{{vazgec}}" style="flex: 1; height: 52px; border-radius: 14px; border: 1.5px solid #3A4785; background: transparent; color: #EEF2FF; font: 600 16px 'Barlow', sans-serif">Vazgeç</button>
+          <button type="button" onClick="{{onayla}}" style="flex: 2; height: 52px; border-radius: 14px; border: 0; color: #0B1026; font: 700 17px 'Barlow', sans-serif; background: {{pn.okBg}}">{{pn.okLabel}}</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{pn.isThreat}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF3B5C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M12 3.5 L21.5 20 H2.5 Z M12 10 V14 M12 17 V17.2"></path></svg>
+          <div style="font-size: 17px; font-weight: 700; flex: 1; color: #FF9AAC">{{pn.title}}</div>
+          <div style="font-family: 'Oxanium', sans-serif; font-weight: 700; font-size: 18px; color: {{pn.timerCol}}">{{pn.timer}}</div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{pn.chips}}" as="ch" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 4px; border-radius: 15px; background: #1A2452; border: 1px solid #FF3B5C">
+              <div style="position: relative; width: 22px; height: 22px; flex: none">
+                <div style="position: absolute; {{ch.st}}"></div>
+                <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{ch.gd}}" fill="{{ch.gf}}" stroke="{{ch.gs}}" stroke-width="{{ch.gw}}" stroke-linecap="round"></path></svg>
+              </div>
+              <span style="font-size: 13px; font-weight: 700">{{ch.label}}</span>
+              <span style="font-size: 12px; font-weight: 500; color: #A9B4DA">{{ch.how}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size: 13px; font-weight: 500; line-height: 1.35; color: #A9B4DA">{{pn.hint}}</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{pn.isBot}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <svg width="30" height="30" viewBox="0 0 100 100" style="flex: none"><rect x="12" y="12" width="44" height="44" rx="5" fill="#D3765B"></rect><path d="M24 24 L44 44 M44 24 L24 44" stroke="#0B1026" stroke-width="7" stroke-linecap="round"></path><polygon points="66,44 92,70 66,96 40,70" fill="#6F98DA"></polygon><path d="M66 58 V82 M54 70 H78" stroke="#0B1026" stroke-width="7" stroke-linecap="round"></path></svg>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <div style="font-size: 18px; font-weight: 700">Botlar oynuyor</div>
+            <div style="font-size: 13px; font-weight: 500; color: #A9B4DA">{{pn.sub}}</div>
+          </div>
+          <div style="font-family: 'Oxanium', sans-serif; font-weight: 700; font-size: 24px; font-variant-numeric: tabular-nums">{{pn.count}}</div>
+        </div>
+        <div style="display: flex; gap: 3px">
+          <sc-for list="{{pn.segs}}" as="sg" hint-placeholder-count="12">
+            <div style="flex: 1; height: 6px; border-radius: 3px; background: {{sg.bg}}"></div>
+          </sc-for>
+        </div>
+        <button type="button" onClick="{{hizlandir}}" style="height: 48px; border-radius: 14px; border: 1.5px solid #3A4785; background: #1A2452; color: #EEF2FF; font: 700 15px 'Barlow', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#EEF2FF"><path d="M3 5 L12 12 L3 19 Z M12 5 L21 12 L12 19 Z"></path></svg>
+          <span>Hızlandır · ya da tahtaya dokun</span>
+        </button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{pn.isSpect}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: baseline; gap: 10px">
+          <div style="font-family: 'Oxanium', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: 0.04em">Elendin</div>
+          <div style="font-size: 14px; font-weight: 600; color: #A9B4DA">{{pn.sub}}</div>
+        </div>
+        <div style="font-size: 13px; font-weight: 500; color: #A9B4DA">{{pn.hint}}</div>
+        <div style="display: flex; gap: 8px">
+          <a href="Main.dc.html" style="flex: 1; height: 52px; border-radius: 14px; border: 1.5px solid #3A4785; color: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; text-decoration: none">Maçtan çık</a>
+          <a href="OyunSonu.dc.html" style="flex: 2; height: 52px; border-radius: 14px; background: #E9F0FF; color: #0B1026; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 700; text-decoration: none">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B1026" stroke-width="2.2" stroke-linecap="round"><path d="M2 12 C5 6.5 8.5 5 12 5 C15.5 5 19 6.5 22 12 C19 17.5 15.5 19 12 19 C8.5 19 5 17.5 2 12 Z M12 15 A3 3 0 1 1 12.01 15 Z"></path></svg>
+            <span style="color: #0B1026">İzlemeye devam</span>
+          </a>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{pn.isWin}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="font-family: 'Oxanium', sans-serif; font-size: 28px; font-weight: 800; color: #3BFF8F">Kazandın!</div>
+        <div style="font-size: 14px; font-weight: 600; color: #A9B4DA">{{pn.sub}}</div>
+        <a href="OyunSonu.dc.html" style="height: 52px; border-radius: 14px; background: #3BFF8F; color: #0B1026; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; text-decoration: none">Sonuçları gör</a>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="flex: none; {{botSt}}"></div>
+
+  <sc-if value="{{conn}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 12px; right: 12px; z-index: 15; display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 14px; border-radius: 16px; background: #2A1B24; box-shadow: inset 0 0 0 1.5px #FF8A3D, 0 12px 30px rgba(0,0,0,.5); {{connSt}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFB27F" stroke-width="2.2" stroke-linecap="round" style="flex: none"><path d="M3 3 L21 21 M8.5 16.5 A5 5 0 0 1 15.5 16.5 M5 12.6 A10 10 0 0 1 9.5 10 M14.5 10 A10 10 0 0 1 19 12.6 M12 20 V20.2"></path></svg>
+      <div style="flex: 1; display: flex; flex-direction: column; line-height: 1.2">
+        <span style="font-size: 15px; font-weight: 700; color: #FFB27F">Bağlantı koptu</span>
+        <span style="font-size: 13px; font-weight: 500; color: #EEF2FF">Yeniden bağlanıyor…</span>
+      </div>
+      <button type="button" style="height: 44px; padding: 0 14px; border-radius: 12px; border: 0; background: #FF8A3D; color: #0B1026; font: 700 14px 'Barlow', sans-serif">Tekrar dene</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{sh.bilgi}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 20; background: rgba(5,8,20,.64); display: flex; flex-direction: column; justify-content: flex-end; box-sizing: border-box; padding: 0 8px {{sh.pb}}px">
+      <div style="background: #121A3A; border: 1px solid #2B3670; border-radius: 24px; padding: 10px 18px 18px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 -10px 40px rgba(0,0,0,.4)">
+        <div style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: #3A4785"></div>
+        <div style="display: flex; align-items: center; gap: 14px">
+          <div style="position: relative; width: 52px; height: 52px; flex: none">
+            <div style="position: absolute; {{sh.m.st}}"></div>
+            <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{sh.m.gd}}" fill="{{sh.m.gf}}" stroke="{{sh.m.gs}}" stroke-width="{{sh.m.gw}}" stroke-linecap="round"></path></svg>
+          </div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <div style="font-size: 20px; font-weight: 700">{{sh.title}}</div>
+            <div style="font-size: 14px; font-weight: 500; color: #A9B4DA">{{sh.sub}}</div>
+          </div>
+          <div style="height: 28px; padding: 0 10px; border-radius: 14px; background: #232D5E; display: flex; align-items: center; font-family: 'Oxanium', sans-serif; font-size: 13px; font-weight: 700; white-space: nowrap">{{sh.order}}</div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 8px; border-radius: 16px; background: #0E1534">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #A9B4DA">YÜRÜR</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 38px); gap: 4px">
+              <sc-for list="{{sh.walk}}" as="q" hint-placeholder-count="9">
+                <div style="position: relative; width: 38px; height: 38px; clip-path: polygon(26% 0,74% 0,100% 26%,100% 74%,74% 100%,26% 100%,0 74%,0 26%); {{q.st}}">
+                  <sc-if value="{{q.ctr}}" hint-placeholder-val="{{ false }}">
+                    <div style="position: absolute; {{q.m.st}}"></div>
+                    <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{q.m.gd}}" fill="{{q.m.gf}}" stroke="{{q.m.gs}}" stroke-width="{{q.m.gw}}" stroke-linecap="round"></path></svg>
+                  </sc-if>
+                  <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{q.d}}" fill="{{q.f}}" stroke="{{q.s}}" stroke-width="{{q.w}}" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+              </sc-for>
+            </div>
+            <div style="font-size: 13px; font-weight: 600">{{sh.walkTxt}}</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 8px; border-radius: 16px; background: #0E1534">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #A9B4DA">VURUR</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 38px); gap: 4px">
+              <sc-for list="{{sh.hit}}" as="q" hint-placeholder-count="9">
+                <div style="position: relative; width: 38px; height: 38px; clip-path: polygon(26% 0,74% 0,100% 26%,100% 74%,74% 100%,26% 100%,0 74%,0 26%); {{q.st}}">
+                  <sc-if value="{{q.ctr}}" hint-placeholder-val="{{ false }}">
+                    <div style="position: absolute; {{q.m.st}}"></div>
+                    <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{q.m.gd}}" fill="{{q.m.gf}}" stroke="{{q.m.gs}}" stroke-width="{{q.m.gw}}" stroke-linecap="round"></path></svg>
+                  </sc-if>
+                  <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{q.d}}" fill="{{q.f}}" stroke="{{q.s}}" stroke-width="{{q.w}}" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+              </sc-for>
+            </div>
+            <div style="font-size: 13px; font-weight: 600">{{sh.hitTxt}}</div>
+          </div>
+        </div>
+        <sc-if value="{{sh.hasT}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 12px; border-radius: 14px; background: #1A2452">
+            <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: #A9B4DA">HEDEFİ</span>
+            <div style="position: relative; width: 26px; height: 26px; flex: none">
+              <div style="position: absolute; {{sh.tm.st}}"></div>
+              <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{sh.tm.gd}}" fill="{{sh.tm.gf}}" stroke="{{sh.tm.gs}}" stroke-width="{{sh.tm.gw}}" stroke-linecap="round"></path></svg>
+            </div>
+            <span style="font-size: 15px; font-weight: 700; color: {{sh.tcol}}">{{sh.tname}}</span>
+            <span style="margin-left: auto; font-size: 13px; font-weight: 500; color: #A9B4DA">{{sh.tdist}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{sh.warn}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(255,59,92,.14); color: #FF9AAC; font-size: 14px; font-weight: 700">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 L21.5 20 H2.5 Z M12 10 V14 M12 17 V17.2"></path></svg>
+            <span>Bu tur seni vurabilir</span>
+          </div>
+        </sc-if>
+        <button type="button" onClick="{{closeSheet}}" style="height: 50px; border-radius: 14px; border: 1.5px solid #3A4785; background: transparent; color: #EEF2FF; font: 600 16px 'Barlow', sans-serif">Kapat</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{sh.kayit}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 20; background: rgba(5,8,20,.64); display: flex; flex-direction: column; justify-content: flex-end; box-sizing: border-box; padding: 0 8px {{sh.pb}}px">
+      <div style="background: #121A3A; border: 1px solid #2B3670; border-radius: 24px; padding: 10px 16px 16px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 -10px 40px rgba(0,0,0,.4)">
+        <div style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: #3A4785"></div>
+        <div style="display: flex; align-items: center; gap: 10px; padding: 6px 0 4px">
+          <div style="font-size: 20px; font-weight: 700; flex: 1">Savaş kaydı</div>
+          <button type="button" aria-label="Kapat" onClick="{{closeSheet}}" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #1A2452; color: #EEF2FF; display: flex; align-items: center; justify-content: center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6 L18 18 M18 6 L6 18"></path></svg>
+          </button>
+        </div>
+        <sc-for list="{{logRows}}" as="row" hint-placeholder-count="6">
+          <sc-if value="{{row.isHead}}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 10px 2px 2px; font-family: 'Oxanium', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #A9B4DA">{{row.head}}</div>
+          </sc-if>
+          <sc-if value="{{row.isKill}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 10px; border-radius: 12px; background: #1A2452">
+              <div style="position: relative; width: 26px; height: 26px; flex: none">
+                <div style="position: absolute; {{row.am.st}}"></div>
+                <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{row.am.gd}}" fill="{{row.am.gf}}" stroke="{{row.am.gs}}" stroke-width="{{row.am.gw}}" stroke-linecap="round"></path></svg>
+              </div>
+              <span style="font-size: 15px; font-weight: 700; color: {{row.acol}}">{{row.an}}</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A9B4DA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M20 4 L9.5 14.5 M20 4 V9 M20 4 H15 M6 13 L11 18 M4 20 L8.2 15.8"></path></svg>
+              <div style="position: relative; width: 26px; height: 26px; flex: none">
+                <div style="position: absolute; {{row.vm.st}}"></div>
+                <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{row.vm.gd}}" fill="{{row.vm.gf}}" stroke="{{row.vm.gs}}" stroke-width="{{row.vm.gw}}" stroke-linecap="round"></path></svg>
+              </div>
+              <span style="font-size: 15px; font-weight: 600; color: #A9B4DA; text-decoration: line-through">{{row.vn}}</span>
+            </div>
+          </sc-if>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{desk}}" hint-placeholder-val="{{ false }}">
+<div style="position: relative; width: 1440px; height: 900px; box-sizing: border-box; padding: 24px; display: flex; gap: 24px">
+
+  <div style="width: 300px; flex: none; display: flex; flex-direction: column; gap: 14px">
+    <div style="height: 48px; display: flex; align-items: center; gap: 12px">
+      <a href="MasaustuMenu.dc.html" aria-label="Ana menü" style="width: 44px; height: 44px; flex: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: #121A3A; border: 1px solid #26306A; color: #A9B4DA">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>
+      </a>
+      <svg width="32" height="32" viewBox="0 0 200 200" aria-hidden="true" style="flex: none; overflow: visible"><rect x="44" y="44" width="112" height="112" rx="6" fill="#0B1026" stroke="#E9F0FF" stroke-width="10"></rect><polygon points="100,21 179,100 100,179 21,100" fill="none" stroke="#3BFF8F" stroke-width="10" stroke-linejoin="round"></polygon><polygon points="86,66 114,66 134,86 134,114 114,134 86,134 66,114 66,86" fill="#3BFF8F"></polygon></svg>
+      <div style="display: flex; flex-direction: column; line-height: 1.15">
+        <span style="font-family: 'Oxanium', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.3em; color: #3BFF8F">TAKTİKSEL</span>
+        <span style="font-family: 'Oxanium', sans-serif; font-size: 16px; font-weight: 800">SATRANÇ ARENASI</span>
+      </div>
+    </div>
+
+    <div style="border-radius: 24px; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; {{md.box}}">
+      <div style="display: flex; align-items: center; gap: 16px">
+        <svg width="60" height="60" viewBox="0 0 100 100" style="flex: none; overflow: visible"><polygon points="{{md.shape}}" fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="round"></polygon><path d="{{md.glyph}}" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"></path></svg>
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+          <span style="font-family: 'Oxanium', sans-serif; font-size: 48px; font-weight: 800; line-height: 1; letter-spacing: 0.06em">{{md.label}}</span>
+          <span style="font-size: 14px; font-weight: 600">{{md.sub}}</span>
+        </div>
+      </div>
+      <div style="height: 1.5px; background: currentColor; opacity: 0.2"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-family: 'Oxanium', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.12em">
+        <span>{{hdr.tur}}</span>
+        <span style="display: flex; align-items: center; gap: 6px">SONRAKİ <svg width="14" height="14" viewBox="0 0 100 100" style="overflow: visible"><polygon points="{{md.nshape}}" fill="none" stroke="currentColor" stroke-width="12"></polygon></svg>{{md.next}}</span>
+      </div>
+    </div>
+
+    <div style="height: 44px; border-radius: 14px; display: flex; align-items: center; gap: 8px; padding: 0 14px; font-size: 14px; font-weight: 600; {{hdr.ringSt}}">
+      <svg width="16" height="16" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="10"><polygon points="30,6 70,6 94,30 94,70 70,94 30,94 6,70 6,30"></polygon><polygon points="42,30 58,30 70,42 70,58 58,70 42,70 30,58 30,42"></polygon></svg>
+      <span>{{hdr.ring}}</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <sc-for list="{{players}}" as="p" hint-placeholder-count="2">
+        <div style="height: 60px; display: flex; align-items: center; gap: 12px; padding: 0 14px; border-radius: 14px; background: #121A3A; box-sizing: border-box; {{p.dst}}">
+          <div style="position: relative; width: 32px; height: 32px; flex: none">
+            <div style="position: absolute; {{p.dm.st}}"></div>
+            <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{p.dm.gd}}" fill="{{p.dm.gf}}" stroke="{{p.dm.gs}}" stroke-width="{{p.dm.gw}}" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25">
+            <span style="font-size: 16px; font-weight: 700; {{p.nameSt}}">{{p.dname}}</span>
+            <span style="font-size: 13px; font-weight: 600; color: {{p.subCol}}">{{p.sub}}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top: auto; padding: 14px 16px; border-radius: 16px; background: #0E1534; border: 1px solid #26306A; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #A9B4DA">KLAVYE VE FARE</span>
+      <sc-for list="{{keys}}" as="k" hint-placeholder-count="5">
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; color: #A9B4DA">
+          <span style="min-width: 74px; height: 24px; padding: 0 6px; box-sizing: border-box; border-radius: 6px; background: #1A2452; border: 1px solid #3A4785; border-bottom-width: 2px; display: flex; align-items: center; justify-content: center; font-family: 'Oxanium', sans-serif; font-size: 12px; font-weight: 700; color: #EEF2FF">{{k.k}}</span>
+          <span>{{k.t}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="flex: 1; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center">
+    <div style="position: relative; flex: none; {{bd.frameSt}}">
+      <div style="display: grid; {{bd.gridSt}}">
+        <sc-for list="{{cells}}" as="c" hint-placeholder-count="81">
+          <div style="position: relative; {{c.st}}">
+            <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%">
+              <path d="{{c.d1}}" fill="none" stroke="{{c.s1}}" stroke-width="{{c.w1}}" stroke-dasharray="{{c.da1}}" stroke-linejoin="round" stroke-linecap="round"></path>
+              <path d="{{c.d2}}" fill="{{c.f2}}" stroke="{{c.s2}}" stroke-width="{{c.w2}}" stroke-linecap="round"></path>
+            </svg>
+          </div>
+        </sc-for>
+      </div>
+      <div style="position: absolute; pointer-events: none; {{bd.layerSt}}">
+        <sc-for list="{{lines}}" as="l" hint-placeholder-count="0">
+          <div style="position: absolute; z-index: 1; {{l.st}}"></div>
+        </sc-for>
+        <sc-for list="{{fx}}" as="f" hint-placeholder-count="0">
+          <div style="position: absolute; z-index: 1; {{f.st}}">
+            <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; overflow: visible">
+              <path d="M50 0 L57 37 L85 15 L63 43 L100 50 L63 57 L85 85 L57 63 L50 100 L43 63 L15 85 L37 57 L0 50 L37 43 L15 15 L43 37 Z" fill="#FFF6C9" fill-opacity="0.9" stroke="{{f.col}}" stroke-width="2.5" stroke-linejoin="round"></path>
+              <circle cx="50" cy="50" r="44" fill="none" stroke="{{f.col}}" stroke-width="3" stroke-dasharray="5 6"></circle>
+            </svg>
+          </div>
+        </sc-for>
+        <sc-for list="{{pcs}}" as="p" hint-placeholder-count="15">
+          <div style="position: absolute; left: 0; top: 0; {{p.st}}">
+            <div style="position: absolute; inset: -6%; border-radius: 50%; box-sizing: border-box; {{p.halo}}"></div>
+            <div style="position: absolute; {{p.shape}}"></div>
+            <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible">
+              <path d="{{p.gd}}" fill="{{p.gf}}" stroke="{{p.gs}}" stroke-width="{{p.gw}}" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="{{p.nd}}" fill="{{p.nf}}" stroke="#0B1026" stroke-width="4" stroke-linejoin="round"></path>
+            </svg>
+            <sc-if value="{{p.pip}}" hint-placeholder-val="{{ false }}">
+              <div style="position: absolute; left: -5px; top: -5px; min-width: 18px; height: 18px; padding: 0 4px; box-sizing: border-box; border-radius: 9px; background: #EEF2FF; color: #0B1026; font: 700 11px/18px 'Oxanium', sans-serif; text-align: center; box-shadow: 0 0 0 1.5px #0B1026">{{p.pip}}</div>
+            </sc-if>
+            <sc-if value="{{p.badge}}" hint-placeholder-val="{{ false }}">
+              <div style="position: absolute; right: -6px; top: -6px; width: 20px; height: 20px; border-radius: 10px; background: #FF3B5C; color: #0B1026; font: 800 12px/20px 'Oxanium', sans-serif; text-align: center; box-shadow: 0 0 0 2px #0B1026">{{p.badge}}</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{modeOv}}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; inset: 0; z-index: 6; border-radius: 20px; overflow: hidden; background: rgba(11,16,38,.58); display: flex; align-items: center; justify-content: center">
+          <div style="position: absolute; left: -30%; top: 42%; width: 160%; height: 120px; background: repeating-linear-gradient(90deg, rgba(233,240,255,.24) 0 4px, transparent 4px 16px); {{md.band}}"></div>
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 26px 40px; border-radius: 26px; background: #0B1026; box-shadow: inset 0 0 0 2px #E9F0FF, 0 20px 50px rgba(0,0,0,.6)">
+            <svg width="88" height="88" viewBox="0 0 100 100" style="overflow: visible; color: #E9F0FF"><polygon points="{{md.shape}}" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"></polygon><path d="{{md.glyph}}" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"></path></svg>
+            <div style="font-family: 'Oxanium', sans-serif; font-weight: 800; font-size: 64px; letter-spacing: 0.08em; line-height: 1; color: #E9F0FF">{{md.label}}</div>
+            <div style="font-size: 15px; font-weight: 700; letter-spacing: 0.16em; color: #A9B4DA">{{md.ovSub}}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{banner}}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 6; display: flex; align-items: center; gap: 14px; padding: 16px 24px; border-radius: 18px; background: rgba(11,16,38,.94); white-space: nowrap; box-shadow: inset 0 0 0 1.5px {{banner.col}}, 0 16px 40px rgba(0,0,0,.55)">
+          <sc-if value="{{banner.m}}" hint-placeholder-val="{{ false }}">
+            <div style="position: relative; width: 40px; height: 40px; flex: none">
+              <div style="position: absolute; {{banner.m.st}}"></div>
+              <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{banner.m.gd}}" fill="{{banner.m.gf}}" stroke="{{banner.m.gs}}" stroke-width="{{banner.m.gw}}" stroke-linecap="round"></path></svg>
+            </div>
+          </sc-if>
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 20px; font-weight: 700; color: {{banner.col}}">{{banner.title}}</span>
+            <span style="font-size: 14px; font-weight: 500; color: #A9B4DA">{{banner.sub}}</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{tapLayer}}" hint-placeholder-val="{{ false }}">
+        <button type="button" aria-label="Tahta: kare seç (ok tuşları, Q E Z C, Enter, Esc)" onClick="{{boardTap}}" onMouseMove="{{boardHover}}" onMouseLeave="{{boardLeave}}" onKeyDown="{{boardKey}}" style="position: absolute; inset: 0; z-index: 8; background: transparent; border: 0; padding: 0; cursor: pointer; border-radius: 20px"></button>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 9; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 20px; background: #E9F0FF; color: #0B1026; font-size: 15px; font-weight: 700; white-space: nowrap; box-shadow: 0 6px 20px rgba(0,0,0,.45)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B1026" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="{{toastIcon}}"></path></svg>
+        <span>{{toast}}</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{conn}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 15; display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 16px; border-radius: 16px; background: #2A1B24; box-shadow: inset 0 0 0 1.5px #FF8A3D, 0 12px 30px rgba(0,0,0,.5); white-space: nowrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFB27F" stroke-width="2.2" stroke-linecap="round"><path d="M3 3 L21 21 M8.5 16.5 A5 5 0 0 1 15.5 16.5 M5 12.6 A10 10 0 0 1 9.5 10 M14.5 10 A10 10 0 0 1 19 12.6 M12 20 V20.2"></path></svg>
+        <span style="font-size: 15px; font-weight: 700; color: #FFB27F">Bağlantı koptu</span>
+        <span style="font-size: 14px; font-weight: 500">Yeniden bağlanıyor…</span>
+        <button type="button" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: #FF8A3D; color: #0B1026; font: 700 14px 'Barlow', sans-serif">Tekrar dene</button>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="width: 340px; flex: none; display: flex; flex-direction: column; gap: 14px; min-height: 0">
+    <div style="flex: none; background: #121A3A; border: 1px solid #26306A; border-radius: 20px; padding: 16px 18px; display: flex; flex-direction: column; {{pn.boxSt}}">
+      <sc-if value="{{pn.isGen}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <sc-if value="{{pn.who}}" hint-placeholder-val="{{ true }}">
+              <div style="position: relative; width: 38px; height: 38px; flex: none">
+                <div style="position: absolute; {{pn.who.st}}"></div>
+                <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{pn.who.gd}}" fill="{{pn.who.gf}}" stroke="{{pn.who.gs}}" stroke-width="{{pn.who.gw}}" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              </div>
+            </sc-if>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+              <div style="font-size: 20px; font-weight: 700; line-height: 1.15; color: {{pn.titleCol}}">{{pn.title}}</div>
+              <div style="font-size: 14px; font-weight: 500; color: #A9B4DA">{{pn.sub}}</div>
+            </div>
+            <div style="font-family: 'Oxanium', sans-serif; font-weight: 700; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; color: {{pn.timerCol}}">{{pn.timer}}</div>
+          </div>
+          <sc-if value="{{pn.hasBar}}" hint-placeholder-val="{{ true }}">
+            <div style="height: 6px; border-radius: 3px; background: #232D5E; overflow: hidden"><div style="height: 100%; border-radius: 3px; transition: width 1s linear; width: {{pn.bar}}%; background: {{pn.barCol}}"></div></div>
+          </sc-if>
+          <div style="font-size: 14px; font-weight: 500; line-height: 1.4; color: {{pn.hintCol}}">{{pn.hint}}</div>
+          <sc-if value="{{pn.endLink}}" hint-placeholder-val="{{ false }}">
+            <a href="MasaustuSonu.dc.html" style="height: 44px; border-radius: 12px; border: 1.5px dashed #3A4785; color: #A9B4DA; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; text-decoration: none">Prototip: oyun sonuna geç</a>
+          </sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{pn.isOnz}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <div style="font-size: 18px; font-weight: 700; flex: 1">{{pn.title}}</div>
+            <div style="font-family: 'Oxanium', sans-serif; font-weight: 700; font-size: 20px; color: {{pn.timerCol}}">{{pn.timer}}</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; {{pn.riskSt}}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="{{pn.riskIcon}}"></path></svg>
+            <span style="font-size: 14px; font-weight: 700">{{pn.risk}}</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px">
+            <sc-for list="{{pn.chips}}" as="ch" hint-placeholder-count="2">
+              <div style="display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 4px; border-radius: 16px; background: #1A2452; border: 1px solid #2B3670">
+                <div style="position: relative; width: 24px; height: 24px; flex: none">
+                  <div style="position: absolute; {{ch.st}}"></div>
+                  <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{ch.gd}}" fill="{{ch.gf}}" stroke="{{ch.gs}}" stroke-width="{{ch.gw}}" stroke-linecap="round"></path></svg>
+                </div>
+                <span style="font-size: 13px; font-weight: 700">{{ch.label}}</span>
+                <span style="font-size: 12px; font-weight: 500; color: #A9B4DA">{{ch.how}}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display: flex; gap: 8px">
+            <button type="button" onClick="{{vazgec}}" style="flex: 1; height: 48px; border-radius: 12px; border: 1.5px solid #3A4785; background: transparent; color: #EEF2FF; font: 600 15px 'Barlow', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px">Vazgeç <span style="font: 700 11px 'Oxanium', sans-serif; padding: 2px 5px; border-radius: 4px; border: 1px solid #3A4785; color: #A9B4DA">Esc</span></button>
+            <button type="button" onClick="{{onayla}}" style="flex: 2; height: 48px; border-radius: 12px; border: 0; color: #0B1026; font: 700 16px 'Barlow', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; background: {{pn.okBg}}">{{pn.okLabel}} <span style="font: 700 11px 'Oxanium', sans-serif; padding: 2px 5px; border-radius: 4px; border: 1px solid rgba(11,16,38,.4)">Enter</span></button>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{pn.isThreat}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF3B5C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M12 3.5 L21.5 20 H2.5 Z M12 10 V14 M12 17 V17.2"></path></svg>
+            <div style="font-size: 18px; font-weight: 700; flex: 1; color: #FF9AAC">{{pn.title}}</div>
+            <div style="font-family: 'Oxanium', sans-serif; font-weight: 700; font-size: 20px; color: {{pn.timerCol}}">{{pn.timer}}</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px">
+            <sc-for list="{{pn.chips}}" as="ch" hint-placeholder-count="2">
+              <div style="display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 4px; border-radius: 16px; background: #1A2452; border: 1px solid #FF3B5C">
+                <div style="position: relative; width: 24px; height: 24px; flex: none">
+                  <div style="position: absolute; {{ch.st}}"></div>
+                  <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{ch.gd}}" fill="{{ch.gf}}" stroke="{{ch.gs}}" stroke-width="{{ch.gw}}" stroke-linecap="round"></path></svg>
+                </div>
+                <span style="font-size: 13px; font-weight: 700">{{ch.label}}</span>
+                <span style="font-size: 12px; font-weight: 500; color: #A9B4DA">{{ch.how}}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size: 14px; font-weight: 500; line-height: 1.4; color: #A9B4DA">{{pn.hint}}</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{pn.isBot}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+              <div style="font-size: 20px; font-weight: 700">Botlar oynuyor</div>
+              <div style="font-size: 14px; font-weight: 500; color: #A9B4DA">{{pn.sub}}</div>
+            </div>
+            <div style="font-family: 'Oxanium', sans-serif; font-weight: 700; font-size: 26px; font-variant-numeric: tabular-nums">{{pn.count}}</div>
+          </div>
+          <div style="display: flex; gap: 3px">
+            <sc-for list="{{pn.segs}}" as="sg" hint-placeholder-count="12">
+              <div style="flex: 1; height: 6px; border-radius: 3px; background: {{sg.bg}}"></div>
+            </sc-for>
+          </div>
+          <button type="button" onClick="{{hizlandir}}" style="height: 46px; border-radius: 12px; border: 1.5px solid #3A4785; background: #1A2452; color: #EEF2FF; font: 700 15px 'Barlow', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px">Hızlandır <span style="font: 700 11px 'Oxanium', sans-serif; padding: 2px 6px; border-radius: 4px; border: 1px solid #3A4785; color: #A9B4DA">Boşluk</span></button>
+        </div>
+      </sc-if>
+      <sc-if value="{{pn.isSpect}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: baseline; gap: 10px">
+            <div style="font-family: 'Oxanium', sans-serif; font-size: 30px; font-weight: 800">Elendin</div>
+            <div style="font-size: 15px; font-weight: 600; color: #A9B4DA">{{pn.sub}}</div>
+          </div>
+          <div style="font-size: 14px; font-weight: 500; color: #A9B4DA">{{pn.hint}}</div>
+          <div style="display: flex; gap: 8px">
+            <a href="MasaustuMenu.dc.html" style="flex: 1; height: 48px; border-radius: 12px; border: 1.5px solid #3A4785; color: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: none">Maçtan çık</a>
+            <a href="MasaustuSonu.dc.html" style="flex: 2; height: 48px; border-radius: 12px; background: #E9F0FF; color: #0B1026; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; text-decoration: none">İzlemeye devam</a>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{pn.isWin}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="font-family: 'Oxanium', sans-serif; font-size: 30px; font-weight: 800; color: #3BFF8F">Kazandın!</div>
+          <div style="font-size: 15px; font-weight: 600; color: #A9B4DA">{{pn.sub}}</div>
+          <a href="MasaustuSonu.dc.html" style="height: 48px; border-radius: 12px; background: #3BFF8F; color: #0B1026; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; text-decoration: none">Sonuçları gör</a>
+        </div>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{sh.bilgi}}" hint-placeholder-val="{{ false }}">
+      <div style="flex: none; background: #121A3A; border: 1.5px solid #E9F0FF; border-radius: 20px; padding: 16px 18px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="position: relative; width: 44px; height: 44px; flex: none">
+            <div style="position: absolute; {{sh.m.st}}"></div>
+            <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{sh.m.gd}}" fill="{{sh.m.gf}}" stroke="{{sh.m.gs}}" stroke-width="{{sh.m.gw}}" stroke-linecap="round"></path></svg>
+          </div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <div style="font-size: 18px; font-weight: 700">{{sh.title}}</div>
+            <div style="font-size: 13px; font-weight: 500; color: #A9B4DA">{{sh.sub}}</div>
+          </div>
+          <div style="height: 26px; padding: 0 9px; border-radius: 13px; background: #232D5E; display: flex; align-items: center; font-family: 'Oxanium', sans-serif; font-size: 12px; font-weight: 700; white-space: nowrap">{{sh.order}}</div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 6px; border-radius: 14px; background: #0E1534">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #A9B4DA">YÜRÜR</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 34px); gap: 3px">
+              <sc-for list="{{sh.walk}}" as="q" hint-placeholder-count="9">
+                <div style="position: relative; width: 34px; height: 34px; clip-path: polygon(26% 0,74% 0,100% 26%,100% 74%,74% 100%,26% 100%,0 74%,0 26%); {{q.st}}">
+                  <sc-if value="{{q.ctr}}" hint-placeholder-val="{{ false }}">
+                    <div style="position: absolute; {{q.m.st}}"></div>
+                    <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{q.m.gd}}" fill="{{q.m.gf}}" stroke="{{q.m.gs}}" stroke-width="{{q.m.gw}}" stroke-linecap="round"></path></svg>
+                  </sc-if>
+                  <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{q.d}}" fill="{{q.f}}" stroke="{{q.s}}" stroke-width="{{q.w}}" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+              </sc-for>
+            </div>
+            <div style="font-size: 12px; font-weight: 600">{{sh.walkTxt}}</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 6px; border-radius: 14px; background: #0E1534">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #A9B4DA">VURUR</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 34px); gap: 3px">
+              <sc-for list="{{sh.hit}}" as="q" hint-placeholder-count="9">
+                <div style="position: relative; width: 34px; height: 34px; clip-path: polygon(26% 0,74% 0,100% 26%,100% 74%,74% 100%,26% 100%,0 74%,0 26%); {{q.st}}">
+                  <sc-if value="{{q.ctr}}" hint-placeholder-val="{{ false }}">
+                    <div style="position: absolute; {{q.m.st}}"></div>
+                    <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{q.m.gd}}" fill="{{q.m.gf}}" stroke="{{q.m.gs}}" stroke-width="{{q.m.gw}}" stroke-linecap="round"></path></svg>
+                  </sc-if>
+                  <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{q.d}}" fill="{{q.f}}" stroke="{{q.s}}" stroke-width="{{q.w}}" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+              </sc-for>
+            </div>
+            <div style="font-size: 12px; font-weight: 600">{{sh.hitTxt}}</div>
+          </div>
+        </div>
+        <sc-if value="{{sh.hasT}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 12px; background: #1A2452">
+            <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #A9B4DA">HEDEFİ</span>
+            <div style="position: relative; width: 24px; height: 24px; flex: none">
+              <div style="position: absolute; {{sh.tm.st}}"></div>
+              <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{sh.tm.gd}}" fill="{{sh.tm.gf}}" stroke="{{sh.tm.gs}}" stroke-width="{{sh.tm.gw}}" stroke-linecap="round"></path></svg>
+            </div>
+            <span style="font-size: 14px; font-weight: 700; color: {{sh.tcol}}">{{sh.tname}}</span>
+            <span style="margin-left: auto; font-size: 13px; font-weight: 500; color: #A9B4DA">{{sh.tdist}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{sh.warn}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; background: rgba(255,59,92,.14); color: #FF9AAC; font-size: 14px; font-weight: 700">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 L21.5 20 H2.5 Z M12 10 V14 M12 17 V17.2"></path></svg>
+            <span>Bu tur seni vurabilir</span>
+          </div>
+        </sc-if>
+        <span style="font-size: 12px; font-weight: 500; color: #8591BE">Fare taşın üzerindeyken açık kalır · tıklayınca sabitlenir</span>
+      </div>
+    </sc-if>
+
+    <div style="flex: 1; min-height: 0; overflow: hidden; background: #121A3A; border: 1px solid #26306A; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <span style="font-size: 17px; font-weight: 700">Savaş kaydı</span>
+        <span style="font-family: 'Oxanium', sans-serif; font-size: 13px; font-weight: 700; color: #A9B4DA">{{hdr.logN}} vuruş</span>
+      </div>
+      <sc-for list="{{logRows}}" as="row" hint-placeholder-count="6">
+        <sc-if value="{{row.isHead}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 8px 2px 0; font-family: 'Oxanium', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #A9B4DA">{{row.head}}</div>
+        </sc-if>
+        <sc-if value="{{row.isKill}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 10px; border-radius: 10px; background: #1A2452">
+            <div style="position: relative; width: 22px; height: 22px; flex: none">
+              <div style="position: absolute; {{row.am.st}}"></div>
+              <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{row.am.gd}}" fill="{{row.am.gf}}" stroke="{{row.am.gs}}" stroke-width="{{row.am.gw}}" stroke-linecap="round"></path></svg>
+            </div>
+            <span style="font-size: 14px; font-weight: 700; color: {{row.acol}}">{{row.an}}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A9B4DA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M20 4 L9.5 14.5 M20 4 V9 M20 4 H15 M6 13 L11 18 M4 20 L8.2 15.8"></path></svg>
+            <div style="position: relative; width: 22px; height: 22px; flex: none">
+              <div style="position: absolute; {{row.vm.st}}"></div>
+              <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{row.vm.gd}}" fill="{{row.vm.gf}}" stroke="{{row.vm.gs}}" stroke-width="{{row.vm.gw}}" stroke-linecap="round"></path></svg>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: #A9B4DA; text-decoration: line-through">{{row.vn}}</span>
+          </div>
+        </sc-if>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"durum":{"editor":"enum","default":"sira","options":["sira","son5","onizleme","tehdit","rakip","bot","mod","vurus","elenme","halka-uyari","halka-cokme","izleyici","sure","kopan","baglaniyor","bilgi","kayit"]},"boyut":{"editor":"enum","default":"9","options":["9","11","13"]},"cihaz":{"editor":"enum","default":"390","options":["390","se","masaustu"]},"canli":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  K() {
+    if (this._K) return this._K;
+    var INK = '#0B1026';
+    this._K = {
+      INK: INK, TXT: '#EEF2FF', TXT2: '#A9B4DA', DANGER: '#FF3B5C', HAZ: '#FF8A3D', ICE: '#E9F0FF',
+      PC: ['#3BFF8F', '#FFC53D', '#FF5CC0', '#B392FF'],
+      PN: ['Oyuncu 1', 'Oyuncu 2', 'Oyuncu 3', 'Oyuncu 4'],
+      GEN: ["Oyuncu 1'in", "Oyuncu 2'nin", "Oyuncu 3'ün", "Oyuncu 4'ün"],
+      BOT: { r: '#D3765B', b: '#6F98DA' },
+      BOTN: { r: 'Kızıl', b: 'Çelik' },
+      SQ: '17,17 83,17 83,83 17,83', DI: '50,5 95,50 50,95 5,50',
+      PLUS: 'M50 27 V73 M27 50 H73', CROSS: 'M33 33 L67 67 M67 33 L33 67',
+      EMB: [
+        { d: 'M50 36 A14 14 0 1 1 49.99 36 Z', f: INK, s: 'none', w: 0 },
+        { d: 'M50 33 L66 62 L34 62 Z', f: INK, s: INK, w: 3 },
+        { d: 'M33 42 H67 M33 58 H67', f: 'none', s: INK, w: 9 },
+        { d: 'M50 37 A13 13 0 1 1 49.99 37 Z', f: 'none', s: INK, w: 8 }
+      ],
+      ORTH: [[-1, 0], [1, 0], [0, -1], [0, 1]],
+      DIAG: [[-1, -1], [-1, 1], [1, -1], [1, 1]],
+      SWORD: 'M20 4 L9.5 14.5 M20 4 V9 M20 4 H15 M6 13 L11 18 M4 20 L8.2 15.8',
+      CLOCK: 'M12 7 V12 L15.5 14 M12 3 A9 9 0 1 1 11.99 3 Z'
+    };
+    return this._K;
+  }
+
+  live() { var v = this.props.canli; return v === true || v === 1 || v === '1' || v === 'true'; }
+  dev() { var c = String(this.props.cihaz || '390'); return c === 'se' ? 'se' : (c === 'masaustu' ? 'desk' : '390'); }
+
+  componentDidMount() { if (this.live()) this.startGame(); }
+  componentWillUnmount() { this._dead = true; this.stopTick(); (this._t || []).forEach(function (id) { clearTimeout(id); }); }
+
+  /* ---------- sahneler ---------- */
+  scene9() {
+    var pcs = [{ id: 's0', k: 's', pl: 0, r: 5, c: 4, alive: true }, { id: 's1', k: 's', pl: 1, r: 2, c: 5, alive: true }];
+    var B = [['r', 3, 4], ['b', 6, 5], ['r', 4, 6], ['b', 7, 2], ['r', 1, 1], ['b', 1, 7], ['r', 6, 7], ['b', 3, 2], ['r', 8, 6], ['b', 0, 4], ['r', 5, 1], ['b', 4, 4], ['r', 6, 3]];
+    B.forEach(function (b, i) { pcs.push({ id: 'b' + (i + 1), k: b[0], num: i + 1, r: b[1], c: b[2], alive: true }); });
+    return { n: 9, np: 2, mode: 'duz', round: 7, collapsed: 0, pieces: pcs, kills: [1, 0], place: {}, names: {}, log: [] };
+  }
+  rng(seed) {
+    var a = seed >>> 0;
+    return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  }
+  sceneGen(n) {
+    var np = n === 11 ? 3 : 4;
+    var S = n === 11 ? [[7, 4], [2, 5], [6, 8]] : [[8, 6], [3, 5], [6, 10], [5, 2]];
+    var pcs = S.map(function (s, i) { return { id: 's' + i, k: 's', pl: i, r: s[0], c: s[1], alive: true }; });
+    var near = function (r, c) { return S.some(function (s) { return Math.max(Math.abs(s[0] - r), Math.abs(s[1] - c)) <= 1; }); };
+    var taken = {}, num = 1, me = S[0];
+    pcs.push({ id: 'b1', k: 'r', num: 1, r: me[0] + 1, c: me[1] - 1, alive: true });
+    taken[(me[0] + 1) + ',' + (me[1] - 1)] = 1; num = 2;
+    var target = n === 11 ? 17 : 24, rnd = this.rng(n * 131 + 7), guard = 0;
+    while (num <= target && guard < 3000) {
+      guard++;
+      var r = Math.floor(rnd() * n), c = Math.floor(rnd() * n);
+      if (taken[r + ',' + c] || near(r, c)) continue;
+      taken[r + ',' + c] = 1;
+      pcs.push({ id: 'b' + num, k: (num % 2 ? 'b' : 'r'), num: num, r: r, c: c, alive: true });
+      num++;
+    }
+    return { n: n, np: np, mode: 'duz', round: n === 11 ? 9 : 10, collapsed: 0, pieces: pcs, kills: n === 11 ? [2, 1, 0] : [1, 2, 0, 1], place: {}, names: n === 13 ? { 3: 'İkiz' } : {}, log: [] };
+  }
+
+  /* ---------- kurallar ---------- */
+  meP(sc) { return sc.pieces.find(function (p) { return p.id === 's0'; }); }
+  occ(sc) { var m = {}; sc.pieces.forEach(function (p) { if (p.alive) m[p.r + ',' + p.c] = p; }); return m; }
+  valid(sc, r, c) { var n = sc.n; if (r < 0 || c < 0 || r >= n || c >= n) return false; return Math.min(r, c, n - 1 - r, n - 1 - c) >= sc.collapsed; }
+  wd(p, mode) { var K = this.K(); if (p.k === 's') return mode === 'duz' ? K.ORTH : K.DIAG; return p.k === 'r' ? K.ORTH : K.DIAG; }
+  hd(p, mode) { var K = this.K(); if (p.k === 's') return mode === 'duz' ? K.ORTH : K.DIAG; return p.k === 'r' ? K.DIAG : K.ORTH; }
+  hitters(sc, r, c, exId, starMode) {
+    var m = starMode || sc.mode, self = this;
+    return sc.pieces.filter(function (p) {
+      if (!p.alive || p.id === exId || (p.r === r && p.c === c)) return false;
+      return self.hd(p, m).some(function (d) { return p.r + d[0] === r && p.c + d[1] === c; });
+    });
+  }
+  moves(sc, p, mode) {
+    var o = this.occ(sc), out = [], self = this;
+    this.wd(p, mode).forEach(function (d) { var r = p.r + d[0], c = p.c + d[1]; if (!self.valid(sc, r, c)) return; if (!o[r + ',' + c]) out.push({ r: r, c: c, cap: null }); });
+    this.hd(p, mode).forEach(function (d) { var r = p.r + d[0], c = p.c + d[1]; if (!self.valid(sc, r, c)) return; var q = o[r + ',' + c]; if (q && q.id !== p.id) out.push({ r: r, c: c, cap: q }); });
+    return out;
+  }
+  targetOf(sc, b) {
+    var best = null, bd = 1e9;
+    sc.pieces.forEach(function (p) { if (p.k !== 's' || !p.alive) return; var d = Math.max(Math.abs(p.r - b.r), Math.abs(p.c - b.c)); if (d < bd) { bd = d; best = p; } });
+    return best;
+  }
+  aliveStars(g) { return g.pieces.filter(function (p) { return p.k === 's' && p.alive; }).length; }
+  pnm(sc, i) { return (sc.names && sc.names[i]) || this.K().PN[i]; }
+  pname(p, sc) { var K = this.K(); if (p.k === 's') return p.pl === 0 ? 'Sen' : ((sc && sc.names && sc.names[p.pl]) || K.PN[p.pl]); return K.BOTN[p.k] + ' #' + p.num; }
+  colOf(p) { var K = this.K(); return p.k === 's' ? K.PC[p.pl] : K.BOT[p.k]; }
+
+  /* ---------- görünüm ---------- */
+  look(p, mode, px) {
+    var K = this.K(), rw = Math.max(1.5, px * 0.06).toFixed(1);
+    if (p.k === 's') {
+      var col = K.PC[p.pl], e = K.EMB[p.pl], rot = mode === 'duz' ? 0 : 45;
+      return { st: 'left:17%;top:17%;width:66%;height:66%;border-radius:10%;background:' + col + ';transform:rotate(' + rot + 'deg) scale(' + (rot ? 0.95 : 1) + ');box-shadow:0 0 0 ' + rw + 'px #FFFFFF, 0 0 ' + Math.round(px * 0.35) + 'px ' + col + 'AA;transition:transform 320ms cubic-bezier(.34,1.56,.64,1)', gd: e.d, gf: e.f, gs: e.s, gw: e.w };
+    }
+    var c = K.BOT[p.k], rot2 = p.k === 'r' ? 0 : 45;
+    return { st: 'left:17%;top:17%;width:66%;height:66%;border-radius:10%;background:' + c + ';transform:rotate(' + rot2 + 'deg) scale(' + (rot2 ? 0.95 : 1) + ');box-shadow:inset 0 0 0 ' + rw + 'px rgba(11,16,38,.30)', gd: p.k === 'r' ? K.CROSS : K.PLUS, gf: 'none', gs: K.INK, gw: 10 };
+  }
+  oct(k, i) { var a = k + i * 0.4, b = 100 - a, e = i, f = 100 - i; return 'M' + a + ' ' + e + ' L' + b + ' ' + e + ' L' + f + ' ' + a + ' L' + f + ' ' + b + ' L' + b + ' ' + f + ' L' + a + ' ' + f + ' L' + e + ' ' + b + ' L' + e + ' ' + a + ' Z'; }
+  notch(p, t) {
+    var a = Math.atan2(t.r - p.r, t.c - p.c); a = Math.round(a / (Math.PI / 4)) * (Math.PI / 4);
+    var cs = Math.cos(a), sn = Math.sin(a), f = function (v) { return v.toFixed(1); };
+    var tx = 50 + cs * 64, ty = 50 + sn * 64, bx = 50 + cs * 44, by = 50 + sn * 44;
+    return 'M' + f(tx) + ' ' + f(ty) + ' L' + f(bx - sn * 13) + ' ' + f(by + cs * 13) + ' L' + f(bx + sn * 13) + ' ' + f(by - cs * 13) + ' Z';
+  }
+  seg(a, b, step, cell, col, kind) {
+    var x1 = a.c * step + cell / 2, y1 = a.r * step + cell / 2, x2 = b.c * step + cell / 2, y2 = b.r * step + cell / 2;
+    var dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy), ang = Math.atan2(dy, dx) * 180 / Math.PI;
+    var h = kind === 'trail' ? Math.max(3, Math.round(cell * 0.16)) : 2.5;
+    var bg = kind === 'trail' ? 'linear-gradient(90deg, transparent, ' + col + ')' : (kind === 'dot' ? 'repeating-linear-gradient(90deg, ' + col + ' 0 3px, transparent 3px 7px)' : 'repeating-linear-gradient(90deg, ' + col + ' 0 6px, transparent 6px 10px)');
+    return { st: 'left:' + x1.toFixed(1) + 'px;top:' + (y1 - h / 2).toFixed(1) + 'px;width:' + len.toFixed(1) + 'px;height:' + h + 'px;border-radius:' + h + 'px;transform-origin:0 50%;transform:rotate(' + ang.toFixed(1) + 'deg);opacity:' + (kind === 'trail' ? 0.7 : 1) + ';background:' + bg };
+  }
+  prevCell(sc, b, i) {
+    var dirs = this.wd(b, sc.mode), o = this.occ(sc);
+    for (var j = 0; j < 4; j++) { var dd = dirs[(i + j) % dirs.length], r = b.r - dd[0], c = b.c - dd[1]; if (this.valid(sc, r, c) && !o[r + ',' + c]) return { r: r, c: c }; }
+    return null;
+  }
+  diag(p, mode, kind, L) {
+    var K = this.K(), dirs = kind === 'w' ? this.wd(p, mode) : this.hd(p, mode);
+    var hitG = this.hd(p, mode) === K.ORTH ? K.PLUS : K.CROSS, out = [];
+    for (var r = -1; r <= 1; r++) for (var c = -1; c <= 1; c++) {
+      var on = dirs.some(function (d) { return d[0] === r && d[1] === c; }), ctr = r === 0 && c === 0;
+      var bg = ctr ? '#232D5E' : on ? (kind === 'w' ? 'rgba(233,240,255,.22)' : 'rgba(255,59,92,.24)') : '#1A2452';
+      var d = '', f = 'none', s = 'none', w = 0;
+      if (on && kind === 'w') { d = 'M50 37 A13 13 0 1 1 49.99 37 Z'; f = K.ICE; }
+      if (on && kind === 'h') { d = hitG; s = K.DANGER; w = 11; }
+      out.push({ st: 'background:' + bg, ctr: ctr, m: ctr ? L : null, d: d, f: f, s: s, w: w });
+    }
+    return out;
+  }
+
+  /* ---------- statik durumlar ---------- */
+  blankUi() { return { turn: 0, timer: 14, reach: true, sel: null, hov: null, lines: null, trails: [], bursts: [], ghosts: [], pips: {}, cur: 0, toast: null, toastIcon: 'sword', banner: null, modeOv: false, kind: 'gen', sheet: null, dim: false, warn: false, spect: false, disc: -1, conn: false, lp: null, ring: '4 tur sonra', d: 'sira', live: false, ph: '', botDone: 0, botTotal: 0, logN: 1 }; }
+
+  staticUi(sc, d) {
+    var K = this.K(), u = this.blankUi(), self = this; u.d = d;
+    var me = this.meP(sc);
+    var risk = function (m) { return self.hitters(sc, m.r, m.c, me.id).length; };
+    var mv = this.moves(sc, me, sc.mode);
+    u.ring = sc.n === 9 ? '4 tur sonra' : '3 tur sonra';
+    if (sc.n !== 9) u.logN = 4;
+    if (d === 'son5') { u.timer = 3; }
+    else if (d === 'onizleme') {
+      var cand = mv.filter(function (m) { return !m.cap; }).sort(function (a, b) { return risk(b) - risk(a); });
+      var s = cand[0] || mv[0];
+      if (s) { u.sel = { r: s.r, c: s.c }; u.ghosts.push({ r: s.r, c: s.c, pl: 0 }); }
+      u.timer = 9; u.kind = 'onz'; u.lines = 'sel';
+    }
+    else if (d === 'tehdit') { u.timer = 12; u.lines = 'me'; u.kind = 'threat'; }
+    else if (d === 'rakip') { u.turn = 1; u.timer = 11; u.reach = false; }
+    else if (d === 'bot') {
+      u.turn = 'bot'; u.reach = false; u.kind = 'bot';
+      var bots = sc.pieces.filter(function (p) { return p.k !== 's' && p.alive; }).sort(function (a, b) { return a.num - b.num; });
+      bots.slice(0, 4).forEach(function (b, i) { var pv = self.prevCell(sc, b, i); if (pv) u.trails.push({ from: pv, to: { r: b.r, c: b.c }, col: K.BOT[b.k] }); });
+      if (bots[4]) u.cur = bots[4].num;
+      bots.slice(4, 8).forEach(function (b) { u.pips[b.num] = b.num; });
+      u.botDone = 5; u.botTotal = bots.length;
+    }
+    else if (d === 'mod') { sc.mode = 'capraz'; sc.round = 8; u.modeOv = true; u.turn = 1; u.reach = false; u.timer = 20; u.ghosts.push({ r: me.r, c: me.c, pl: 0, mode: 'duz' }); }
+    else if (d === 'vurus') {
+      var cap = mv.find(function (m) { return m.cap; });
+      if (cap) {
+        var v = sc.pieces.find(function (p) { return p.id === cap.cap.id; });
+        v.alive = false;
+        u.trails.push({ from: { r: me.r, c: me.c }, to: { r: cap.r, c: cap.c }, col: K.PC[0] });
+        me.r = cap.r; me.c = cap.c; sc.kills[0]++;
+        u.bursts.push({ r: cap.r, c: cap.c, col: K.PC[0] });
+        u.toast = this.pname(v) + ' vuruldu · +1';
+      }
+      u.turn = 1; u.timer = 19; u.reach = false; u.logN = 2;
+    }
+    else if (d === 'elenme') {
+      var el = sc.pieces.find(function (p) { return p.id === 's2'; });
+      if (el) {
+        el.alive = false; sc.place[2] = 3;
+        sc.pieces.push({ id: 'bx', k: 'b', num: 18, r: el.r, c: el.c, alive: true });
+        u.trails.push({ from: { r: el.r - 1, c: el.c }, to: { r: el.r, c: el.c }, col: K.BOT.b });
+        u.bursts.push({ r: el.r, c: el.c, col: K.PC[2] });
+        var bm = this.look(el, sc.mode, 32); bm.st += ';filter:grayscale(1);opacity:.75';
+        u.banner = { title: this.pnm(sc, 2) + ' elendi', sub: '3. sıra · Çelik #18 vurdu', col: K.PC[2], m: bm };
+      }
+      u.turn = 'bot'; u.reach = false; u.kind = 'bot'; u.botDone = 18; u.botTotal = 18; u.cur = 18; u.logN = 5;
+    }
+    else if (d === 'halka-uyari') { me.r = sc.n - 1; me.c = 3; u.warn = true; sc.round = 11; u.ring = 'bu tur sonunda'; u.timer = 13; }
+    else if (d === 'halka-cokme') {
+      sc.collapsed = 1; sc.round = 11; me.r = 7; me.c = 4; var cnt = 0;
+      sc.pieces.forEach(function (p) { if (p.alive && Math.min(p.r, p.c, sc.n - 1 - p.r, sc.n - 1 - p.c) < 1) { p.alive = false; cnt++; u.bursts.push({ r: p.r, c: p.c, col: K.HAZ }); } });
+      u.banner = { title: 'Dış halka çöktü', sub: cnt + ' bot elendi · arena ' + (sc.n - 2) + '×' + (sc.n - 2), col: K.HAZ, m: null };
+      u.turn = null; u.reach = false;
+    }
+    else if (d === 'izleyici') { me.alive = false; sc.place[0] = 3; u.spect = true; u.turn = 1; u.timer = 16; u.reach = false; u.kind = 'spect'; }
+    else if (d === 'sure') {
+      var sf = mv.slice().sort(function (a, b) { return (risk(a) - risk(b)) || ((a.cap ? 1 : 0) - (b.cap ? 1 : 0)); })[0];
+      if (sf) {
+        u.trails.push({ from: { r: me.r, c: me.c }, to: { r: sf.r, c: sf.c }, col: K.PC[0] });
+        if (sf.cap) sc.pieces.find(function (p) { return p.id === sf.cap.id; }).alive = false;
+        me.r = sf.r; me.c = sf.c;
+      }
+      u.toast = 'Süre doldu · güvenli hamle yapıldı'; u.toastIcon = 'clock'; u.turn = 1; u.timer = 20; u.reach = false;
+    }
+    else if (d === 'kopan') { u.turn = 1; u.disc = 1; u.timer = 23; u.reach = false; }
+    else if (d === 'baglaniyor') { u.conn = true; u.dim = true; u.timer = 18; u.reach = false; }
+    else if (d === 'bilgi') {
+      var thr = this.hitters(sc, me.r, me.c, me.id);
+      var lp = thr.find(function (p) { return p.k === 'r'; }) || thr[0] || sc.pieces.find(function (p) { return p.k !== 's'; });
+      u.lp = lp ? lp.id : null; u.sheet = 'bilgi'; u.timer = 12;
+    }
+    else if (d === 'kayit') { u.sheet = 'kayit'; u.timer = 12; }
+    return u;
+  }
+
+  /* ---------- canlı prototip ---------- */
+  later(ms, fn) { var self = this; var id = setTimeout(function () { if (!self._dead) fn(); }, ms); (this._t = this._t || []).push(id); }
+  clone(g) { return JSON.parse(JSON.stringify(g)); }
+  startGame() {
+    this.setState({ g: this.scene9(), phase: 'bekle', timer: 20, sel: null, hov: null, hoverLp: null, trails: [], fx: [], showT: false, modeOv: false, curBot: 0, botDone: 0, botTotal: 0, toast: null, toastIcon: 'sword', sheet: null, lp: null });
+    this.queue = ['P0', 'P1', 'BOTS', 'MOD'];
+    var self = this; this.later(500, function () { self.next(); });
+  }
+  next() {
+    var self = this, step = (this.queue || []).shift();
+    if (!step) return;
+    var g = this.state.g;
+    if (step === 'P0') {
+      var me = g.pieces.find(function (p) { return p.id === 's0'; });
+      if (!me.alive) return this.next();
+      this.setState({ phase: 'sen', timer: 20, sel: null, showT: false });
+      this.startTick();
+    } else if (step === 'P1') {
+      var kp = g.pieces.find(function (p) { return p.id === 's1'; });
+      if (!kp || !kp.alive) return this.next();
+      this.setState({ phase: 'rakip', timer: 20, hov: null });
+      this.later(1200, function () { var m = self.bestStarMove(self.state.g, 's1'); if (m) self.applyMove('s1', m); self.later(500, function () { self.afterCheck(); }); });
+    } else if (step === 'BOTS') { this.runBots(); }
+    else if (step === 'MOD') { this.flipMode(); }
+  }
+  afterCheck() {
+    var g = this.state.g, me = g.pieces.find(function (p) { return p.id === 's0'; });
+    if (!me.alive) { this.stopTick(); this.setState({ phase: 'elendin', trails: [] }); return; }
+    if (this.aliveStars(g) <= 1) { this.stopTick(); this.setState({ phase: 'bitti', trails: [] }); return; }
+    this.next();
+  }
+  startTick() {
+    var self = this; this.stopTick();
+    this._iv = setInterval(function () {
+      if (self._dead) return;
+      var ph = self.state.phase;
+      if (ph !== 'sen' && ph !== 'onizleme') { self.stopTick(); return; }
+      var t = self.state.timer - 1;
+      if (t <= 0) { self.stopTick(); self.autoMove(); } else self.setState({ timer: t });
+    }, 1000);
+  }
+  stopTick() { if (this._iv) { clearInterval(this._iv); this._iv = null; } }
+  bestStarMove(g, id) {
+    var self = this, p = g.pieces.find(function (q) { return q.id === id; });
+    if (!p || !p.alive) return null;
+    var c0 = (g.n - 1) / 2;
+    var score = function (m) { var risk = self.hitters(g, m.r, m.c, p.id).length; var cap = m.cap ? (m.cap.k === 's' ? 3 : 1) : 0; return risk * 10 - cap + (Math.abs(m.r - c0) + Math.abs(m.c - c0)) * 0.05; };
+    var mv = this.moves(g, p, g.mode);
+    if (!mv.length) return null;
+    mv.sort(function (a, b) { return score(a) - score(b); });
+    return mv[0];
+  }
+  applyMove(id, m) {
+    var g = this.clone(this.state.g), p = g.pieces.find(function (q) { return q.id === id; });
+    var from = { r: p.r, c: p.c }, fx = [];
+    if (m.cap) {
+      var v = g.pieces.find(function (q) { return q.id === m.cap.id; });
+      v.alive = false; fx.push({ r: m.r, c: m.c, col: this.colOf(p) });
+      if (p.k === 's') g.kills[p.pl]++;
+      g.log.unshift({ round: g.round, a: id, v: v.id });
+      if (v.k === 's') g.place[v.pl] = this.aliveStars(g) + 1;
+    }
+    p.r = m.r; p.c = m.c;
+    this.setState({ g: g, fx: fx, trails: [{ from: from, to: { r: m.r, c: m.c }, id: id }] });
+    var self = this; if (fx.length) this.later(450, function () { self.setState({ fx: [] }); });
+  }
+  endMyTurn() {
+    var self = this; this.stopTick();
+    this.setState({ phase: 'bekle', sel: null, hov: null, showT: false });
+    this.later(1600, function () { self.setState({ toast: null }); });
+    this.later(500, function () { self.afterCheck(); });
+  }
+  autoMove() {
+    var m = this.bestStarMove(this.state.g, 's0');
+    this.setState({ toast: 'Süre doldu · güvenli hamle yapıldı', toastIcon: 'clock', sel: null });
+    if (m) this.applyMove('s0', m);
+    this.endMyTurn();
+  }
+  onayla() {
+    if (!this.live()) return;
+    var st = this.state; if (st.phase !== 'onizleme' || !st.sel) return;
+    var g = st.g, me = g.pieces.find(function (p) { return p.id === 's0'; });
+    var m = this.moves(g, me, g.mode).find(function (q) { return q.r === st.sel.r && q.c === st.sel.c; });
+    if (!m) return;
+    if (m.cap) this.setState({ toast: this.pname(m.cap, g) + ' vuruldu · +1', toastIcon: 'sword' });
+    this.applyMove('s0', m);
+    this.endMyTurn();
+  }
+  vazgec() { if (this.live() && this.state.phase === 'onizleme') this.setState({ sel: null, phase: 'sen' }); }
+  botMove(g, b) {
+    var self = this, mv = this.moves(g, b, g.mode);
+    var caps = mv.filter(function (m) { return m.cap && m.cap.k === 's'; });
+    if (caps.length) return caps[0];
+    var t = this.targetOf(g, b); if (!t) return null;
+    var nx = g.mode === 'duz' ? 'capraz' : 'duz';
+    var d0 = (b.r - t.r) * (b.r - t.r) + (b.c - t.c) * (b.c - t.c), best = null, bd = 1e9;
+    mv.forEach(function (m) {
+      if (m.cap) return;
+      if (self.hitters(g, m.r, m.c, b.id, nx).length) return;
+      var dd = (m.r - t.r) * (m.r - t.r) + (m.c - t.c) * (m.c - t.c);
+      if (dd < bd) { bd = dd; best = m; }
+    });
+    return best && bd < d0 + 3 ? best : null;
+  }
+  runBots() {
+    var g = this.clone(this.state.g);
+    var order = g.pieces.filter(function (p) { return p.k !== 's' && p.alive; }).sort(function (a, b) { return a.num - b.num; }).map(function (p) { return p.id; });
+    this._bg = g; this._bq = order; this._fast = false;
+    this.setState({ phase: 'bot', botTotal: order.length, botDone: 0, curBot: 0, trails: [], hov: null });
+    var self = this; this.later(250, function () { self.botStep(); });
+  }
+  botStep() {
+    if (this._dead) return;
+    var self = this, g = this._bg, fx = [], trails = (this.state.trails || []).slice(-3), cur = 0;
+    while (this._bq.length) {
+      var id = this._bq.shift();
+      var b = g.pieces.find(function (p) { return p.id === id; });
+      if (!b.alive) continue;
+      var m = this.botMove(g, b);
+      cur = b.num;
+      if (m) {
+        var from = { r: b.r, c: b.c };
+        if (m.cap) {
+          var v = g.pieces.find(function (q) { return q.id === m.cap.id; });
+          v.alive = false; fx.push({ r: m.r, c: m.c, col: this.colOf(b) });
+          g.log.unshift({ round: g.round, a: b.id, v: v.id });
+          if (v.k === 's') g.place[v.pl] = this.aliveStars(g) + 1;
+        }
+        b.r = m.r; b.c = m.c; trails.push({ from: from, to: { r: m.r, c: m.c }, id: b.id });
+      }
+      if (!this._fast) break;
+    }
+    var tot = this.state.botTotal || 1;
+    this.setState({ g: this.clone(g), curBot: cur, botDone: tot - this._bq.length, trails: trails.slice(-4), fx: fx.length ? fx : (this.state.fx || []) });
+    if (fx.length) this.later(420, function () { self.setState({ fx: [] }); });
+    if (this._bq.length) {
+      var stg = Math.max(60, Math.min(110, Math.floor(1200 / tot)));
+      this.later(stg, function () { self.botStep(); });
+    } else {
+      this.later(380, function () { self.setState({ curBot: 0, trails: [] }); self.afterCheck(); });
+    }
+  }
+  flipMode() {
+    var self = this, g = this.clone(this.state.g);
+    g.mode = g.mode === 'duz' ? 'capraz' : 'duz'; g.round += 1;
+    this.setState({ g: g, modeOv: true, phase: 'mod', trails: [] });
+    this.later(1300, function () {
+      self.setState({ modeOv: false });
+      self.queue = g.round % 2 ? ['P0', 'P1', 'BOTS', 'MOD'] : ['P1', 'P0', 'BOTS', 'MOD'];
+      self.next();
+    });
+  }
+  ptFrom(e) {
+    var dm = this._dims, rc = e.currentTarget.getBoundingClientRect();
+    return { x: (e.clientX - rc.left) / rc.width * dm.outer - dm.fp, y: (e.clientY - rc.top) / rc.height * dm.outer - dm.fp };
+  }
+  distTo(pt, p) { var dm = this._dims, cx = p.c * dm.step + dm.cell / 2, cy = p.r * dm.step + dm.cell / 2; return Math.sqrt((pt.x - cx) * (pt.x - cx) + (pt.y - cy) * (pt.y - cy)); }
+  boardTap(e) {
+    if (!this.live()) return;
+    var st = this.state || {}, g = st.g; if (!g) return;
+    var ph = st.phase, self = this, dm = this._dims;
+    if (st.sheet) this.setState({ sheet: null, lp: null });
+    if (ph === 'bot') { this._fast = true; return; }
+    var pt = this.ptFrom(e);
+    var me = g.pieces.find(function (p) { return p.id === 's0'; });
+    var mine = ph === 'sen' || ph === 'onizleme';
+    var mv = mine && me.alive ? this.moves(g, me, g.mode) : [];
+    if (me.alive && this.distTo(pt, me) < dm.cell * 0.5) { if (mine) this.setState({ showT: !st.showT, sel: null, phase: 'sen' }); return; }
+    var hitP = g.pieces.find(function (p) { return p.alive && p.id !== 's0' && self.distTo(pt, p) < dm.cell * 0.45; });
+    if (hitP && !mv.some(function (m) { return m.cap && m.cap.id === hitP.id; })) { this.setState({ sheet: 'bilgi', lp: hitP.id }); return; }
+    if (!mine) return;
+    var best = null, bd = 1e9;
+    mv.forEach(function (m) { var dd = self.distTo(pt, m); if (dd < bd) { bd = dd; best = m; } });
+    if (best && bd < dm.step * 1.6) {
+      if (ph === 'onizleme' && st.sel && st.sel.r === best.r && st.sel.c === best.c) { this.onayla(); return; }
+      this.setState({ sel: { r: best.r, c: best.c }, phase: 'onizleme', showT: false });
+    } else this.setState({ sel: null, phase: 'sen' });
+  }
+  boardHover(e) {
+    if (!this.live()) return;
+    var st = this.state || {}, g = st.g; if (!g) return;
+    var self = this, dm = this._dims, pt = this.ptFrom(e);
+    var me = g.pieces.find(function (p) { return p.id === 's0'; });
+    var hov = null, hp = null;
+    if (st.phase === 'sen' && me.alive) {
+      var best = null, bd = 1e9;
+      this.moves(g, me, g.mode).forEach(function (m) { var dd = self.distTo(pt, m); if (dd < bd) { bd = dd; best = m; } });
+      if (best && bd < dm.step * 0.75) hov = { r: best.r, c: best.c };
+    }
+    var bp = g.pieces.find(function (p) { return p.alive && p.k !== 's' && self.distTo(pt, p) < dm.cell * 0.45; });
+    if (bp && !hov) hp = bp.id;
+    var oh = st.hov, same = (!oh && !hov) || (oh && hov && oh.r === hov.r && oh.c === hov.c);
+    if (!same || st.hoverLp !== hp) this.setState({ hov: hov, hoverLp: hp });
+  }
+  boardLeave() { if (this.live() && this.state && (this.state.hov || this.state.hoverLp)) this.setState({ hov: null, hoverLp: null }); }
+  boardKey(e) {
+    if (!this.live()) return;
+    var st = this.state || {}, g = st.g; if (!g) return;
+    var k = e.key, ph = st.phase;
+    if (k === ' ' && ph === 'bot') { e.preventDefault(); this._fast = true; return; }
+    if (k === 'Enter') { e.preventDefault(); this.onayla(); return; }
+    if (k === 'Escape') { e.preventDefault(); this.vazgec(); return; }
+    var map = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1], w: [-1, 0], s: [1, 0], a: [0, -1], d: [0, 1], q: [-1, -1], e: [-1, 1], z: [1, -1], c: [1, 1], '7': [-1, -1], '9': [-1, 1], '1': [1, -1], '3': [1, 1] };
+    var dd = map[k] || map[String(k).toLowerCase()];
+    if (!dd || (ph !== 'sen' && ph !== 'onizleme')) return;
+    e.preventDefault();
+    var me = g.pieces.find(function (p) { return p.id === 's0'; });
+    var m = this.moves(g, me, g.mode).find(function (q) { return q.r === me.r + dd[0] && q.c === me.c + dd[1]; });
+    if (m) this.setState({ sel: { r: m.r, c: m.c }, phase: 'onizleme', showT: false });
+  }
+  liveUi(st) {
+    var g = st.g, u = this.blankUi(), ph = st.phase || 'bekle', self = this;
+    u.live = true; u.ph = ph;
+    u.turn = (ph === 'sen' || ph === 'onizleme') ? 0 : ph === 'rakip' ? 1 : ph === 'bot' ? 'bot' : null;
+    u.timer = st.timer;
+    u.reach = (ph === 'sen' || ph === 'onizleme');
+    u.sel = ph === 'onizleme' ? st.sel : null;
+    if (u.sel) u.ghosts.push({ r: u.sel.r, c: u.sel.c, pl: 0 });
+    if (ph === 'sen' && st.hov) { u.hov = st.hov; u.ghosts.push({ r: st.hov.r, c: st.hov.c, pl: 0, faint: true }); }
+    u.lines = ph === 'onizleme' ? 'sel' : (ph === 'sen' && st.showT ? 'me' : (u.hov ? 'hov' : null));
+    u.trails = (st.trails || []).map(function (t) { var p = g.pieces.find(function (q) { return q.id === t.id; }); return { from: t.from, to: t.to, col: p ? self.colOf(p) : '#FFFFFF' }; });
+    u.bursts = st.fx || [];
+    u.cur = st.curBot || 0;
+    if (ph === 'bot' && u.cur) {
+      u.pips[u.cur] = u.cur;
+      g.pieces.filter(function (p) { return p.k !== 's' && p.alive && p.num > u.cur; }).sort(function (a, b) { return a.num - b.num; }).slice(0, 3).forEach(function (p) { u.pips[p.num] = p.num; });
+    }
+    u.botDone = st.botDone || 0; u.botTotal = st.botTotal || 0;
+    u.modeOv = !!st.modeOv; u.toast = st.toast || null; u.toastIcon = st.toastIcon || 'sword';
+    u.sheet = st.sheet || (st.hoverLp ? 'bilgi' : null); u.lp = st.lp || st.hoverLp || null;
+    u.logN = (g.log || []).length + 1;
+    u.kind = ph === 'onizleme' ? 'onz' : ph === 'bot' ? 'bot' : ph === 'elendin' ? 'spect' : ph === 'bitti' ? 'win' : (ph === 'sen' && st.showT ? 'threat' : 'gen');
+    u.d = ph === 'sen' ? (st.timer <= 5 ? 'son5' : 'sira') : ph === 'rakip' ? 'rakip' : 'bekle';
+    if (ph === 'elendin') u.spect = true;
+    return u;
+  }
+
+  /* ---------- panel ---------- */
+  panel(sc, u, d, desk) {
+    var K = this.K(), self = this, me = this.meP(sc);
+    var pn = { isGen: false, isOnz: false, isThreat: false, isBot: false, isSpect: false, isWin: false, boxSt: '', who: null, title: '', titleCol: K.TXT, sub: '', timer: '', timerCol: K.TXT, hasBar: false, bar: 0, barCol: K.PC[0], hint: '', hintCol: K.TXT2, chips: [], endLink: false, segs: [], count: '', risk: '', riskSt: '', riskIcon: '', okBg: K.PC[0], okLabel: 'Onayla' };
+    var t = u.timer, tcol = t <= 5 ? K.DANGER : K.TXT;
+    var tap = desk ? 'tıkla' : 'dokun';
+    var chipsOf = function (arr) { return arr.map(function (p) { var L = self.look(p, sc.mode, 22); return { st: L.st, gd: L.gd, gf: L.gf, gs: L.gs, gw: L.gw, label: self.pname(p, sc), how: self.hd(p, sc.mode) === K.ORTH ? 'düz vurur' : 'çapraz vurur' }; }); };
+    if (u.kind === 'onz' && u.sel) {
+      pn.isOnz = true;
+      var thr = this.hitters(sc, u.sel.r, u.sel.c, me.id), v = this.occ(sc)[u.sel.r + ',' + u.sel.c];
+      pn.title = v ? (this.pname(v, sc) + ' vurulacak') : 'Hamle önizlemesi';
+      pn.timer = t + ' sn'; pn.timerCol = tcol; pn.chips = chipsOf(thr);
+      if (thr.length) { pn.risk = 'Riskli · ' + thr.length + ' taş seni burada vurabilir'; pn.riskSt = 'background: rgba(255,59,92,.14); color: #FF9AAC'; pn.riskIcon = 'M12 3.5 L21.5 20 H2.5 Z M12 10 V14 M12 17 V17.2'; pn.okBg = K.DANGER; pn.okLabel = 'Riskli · Onayla'; }
+      else { pn.risk = 'Güvenli · burada kimse seni vuramaz'; pn.riskSt = 'background: rgba(59,255,143,.12); color: #3BFF8F'; pn.riskIcon = 'M5 12.5 L10 17 L19 7'; }
+      return pn;
+    }
+    if (u.kind === 'threat') {
+      pn.isThreat = true;
+      var th = me.alive ? this.hitters(sc, me.r, me.c, me.id) : [];
+      pn.title = th.length ? ('Şu an ' + th.length + ' taş seni vurabilir') : 'Şu an kimse seni vuramaz';
+      pn.timer = t + ' sn'; pn.timerCol = tcol; pn.chips = chipsOf(th);
+      pn.hint = 'Bu taşlar senden sonra oynuyor. Çizgisiz yanan kareler güvenli.';
+      return pn;
+    }
+    if (u.kind === 'bot') {
+      pn.isBot = true;
+      var tot = u.botTotal || 1, dn = Math.min(u.botDone, tot);
+      pn.count = dn + ' / ' + tot;
+      pn.sub = u.cur ? ('Şimdi: bot #' + u.cur + ' · ölen botun sırası atlanır') : 'Sırayla, art arda';
+      for (var i = 0; i < tot; i++) pn.segs.push({ bg: i < dn - 1 ? '#6F7FB8' : (i === dn - 1 ? '#EEF2FF' : '#232D5E') });
+      return pn;
+    }
+    if (u.kind === 'spect') { pn.isSpect = true; pn.sub = (sc.place[0] || 2) + '. sıra · ' + sc.kills[0] + ' vuruş'; pn.hint = 'Maçı izlemeye devam edebilir ya da çıkabilirsin.'; return pn; }
+    if (u.kind === 'win') { pn.isWin = true; pn.sub = 'Son kalan yıldız sensin · ' + sc.kills[0] + ' vuruş'; return pn; }
+
+    pn.isGen = true; pn.hasBar = true;
+    pn.bar = Math.max(0, Math.min(100, Math.round(t / 20 * 100)));
+    pn.timer = String(t); pn.timerCol = tcol; pn.barCol = t <= 5 ? K.DANGER : K.PC[0];
+    var who = function (i) { var p = sc.pieces.find(function (q) { return q.id === 's' + i; }); return p ? self.look(p, sc.mode, 34) : null; };
+    var thrN = me.alive ? this.hitters(sc, me.r, me.c, me.id).length : 0;
+    var other = function (sub) { pn.who = who(1); pn.title = self.pnm(sc, 1) + ' oynuyor'; pn.sub = sub; pn.barCol = K.PC[1]; pn.hint = 'Sıran gelince gidebileceğin kareler kendiliğinden yanar.'; };
+    if (d === 'son5') { pn.who = who(0); pn.title = 'Senin sıran'; pn.sub = 'Son saniyeler'; pn.hint = 'Süre biterse oyun senin yerine güvenli bir hamle yapar.'; pn.boxSt = 'border-color: #FF3B5C; box-shadow: 0 0 0 3px rgba(255,59,92,.18)'; }
+    else if (d === 'rakip') other('Sonra: botlar');
+    else if (d === 'vurus') other('Vuruşun işlendi · toplam ' + sc.kills[0]);
+    else if (d === 'sure') { other('Senin yerine güvenli hamle yapıldı'); pn.hint = 'Hamle süresi lobide ayarlanır (bu maç: 20 sn).'; }
+    else if (d === 'mod') { pn.who = who(1); pn.title = 'Mod değişti: ' + (sc.mode === 'duz' ? 'DÜZ' : 'ÇAPRAZ'); pn.sub = 'Tur ' + sc.round + ' · ilk sıra ' + this.pnm(sc, 1); pn.barCol = K.PC[1]; pn.hint = sc.mode === 'duz' ? 'Yıldızlar artık düz gider ve düz vurur.' : 'Yıldızlar artık çapraz gider ve çapraz vurur.'; }
+    else if (d === 'halka-uyari') { pn.who = who(0); pn.title = 'Senin sıran'; pn.sub = 'Dış halka bu turun sonunda çöküyor'; pn.hint = 'Turuncu çizgili halkada kalan taş elenir. İçeri gir.'; pn.hintCol = '#FFB27F'; pn.boxSt = 'border-color: #FF8A3D'; }
+    else if (d === 'halka-cokme') { pn.hasBar = false; pn.timer = ''; pn.title = 'Arena daraldı · ' + (sc.n - 2) + '×' + (sc.n - 2); pn.sub = 'Sonraki çöküş 4 tur sonra'; pn.hint = 'Sıradaki tur ' + (sc.mode === 'duz' ? 'ÇAPRAZ' : 'DÜZ') + '. Yıldızlar şekil değiştirecek.'; }
+    else if (d === 'kopan') { pn.who = who(1); pn.title = K.GEN[1] + ' bağlantısı koptu'; pn.sub = 'Bekleniyor · sonra yerine İkiz geçer'; pn.timerCol = K.HAZ; pn.barCol = K.HAZ; pn.bar = Math.round(t / 30 * 100); pn.hint = 'Sırası gelirse oyun en fazla 30 sn bekler. ' + this.pnm(sc, 1) + ' dönerse yerini geri alır.'; }
+    else if (d === 'baglaniyor') { pn.who = who(0); pn.title = 'Bağlantın koptu'; pn.sub = 'Yeniden bağlanıyor…'; pn.timerCol = K.HAZ; pn.barCol = K.HAZ; pn.bar = Math.round(t / 30 * 100); pn.hint = '30 sn içinde dönemezsen İkiz senin yerine oynar. Döndüğünde yerini geri alırsın.'; }
+    else if (d === 'bekle') {
+      pn.hasBar = false; pn.timer = '';
+      if (u.ph === 'mod') { pn.title = 'Yeni tur: ' + (sc.mode === 'duz' ? 'DÜZ' : 'ÇAPRAZ'); pn.sub = 'Tur ' + sc.round; pn.hint = 'Yıldızlar şekil değiştiriyor.'; }
+      else { pn.title = 'Sıra geçiyor…'; pn.sub = 'Tur ' + sc.round; pn.hint = 'Bot turunda tahtaya ' + (desk ? 'tıklayarak ya da Boşluk ile' : 'dokunarak') + ' hızlandırabilirsin.'; }
+    }
+    else {
+      pn.who = who(0); pn.title = 'Senin sıran'; pn.sub = 'Yanan karelerden birine ' + tap;
+      if (u.hov) {
+        var hz = this.hitters(sc, u.hov.r, u.hov.c, me.id).length;
+        pn.hint = hz ? ('Fare üstündeki kare riskli: ' + hz + ' taş seni burada vurabilir.') : 'Fare üstündeki kare güvenli. Tıkla: seç.';
+        pn.hintCol = hz ? '#FF9AAC' : '#3BFF8F';
+      } else if (thrN) { pn.hint = 'Şu an ' + thrN + ' taş seni vurabilir. Çizgili kareler tehlikeli.'; pn.hintCol = '#FF9AAC'; }
+      else pn.hint = desk ? 'Bir taşın üzerine gel: nasıl yürür, nasıl vurur, kimi hedefler.' : 'Bir taşa uzun bas: nasıl yürür, nasıl vurur, kimi hedefler.';
+    }
+    pn.endLink = u.live && sc.round >= 8 && (d === 'sira' || d === 'son5');
+    return pn;
+  }
+
+  logRowsOf(sc, u) {
+    var self = this, K = this.K(), ev;
+    if (u.live && sc.log && sc.log.length) {
+      ev = []; var lastR = -1;
+      sc.log.slice(0, 8).forEach(function (e) {
+        if (e.round !== lastR) { ev.push({ head: 'TUR ' + e.round }); lastR = e.round; }
+        var a = sc.pieces.find(function (q) { return q.id === e.a; }), v = sc.pieces.find(function (q) { return q.id === e.v; });
+        ev.push({ a: a, v: v });
+      });
+      ev.push({ head: 'TUR 5' }); ev.push({ a: { k: 's', pl: 0 }, v: { k: 'b', num: 14 } });
+    } else if (sc.n === 9) ev = [{ head: 'TUR 5' }, { a: { k: 's', pl: 0 }, v: { k: 'b', num: 14 } }];
+    else ev = [{ head: 'TUR ' + sc.round + ' · BU TUR' }, { a: { k: 'r', num: 7 }, v: { k: 'b', num: 21 } }, { head: 'TUR 8' }, { a: { k: 's', pl: 0 }, v: { k: 'b', num: 20 } }, { head: 'TUR 6' }, { a: { k: 's', pl: 1 }, v: { k: 'r', num: 19 } }, { head: 'TUR 3' }, { a: { k: 's', pl: 0 }, v: { k: 'r', num: 18 } }];
+    return ev.map(function (e) {
+      if (e.head) return { isHead: true, isKill: false, head: e.head };
+      var am = self.look(e.a, sc.mode, 26), vm = self.look(e.v, sc.mode, 26);
+      vm.st += ';filter:grayscale(1);opacity:.7';
+      return { isHead: false, isKill: true, am: am, vm: vm, an: self.pname(e.a, sc), vn: self.pname(e.v, sc), acol: e.a.k === 's' ? K.PC[e.a.pl] : K.TXT };
+    });
+  }
+
+  /* ---------- çizim ---------- */
+  build(sc, u, dev, d) {
+    var K = this.K(), self = this, se = dev === 'se', desk = dev === 'desk';
+    var W = desk ? 1440 : (se ? 375 : 390), H = desk ? 900 : (se ? 667 : 844), topS = se ? 20 : 47, botS = se ? 6 : 34;
+    var n = sc.n, gap = desk ? (n <= 9 ? 4 : 3) : (n <= 9 ? 3 : 2), fp = desk ? 8 : 6;
+    var cell = desk ? Math.min(72, Math.floor((704 - 2 * fp - gap * (n - 1)) / n)) : Math.floor((W - 12 - 2 * fp - gap * (n - 1)) / n);
+    var step = cell + gap, inner = n * cell + (n - 1) * gap, outer = inner + 2 * fp;
+    this._dims = { step: step, cell: cell, fp: fp, outer: outer };
+    var me = this.meP(sc), duz = sc.mode === 'duz';
+    var ck = n <= 9 ? 26 : (n <= 11 ? 22 : 18);
+    var clip = 'polygon(' + ck + '% 0,' + (100 - ck) + '% 0,100% ' + ck + '%,100% ' + (100 - ck) + '%,' + (100 - ck) + '% 100%,' + ck + '% 100%,0 ' + (100 - ck) + '%,0 ' + ck + '%)';
+    var octD = this.oct(ck, 6);
+    var myTurn = u.turn === 0 && me.alive;
+    var reach = {};
+    if (u.reach && myTurn) this.moves(sc, me, sc.mode).forEach(function (m) { reach[m.r + ',' + m.c] = m; });
+
+    var cells = [];
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) {
+      var key = r + ',' + c, ring = Math.min(r, c, n - 1 - r, n - 1 - c);
+      var bg = ((r + c) % 2) ? '#1D2858' : '#1A2452';
+      var d1 = '', s1 = 'none', w1 = 0, da1 = '', d2 = '', f2 = 'none', s2 = 'none', w2 = 0;
+      if (ring < sc.collapsed) { bg = '#070B1E'; d1 = octD; s1 = '#2B3670'; w1 = 4; da1 = '6 7'; }
+      else if (u.warn && ring === sc.collapsed) bg = 'repeating-linear-gradient(45deg, rgba(255,138,61,.55) 0 3px, rgba(255,138,61,.12) 3px 8px), #241B33';
+      var m = reach[key];
+      if (m) {
+        var hz = this.hitters(sc, r, c, me.id).length;
+        bg = hz ? 'repeating-linear-gradient(-45deg, rgba(255,59,92,.6) 0 2px, rgba(255,59,92,.12) 2px 6px), #2A1B3E' : 'linear-gradient(rgba(59,255,143,.18), rgba(59,255,143,.18)), #1A2452';
+        d1 = octD; s1 = K.PC[0]; w1 = 7; da1 = '';
+        if (m.cap) { d2 = 'M50 2 V18 M50 82 V98 M2 50 H18 M82 50 H98'; s2 = '#FFFFFF'; w2 = 8; }
+        else { d2 = duz ? 'M41 41 H59 V59 H41 Z' : 'M50 37 L63 50 L50 63 L37 50 Z'; f2 = K.PC[0]; }
+        if (u.hov && u.hov.r === r && u.hov.c === c) { s1 = '#E9F0FF'; w1 = 9; }
+        if (u.sel && u.sel.r === r && u.sel.c === c) { s1 = '#FFFFFF'; w1 = 11; }
+      }
+      cells.push({ st: 'width:' + cell + 'px;height:' + cell + 'px;clip-path:' + clip + ';background:' + bg, d1: d1, s1: s1, w1: w1, da1: da1, d2: d2, f2: f2, s2: s2, w2: w2 });
+    }
+
+    var threatIds = {}, lines = [];
+    if (u.lines === 'me' && me.alive) this.hitters(sc, me.r, me.c, me.id).forEach(function (p) { threatIds[p.id] = 1; lines.push(self.seg(p, me, step, cell, K.DANGER, 'dash')); });
+    var tgt = u.lines === 'sel' ? u.sel : (u.lines === 'hov' ? u.hov : null);
+    if (tgt) {
+      lines.push(this.seg(me, tgt, step, cell, K.PC[0], 'dot'));
+      this.hitters(sc, tgt.r, tgt.c, me.id).forEach(function (p) { threatIds[p.id] = 1; lines.push(self.seg(p, tgt, step, cell, K.DANGER, 'dash')); });
+    }
+    u.trails.forEach(function (t) { lines.push(self.seg(t.from, t.to, step, cell, t.col, 'trail')); });
+
+    var myThreats = myTurn ? this.hitters(sc, me.r, me.c, me.id).length : 0;
+    var pcs = [];
+    sc.pieces.forEach(function (p) {
+      var L = self.look(p, sc.mode, cell), isMe = p.id === me.id;
+      var halo = 'display: none';
+      if (isMe && myTurn) halo = 'border: 2px solid ' + K.PC[0] + '; opacity: .9';
+      if (u.warn && p.alive && Math.min(p.r, p.c, n - 1 - p.r, n - 1 - p.c) === sc.collapsed) halo = 'border: 2px dashed ' + K.HAZ;
+      if (threatIds[p.id]) halo = 'border: 2px dashed ' + K.DANGER;
+      if (u.cur && p.num === u.cur) halo = 'border: 2px solid #FFFFFF';
+      if (u.lp === p.id) halo = 'border: 2.5px solid #FFFFFF; box-shadow: 0 0 0 4px rgba(255,255,255,.2)';
+      var nd = '', nf = 'none';
+      if (p.k !== 's' && p.alive) { var t = self.targetOf(sc, p); if (t) { nd = self.notch(p, t); nf = K.PC[t.pl]; } }
+      var dur = p.k === 's' ? 220 : 130;
+      pcs.push({
+        st: 'width:' + cell + 'px;height:' + cell + 'px;transform:translate(' + (p.c * step) + 'px,' + (p.r * step) + 'px) scale(' + (p.alive ? 1 : 0.4) + ');opacity:' + (p.alive ? 1 : 0) + ';transition:transform ' + dur + 'ms cubic-bezier(.2,.8,.2,1), opacity 180ms ease-in;z-index:' + (p.k === 's' ? 3 : 2),
+        halo: halo, shape: L.st, gd: L.gd, gf: L.gf, gs: L.gs, gw: L.gw, nd: nd, nf: nf,
+        pip: (p.k !== 's' && u.pips[p.num]) ? String(u.pips[p.num]) : '',
+        badge: isMe && myThreats ? String(myThreats) : ''
+      });
+    });
+    u.ghosts.forEach(function (gh) {
+      var col = K.PC[gh.pl], rot = (gh.mode || sc.mode) === 'duz' ? 0 : 45;
+      pcs.push({ st: 'width:' + cell + 'px;height:' + cell + 'px;transform:translate(' + (gh.c * step) + 'px,' + (gh.r * step) + 'px);opacity:' + (gh.faint ? 0.55 : 0.85) + ';z-index:1', halo: 'display: none', shape: 'left:17%;top:17%;width:66%;height:66%;border-radius:10%;box-sizing:border-box;background:' + col + '33;border:2px dashed ' + col + ';transform:rotate(' + rot + 'deg) scale(' + (rot ? 0.95 : 1) + ')', gd: '', gf: 'none', gs: 'none', gw: 0, nd: '', nf: 'none', pip: '', badge: '' });
+    });
+    var fx = u.bursts.map(function (b) { return { st: 'left:' + (b.c * step + cell / 2 - cell) + 'px;top:' + (b.r * step + cell / 2 - cell) + 'px;width:' + (cell * 2) + 'px;height:' + (cell * 2) + 'px', col: b.col }; });
+
+    var players = [];
+    for (var i = 0; i < sc.np; i++) {
+      var sp = sc.pieces.find(function (q) { return q.id === 's' + i; }); if (!sp) continue;
+      var act = u.turn === i && sp.alive, four = sc.np >= 4, msz = four ? 22 : 26;
+      var Lp = this.look(sp, sc.mode, msz), Ld = this.look(sp, sc.mode, 32);
+      if (!sp.alive) { Lp.st += ';filter:grayscale(1);opacity:.7'; Ld.st += ';filter:grayscale(1);opacity:.7'; }
+      var base = sp.alive ? (sc.kills[i] + ' vuruş') : ((sc.place[i] || '–') + '. · elendi');
+      var sub = (i === 0 && sp.alive && !four) ? 'Sen · ' + base : base, subCol = K.TXT2;
+      if (act) { sub = four ? (u.timer + ' sn') : ('Oynuyor · ' + u.timer + ' sn'); subCol = K.PC[i]; }
+      if (u.disc === i) { sub = 'Koptu · ' + u.timer + ' sn'; subCol = K.HAZ; }
+      if (i === 0 && u.conn) { sub = 'Bağlanıyor…'; subCol = K.HAZ; }
+      var dsub = sub;
+      if (i === 0 && sp.alive && !act && !u.conn) dsub = 'Sen · ' + base;
+      players.push({
+        st: 'height:' + (se ? 40 : 48) + 'px;gap:' + (four ? 5 : 8) + 'px;padding:0 ' + (four ? 5 : 10) + 'px;border:1.5px solid ' + (act ? K.PC[i] : (i === 0 ? '#3A4785' : '#232D5E')) + (act ? ';box-shadow:0 0 0 3px ' + K.PC[i] + '33' : '') + (sp.alive ? '' : ';opacity:.6'),
+        dst: 'border:1.5px solid ' + (act ? K.PC[i] : (i === 0 ? '#3A4785' : '#232D5E')) + (act ? ';box-shadow:0 0 0 3px ' + K.PC[i] + '33' : '') + (sp.alive ? '' : ';opacity:.6'),
+        m: Lp, dm: Ld, msz: msz + 'px', name: this.pnm(sc, i), dname: this.pnm(sc, i),
+        nameSt: 'font-size:' + (four ? 11 : 13) + 'px' + (sp.alive ? '' : ';text-decoration: line-through; color: #A9B4DA'), sub: desk ? dsub : sub, subCol: subCol
+      });
+    }
+
+    var tex = duz
+      ? 'repeating-linear-gradient(0deg, rgba(233,240,255,.09) 0 1.5px, transparent 1.5px 8px), repeating-linear-gradient(90deg, rgba(233,240,255,.09) 0 1.5px, transparent 1.5px 8px), #0D1431'
+      : 'repeating-linear-gradient(45deg, rgba(233,240,255,.09) 0 1.5px, transparent 1.5px 8px), repeating-linear-gradient(-45deg, rgba(233,240,255,.09) 0 1.5px, transparent 1.5px 8px), #0D1431';
+    var bd = {
+      frameSt: 'width:' + outer + 'px;height:' + outer + 'px;padding:' + fp + 'px;box-sizing:border-box;border-radius:' + (desk ? 20 : 16) + 'px;background:' + tex + ';box-shadow:inset 0 0 0 ' + (u.warn ? '2px ' + K.HAZ : '1.5px rgba(233,240,255,.22)') + ', 0 18px 40px rgba(0,0,0,.35)' + (u.dim ? ';opacity:.45;filter:saturate(.4)' : ''),
+      gridSt: 'grid-template-columns: repeat(' + n + ', ' + cell + 'px); gap: ' + gap + 'px',
+      layerSt: 'left:' + fp + 'px;top:' + fp + 'px;width:' + inner + 'px;height:' + inner + 'px'
+    };
+    var md = {
+      label: duz ? 'DÜZ' : 'ÇAPRAZ', sub: duz ? 'Yıldızlar düz gider, düz vurur' : 'Yıldızlar çapraz gider, çapraz vurur',
+      shape: duz ? K.SQ : K.DI, glyph: duz ? K.PLUS : K.CROSS, next: duz ? 'ÇAPRAZ' : 'DÜZ', nshape: duz ? K.DI : K.SQ,
+      box: duz ? 'background: #E9F0FF; color: #0B1026' : 'background: repeating-linear-gradient(45deg, rgba(233,240,255,.10) 0 2px, transparent 2px 10px), repeating-linear-gradient(-45deg, rgba(233,240,255,.10) 0 2px, transparent 2px 10px), #0B1026; color: #E9F0FF; box-shadow: inset 0 0 0 2px #E9F0FF',
+      band: duz ? 'transform: rotate(0deg)' : 'transform: rotate(-45deg)',
+      ovSub: 'TUR ' + sc.round + ' · ' + (duz ? 'KARE GİDER' : 'ELMAS GİDER')
+    };
+    var hdr = {
+      tur: (u.spect ? 'İZLEYİCİ · ' : '') + 'TUR ' + sc.round,
+      ring: 'Halka ' + u.ring, ringShort: 'Halka: ' + u.ring,
+      ringSt: u.warn ? 'border: 1.5px solid #FF8A3D; color: #FFB27F; background: rgba(255,138,61,.12)' : 'border: 1px solid #2B3670; color: #A9B4DA',
+      logN: String(u.logN)
+    };
+
+    var sh = { bilgi: false, kayit: false, pb: botS + 8, m: null, title: '', sub: '', order: '', walk: [], hit: [], walkTxt: '', hitTxt: '', hasT: false, tm: null, tname: '', tdist: '', tcol: K.TXT, warn: false };
+    if (u.sheet === 'bilgi' && u.lp) {
+      var lp = sc.pieces.find(function (q) { return q.id === u.lp; });
+      if (lp) {
+        var L48 = this.look(lp, sc.mode, 52), L38 = this.look(lp, sc.mode, 38);
+        var nb = sc.pieces.filter(function (q) { return q.k !== 's' && q.alive; }).length;
+        var wOrth = this.wd(lp, sc.mode) === K.ORTH, hOrth = this.hd(lp, sc.mode) === K.ORTH;
+        sh.bilgi = true; sh.m = L48;
+        sh.title = lp.k === 's' ? this.pnm(sc, lp.pl) + ' · yıldız' : (K.BOTN[lp.k] + ' bot · #' + lp.num);
+        sh.sub = lp.k === 's' ? ('Bu tur ' + (duz ? 'düz' : 'çapraz') + ' gider ve vurur') : (lp.k === 'r' ? 'Kare: düz yürür · ×: çapraz vurur' : 'Elmas: çapraz yürür · +: düz vurur');
+        sh.order = lp.k === 's' ? 'Oyuncu' : ('Sıra ' + lp.num + ' / ' + nb);
+        sh.walk = this.diag(lp, sc.mode, 'w', L38); sh.hit = this.diag(lp, sc.mode, 'h', L38);
+        sh.walkTxt = wOrth ? 'Düz · tek kare' : 'Çapraz · tek kare'; sh.hitTxt = hOrth ? 'Düz · +' : 'Çapraz · ×';
+        var tg = lp.k !== 's' ? this.targetOf(sc, lp) : null;
+        if (tg) { sh.hasT = true; sh.tm = this.look(tg, sc.mode, 26); sh.tname = tg.pl === 0 ? 'Sen (' + this.pnm(sc, 0) + ')' : this.pnm(sc, tg.pl); sh.tdist = Math.max(Math.abs(tg.r - lp.r), Math.abs(tg.c - lp.c)) + ' kare uzakta'; sh.tcol = K.PC[tg.pl]; }
+        sh.warn = me.alive && this.hitters(sc, me.r, me.c, me.id).some(function (q) { return q.id === lp.id; });
+      }
+    }
+    if (u.sheet === 'kayit' && !desk) sh.kayit = true;
+
+    var keys = [
+      { k: '↑ ↓ ← →', t: 'DÜZ turda kare seç' },
+      { k: 'Q E Z C', t: 'ÇAPRAZ turda kare seç' },
+      { k: 'Enter', t: 'Onayla · ya da kareye 2. tık' },
+      { k: 'Esc', t: 'Vazgeç' },
+      { k: 'Boşluk', t: 'Bot turunu hızlandır' },
+      { k: 'Fare üstü', t: 'Önizleme · taş bilgisi' }
+    ];
+
+    var ph = u.ph;
+    var tapLayer = u.live && !(u.sheet && !desk && !(u.sheet === 'bilgi' && !this.state.sheet)) && (ph === 'sen' || ph === 'onizleme' || ph === 'bot' || ph === 'rakip');
+    return {
+      rootSt: 'width:' + W + 'px;height:' + H + 'px',
+      mobSt: 'width:' + W + 'px;height:' + H + 'px;padding-top:' + topS + 'px;gap:' + (se ? 5 : 6) + 'px',
+      mob: !desk, desk: desk,
+      botSt: 'height:' + Math.max(0, botS - 6) + 'px',
+      full: !se, compact: se, hdr: hdr, md: md, players: players, cells: cells, lines: lines, fx: fx, pcs: pcs, bd: bd,
+      modeOv: !!u.modeOv, banner: u.banner, toast: u.toast, toastIcon: u.toastIcon === 'clock' ? K.CLOCK : K.SWORD,
+      pn: this.panel(sc, u, d, desk), sh: sh, logRows: (desk || sh.kayit) ? this.logRowsOf(sc, u) : [], keys: keys,
+      conn: !!u.conn, connSt: 'top:' + (topS + (se ? 52 : 108)) + 'px',
+      tapLayer: tapLayer,
+      boardTap: function (e) { self.boardTap(e); },
+      boardHover: function (e) { self.boardHover(e); },
+      boardLeave: function () { self.boardLeave(); },
+      boardKey: function (e) { self.boardKey(e); },
+      onayla: function () { self.onayla(); },
+      vazgec: function () { self.vazgec(); },
+      hizlandir: function () { self._fast = true; },
+      openLog: function () { if (self.live()) self.setState({ sheet: 'kayit' }); },
+      closeSheet: function () { if (self.live()) self.setState({ sheet: null, lp: null, hoverLp: null }); }
+    };
+  }
+
+  renderVals() {
+    var dev = this.dev();
+    var st = this.state || {}, sc, u, d;
+    if (this.live()) {
+      if (!st.g) { sc = this.scene9(); u = this.blankUi(); u.turn = null; u.reach = false; u.live = true; u.ph = 'bekle'; d = 'bekle'; }
+      else { sc = st.g; u = this.liveUi(st); d = u.d; }
+    } else {
+      d = String(this.props.durum || 'sira');
+      var n = parseInt(this.props.boyut || '9', 10);
+      if (n !== 11 && n !== 13) n = 9;
+      sc = n === 9 ? this.scene9() : this.sceneGen(n);
+      u = this.staticUi(sc, d);
+    }
+    return this.build(sc, u, dev, d);
+  }
+}
+</script>
+</body>
+</html>
