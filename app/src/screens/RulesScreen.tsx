@@ -110,7 +110,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         <Card title="Ayna" visual={<Icon d="M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19" size={36} stroke={2} />}>
           <p>En fazla 3 kare uzaktaki bir taşla yer değiştirirsin.</p>
         </Card>
-        <p className="rules-foot">Her 50 puanda bir ve her 6 tur ayakta kalınca bir bonus kazanırsın; türü rastgele. Sıran gelince paneldeki bonusa dokun, kareler ona göre yanar.</p>
+        <p className="rules-foot">Herkes maça bir çift adımla başlar. Her 50 puanda bir ve her 6 tur ayakta kalınca bir bonus daha kazanırsın; türü rastgele. Sıran gelince paneldeki bonusa dokun, kareler ona göre yanar.</p>
       </div>
     </div>
   );

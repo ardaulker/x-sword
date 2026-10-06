@@ -62,7 +62,7 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 - Bot zekâsı kodda çözülecek. Senden istenen iki şey var: zorluk seçimi, bir de botun kimi hedeflediğini okunur gösteren bir işaret. Bu işaret ayarlardan kapatılabilsin.
 
 ## Bonuslar
-- Her 50 puanda bir ve her 6 tur ayakta kalınca bir bonus kazanılır; türü rastgeledir.
+- Herkes maça bir çift adımla başlar. Her 50 puanda bir ve her 6 tur ayakta kalınca bir bonus daha kazanılır; türü rastgeledir.
 - Zırh: bir kez alınmaktan korur, kendiliğinden çalışır. Çift adım: iki kare git. Çift hamle: hemen bir hamle daha. Ayna: 3 kare içindeki bir taşla yer değiştir.
 
 ## Bitiş

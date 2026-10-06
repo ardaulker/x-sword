@@ -16,7 +16,8 @@ export const SURVIVOR_BONUS = 30;
 export const BONUS_KINDS = ['armor', 'step', 'double', 'swap'];
 export const BONUS_EVERY = 50;
 export const SWAP_RANGE = 3;
-const noBonuses = () => ({ armor: 0, step: 0, double: 0, swap: 0 });
+// Herkes bir çift adımla başlar: köşeden erken sıkışmamak için.
+const startBonuses = () => ({ armor: 0, step: 1, double: 0, swap: 0 });
 const SEAT_NAMES_ACC = ["Turkuaz'ı", "Mor'u", "Sarı'yı", "Pembe'yi"];
 
 const STRAIGHT = [[-1, 0], [1, 0], [0, -1], [0, 1]];
@@ -106,7 +107,7 @@ export function createGame({
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
       level: s.level || 'normal', takes: 0, score: 0, bonus: 0, out: false,
-      bonuses: noBonuses(), nextBonusAt: BONUS_EVERY,
+      bonuses: startBonuses(), nextBonusAt: BONUS_EVERY,
     })),
     pieces: [], order: [], turn: 0, over: false, winner: null, outOrder: [], log: [],
     solo: n === 1, lastStep: null, matchOrder: [],

@@ -66,7 +66,7 @@ const modeSub = (mode: Mode) => (mode === 'DUZ' ? 'Yıldızlar düz gider, düz 
 export function ModeIndicator({ mode }: { mode: Mode }) {
   const next: Mode = mode === 'DUZ' ? 'CAPRAZ' : 'DUZ';
   return (
-    <div className={`mode-box mode-${mode === 'DUZ' ? 'duz' : 'capraz'}`} role="status" aria-label={`Mod ${modeWord(mode)}. ${modeSub(mode)}. Sonraki tur ${modeWord(next)}.`}>
+    <div key={mode} className={`mode-box mode-flip mode-${mode === 'DUZ' ? 'duz' : 'capraz'}`} role="status" aria-label={`Mod ${modeWord(mode)}. ${modeSub(mode)}. Sonraki tur ${modeWord(next)}.`}>
       <ModeIcon mode={mode} size={34} stroke={9} />
       <div className="mode-box-text">
         <span className="mode-box-label">{modeWord(mode)}</span>
@@ -94,7 +94,7 @@ export function CompactBar({ ctl, view }: { ctl: GameController; view: View }) {
   return (
     <header className="compact-bar">
       <MenuButton ctl={ctl} size={40} />
-      <div className={`mode-box mode-box-compact mode-${mode === 'DUZ' ? 'duz' : 'capraz'}`} role="status" aria-label={`Mod ${modeWord(mode)}`}>
+      <div key={mode} className={`mode-box mode-box-compact mode-flip mode-${mode === 'DUZ' ? 'duz' : 'capraz'}`} role="status" aria-label={`Mod ${modeWord(mode)}`}>
         <ModeIcon mode={mode} size={24} stroke={10} />
         <span className="mode-box-label">{modeWord(mode)}</span>
         <div className="compact-info">

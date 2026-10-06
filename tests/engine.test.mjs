@@ -158,12 +158,13 @@ test('bonus: her 50 puanda ve her 6 turda bir bonus kazanılır', () => {
   st.seats[0].score = 40;
   play(st, { r: 2, c: 1 }); // +10 → 50
   const total = s => Object.values(s.bonuses).reduce((a, b) => a + b, 0);
-  assert.equal(total(st.seats[0]), 1);
+  assert.equal(st.seats[0].bonuses.step >= 1, true); // başlangıçtaki çift adım
+  assert.equal(total(st.seats[0]), 2);
   assert.equal(st.seats[0].nextBonusAt, 100);
   const g = createGame({ seats: seats(2), seed: 9, neutrals: 0, shrinkStart: 99 });
   g.round = 6;
   while (g.round === 6) play(g, legalMoves(g, currentActor(g), g.mode).find(m => m.type === 'walk') ?? null);
-  assert.ok(g.seats.every(s => total(s) === 1));
+  assert.ok(g.seats.every(s => total(s) === 2));
 });
 
 test('zırh: alınan yıldız kurtulur, saldıran yerinde kalır', () => {

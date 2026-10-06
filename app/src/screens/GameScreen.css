@@ -44,6 +44,8 @@
 /* Mod göstergesi */
 .mode-box { display: flex; align-items: center; flex: none; }
 .mode-duz { background: var(--ice); color: var(--murekkep); }
+.mode-flip { animation: mode-flip calc(500ms * var(--hiz-carpan)) var(--ease-mod); }
+@keyframes mode-flip { 0% { transform: perspective(500px) rotateX(90deg); } 100% { transform: none; } }
 .mode-capraz { background: var(--mod-capraz-zemin); color: var(--ice); box-shadow: inset 0 0 0 2px var(--ice); }
 .game > .mode-box { margin: 0 12px; height: 56px; border-radius: 16px; gap: 12px; padding: 0 14px; }
 .mode-box-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
