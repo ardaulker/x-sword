@@ -5,6 +5,7 @@ import { paletteOf, saveSettings, settings } from '../game/settings';
 import { PieceGlyph } from '../components/PieceGlyph';
 import type { Settings } from '../game/settings';
 import './RulesScreen.css';
+import { Flag } from '../components/Flag';
 import { LANGS, setLang, tr, useLang } from '../i18n';
 
 const speeds = (): [Settings['speed'], string, string][] => [
@@ -37,8 +38,8 @@ export function SettingsScreen({ onBack, onRules }: { onBack: () => void; onRule
           <div className="rule-text"><h3>{tr('Dil')}</h3><p>{tr('Oyunun bütün yazıları seçtiğin dilde görünür.')}</p></div>
           <div className="seg lang-seg" role="radiogroup" aria-label={tr('Dil')}>
             {LANGS.map(l => (
-              <button key={l.code} type="button" role="radio" aria-checked={lang === l.code} className={lang === l.code ? 'is-on' : ''} onClick={() => setLang(l.code)}>
-                <b>{l.name}</b>
+              <button key={l.code} type="button" role="radio" aria-checked={lang === l.code} className={lang === l.code ? 'is-on' : ''} aria-label={l.name} title={l.name} onClick={() => setLang(l.code)}>
+                <Flag lang={l.code} width={38} />
               </button>
             ))}
           </div>
@@ -48,8 +49,15 @@ export function SettingsScreen({ onBack, onRules }: { onBack: () => void; onRule
             <div className="rule-text"><h3>{tr('Nasıl oynanır?')}</h3><p>{tr('Kurallar, puanlar ve bonusların nasıl kazanıldığı.')}</p></div>
           </button>
         )}
-        <Toggle label={tr('Ses')} sub={tr('Hamle, alma, puan, sıra, bonus ve maç sonu sesleri.')} on={s.sound}
+        <Toggle label={tr('Ses efektleri')} sub={tr('Hamle, alma, puan, sıra, bonus ve maç sonu sesleri.')} on={s.sound}
           onChange={v => { update({ sound: v }); if (v) feel('select'); }} />
+        <Toggle label={tr('Müzik')} sub={tr('Arena daralacak turlarda çalan gergin müzik.')} on={s.music}
+          onChange={v => update({ music: v })} />
+        <div className="rule set-col">
+          <div className="rule-text"><h3>{tr('Ses seviyesi')}</h3></div>
+          <input type="range" className="vol" min={0} max={100} value={Math.round(s.volume * 100)} aria-label={tr('Ses seviyesi')}
+            onChange={e => update({ volume: Number(e.target.value) / 100 })} onPointerUp={() => feel('select')} />
+        </div>
         <Toggle label={tr('Titreşim')} sub={tr("Desteklenen telefonlarda. iPhone'da tarayıcı titreşime izin vermez.")} on={s.haptics}
           onChange={v => { update({ haptics: v }); if (v) feel('select', 20); }} />
         <div className="rule set-col">

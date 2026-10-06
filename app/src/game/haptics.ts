@@ -63,7 +63,7 @@ const audio = () => {
 if (typeof window !== 'undefined') window.addEventListener('pointerdown', () => audio(), { once: true });
 
 export function sound(name: SoundName) {
-  if (!settings.sound) return;
+  if (!settings.sound || settings.volume <= 0) return;
   const ac = audio();
   if (!ac || ac.state !== 'running') return;
   const t0 = ac.currentTime;
@@ -72,7 +72,7 @@ export function sound(name: SoundName) {
     o.type = type;
     o.frequency.value = freq;
     g.gain.setValueAtTime(0.0001, t0 + at);
-    g.gain.exponentialRampToValueAtTime(gain, t0 + at + 0.01);
+    g.gain.exponentialRampToValueAtTime(gain * settings.volume, t0 + at + 0.01);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + dur);
     o.connect(g).connect(ac.destination);
     o.start(t0 + at);
@@ -93,12 +93,12 @@ export function feel(name: SoundName, pattern?: number | readonly number[]) {
 let tension: { master: GainNode; stops: (() => void)[]; timer: number } | null = null;
 
 export function startTension() {
-  if (tension || !settings.sound) return;
+  if (tension || !settings.music || settings.volume <= 0) return;
   const ac = audio();
   if (!ac || ac.state !== 'running') return;
   const master = ac.createGain();
   master.gain.setValueAtTime(0.0001, ac.currentTime);
-  master.gain.exponentialRampToValueAtTime(1, ac.currentTime + 0.8);
+  master.gain.exponentialRampToValueAtTime(settings.volume, ac.currentTime + 0.8);
   master.connect(ac.destination);
   const stops: (() => void)[] = [];
 
@@ -145,7 +145,7 @@ export function startTension() {
       beat++; next += BEAT;
     }
   };
-  const timer = window.setInterval(() => { if (!settings.sound) stopTension(); else tick(); }, 120);
+  const timer = window.setInterval(() => { if (!settings.music || settings.volume <= 0) stopTension(); else tick(); }, 120);
   tick();
   tension = { master, stops, timer };
 }

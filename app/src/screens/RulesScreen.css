@@ -79,4 +79,6 @@
 .rule-text p.rule-when b { color: var(--oyuncu-1); }
 
 .lang-seg { flex-wrap: wrap; }
-.lang-seg button { flex: 1 1 30%; }
+.lang-seg button { flex: 1 1 20%; display: flex; align-items: center; justify-content: center; padding: 10px 6px; }
+.lang-seg button.is-on { outline: 2px solid var(--oyuncu-1); outline-offset: -2px; }
+.vol { width: 100%; accent-color: var(--oyuncu-1); }

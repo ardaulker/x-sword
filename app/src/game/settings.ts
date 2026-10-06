@@ -3,7 +3,9 @@
 import { PLAYER_COLORS } from './look';
 
 export interface Settings {
-  sound: boolean;
+  sound: boolean;       // ses efektleri
+  music: boolean;       // gerilim müziği
+  volume: number;       // 0–1, efekt ve müzik için ortak seviye
   haptics: boolean;
   speed: 'yavas' | 'normal' | 'hizli';
   danger: boolean;      // gidilebilir ama tehlikeli kareler kırmızı çizgili
@@ -20,7 +22,7 @@ const KEY = 'xsword-settings';
 export const SPEED = { yavas: 1.45, normal: 1, hizli: 0.65 } as const;
 
 function load(): Settings {
-  const def: Settings = { sound: true, haptics: true, speed: 'normal', danger: true, targets: true, numbers: true, colorBlind: false };
+  const def: Settings = { sound: true, music: true, volume: 0.8, haptics: true, speed: 'normal', danger: true, targets: true, numbers: true, colorBlind: false };
   try { return { ...def, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') }; } catch { return def; }
 }
 

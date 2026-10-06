@@ -5,7 +5,7 @@ def edit(p, pairs, add_import=True):
         if a not in t:
             print('MISSING',p,repr(a[:90])); continue
         t=t.replace(a,b,1)
-    if add_import and "from '../i18n'" not in t and "from './i18n'" not in t and "from '../../i18n'" not in t:
+    if add_import and 'tr(' in t and "from '../i18n'" not in t and "from './i18n'" not in t and "from '../../i18n'" not in t:
         depth=p.count('/')-1  # relative to src
         rel='./i18n' if depth==0 else '../i18n'
         # insert after last top-level import line
