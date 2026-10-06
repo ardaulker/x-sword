@@ -19,7 +19,13 @@ export interface BotPiece extends PieceBase {
   kind: 'red' | 'blue';
   label: string;
 }
-export type Piece = StarPiece | BotPiece;
+// Tek oyunculu modda oyuncunun aynası: yıldızın kurallarıyla, onun yaptığı yönde oynar.
+export interface TwinPiece extends PieceBase {
+  kind: 'twin';
+  mirrors: string;
+  label: string;
+}
+export type Piece = StarPiece | BotPiece | TwinPiece;
 
 export interface Seat {
   index: number;
@@ -55,6 +61,8 @@ export interface GameState {
   winner: number | null;
   outOrder: number[];
   log: { round: number; text: string }[];
+  solo: boolean;
+  lastStep: { id: string; dr: number; dc: number } | null;
 }
 
 export interface SeatSetup {
@@ -98,6 +106,7 @@ export function attackersOf(state: GameState, r: number, c: number, except?: str
 export function collapseDue(state: GameState): boolean;
 export function nextCollapseRound(state: GameState): number | null;
 export function doomedAt(state: GameState, r: number, c: number): boolean;
+export function twinMove(state: GameState, twin: Piece): Move | null;
 export function threatsFor(state: GameState, piece: Piece, move: Move): { attackers: Piece[]; doomed: boolean };
 export function isSafe(state: GameState, piece: Piece, move: Move): boolean;
 export function play(state: GameState, move: Move | null): GameState;

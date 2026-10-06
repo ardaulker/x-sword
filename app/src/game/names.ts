@@ -22,17 +22,18 @@ export const BOT_NAMES = { red: 'Kızıl', blue: 'Çelik' } as const;
 // Kısa etiket: şerit, çip, kayıt satırı.
 export function labelOf(state: GameState, p: Piece) {
   if (p.kind === 'star') return p.seat === ME ? 'Sen' : seatName(state, p.seat);
+  if (p.kind === 'twin') return 'İkiz';
   return `${BOT_NAMES[p.kind]} #${p.label}`;
 }
 
 // Cümlenin öznesi: "3 numara seni aldı!", "İkiz seni aldı!"
 export function subjectOf(state: GameState, p: Piece) {
-  return p.kind === 'star' ? seatName(state, p.seat) : `${p.label} numara`;
+  return p.kind === 'star' ? seatName(state, p.seat) : p.kind === 'twin' ? 'İkiz' : `${p.label} numara`;
 }
 
 // Belirtme hâli: "5 numarayı aldın!", "İkiz'i aldın!"
 export function objectOf(state: GameState, p: Piece) {
-  return p.kind === 'star' ? seatAcc(state, p.seat) : `${p.label} numarayı`;
+  return p.kind === 'star' ? seatAcc(state, p.seat) : p.kind === 'twin' ? "İkiz'i" : `${p.label} numarayı`;
 }
 
 export const modeWord = (mode: Mode) => (mode === 'DUZ' ? 'DÜZ' : 'ÇAPRAZ');

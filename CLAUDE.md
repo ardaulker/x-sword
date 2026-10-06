@@ -6,6 +6,7 @@
 - `arena/` motoru deneyen test sahası (https://ardaulker.github.io/x-sword/arena/). `index.html` kuzenden gelen ilk demo; motoru kullanmaz.
 - Testler: `node tests/engine.test.mjs` (kurallar + bot gücü), `node tests/tests.js` ve `node tests/tests2.js` (eski demo). Kurala ya da bota dokunduysan önce bunları çalıştır.
 - Yayın: `main`'e push `.github/workflows/pages.yml`'ı çalıştırır. İş akışı motor testlerini koşar, `app/`'i derler, siteyi GitHub Pages'e yayınlar. Kökteki sayfalar (`index.html`, `arena/`, `engine/`) olduğu gibi gider; oyun https://ardaulker.github.io/x-sword/oyun/ adresine gider. Push'tan sonra Actions'ta işin bittiğini gör, canlı sayfayı aç ve console'u oku.
+- **İkiz** yalnız tek oyunculu moddadır ve oyuncunun aynasıdır: oyuncudan hemen sonra, onun yaptığı yönün aynısını oynar. O kare boşsa yürür, doluysa oradaki taşı alır, kapalıysa yerinde kalır. Bu yüzden oyuncuyu hiç alamaz. Tek oyunculu modda İkiz ve bütün botlar gidince kazanırsın. Arda 6 Ekim 2026'da böyle seçti. Kuzenin ilk dosyasında İkiz başkaydı: oyuncunun kurallarıyla oynuyordu ama hamlesini kendi seçen bir avcıydı.
 - Oyun metinlerinde "yemek" geçmez. Taş satrançtaki gibi alınır: "5 numarayı aldın!", "3 numara seni aldı!".
 - Tasarım kaynağı `design/`: önce `design/CLAUDE_CODE_HANDOFF.md`, sonra `design/tokens/tokens.css` ve `design/reference/*.dc.html` (okunacak referans, çalışan uygulama değil; nasıl okunacağı `design/reference/DC_FORMAT.md`'de).
 - Tasarım ilk brief'le yapıldı; şu üç karar onda yok, kodda tasarımın önüne geçer:

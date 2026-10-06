@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {
   createGame, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
-  roundOrder, random, pieceById, SIZE_BY_STARS, NEUTRALS_BY_STARS,
+  roundOrder, random, pieceById, threatsFor, SIZE_BY_STARS, NEUTRALS_BY_STARS,
 } from '../engine/rules.js';
 import { chooseMove, targetOf } from '../engine/bots.js';
 
@@ -123,13 +123,80 @@ test('tehdit: kim alabilir, modu doğru hesaplar', () => {
 });
 
 test('oyun her zaman biter (daralan arena sayesinde)', () => {
-  for (let seed = 1; seed <= 30; seed++) {
-    const n = 2 + (seed % 3);
+  for (let seed = 1; seed <= 40; seed++) {
+    const n = 1 + (seed % 4);
     const st = createGame({ seats: seats(n, 'bot', 'normal'), seed });
     let guard = 0;
     while (!st.over && guard++ < 20000) play(st, chooseMove(st, currentActor(st)));
     assert.ok(st.over, `tohum ${seed} bitmedi`);
   }
+});
+
+// ---------------------------------------------------------------- tek oyunculu mod ve ayna İkiz
+
+// Tek oyunculu pozisyon: s0, İkiz ve verilen botlar.
+function soloPosition({ me, twin, bots = [], mode = 'DUZ' }) {
+  const st = createGame({ seats: [{ kind: 'human' }], seed: 1, neutrals: 0 });
+  Object.assign(pieceById(st, 's0'), { r: me[0], c: me[1] });
+  Object.assign(pieceById(st, 'tw'), { r: twin[0], c: twin[1] });
+  st.pieces.push(...bots.map((p, i) => ({ id: `b${i + 1}`, label: String(i + 1), alive: true, ...p })));
+  st.mode = mode;
+  st.order = roundOrder(st);
+  return st;
+}
+
+test('tek oyunculu mod: 9×9, oyuncu + İkiz + botlar; İkiz oyuncudan hemen sonra oynar', () => {
+  const st = createGame({ seats: [{ kind: 'human' }], seed: 7 });
+  assert.equal(st.size, 9);
+  assert.equal(st.solo, true);
+  assert.equal(st.pieces.filter(p => p.kind === 'twin').length, 1);
+  assert.equal(st.pieces.filter(p => p.kind === 'red' || p.kind === 'blue').length, NEUTRALS_BY_STARS[1]);
+  assert.deepEqual(st.order.slice(0, 2), ['s0', 'tw']);
+});
+
+test('İkiz senin yaptığın yönün aynısını yapar', () => {
+  const st = soloPosition({ me: [1, 1], twin: [5, 5] });
+  play(st, { r: 1, c: 2 }); // sağa
+  const tw = currentActor(st);
+  assert.equal(tw.id, 'tw');
+  play(st, chooseMove(st, tw));
+  assert.deepEqual([tw.r, tw.c], [5, 6]);
+});
+
+test('İkiz o yön kapalıysa yerinde kalır, doluysa oradaki taşı alır', () => {
+  const blocked = soloPosition({ me: [1, 1], twin: [5, 8] });
+  play(blocked, { r: 1, c: 2 });
+  assert.equal(chooseMove(blocked, currentActor(blocked)), null);
+
+  const st = soloPosition({ me: [1, 1], twin: [5, 5], bots: [{ kind: 'red', r: 5, c: 6 }] });
+  play(st, { r: 1, c: 2 });
+  play(st, chooseMove(st, currentActor(st)));
+  assert.equal(pieceById(st, 'b1').alive, false);
+  assert.deepEqual([pieceById(st, 'tw').r, pieceById(st, 'tw').c], [5, 6]);
+});
+
+test('İkiz seni alamaz; önizleme bunu kesin bilir', () => {
+  // (1,2)'ye gidersen İkiz (2,2)'den sağa, (2,3)'e gider. Düz komşu olsa da tehdit değildir.
+  const st = soloPosition({ me: [1, 1], twin: [2, 2] });
+  const me = pieceById(st, 's0');
+  assert.deepEqual(attackersOf(st, 1, 2, ['s0']).map(p => p.id), ['tw']);
+  assert.deepEqual(threatsFor(st, me, { r: 1, c: 2, type: 'walk' }).attackers, []);
+});
+
+test('tek oyunculu: İkiz ve botlar gidince kazanırsın, alınınca kaybedersin', () => {
+  const win = soloPosition({ me: [1, 1], twin: [1, 2] });
+  play(win, { r: 1, c: 2 }); // İkiz'i al
+  assert.equal(win.over, true);
+  assert.equal(win.winner, 0);
+
+  // Aşağı inersen (2,1)'e gelirsin; (3,2)'deki kırmızı oraya çapraz alır.
+  const lose = soloPosition({ me: [1, 1], twin: [6, 7], bots: [{ kind: 'red', r: 3, c: 2 }] });
+  play(lose, { r: 2, c: 1 });
+  play(lose, chooseMove(lose, currentActor(lose)));
+  play(lose, chooseMove(lose, currentActor(lose)));
+  assert.equal(pieceById(lose, 's0').alive, false);
+  assert.equal(lose.over, true);
+  assert.equal(lose.winner, null);
 });
 
 // ---------------------------------------------------------------- botlar

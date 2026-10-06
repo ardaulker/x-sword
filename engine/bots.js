@@ -6,7 +6,7 @@
 
 import {
   legalMoves, attackersOf, threatsFor, random, ringOf, inArena,
-  walkDirs, takeDirs, nextMode, flip,
+  walkDirs, takeDirs, nextMode, flip, twinMove,
 } from './rules.js';
 
 export const LEVELS = ['kolay', 'normal', 'zor'];
@@ -16,6 +16,7 @@ export function levelOf(state, piece) {
 }
 
 export function chooseMove(state, piece, level = levelOf(state, piece)) {
+  if (piece.kind === 'twin') return twinMove(state, piece);
   const moves = legalMoves(state, piece, state.mode);
   if (!moves.length) return null;
   if (level === 'kolay') return easyMove(state, piece, moves);
@@ -103,7 +104,7 @@ function huntDistance(state, piece, star, grid) {
 // Kolay en yakın yıldıza yürür. Normal ve zor, en az hamlede alabileceği yıldıza yönelir;
 // hiçbirine yolu yoksa en yakınına sokulur.
 export function targetOf(state, piece, level = levelOf(state, piece)) {
-  if (piece.kind === 'star' || !piece.alive) return null;
+  if (piece.kind === 'star' || piece.kind === 'twin' || !piece.alive) return null;
   const stars = state.pieces.filter(p => p.kind === 'star' && p.alive);
   if (!stars.length) return null;
   const nearest = dist => stars.reduce((a, b) => (dist(b) < dist(a) ? b : a));

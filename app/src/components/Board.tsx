@@ -1,15 +1,16 @@
 import { useEffect, useRef } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import {
-  attackersOf, collapseDue, legalMoves, pieceById, pieceAt, ringOf, threatsFor,
+  collapseDue, legalMoves, pieceById, pieceAt, ringOf, threatsFor,
 } from '../../../engine/rules.js';
 import type { Move, Piece } from '../../../engine/rules.js';
 import { targetOf } from '../../../engine/bots.js';
 import type { GameController, Spot, View } from '../game/controller';
 import {
   DANGER, HAZARD, MARK_AIM, MARK_DIAMOND, MARK_SQUARE, PLAYER_COLORS,
-  alpha, chamferOf, diamondOf, notchPath, octClip, octPath,
+  alpha, chamferOf, diamondOf, isBot, notchPath, octClip, octPath, seatOf,
 } from '../game/look';
+import { attackersOfMe } from '../game/threats';
 import { labelOf, modeWord } from '../game/names';
 import { PieceGlyph } from './PieceGlyph';
 import { CenterBanner } from './CenterBanner';
@@ -82,7 +83,7 @@ export function Board({ ctl, view, cell }: Props) {
 
   const threatIds = new Set<string>();
   if (myTurn && view.showThreats) {
-    for (const p of attackersOf(st, me.r, me.c, [me.id])) {
+    for (const p of attackersOfMe(st, me)) {
       threatIds.add(p.id);
       seg(`t${p.id}`, p, me, 'dash', DANGER);
     }
@@ -97,14 +98,14 @@ export function Board({ ctl, view, cell }: Props) {
   for (const t of view.trails) seg(`tr${t.key}`, t.from, t.to, 'trail', t.color);
 
   // ---------------------------------------------------------- taşlar
-  const myThreats = myTurn ? attackersOf(st, me.r, me.c, [me.id]).length : 0;
+  const myThreats = myTurn ? attackersOfMe(st, me).length : 0;
   const pips = new Map<string, string>();
   if (view.phase === 'bot') {
     const cur = view.bots.currentId ? pieceById(st, view.bots.currentId) : null;
-    if (cur && cur.alive && cur.kind !== 'star') pips.set(cur.id, cur.label);
+    if (cur && cur.alive && cur.kind !== 'star' && isBot(cur)) pips.set(cur.id, cur.label);
     st.order.slice(st.turn)
       .map(id => pieceById(st, id))
-      .filter((p): p is Piece => !!p && p.alive && p.kind !== 'star')
+      .filter((p): p is Piece => !!p && p.alive && isBot(p))
       .slice(0, 3)
       .forEach(p => { if (p.kind !== 'star') pips.set(p.id, p.label); });
   }
@@ -305,17 +306,17 @@ export function Board({ ctl, view, cell }: Props) {
 
         {st.pieces.map(p => {
           const halo = haloOf(p);
-          const target = p.kind !== 'star' && p.alive ? targetOf(st, p) : null;
+          const target = isBot(p) && p.alive ? targetOf(st, p) : null;
           const pip = pips.get(p.id);
           const badge = p.id === me.id && myThreats ? myThreats : 0;
           return (
             <PieceGlyph
               key={p.id}
               kind={p.kind}
-              seat={p.kind === 'star' ? p.seat : 0}
+              seat={seatOf(p)}
               size={cell}
               diamond={diamondOf(p, st.mode)}
-              className={`board-piece ${p.kind === 'star' ? 'is-star' : 'is-bot'}`}
+              className={`board-piece ${isBot(p) ? 'is-bot' : 'is-star'}`}
               style={{
                 transform: `translate(${p.c * step}px, ${p.r * step}px) scale(${p.alive ? 1 : 0.4})`,
                 opacity: p.alive ? 1 : 0,

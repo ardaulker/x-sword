@@ -14,11 +14,16 @@ export const HAZARD_TXT = '#FFB27F';
 export const PLAYER_COLORS = ['#3BFF8F', '#FFC53D', '#FF5CC0', '#B392FF'];
 export const BOT_COLORS = { red: '#D3765B', blue: '#6F98DA' } as const;
 
-export const colorOf = (p: Piece) => (p.kind === 'star' ? PLAYER_COLORS[p.seat] : BOT_COLORS[p.kind]);
+// İkiz yalnız tek oyunculu modda var ve hep 1. oyuncunun aynası: onun koltuğunu kullanır.
+export const seatOf = (p: Piece) => (p.kind === 'star' ? p.seat : 0);
+export const isBot = (p: Piece) => p.kind === 'red' || p.kind === 'blue';
 
-// Şekil yürüme yönünü gösterir: kare düz, elmas çapraz yürür.
+export const colorOf = (p: Piece) =>
+  p.kind === 'star' || p.kind === 'twin' ? PLAYER_COLORS[seatOf(p)] : BOT_COLORS[p.kind];
+
+// Şekil yürüme yönünü gösterir: kare düz, elmas çapraz yürür. Yıldız ve İkiz modla döner.
 export const diamondOf = (p: Pick<Piece, 'kind'>, mode: Mode) =>
-  p.kind === 'blue' || (p.kind === 'star' && mode === 'CAPRAZ');
+  p.kind === 'blue' || ((p.kind === 'star' || p.kind === 'twin') && mode === 'CAPRAZ');
 
 export const alpha = (hex: string, a: number) => {
   const v = parseInt(hex.slice(1), 16);
@@ -48,6 +53,11 @@ export const EMBLEMS: Glyph[] = [
 
 export function glyphOf(p: Pick<Piece, 'kind'> & { seat?: number }): Glyph {
   if (p.kind === 'star') return EMBLEMS[p.seat ?? 0];
+  if (p.kind === 'twin') {
+    // Karanlık İkiz: aynı amblem, renkler ters (koyu taş, oyuncu renginde amblem).
+    const e = EMBLEMS[p.seat ?? 0], col = PLAYER_COLORS[p.seat ?? 0];
+    return { ...e, fill: e.fill === INK ? col : e.fill, stroke: e.stroke === INK ? col : e.stroke };
+  }
   return { d: p.kind === 'red' ? CROSS : PLUS, fill: 'none', stroke: INK, width: 10 };
 }
 

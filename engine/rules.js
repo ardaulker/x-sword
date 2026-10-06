@@ -1,8 +1,9 @@
 // X Sword kural motoru.
 // Ekrana dokunmaz: aynı kurallar tarayıcıda, testlerde ve ileride çevrimiçi sunucuda çalışır.
 
-export const SIZE_BY_STARS = { 2: 9, 3: 11, 4: 13 };
-export const NEUTRALS_BY_STARS = { 2: 14, 3: 21, 4: 28 };
+// 1 yıldız: tek oyunculu mod (sen + aynan İkiz + arena botları).
+export const SIZE_BY_STARS = { 1: 9, 2: 9, 3: 11, 4: 13 };
+export const NEUTRALS_BY_STARS = { 1: 14, 2: 14, 3: 21, 4: 28 };
 export const SEAT_NAMES = ['Turkuaz', 'Mor', 'Sarı', 'Pembe'];
 const SEAT_NAMES_ACC = ["Turkuaz'ı", "Mor'u", "Sarı'yı", "Pembe'yi"];
 
@@ -12,7 +13,7 @@ const CROSS = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
 export const flip = mode => (mode === 'DUZ' ? 'CAPRAZ' : 'DUZ');
 export const modeLabel = mode => (mode === 'DUZ' ? 'DÜZ' : 'ÇAPRAZ');
 
-// Kırmızı düz yürür, çapraz alır. Mavi tersi. Yıldız modun yönünde hem yürür hem alır.
+// Kırmızı düz yürür, çapraz alır. Mavi tersi. Yıldız ve İkiz modun yönünde hem yürür hem alır.
 export function walkDirs(piece, mode) {
   if (piece.kind === 'red') return STRAIGHT;
   if (piece.kind === 'blue') return CROSS;
@@ -40,8 +41,10 @@ export const ringOf = (state, r, c) => Math.min(r, c, state.size - 1 - r, state.
 export const inArena = (state, r, c) =>
   r >= 0 && c >= 0 && r < state.size && c < state.size && ringOf(state, r, c) >= state.ring;
 
-export const nameOf = (state, p) => (p.kind === 'star' ? state.seats[p.seat].name : `${p.label} numara`);
-const accOf = (state, p) => (p.kind === 'star' ? SEAT_NAMES_ACC[p.seat] : `${p.label} numarayı`);
+export const nameOf = (state, p) =>
+  p.kind === 'star' ? state.seats[p.seat].name : p.kind === 'twin' ? 'İkiz' : `${p.label} numara`;
+const accOf = (state, p) =>
+  p.kind === 'star' ? SEAT_NAMES_ACC[p.seat] : p.kind === 'twin' ? "İkiz'i" : `${p.label} numarayı`;
 
 function log(state, text) {
   state.log.push({ round: state.round, text });
@@ -50,15 +53,17 @@ function log(state, text) {
 // Yıldızlar köşelerden bir kare içeride, birbirinden eşit uzaklıkta başlar; 4 kişide saat yönünde.
 function startCells(n, size) {
   const a = 1, b = size - 2, mid = (size - 1) / 2;
+  if (n === 1) return [[a, a]];
   if (n === 2) return [[a, a], [b, b]];
   if (n === 3) return [[a, a], [a, b], [b, mid]];
   return [[a, a], [a, b], [b, b], [b, a]];
 }
 
-// seats: [{ kind: 'human' | 'bot', level: 'kolay' | 'normal' | 'zor' }], 2–4 tane.
+// seats: [{ kind: 'human' | 'bot', level: 'kolay' | 'normal' | 'zor' }], 1–4 tane.
+// Tek koltuk tek oyunculu moddur: oyuncunun aynası İkiz de tahtaya girer, son kalan kazanır.
 export function createGame({ seats, neutralLevel = 'normal', seed, shrinkStart = 8, shrinkEvery = 4, neutrals } = {}) {
   const n = seats?.length;
-  if (!(n >= 2 && n <= 4)) throw new Error('Bir maçta 2–4 yıldız olur.');
+  if (!(n >= 1 && n <= 4)) throw new Error('Bir maçta 1–4 yıldız olur.');
   const size = SIZE_BY_STARS[n];
   const state = {
     size, round: 1, mode: 'DUZ', ring: 0, shrinkStart, shrinkEvery, neutralLevel,
@@ -68,6 +73,7 @@ export function createGame({ seats, neutralLevel = 'normal', seed, shrinkStart =
       level: s.level || 'normal', takes: 0, out: false,
     })),
     pieces: [], order: [], turn: 0, over: false, winner: null, outOrder: [], log: [],
+    solo: n === 1, lastStep: null,
   };
 
   const starts = startCells(n, size);
@@ -83,6 +89,11 @@ export function createGame({ seats, neutralLevel = 'normal', seed, shrinkStart =
   for (let i = free.length - 1; i > 0; i--) {
     const j = Math.floor(random(state) * (i + 1));
     [free[i], free[j]] = [free[j], free[i]];
+  }
+  // Tek oyunculu modda oyuncunun aynası İkiz de rastgele bir kareden başlar.
+  if (state.solo) {
+    const [r, c] = free.pop();
+    state.pieces.push({ id: 'tw', kind: 'twin', mirrors: 's0', label: 'İkiz', r, c, alive: true });
   }
   const count = Math.min(neutrals ?? NEUTRALS_BY_STARS[n], free.length);
   const reds = Math.ceil(count / 2);
@@ -120,7 +131,7 @@ export function isBotTurn(state) {
 // Bir yıldızın bir sonraki hamlesindeki mod: bu tur sırası daha gelmediyse bu turun modu,
 // geldiyse bir sonraki turun modu. Arena botlarında mod önemsizdir.
 export function nextMode(state, p) {
-  if (p.kind !== 'star') return state.mode;
+  if (p.kind === 'red' || p.kind === 'blue') return state.mode;
   return state.order.indexOf(p.id) >= state.turn ? state.mode : flip(state.mode);
 }
 
@@ -137,6 +148,17 @@ export function legalMoves(state, piece, mode = nextMode(state, piece)) {
   }
   return moves;
 }
+
+// İkiz, aynası olduğu yıldızın az önce yaptığı yönün aynısını oynar: o kare boşsa yürür,
+// doluysa oradaki taşı alır, tahta dışıysa ya da çöktüyse yerinde kalır.
+export function twinMove(state, twin) {
+  const s = state.lastStep;
+  if (!s || s.id !== twin.mirrors || (!s.dr && !s.dc)) return null;
+  return legalMoves(state, twin, state.mode).find(m => m.r === twin.r + s.dr && m.c === twin.c + s.dc) ?? null;
+}
+
+const twinOf = (state, piece) =>
+  state.pieces.find(p => p.kind === 'twin' && p.alive && p.mirrors === piece.id) ?? null;
 
 // (r, c)'deki bir taşı, onun bir sonraki hamlesinden önce alabilecek taşlar.
 // İki hamle arasında herkes bir kez oynar ve bir taş ya yürür ya alır; bu yüzden
@@ -169,13 +191,17 @@ export function nextCollapseRound(state) {
 export const doomedAt = (state, r, c) => collapseDue(state) && ringOf(state, r, c) === state.ring;
 
 // Hamle önizlemesi: piece bu hamleyi yaparsa onu kimler alabilir, kare çökecek mi?
+// Yıldızın kendi İkiz'i tahmin edilmez, kesin bilinir: aynı yönde gelir.
 export function threatsFor(state, piece, move) {
   const target = move.type === 'take' ? pieceById(state, move.targetId) : null;
   const from = [piece.r, piece.c];
   piece.r = move.r; piece.c = move.c;
   if (target) target.alive = false;
   try {
-    return { attackers: attackersOf(state, move.r, move.c, [piece.id]), doomed: doomedAt(state, move.r, move.c) };
+    const twin = twinOf(state, piece);
+    const attackers = attackersOf(state, move.r, move.c, twin ? [piece.id, twin.id] : [piece.id]);
+    if (twin && twin.r + move.r - from[0] === move.r && twin.c + move.c - from[1] === move.c) attackers.push(twin);
+    return { attackers, doomed: doomedAt(state, move.r, move.c) };
   } finally {
     [piece.r, piece.c] = from;
     if (target) target.alive = true;
@@ -194,10 +220,12 @@ export function play(state, move) {
   if (move) {
     const m = legalMoves(state, actor, state.mode).find(x => x.r === move.r && x.c === move.c);
     if (!m) throw new Error(`Geçersiz hamle: ${nameOf(state, actor)} → ${move.r},${move.c}`);
+    state.lastStep = { id: actor.id, dr: m.r - actor.r, dc: m.c - actor.c };
     if (m.type === 'take') takePiece(state, actor, pieceById(state, m.targetId));
     actor.r = m.r; actor.c = m.c;
-  } else if (actor.kind === 'star') {
-    log(state, `${nameOf(state, actor)} hamle yapamadı, sıra geçti.`);
+  } else {
+    state.lastStep = { id: actor.id, dr: 0, dc: 0 };
+    if (actor.kind === 'star') log(state, `${nameOf(state, actor)} hamle yapamadı, sıra geçti.`);
   }
   state.turn++;
   settle(state);
@@ -209,6 +237,7 @@ function takePiece(state, actor, target) {
   if (actor.kind === 'star') state.seats[actor.seat].takes++;
   log(state, `⚔️ ${nameOf(state, actor)}, ${accOf(state, target)} aldı!`);
   if (target.kind === 'star') starOut(state, target);
+  checkOver(state);
 }
 
 function starOut(state, star) {
@@ -219,9 +248,17 @@ function starOut(state, star) {
   checkOver(state);
 }
 
+// Çok oyunculu: son kalan yıldız kazanır. Tek oyunculu: İkiz ve bütün botlar gidince kazanırsın, alınınca kaybedersin.
 function checkOver(state) {
   if (state.over) return;
   const alive = state.pieces.filter(p => p.kind === 'star' && p.alive);
+  if (state.solo) {
+    if (alive.length && state.pieces.some(p => p.alive && p.kind !== 'star')) return;
+    state.over = true;
+    state.winner = alive.length ? 0 : null;
+    log(state, alive.length ? '🏆 Kazandın! Arenada tek sen kaldın.' : '❌ Alındın! Oyun bitti.');
+    return;
+  }
   if (alive.length > 1) return;
   state.over = true;
   state.winner = alive.length ? alive[0].seat : null;
@@ -257,6 +294,7 @@ function collapse(state) {
     ? `🌀 Arena daraldı (${side}×${side})! Dışarıda kalan düştü: ${fallen.map(p => nameOf(state, p)).join(', ')}.`
     : `🌀 Arena daraldı (${side}×${side}).`);
   fallen.filter(p => p.kind === 'star').forEach(p => starOut(state, p));
+  checkOver(state);
 }
 
 // Kazanan önce, sonra en son çıkandan ilk çıkana.

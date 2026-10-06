@@ -21,7 +21,7 @@ daralan arena, hamle önizlemesi ve üç zorlukta bot. İnsanlar şimdilik aynı
 ## Oyun (yeni arayüz, yapım aşamasında)
 
 **https://ardaulker.github.io/x-sword/oyun/** — `app/` klasörü, `design/` klasöründeki tasarıma göre kurulan oyun: React + TypeScript + Vite.
-Kural motoru olarak `engine/` kullanılır. Şimdilik mobil oyun ekranı var: sen + İkiz(ler) + arena botları.
+Kural motoru olarak `engine/` kullanılır. Şimdilik mobil oyun ekranı var: tek oyunculu mod (sen + aynan İkiz + arena botları) ya da 2–4 yıldızla yapay zekâya karşı.
 `main`'e her push'ta GitHub Actions motor testlerini koşar, oyunu derler ve bütün siteyi Pages'e yayınlar.
 
 ```
@@ -44,7 +44,7 @@ node tests/tests2.js        # eski demo: renkli yollar, ölen botların atlanmas
 
 - Sen yeşil yıldızsın. Her tur mod değişir: DÜZ ya da ÇAPRAZ. O yöne gidersin, o yönde alırsın.
 - Kırmızı bot düz yürür, çapraz alır. Mavi bot çapraz yürür, düz alır.
-- İkiz (1 numara) seninle aynı kurallarla oynar.
+- Tek oyunculu modda İkiz senin aynandır: senden hemen sonra, senin yönünde oynar. İkiz ve bütün botlar gidince kazanırsın.
 - Herkes herkesi alabilir. Son kalan sen olursan kazanırsın.
 - Yeşil kareler senin yolların. Bir bota dokununca turuncu kareler onun yollarını gösterir. Kırmızı kareler alınabilecek taşlardır.
 

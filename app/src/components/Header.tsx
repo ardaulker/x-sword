@@ -15,7 +15,7 @@ function ringInfo(st: GameState) {
   return { long: `Halka ${k} tur sonra`, short: `${k} tur sonra`, full: `Dış halka ${k} tur sonra çökecek`, warn: false };
 }
 
-const watching = (st: GameState) => !starOf(st, ME)?.alive;
+const watching = (st: GameState) => !st.over && !starOf(st, ME)?.alive;
 const turText = (st: GameState) => `${watching(st) ? 'İZLEYİCİ · ' : ''}TUR ${st.round}`;
 
 function LogButton({ ctl, view, size }: { ctl: GameController; view: View; size: number }) {

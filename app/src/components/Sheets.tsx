@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
-  NEUTRALS_BY_STARS, SIZE_BY_STARS, attackersOf, nextMode, pieceById, takeDirs, walkDirs,
+  NEUTRALS_BY_STARS, SIZE_BY_STARS, nextMode, pieceById, takeDirs, walkDirs,
 } from '../../../engine/rules.js';
 import type { GameState, Level, Piece } from '../../../engine/rules.js';
 import { targetOf } from '../../../engine/bots.js';
 import type { GameController, Setup, TakeEvent } from '../game/controller';
-import { CROSS, DANGER, HAZARD_TXT, ICE, ICON, PLAYER_COLORS, PLUS, TXT, diamondOf } from '../game/look';
+import { CROSS, DANGER, HAZARD_TXT, ICE, ICON, PLAYER_COLORS, PLUS, TXT, colorOf, diamondOf, isBot, seatOf } from '../game/look';
+import { attackersOfMe } from '../game/threats';
 import { BOT_NAMES, ME, labelOf, modeLower, seatName } from '../game/names';
 import { Icon, RingIcon } from './bits';
 import { PieceGlyph } from './PieceGlyph';
@@ -31,7 +32,7 @@ function SheetFrame({ label, onClose, children }: { label: string; onClose: () =
 }
 
 const Mini = ({ st, p, size, grey }: { st: GameState; p: Piece; size: number; grey?: boolean }) => (
-  <PieceGlyph kind={p.kind} seat={p.kind === 'star' ? p.seat : 0} size={size} diamond={diamondOf(p, st.mode)} grey={grey} />
+  <PieceGlyph kind={p.kind} seat={seatOf(p)} size={size} diamond={diamondOf(p, st.mode)} grey={grey} />
 );
 
 // ------------------------------------------------------------ taş bilgisi
@@ -75,15 +76,19 @@ export function InfoSheet({ ctl, id }: { ctl: GameController; id: string }) {
     const mode = nextMode(st, p);
     title = `${p.seat === ME ? 'Sen' : seatName(st, p.seat)} · yıldız`;
     sub = `${mode === st.mode ? 'Bu tur' : 'Sonraki tur'} ${modeLower(mode)} gider ve alır`;
-    order = st.seats[p.seat].kind === 'human' ? 'Oyuncu' : 'İkiz';
+    order = st.seats[p.seat].kind === 'human' ? 'Oyuncu' : 'Yapay zekâ';
+  } else if (p.kind === 'twin') {
+    title = 'İkiz · aynan';
+    sub = 'Senden hemen sonra, senin yönünde oynar';
+    order = 'Ayna';
   } else {
     title = `${BOT_NAMES[p.kind]} bot · #${p.label}`;
     sub = p.kind === 'red' ? 'Kare: düz yürür · ×: çapraz alır' : 'Elmas: çapraz yürür · +: düz alır';
-    const bots = st.order.filter(x => { const q = pieceById(st, x); return q && q.alive && q.kind !== 'star'; });
+    const bots = st.order.filter(x => { const q = pieceById(st, x); return q && q.alive && isBot(q); });
     order = `Sıra ${bots.indexOf(p.id) + 1} / ${bots.length}`;
   }
   const target = p.alive ? targetOf(st, p) : null;
-  const threatensMe = me.alive && p.id !== me.id && attackersOf(st, me.r, me.c, [me.id]).some(q => q.id === p.id);
+  const threatensMe = me.alive && p.id !== me.id && attackersOfMe(st, me).some(q => q.id === p.id);
   return (
     <SheetFrame label={title} onClose={close}>
       <div className="info-head">
@@ -136,7 +141,7 @@ export function LogSheet({ ctl, events }: { ctl: GameController; events: TakeEve
     rows.push(
       <div key={e.key} className="log-row">
         {a ? <Mini st={st} p={a} size={26} /> : <span className="log-ring"><RingIcon size={20} /></span>}
-        <span className="log-name" style={{ color: a ? (a.kind === 'star' ? PLAYER_COLORS[a.seat] : TXT) : HAZARD_TXT }}>
+        <span className="log-name" style={{ color: a ? (a.kind === 'star' || a.kind === 'twin' ? colorOf(a) : TXT) : HAZARD_TXT }}>
           {a ? labelOf(st, a) : 'Halka'}
         </span>
         <Icon d={ICON.sword} size={20} color="#A9B4DA" />
@@ -173,11 +178,11 @@ export function MenuSheet({ ctl, onStart }: { ctl: GameController; onStart: (s: 
         <div className="sheet-title">Yeni maç</div>
         <button type="button" className="round-btn" aria-label="Kapat" onClick={close}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
       </div>
-      <div className="field-label">YILDIZ SAYISI</div>
-      <div className="seg" role="radiogroup" aria-label="Yıldız sayısı">
-        {[2, 3, 4].map(n => (
+      <div className="field-label">OYUNCU SAYISI</div>
+      <div className="seg" role="radiogroup" aria-label="Oyuncu sayısı">
+        {[1, 2, 3, 4].map(n => (
           <button key={n} type="button" role="radio" aria-checked={players === n} className={players === n ? 'is-on' : ''} onClick={() => setPlayers(n)}>
-            <b>{n}</b><span>{SIZE_BY_STARS[n]}×{SIZE_BY_STARS[n]}</span>
+            <b>{n === 1 ? 'Tek' : n}</b><span>{n === 1 ? "İkiz'le" : `${SIZE_BY_STARS[n]}×${SIZE_BY_STARS[n]}`}</span>
           </button>
         ))}
       </div>
@@ -190,7 +195,9 @@ export function MenuSheet({ ctl, onStart }: { ctl: GameController; onStart: (s: 
         ))}
       </div>
       <div className="menu-note">
-        Sen ve {players - 1 === 1 ? 'bir İkiz' : `${players - 1} İkiz`} · tahta {size}×{size} · {NEUTRALS_BY_STARS[players]} arena botu.
+        {players === 1
+          ? `Sen, aynan İkiz ve ${NEUTRALS_BY_STARS[1]} arena botu · tahta ${size}×${size}. Son kalan sen ol.`
+          : `Sen ve ${players - 1} yapay zekâ oyuncu · tahta ${size}×${size} · ${NEUTRALS_BY_STARS[players]} arena botu.`}
       </div>
       <div className="btn-row">
         <button type="button" className="btn btn-ghost" onClick={close}>Kapat</button>

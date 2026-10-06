@@ -8,7 +8,7 @@ const SETUP_KEY = 'xsword-app-setup';
 function loadSetup(): Setup {
   try {
     const s = JSON.parse(localStorage.getItem(SETUP_KEY) ?? 'null');
-    if (s && [2, 3, 4].includes(s.players) && ['kolay', 'normal', 'zor'].includes(s.level)) return { ...DEFAULT_SETUP, ...s };
+    if (s && [1, 2, 3, 4].includes(s.players) && ['kolay', 'normal', 'zor'].includes(s.level)) return { ...DEFAULT_SETUP, ...s };
   } catch {
     // Kayıt yoksa ya da bozuksa varsayılanla başla.
   }

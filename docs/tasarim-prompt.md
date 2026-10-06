@@ -47,6 +47,7 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 - Her oyuncunun hamle süresi 20 saniyedir. Bu süre lobide değiştirilebilir. Süre biterse oyun, oyuncunun yerine güvenli bir hamle yapar.
 
 ## Oyuncu sayısı ve tahta
+- Tek oyunculu modda tahtada bir de **İkiz** olur: oyuncunun aynası. Oyuncudan hemen sonra, onun yaptığı yönün aynısını oynar; o kare boşsa yürür, doluysa oradaki taşı alır, kapalıysa yerinde kalır. Oyuncuyu hiç alamaz. Oyuncu, İkiz ve bütün botlar gidince kazanır.
 - Bir maçta 2–4 yıldız olur. Boş koltuğa bot yıldız ("İkiz") oturabilir. İkiz de bir oyuncu gibi sırasını oynar.
 - 2 yıldızda tahta 9×9 olur ve yaklaşık 14 bot vardır.
 - 3 yıldızda tahta 11×11 olur ve yaklaşık 21 bot vardır.

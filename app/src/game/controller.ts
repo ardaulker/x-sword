@@ -7,7 +7,7 @@ import {
 import type { GameState, Level, Move, Piece } from '../../../engine/rules.js';
 import { chooseMove } from '../../../engine/bots.js';
 import { BUZZ, buzz } from './haptics';
-import { HAZARD, PLAYER_COLORS, colorOf } from './look';
+import { HAZARD, PLAYER_COLORS, colorOf, isBot } from './look';
 import { ME, labelOf, objectOf, seatName, subjectOf } from './names';
 
 export type Phase =
@@ -25,7 +25,8 @@ export interface Setup {
   level: Level;
   moveSeconds: number;
 }
-export const DEFAULT_SETUP: Setup = { players: 2, level: 'normal', moveSeconds: 20 };
+// players 1: tek oyunculu mod (sen + aynan İkiz + botlar). 2–4: yapay zekâ oyunculara karşı.
+export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', moveSeconds: 20 };
 
 export interface Spot { r: number; c: number }
 export interface Trail { key: number; from: Spot; to: Spot; color: string }
@@ -133,9 +134,10 @@ export class GameController {
     const st = this.state;
     if (st.over) return this.finish();
     const a = currentActor(st)!;
+    if (a.kind === 'twin') return this.twinTurn(a);
     if (a.kind !== 'star') return this.botTurn();
     if (st.seats[a.seat].kind === 'human') return this.myTurn();
-    return this.twinTurn(a);
+    return this.starBotTurn(a);
   }
 
   private finish() {
@@ -201,7 +203,7 @@ export class GameController {
 
   // ------------------------------------------------------------ İkiz ve botlar
 
-  private twinTurn(a: Piece) {
+  private starBotTurn(a: Piece) {
     this.emit({ phase: 'rakip', timer: this.setup.moveSeconds });
     this.startTicker();
     this.later(900 + Math.random() * 700, () => {
@@ -212,11 +214,21 @@ export class GameController {
     });
   }
 
+  // İkiz senden hemen sonra, senin yönünde oynar; kısa bir arayla, ayrı bir bölüm açmadan.
+  private twinTurn(a: Piece) {
+    this.emit({ phase: 'bekle' });
+    this.later(260, () => {
+      const o = this.apply(chooseMove(this.state, a));
+      this.emit();
+      if (o) this.continueAfter(o, 300);
+    });
+  }
+
   private botTurn() {
     const st = this.state;
     this.botQueue = st.order.slice(st.turn).filter(id => {
       const p = pieceById(st, id);
-      return p && p.alive && p.kind !== 'star';
+      return p && p.alive && isBot(p);
     });
     this.fast = false;
     this.emit({ phase: 'bot', bots: { done: 0, total: this.botQueue.length, currentId: null } });
@@ -230,7 +242,7 @@ export class GameController {
     let o: Outcome | null = null;
     do {
       const a = currentActor(st);
-      if (!a || a.kind === 'star') break;
+      if (!a || !isBot(a)) break;
       const done = this.botQueue.indexOf(a.id) + 1;
       o = this.apply(chooseMove(st, a));
       this.view = { ...this.view, bots: { ...this.view.bots, done, currentId: a.id } };
@@ -239,7 +251,7 @@ export class GameController {
     this.emit();
 
     const next = currentActor(st);
-    if (o && !o.roundEnded && !st.over && next && next.kind !== 'star') {
+    if (o && !o.roundEnded && !st.over && next && isBot(next)) {
       const stagger = Math.max(60, Math.min(110, Math.floor(1200 / Math.max(1, this.view.bots.total))));
       this.botTimer = this.later(this.fast ? 0 : stagger, () => this.botStep());
       return;

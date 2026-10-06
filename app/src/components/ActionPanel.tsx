@@ -1,11 +1,12 @@
 import {
-  attackersOf, collapseDue, currentActor, nextMode, pieceById, takeDirs, threatsFor,
+  collapseDue, currentActor, nextMode, pieceById, takeDirs, threatsFor,
 } from '../../../engine/rules.js';
 import type { GameState, Piece } from '../../../engine/rules.js';
 import type { GameController, View } from '../game/controller';
 import {
-  DANGER, DANGER_TXT, HAZARD, HAZARD_TXT, ICON, PLAYER_COLORS, TXT, TXT2, colorOf, diamondOf,
+  DANGER, DANGER_TXT, HAZARD, HAZARD_TXT, ICON, PLAYER_COLORS, TXT, TXT2, colorOf, diamondOf, isBot, seatOf,
 } from '../game/look';
+import { attackersOfMe } from '../game/threats';
 import { ME, labelOf, modeLower, modeWord, seatName } from '../game/names';
 import { Icon, useMatchTime } from './bits';
 import { PieceGlyph } from './PieceGlyph';
@@ -21,7 +22,7 @@ function Chips({ st, pieces, danger }: { st: GameState; pieces: Piece[]; danger?
     <div className="chips">
       {pieces.map(p => (
         <div key={p.id} className={`chip${danger ? ' is-danger' : ''}`}>
-          <PieceGlyph kind={p.kind} seat={p.kind === 'star' ? p.seat : 0} size={22} diamond={diamondOf(p, st.mode)} />
+          <PieceGlyph kind={p.kind} seat={seatOf(p)} size={22} diamond={diamondOf(p, st.mode)} />
           <span className="chip-label">{labelOf(st, p)}</span>
           <span className="chip-how">{takesStraight(st, p) ? 'düz alır' : 'çapraz alır'}</span>
         </div>
@@ -32,7 +33,7 @@ function Chips({ st, pieces, danger }: { st: GameState; pieces: Piece[]; danger?
 
 function Who({ st, p }: { st: GameState; p: Piece | null | undefined }) {
   if (!p) return null;
-  return <PieceGlyph kind={p.kind} seat={p.kind === 'star' ? p.seat : 0} size={34} diamond={diamondOf(p, st.mode)} />;
+  return <PieceGlyph kind={p.kind} seat={seatOf(p)} size={34} diamond={diamondOf(p, st.mode)} />;
 }
 
 export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) {
@@ -48,7 +49,10 @@ export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) 
     const won = st.winner === ME;
     const place = st.seats.length - st.outOrder.indexOf(ME);
     let title = 'Maç bitti', sub = '';
-    if (won) { title = 'Kazandın!'; sub = `Son kalan yıldız sensin · ${st.seats[ME].takes} alma`; }
+    if (st.solo) {
+      title = won ? 'Kazandın!' : 'Alındın';
+      sub = won ? `Arenada tek sen kaldın · ${st.seats[ME].takes} alma` : `${st.round}. turda · ${st.seats[ME].takes} alma`;
+    } else if (won) { title = 'Kazandın!'; sub = `Son kalan yıldız sensin · ${st.seats[ME].takes} alma`; }
     else if (st.winner == null) { title = 'Berabere'; sub = 'Arenada yıldız kalmadı'; }
     else sub = `${seatName(st, st.winner)} kazandı · sen ${place}. sıradasın`;
     return (
@@ -126,7 +130,7 @@ export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) 
 
   // ---------------------------------------------------------- seni alabilecekler
   if (view.phase === 'sen' && view.showThreats) {
-    const th = attackersOf(st, me.r, me.c, [me.id]);
+    const th = attackersOfMe(st, me);
     return (
       <section className="panel" aria-label="Seni alabilecek taşlar">
         <div className="panel-stack">
@@ -162,7 +166,7 @@ export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) 
             </svg>
             <div className="panel-titles">
               <div className="panel-title">Botlar oynuyor</div>
-              <div className="panel-sub">{cur && cur.kind !== 'star' ? `Şimdi #${cur.label} · alınan bot atlanır` : 'Sırayla, art arda'}</div>
+              <div className="panel-sub">{cur && cur.kind !== 'star' && isBot(cur) ? `Şimdi #${cur.label} · alınan bot atlanır` : 'Sırayla, art arda'}</div>
             </div>
             <div className="panel-count">{Math.min(done, total)} / {total}</div>
           </div>
@@ -188,7 +192,7 @@ export function ActionPanel({ ctl, view }: { ctl: GameController; view: View }) 
 
   if (view.phase === 'sen') {
     who = me; timer = t; title = 'Senin sıran'; sub = 'Yanan karelerden birine dokun';
-    const threats = attackersOf(st, me.r, me.c, [me.id]).length;
+    const threats = attackersOfMe(st, me).length;
     if (threats) { hint = `Şu an ${threats} taş seni alabilir. Çizgili kareler tehlikeli.`; hintColor = DANGER_TXT; }
     else hint = 'Bir taşa uzun bas: nasıl yürür, nasıl alır, kimi hedefler.';
     if (collapseDue(st)) {
