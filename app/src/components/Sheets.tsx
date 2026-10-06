@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { NEUTRALS_BY_STARS, POINTS, SIZE_BY_STARS, pieceById } from '../../../engine/rules.js';
+import { NEUTRALS_BY_STARS, POINTS, SIZE_BY_STARS, pieceById, ranking, starOf } from '../../../engine/rules.js';
 import type { GameState, Level, Piece } from '../../../engine/rules.js';
 import type { GameController, Setup, TakeEvent } from '../game/controller';
 import { HAZARD_TXT, ICON, TXT, colorOf, diamondOf, seatOf } from '../game/look';
-import { labelOf } from '../game/names';
+import { ME, labelOf, seatName } from '../game/names';
+import { PLAYER_COLORS } from '../game/look';
 import { Icon, RingIcon } from './bits';
 import { PieceGlyph } from './PieceGlyph';
 
@@ -132,6 +133,51 @@ export function LeaveSheet({ onLeave, onClose }: { onLeave: () => void; onClose:
       <div className="btn-row">
         <button type="button" className="btn btn-ghost" onClick={onClose}>Vazgeç</button>
         <button type="button" className="btn btn-main" style={{ background: 'var(--danger)' }} onClick={onLeave}>Maçtan çık</button>
+      </div>
+    </SheetFrame>
+  );
+}
+
+// Maç sonu özeti: başlık, senin istatistiklerin, sıralama.
+export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose }: {
+  ctl: GameController; time: string; onAgain?: () => void; againLabel: string; onClose: () => void;
+}) {
+  const st = ctl.state;
+  const me = st.seats[ME];
+  const won = st.winner === ME;
+  const order = ranking(st);
+  const lasted = (i: number) => (st.seats[i].out ? st.seats[i].outRound ?? st.round : st.round);
+  const title = won ? 'Kazandın!' : st.solo ? 'Alındın' : `${seatName(st, st.winner ?? order[0])} kazandı`;
+  return (
+    <SheetFrame label="Maç sonucu" onClose={onClose}>
+      <div className="res-head">
+        <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{title}</div>
+        <div className="res-sub">{st.solo ? (won ? 'Arenada tek sen kaldın' : 'Bir dahaki sefere') : `${order.indexOf(ME) + 1}. oldun`} · {time}</div>
+      </div>
+      <div className="res-stats">
+        <div><b>{me.score}</b><span>Skor</span></div>
+        <div><b>{me.takes}</b><span>Alma</span></div>
+        <div><b>{lasted(ME)}</b><span>Tur ayakta</span></div>
+      </div>
+      {!st.solo && (
+        <ol className="rank-list">
+          {order.map((seat, i) => {
+            const s = st.seats[seat], p = starOf(st, seat)!;
+            return (
+              <li key={seat} className={`rank-row${seat === ME ? ' is-me' : ''}`}>
+                <span className="rank-no">{i + 1}.</span>
+                <PieceGlyph kind="star" seat={seat} size={20} diamond={false} grey={!p.alive} />
+                <span className="rank-name" style={{ color: PLAYER_COLORS[seat] }}>{seat === ME ? 'Sen' : seatName(st, seat)}</span>
+                <span className="rank-meta">{s.takes} alma · {lasted(seat)} tur{s.bonus ? ` · +${s.bonus}` : ''}</span>
+                <span className="rank-score">{s.score}</span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      <div className="btn-row">
+        <button type="button" className="btn btn-ghost" onClick={onClose}>Tahtaya bak</button>
+        {onAgain && <button type="button" className="btn btn-main" onClick={onAgain}>{againLabel}</button>}
       </div>
     </SheetFrame>
   );

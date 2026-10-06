@@ -79,7 +79,7 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
               })}
             </ol>
           )}
-          <div className="panel-hint">Maç süresi {time} · {st.round} tur</div>
+          <div className="panel-hint">Maç süresi {time} · {st.round} tur · <button type="button" className="link-btn" onClick={() => ctl.openResults()}>Sonuçlar</button></div>
           {net && !net.onRematch && <div className="panel-hint">Kurucu rövanş açarsa lobiye dönersin.</div>}
           <div className="btn-row">
             <button type="button" className="btn btn-ghost" onClick={() => (net ? net.onLeave() : ctl.openMenu())}>{net ? 'Odadan çık' : 'Menü'}</button>

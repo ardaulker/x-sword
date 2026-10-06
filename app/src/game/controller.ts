@@ -45,7 +45,7 @@ export interface Toast { key: number; text: string; icon: 'sword' | 'clock' | 'i
 export interface Banner { key: number; title: string; sub: string; color: string; pieceId: string | null }
 // attackerId null: taş çöken halkada düştü.
 export interface TakeEvent { key: number; round: number; attackerId: string | null; victimId: string }
-export type Sheet = { type: 'kayit' } | { type: 'menu' } | null;
+export type Sheet = { type: 'kayit' } | { type: 'menu' } | { type: 'sonuc' } | null;
 
 export interface View {
   phase: Phase;
@@ -275,6 +275,8 @@ export class GameController {
       this.toast(`Hayatta kalma bonusu +${this.state.seats[ME].bonus}`, 'sword');
     }
     this.emit({ phase: 'bitti', clockEnd: this.view.clockEnd ?? Date.now(), sel: null, showThreats: false, modeOverlay: false });
+    // Son hamleyi ve bantları gördükten sonra sonuç kartı açılır.
+    this.later(1600, () => { if (this.view.phase === 'bitti' && !this.view.sheet) this.emit({ sheet: { type: 'sonuc' } }); });
     feel(this.state.winner === ME ? 'win' : 'lose', this.state.winner === ME ? BUZZ.take : BUZZ.takenOrOut);
   }
 
@@ -587,6 +589,7 @@ export class GameController {
     this.emit({ inspect: this.view.inspect === id ? null : id });
   }
   closeInspect() { if (this.view.inspect) this.emit({ inspect: null }); }
+  openResults() { this.emit({ sheet: { type: 'sonuc' } }); }
   openLog() { this.emit({ sheet: { type: 'kayit' } }); }
   openMenu() { this.emit({ sheet: { type: 'menu' } }); }
   closeSheet() { if (this.view.sheet) this.emit({ sheet: null }); }

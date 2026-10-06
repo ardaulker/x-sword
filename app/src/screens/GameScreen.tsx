@@ -8,7 +8,8 @@ import { BOARD_PAD, Board, boardGap, boardOuter } from '../components/Board';
 import { CompactBar, ModeIndicator, TopBar } from '../components/Header';
 import { PlayerStrip } from '../components/PlayerStrip';
 import { TurnQueue } from '../components/TurnQueue';
-import { LeaveSheet, LogSheet, SetupSheet } from '../components/Sheets';
+import { LeaveSheet, LogSheet, ResultsSheet, SetupSheet } from '../components/Sheets';
+import { useMatchTime } from '../components/bits';
 import { InfoChip } from '../components/InfoChip';
 import { Icon } from '../components/bits';
 import './GameScreen.css';
@@ -73,6 +74,7 @@ export function GameScreen({ ctl, onNewGame, onHome, net }: {
   const boardTop = Math.max(0, Math.min(availH - outer, Math.floor((stage.h - usual - GAP - outer) / 2)));
 
   const sheet = view.sheet;
+  const matchTime = useMatchTime(view.clockStart, view.clockEnd);
   return (
     <div ref={rootRef} className={`game${compact ? ' is-compact' : ''}`}>
       {compact ? <CompactBar ctl={ctl} view={view} /> : (
@@ -99,6 +101,12 @@ export function GameScreen({ ctl, onNewGame, onHome, net }: {
       </div>
 
       {sheet?.type === 'kayit' && <LogSheet ctl={ctl} events={view.events} />}
+      {sheet?.type === 'sonuc' && (
+        <ResultsSheet
+          ctl={ctl} time={matchTime} onClose={() => ctl.closeSheet()}
+          onAgain={net ? net.onRematch : () => ctl.newGame()} againLabel={net ? 'Lobiye dön' : 'Rövanş'}
+        />
+      )}
       {sheet?.type === 'menu' && !net && <SetupSheet setup={ctl.setup} onStart={onNewGame} onClose={() => ctl.closeSheet()} onHome={onHome} />}
       {sheet?.type === 'menu' && net && <LeaveSheet onLeave={net.onLeave} onClose={() => ctl.closeSheet()} />}
 
