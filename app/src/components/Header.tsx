@@ -68,13 +68,13 @@ export function TopBar({ ctl, view }: { ctl: GameController; view: View }) {
   );
 }
 
-const modeSub = (mode: Mode) => (mode === 'DUZ' ? tr('Stars move straight and take straight') : tr('Stars move diagonally and take diagonally'));
+const modeSub = (mode: Mode) => (mode === 'STRAIGHT' ? tr('Stars move straight and take straight') : tr('Stars move diagonally and take diagonally'));
 
 // Mod göstergesi: oyunun en önemli bilgisi. DÜZ buz zemin, ÇAPRAZ gece zemin + çapraz desen.
 export function ModeIndicator({ mode, showSub }: { mode: Mode; showSub: boolean }) {
-  const next: Mode = mode === 'DUZ' ? 'CAPRAZ' : 'DUZ';
+  const next: Mode = mode === 'STRAIGHT' ? 'DIAGONAL' : 'STRAIGHT';
   return (
-    <div key={mode} className={`mode-box mode-flip mode-${mode === 'DUZ' ? 'duz' : 'capraz'}${showSub ? ' has-sub' : ''}`} role="status" aria-label={tr('Mode {mode}. {sub}. Next round {next}.', { mode: modeWord(mode), sub: modeSub(mode), next: modeWord(next) })}>
+    <div key={mode} className={`mode-box mode-flip mode-${mode === 'STRAIGHT' ? 'straight' : 'diagonal'}${showSub ? ' has-sub' : ''}`} role="status" aria-label={tr('Mode {mode}. {sub}. Next round {next}.', { mode: modeWord(mode), sub: modeSub(mode), next: modeWord(next) })}>
       <ModeIcon mode={mode} size={34} stroke={9} />
       <div className="mode-box-text">
         <span className="mode-box-label">{modeWord(mode)}</span>
@@ -84,7 +84,7 @@ export function ModeIndicator({ mode, showSub }: { mode: Mode; showSub: boolean 
         <span>{tr('NEXT ROUND')}</span>
         <span className="mode-box-next-mode">
           <svg width="13" height="13" viewBox="0 0 100 100" style={{ overflow: 'visible' }} aria-hidden="true">
-            <polygon points={next === 'DUZ' ? '17,17 83,17 83,83 17,83' : '50,5 95,50 50,95 5,50'} fill="none" stroke="currentColor" strokeWidth="12" />
+            <polygon points={next === 'STRAIGHT' ? '17,17 83,17 83,83 17,83' : '50,5 95,50 50,95 5,50'} fill="none" stroke="currentColor" strokeWidth="12" />
           </svg>
           {modeWord(next)}
         </span>
@@ -102,7 +102,7 @@ export function CompactBar({ ctl, view }: { ctl: GameController; view: View }) {
   return (
     <header className="compact-bar">
       <MenuButton ctl={ctl} size={40} />
-      <div key={mode} className={`mode-box mode-box-compact mode-flip mode-${mode === 'DUZ' ? 'duz' : 'capraz'}`} role="status" aria-label={tr('Mode {mode}', { mode: modeWord(mode) })}>
+      <div key={mode} className={`mode-box mode-box-compact mode-flip mode-${mode === 'STRAIGHT' ? 'straight' : 'diagonal'}`} role="status" aria-label={tr('Mode {mode}', { mode: modeWord(mode) })}>
         <ModeIcon mode={mode} size={24} stroke={10} />
         <span className="mode-box-label">{modeWord(mode)}</span>
         <div className="compact-info">

@@ -1,4 +1,4 @@
-// bots.js için tip bildirimleri. Kod bots.js'te.
+// Type declarations for bots.js. The code lives in bots.js.
 
 import type { GameState, Level, Move, Piece, StarPiece } from './rules.js';
 

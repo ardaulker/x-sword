@@ -1,55 +1,54 @@
-// X Sword kural motoru.
-// Ekrana dokunmaz: aynı kurallar tarayıcıda, testlerde ve ileride çevrimiçi sunucuda çalışır.
+// X Sword rules engine.
+// It never touches the screen: the same rules run in the browser, in tests and, later, on an online server.
 
-// 1 yıldız: tek oyunculu mod (sen + aynan İkiz + arena botları).
+// 1 star: single-player mode (you + your mirror Twin + arena bots).
 export const SIZE_BY_STARS = { 1: 9, 2: 9, 3: 11, 4: 13 };
 export const NEUTRALS_BY_STARS = { 1: 14, 2: 14, 3: 21, 4: 28 };
-// Tahta ve bot sayısı seçilebilir; tahta en az oyuncu sayısının varsayılanı kadar olur (9, 11, 13), en çok 15.
-// Tahtanın üçte biri botla dolarsa daha fazlası oynanmaz.
+// Board size and bot count are selectable; the board is at least the default for the player count (9, 11, 13), at most 15.
+// More bots than a third of the board are not playable.
 export const BOARD_SIZES = [9, 11, 13, 15];
 export const maxNeutrals = size => Math.floor(size * size / 3);
-// Seçilen tahtada, varsayılan kalabalıkla aynı yoğunlukta bot sayısı.
+// Bot count on the chosen board with the same density as the default crowd.
 export const defaultNeutrals = (stars, size) =>
   Math.min(maxNeutrals(size), Math.round(NEUTRALS_BY_STARS[stars] * size * size / SIZE_BY_STARS[stars] ** 2));
-export const SEAT_NAMES = ['Turkuaz', 'Mor', 'Sarı', 'Pembe'];
+export const SEAT_NAMES = ['Turquoise', 'Purple', 'Yellow', 'Pink'];
 
-// Puan: bir yıldız (oyuncu) almak 50, İkiz'i almak 30, bir botu almak 10. Yalnız yıldızlar puan toplar.
-// Maçın sonunda ayakta kalan yıldız +30 hayatta kalma bonusu alır.
+// Points: taking a star (player) is 50, the Twin 30, a bot 10. Only stars collect points.
+// The star still standing at the end of the match gets a +30 survivor bonus.
 export const POINTS = { star: 50, twin: 30, red: 10, blue: 10 };
 export const SURVIVOR_BONUS = 30;
 
-// Bonuslar şartla kazanılır: 20 puan çift adım, 40 puan çift hamle, 60 puan ikisinden biri (tohumdan),
-// 50 puan ayna (istediğin taşla yer değiştir), ilk daralmayı atlatınca zırh, ikinci daralmayı atlatınca çift hamle.
-// Tek oyunculuda İkiz bir taş alınca da ayna gelir.
-// Zırh kendiliğinden çalışır (seni alan taş geri döner). Diğerleri sırandayken hamleyle birlikte kullanılır.
+// Bonuses are earned by conditions: 20 points double step, 40 points double move, 60 points one of the two (from the seed),
+// 50 points mirror (swap places with any piece), surviving the first shrink gives armor, the second shrink a double move.
+// In single player a mirror also comes when the Twin takes a piece.
+// Armor works by itself (the piece that takes you bounces back). The others are used together with a move on your turn.
 export const BONUS_KINDS = ['armor', 'step', 'double', 'swap'];
 export const BONUS_SCORES = [20, 40, 60];
 export const TWIN_TAKE_MULT = 2;
 export const SWAP_SCORE = 50;
-// Herkes bir çift adımla başlar: köşeden erken sıkışmamak için.
+// Everyone starts with one double step so nobody gets stuck in a corner early.
 const startBonuses = () => ({ armor: 0, step: 1, double: 0, swap: 0 });
-const SEAT_NAMES_ACC = ["Turkuaz'ı", "Mor'u", "Sarı'yı", "Pembe'yi"];
 
 const STRAIGHT = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 const CROSS = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
 
-export const flip = mode => (mode === 'DUZ' ? 'CAPRAZ' : 'DUZ');
-export const modeLabel = mode => (mode === 'DUZ' ? 'DÜZ' : 'ÇAPRAZ');
+export const flip = mode => (mode === 'STRAIGHT' ? 'DIAGONAL' : 'STRAIGHT');
+export const modeLabel = mode => (mode === 'STRAIGHT' ? 'STRAIGHT' : 'DIAGONAL');
 
-// Kırmızı düz yürür, çapraz alır. Mavi tersi. Yıldız ve İkiz modun yönünde hem yürür hem alır.
+// Red walks straight and takes diagonally. Blue is the reverse. Stars and the Twin walk and take in the mode's direction.
 export function walkDirs(piece, mode) {
   if (piece.kind === 'red') return STRAIGHT;
   if (piece.kind === 'blue') return CROSS;
-  return mode === 'DUZ' ? STRAIGHT : CROSS;
+  return mode === 'STRAIGHT' ? STRAIGHT : CROSS;
 }
 
 export function takeDirs(piece, mode) {
   if (piece.kind === 'red') return CROSS;
   if (piece.kind === 'blue') return STRAIGHT;
-  return mode === 'DUZ' ? STRAIGHT : CROSS;
+  return mode === 'STRAIGHT' ? STRAIGHT : CROSS;
 }
 
-// Tohumlu rastgele sayı (mulberry32): aynı tohum aynı oyunu verir, testler tekrarlanabilir.
+// Seeded random number (mulberry32): the same seed gives the same game, so tests are repeatable.
 export function random(state) {
   let t = (state.rng = (state.rng + 0x6d2b79f5) >>> 0);
   t = Math.imul(t ^ (t >>> 15), t | 1);
@@ -65,21 +64,20 @@ export const inArena = (state, r, c) =>
   r >= 0 && c >= 0 && r < state.size && c < state.size && ringOf(state, r, c) >= state.ring
   && !(state.blocked && state.blocked.has(r * state.size + c));
 
-// Takımlı maçta aynı takımdaki iki yıldız birbirini almaz.
+// In a team match two stars of the same team never take each other.
 export const friendly = (state, a, b) =>
   !!state.teams && a.kind === 'star' && b.kind === 'star' && a.id !== b.id && state.teams[a.seat] === state.teams[b.seat];
 
+// Names for the engine log (the log is never shown in the game; the app builds its own translated text).
 export const nameOf = (state, p) =>
-  p.kind === 'star' ? state.seats[p.seat].name : p.kind === 'twin' ? 'İkiz' : `${p.label} numara`;
-const accOf = (state, p) =>
-  p.kind === 'star' ? SEAT_NAMES_ACC[p.seat] : p.kind === 'twin' ? "İkiz'i" : `${p.label} numarayı`;
+  p.kind === 'star' ? state.seats[p.seat].name : p.kind === 'twin' ? 'Twin' : `#${p.label}`;
 
 function log(state, text) {
   state.log.push({ round: state.round, text });
 }
 
-// Yıldızlar köşelerden bir kare içeride, birbirinden eşit uzaklıkta başlar; 4 kişide saat yönünde.
-// Maçta bu diziliş rastgele döndürülür ya da aynalanır, koltuklar da köşelere rastgele dağılır.
+// Stars start one square in from the corners, evenly spaced; with 4 players clockwise.
+// In a match this layout is randomly rotated or mirrored, and seats are randomly assigned to corners.
 function startCells(n, size) {
   const a = 1, b = size - 2, mid = (size - 1) / 2;
   if (n === 1) return [[a, a]];
@@ -96,7 +94,7 @@ function shuffle(state, list) {
   return list;
 }
 
-// Tahtanın 8 simetrisinden biri: 4 dönüş × ayna.
+// One of the board's 8 symmetries: 4 rotations × mirror.
 function randomSymmetry(state, size) {
   const k = Math.floor(random(state) * 8), m = size - 1;
   return ([r, c]) => {
@@ -106,18 +104,18 @@ function randomSymmetry(state, size) {
   };
 }
 
-// seats: [{ kind: 'human' | 'bot', level: 'kolay' | 'normal' | 'zor' }], 1–4 tane.
-// Tek koltuk tek oyunculu moddur: oyuncunun aynası İkiz de tahtaya girer, son kalan kazanır.
-// firstSeat: bu koltuk hep ilk oynar (kolay zorlukta oyuncu). Verilmezse herkesin yeri rastgeledir.
-// shuffle: false ise köşeler ve sıra sabit kalır (yalnız testler için).
+// seats: [{ kind: 'human' | 'bot', level: 'easy' | 'normal' | 'hard' }], 1–4 of them.
+// A single seat is single-player mode: the player's mirror, the Twin, also joins the board.
+// firstSeat: this seat always moves first (the player on Easy). Without it everyone's place is random.
+// shuffle: false keeps corners and order fixed (tests only).
 export function createGame({
   seats, neutralLevel = 'normal', seed, shrinkStart = 6, shrinkEvery = 6, neutrals, firstSeat = null, shuffle: mix = true, keepGoing = false, size: sizeOpt = null, personas = false, obstacles = false, teams = false,
 } = {}) {
   const n = seats?.length;
-  if (!(n >= 1 && n <= 4)) throw new Error('Bir maçta 1–4 yıldız olur.');
+  if (!(n >= 1 && n <= 4)) throw new Error('A match has 1–4 stars.');
   const size = BOARD_SIZES.includes(sizeOpt) && sizeOpt >= SIZE_BY_STARS[n] ? sizeOpt : SIZE_BY_STARS[n];
   const state = {
-    size, round: 1, mode: 'DUZ', ring: 0, shrinkStart, shrinkEvery, neutralLevel,
+    size, round: 1, mode: 'STRAIGHT', ring: 0, shrinkStart, shrinkEvery, neutralLevel,
     rng: ((seed ?? Math.floor(Math.random() * 2 ** 31)) >>> 0) || 1,
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
@@ -130,7 +128,7 @@ export function createGame({
   };
 
   if (state.teams) state.seats.forEach((s, i) => { s.team = state.teams[i]; });
-  // Yapay zekâ rakiplere kişilik: avcı, temkinli, fırsatçı (sıra tohumdan).
+  // Personalities for AI rivals: hunter, careful, opportunist (order from the seed).
   if (personas) {
     const kinds = shuffle(state, ['hunter', 'careful', 'opportunist']);
     state.seats.filter(s => s.kind === 'bot').forEach((s, i) => { s.persona = kinds[i % kinds.length]; });
@@ -140,7 +138,7 @@ export function createGame({
   if (mix) starts = shuffle(state, starts.map(randomSymmetry(state, size)));
   starts.forEach(([r, c], i) => state.pieces.push({ id: `s${i}`, kind: 'star', seat: i, r, c, alive: true }));
 
-  // Arena botları hiçbir yıldızın iki kare yakınına konmaz: kimse ilk turda alınmaz.
+  // Arena bots are never placed within two squares of a star: nobody is taken in the first round.
   const free = [];
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
@@ -148,7 +146,7 @@ export function createGame({
     }
   }
   shuffle(state, free);
-  // Engel kareleri: birbirine değmeyen sütunlar, tahta hiç bölünmez.
+  // Obstacle squares: pillars that never touch each other, so the board is never split.
   if (obstacles) {
     const want = Math.floor(size * size / 14), chosen = [];
     for (const [r, c] of free) {
@@ -158,10 +156,10 @@ export function createGame({
     state.blocked = new Set(chosen.map(([r, c]) => r * size + c));
     for (let i = free.length - 1; i >= 0; i--) if (state.blocked.has(free[i][0] * size + free[i][1])) free.splice(i, 1);
   }
-  // Tek oyunculu modda oyuncunun aynası İkiz de rastgele bir kareden başlar.
+  // In single-player mode the player's mirror, the Twin, starts on a random square.
   if (state.solo) {
     const [r, c] = free.pop();
-    state.pieces.push({ id: 'tw', kind: 'twin', mirrors: 's0', label: 'İkiz', r, c, alive: true });
+    state.pieces.push({ id: 'tw', kind: 'twin', mirrors: 's0', label: 'Twin', r, c, alive: true });
   }
   const count = Math.min(neutrals ?? defaultNeutrals(n, size), free.length, maxNeutrals(size));
   const kinds = balancedKinds(state, free.slice(0, count), starts);
@@ -172,22 +170,22 @@ export function createGame({
 
   state.matchOrder = matchOrder(state, firstSeat, mix);
   state.order = roundOrder(state);
-  log(state, 'Oyun başladı. Mod: DÜZ.');
+  log(state, 'Game started. Mode: STRAIGHT.');
   return state;
 }
 
-// Kızıl ve Çelik botlar toplamda eşit, ama yakın çevrede de dengeli dağılır: hiçbir yıldızın etrafı tek renk olmaz.
-// Her bot, kendi yakınındaki ve yakınındaki yıldızların çevresindeki farka bakıp azınlıktaki rengi alır.
+// Red and blue bots are equal in total and also balanced locally: no star is surrounded by a single color.
+// Each bot looks at the difference near itself and around nearby stars and takes the minority color.
 function balancedKinds(state, cells, starts) {
   const reds = Math.ceil(cells.length / 2);
   let redLeft = reds, blueLeft = cells.length - reds;
-  const placed = []; // { r, c, v } v: kızıl +1, çelik -1
+  const placed = []; // { r, c, v } v: red +1, blue -1
   const near = (r, c, a, b, d) => Math.max(Math.abs(r - a), Math.abs(c - b)) <= d;
   const kinds = [];
   for (const [r, c] of cells) {
     let local = 0;
     for (const p of placed) if (near(r, c, p.r, p.c, 3)) local += p.v;
-    // Yıldızın çevresindeki fark daha ağır basar.
+    // The difference around a star weighs more.
     for (const [sr, sc] of starts) {
       if (!near(r, c, sr, sc, 4)) continue;
       for (const p of placed) if (near(p.r, p.c, sr, sc, 4)) local += p.v;
@@ -199,7 +197,7 @@ function balancedKinds(state, cells, starts) {
     placed.push({ r, c, v: want === 'red' ? 1 : -1 });
     kinds.push(want);
   }
-  // İyileştirme: bir kızılla bir çeliğin yerini değiştirmek dengeyi artırıyorsa değiştir.
+  // Improvement: swap a red and a blue if that improves the balance.
   const cost = () => {
     let sum = 0;
     for (const [sr, sc] of starts) {
@@ -228,11 +226,13 @@ function balancedKinds(state, cells, starts) {
   return kinds;
 }
 
-// Bulmaca: elle kurulmuş küçük pozisyon. Amaç, en çok `limit` hamlede bütün arena botlarını almak.
-// map: satır dizisi. '.' zemin, '#' engel, '-' harita dışı (boşluk), 'S' sen, 'K' Kızıl bot, 'C' Çelik bot.
-// Harita kare olmak zorunda değil; kısa kenar iki yandan boşlukla doldurulur. Eski biçim (me + bots) de çalışır.
-// shrink: { start, every } verilirse bulmacada da arena daralır (ör. 2. turun sonunda dış halka çöker).
-export function createPuzzle({ map = null, me = null, bots = [], limit, mode = 'DUZ', size = 9, bonuses = null, shrink = null }) {
+// Puzzle: a small hand-made position. The goal is to take every arena bot in at most `limit` moves.
+// map: array of rows. '.' floor, '#' obstacle, '-' off the map (void), 'S' you, 'R' red bot, 'B' blue bot
+// ('K' and 'C' are the old letters for red and blue and still work).
+// The map need not be square; the short side is padded with void on both sides. The old form (me + bots) also works.
+// shrink: { start, every } makes the arena shrink in the puzzle too (e.g. the outer ring collapses at the end of round 2).
+// mode also accepts the old values 'DUZ' / 'CAPRAZ' from saves made before the English rename.
+export function createPuzzle({ map = null, me = null, bots = [], limit, mode = 'STRAIGHT', size = 9, bonuses = null, shrink = null }) {
   let holes = null, walls = null;
   if (map) {
     const h = map.length, w = Math.max(...map.map(row => row.length));
@@ -246,7 +246,8 @@ export function createPuzzle({ map = null, me = null, bots = [], limit, mode = '
         if (ch === '-' || ch === ' ') holes.add(i);
         else if (ch === '#') walls.add(i);
         else if (ch === 'S') me = [r, c];
-        else if (ch === 'K' || ch === 'C') bots.push({ kind: ch === 'K' ? 'red' : 'blue', r, c });
+        else if (ch === 'R' || ch === 'K') bots.push({ kind: 'red', r, c });
+        else if (ch === 'B' || ch === 'C') bots.push({ kind: 'blue', r, c });
       }
     }
   }
@@ -261,7 +262,7 @@ export function createPuzzle({ map = null, me = null, bots = [], limit, mode = '
     st.holes = holes;
     st.blocked = new Set([...holes, ...walls]);
   }
-  st.mode = mode;
+  st.mode = mode === 'DUZ' ? 'STRAIGHT' : mode === 'CAPRAZ' ? 'DIAGONAL' : mode;
   st.matchOrder = st.pieces.map(p => p.id);
   st.order = roundOrder(st);
   st.puzzle = { limit, used: 0 };
@@ -270,8 +271,8 @@ export function createPuzzle({ map = null, me = null, bots = [], limit, mode = '
   return st;
 }
 
-// Hamle sırası maç başında bir kez karılır ve bütün maç aynı kalır: yıldızlar ve botlar tek sırada.
-// İkiz hep aynası olduğu yıldızdan hemen sonra gelir. Botun numarası bu sıradaki yeridir.
+// The move order is shuffled once at the start and stays the same all match: stars and bots in one queue.
+// The Twin always comes right after the star it mirrors. A bot's number is its place in this order.
 function matchOrder(state, firstSeat, mix) {
   let ids = state.pieces.filter(p => p.kind !== 'twin').map(p => p.id);
   if (mix) shuffle(state, ids);
@@ -284,8 +285,8 @@ function matchOrder(state, firstSeat, mix) {
   return ids;
 }
 
-// Her tur ayakta kalanlar baştan numaralanır: sıra aynı kalır, numaralar sıkışır (1, 2, 3, ...).
-// Bot adı ("5 numara") da bu numarayı izler.
+// Every round the survivors are renumbered: the order stays, the numbers close up (1, 2, 3, ...).
+// A bot's name ("#5") follows this number.
 export function roundOrder(state) {
   const ids = state.matchOrder.filter(id => pieceById(state, id).alive);
   ids.forEach((id, i) => {
@@ -304,20 +305,20 @@ export function isBotTurn(state) {
   return !!a && (a.kind !== 'star' || state.seats[a.seat].kind === 'bot');
 }
 
-// Bir yıldızın bir sonraki hamlesindeki mod: bu tur sırası daha gelmediyse bu turun modu,
-// geldiyse bir sonraki turun modu. Arena botlarında mod önemsizdir.
+// The mode for a star's next move: this round's mode if its turn hasn't come yet this round,
+// otherwise next round's mode. The mode doesn't matter for arena bots.
 export function nextMode(state, p) {
   if (p.kind === 'red' || p.kind === 'blue') return state.mode;
   return state.order.indexOf(p.id) >= state.turn ? state.mode : flip(state.mode);
 }
 
-// bonus: yıldızın elindeki bir bonusla açılan hamleler de eklenir (hamle o bonusu taşır).
+// bonus: moves unlocked by a bonus the star holds are added too (the move carries that bonus).
 export function legalMoves(state, piece, mode = nextMode(state, piece), bonus = null) {
   const moves = baseMoves(state, piece, mode);
   if (!bonus || piece.kind !== 'star' || !(state.seats[piece.seat].bonuses[bonus] > 0)) return moves;
   if (bonus === 'double') return moves.map(m => ({ ...m, bonus }));
   if (bonus === 'step') {
-    // İki kare: aradaki kare boş olmalı; ikinci kare boşsa yürür, doluysa alır.
+    // Two squares: the square in between must be free; the second square is a walk if empty, a take if occupied.
     const out = [];
     for (const [dr, dc] of walkDirs(piece, mode)) {
       const r1 = piece.r + dr, c1 = piece.c + dc, r = piece.r + 2 * dr, c = piece.c + 2 * dc;
@@ -351,8 +352,8 @@ function baseMoves(state, piece, mode) {
   return moves;
 }
 
-// İkiz, aynası olduğu yıldızın az önce yaptığı yönün aynısını oynar: o kare boşsa yürür,
-// doluysa oradaki taşı alır, tahta dışıysa ya da çöktüyse yerinde kalır.
+// The Twin plays the same direction its star just played: it walks if that square is empty,
+// takes the piece there if occupied, and stays put if it is off the board or collapsed.
 export function twinMove(state, twin) {
   const s = state.lastStep;
   if (!s || s.id !== twin.mirrors || (!s.dr && !s.dc)) return null;
@@ -362,9 +363,9 @@ export function twinMove(state, twin) {
 const twinOf = (state, piece) =>
   state.pieces.find(p => p.kind === 'twin' && p.alive && p.mirrors === piece.id) ?? null;
 
-// (r, c)'deki bir taşı, onun bir sonraki hamlesinden önce alabilecek taşlar.
-// İki hamle arasında herkes bir kez oynar ve bir taş ya yürür ya alır; bu yüzden
-// alabilecek olan, şu an o kareye kendi alma yönünde komşu olan taştır.
+// Pieces that can take a piece at (r, c) before its next move.
+// Between two moves everyone plays once and a piece either walks or takes; so the ones
+// that can take it are those adjacent to that square in their own take direction right now.
 export function attackersOf(state, r, c, except = [], victim = null) {
   const out = [];
   for (const p of state.pieces) {
@@ -376,7 +377,7 @@ export function attackersOf(state, r, c, except = [], victim = null) {
   return out;
 }
 
-// Arena her 6 turda bir (6., 12., 18. … turun sonunda) dış halkasını kaybeder.
+// Every 6 rounds (at the end of rounds 6, 12, 18 …) the arena loses its outer ring.
 export function collapseDue(state) {
   return state.round >= state.shrinkStart
     && (state.round - state.shrinkStart) % state.shrinkEvery === 0
@@ -390,11 +391,11 @@ export function nextCollapseRound(state) {
   return state.round + (into === 0 ? 0 : state.shrinkEvery - into);
 }
 
-// Şu an oynayan taş için: bu kare, tekrar sırası gelmeden çökecek mi?
+// For the piece moving now: will this square collapse before its next turn?
 export const doomedAt = (state, r, c) => collapseDue(state) && ringOf(state, r, c) === state.ring;
 
-// Hamle önizlemesi: piece bu hamleyi yaparsa onu kimler alabilir, kare çökecek mi?
-// Yıldızın kendi İkiz'i tahmin edilmez, kesin bilinir: aynı yönde gelir.
+// Move preview: if piece makes this move, who can take it and will the square collapse?
+// The star's own Twin isn't guessed, it is known exactly: it comes the same direction.
 export function threatsFor(state, piece, move) {
   const target = move.type === 'take' ? pieceById(state, move.targetId) : null;
   const from = [piece.r, piece.c];
@@ -416,17 +417,17 @@ export function isSafe(state, piece, move) {
   return !t.doomed && t.attackers.length === 0;
 }
 
-// Sıradaki taşın hamlesini uygular. move null ise sıra geçer (hamlesi olmayan taş için).
+// Applies the current piece's move. A null move passes the turn (for a piece with no moves).
 export function play(state, move) {
   const actor = currentActor(state);
   if (!actor) return state;
   if (move) {
     const m = legalMoves(state, actor, state.mode, move.bonus ?? null)
       .find(x => x.r === move.r && x.c === move.c && (x.bonus ?? null) === (move.bonus ?? null));
-    if (!m) throw new Error(`Geçersiz hamle: ${nameOf(state, actor)} → ${move.r},${move.c}`);
+    if (!m) throw new Error(`Illegal move: ${nameOf(state, actor)} → ${move.r},${move.c}`);
     if (m.bonus) {
       state.seats[actor.seat].bonuses[m.bonus]--;
-      log(state, `✨ ${nameOf(state, actor)} bonus kullandı: ${BONUS_NAMES[m.bonus]}.`);
+      log(state, `✨ ${nameOf(state, actor)} used a bonus: ${BONUS_NAMES[m.bonus]}.`);
     }
     if (state.puzzle && actor.id === 's0') state.puzzle.used++;
     state.lastStep = { id: actor.id, dr: m.r - actor.r, dc: m.c - actor.c };
@@ -435,33 +436,33 @@ export function play(state, move) {
       [other.r, other.c] = [actor.r, actor.c];
       actor.r = m.r; actor.c = m.c;
     } else if (m.type === 'take' && !takePiece(state, actor, pieceById(state, m.targetId))) {
-      // Zırh aldı: hamle boşa gider, alan taş yerinde kalır.
+      // Armor took the hit: the move is wasted and the taker stays where it was.
     } else {
       actor.r = m.r; actor.c = m.c;
     }
-    // Çift hamle: aynı yıldız bir kez daha oynar.
+    // Double move: the same star plays once more.
     if (m.bonus === 'double' && !state.over && actor.alive) { state.lastStep = { id: actor.id, dr: 0, dc: 0 }; return state; }
   } else {
     state.lastStep = { id: actor.id, dr: 0, dc: 0 };
-    if (actor.kind === 'star') log(state, `${nameOf(state, actor)} hamle yapamadı, sıra geçti.`);
+    if (actor.kind === 'star') log(state, `${nameOf(state, actor)} had no move, turn passed.`);
   }
   state.turn++;
   settle(state);
-  // Bulmaca: hamle hakkı bitti ve bot kaldıysa bulmaca başarısız.
+  // Puzzle: out of moves with bots left means the puzzle failed.
   if (state.puzzle && !state.over && state.puzzle.used >= state.puzzle.limit && currentActor(state)?.id === 's0') {
     state.over = true; state.winner = null;
-    log(state, '❌ Hamle hakkın bitti.');
+    log(state, '❌ Out of moves.');
   }
   return state;
 }
 
 export const BONUS_NAMES = { armor: 'Armor', step: 'Double step', double: 'Double move', swap: 'Mirror' };
 
-// Alma gerçekleşirse true. Zırhlı yıldız alınmaz: zırhı gider, saldıran geri döner.
+// True if the take happens. An armored star isn't taken: it loses the armor and the attacker bounces back.
 function takePiece(state, actor, target) {
   if (target.kind === 'star' && state.seats[target.seat].bonuses.armor > 0) {
     state.seats[target.seat].bonuses.armor--;
-    log(state, `🛡️ ${nameOf(state, target)} zırhıyla kurtuldu!`);
+    log(state, `🛡️ ${nameOf(state, target)} was saved by armor!`);
     return false;
   }
   target.alive = false;
@@ -469,15 +470,15 @@ function takePiece(state, actor, target) {
     state.seats[actor.seat].takes++;
     addScore(state, state.seats[actor.seat], POINTS[target.kind]);
   } else if (actor.kind === 'twin') {
-    // İkiz'in aldığı taş zor bir iştir: sahibine çift puan ve bir ayna bonusu getirir.
+    // A take by the Twin is hard to set up: it brings its owner double points and a mirror bonus.
     const seat = state.seats[pieceById(state, actor.mirrors).seat];
     if (!seat.out) {
       addScore(state, seat, POINTS[target.kind] * TWIN_TAKE_MULT);
       seat.bonuses.swap++;
-      log(state, `🎁 ${seat.name} bonus kazandı: ${BONUS_NAMES.swap}.`);
+      log(state, `🎁 ${seat.name} earned a bonus: ${BONUS_NAMES.swap}.`);
     }
   }
-  log(state, `⚔️ ${nameOf(state, actor)}, ${accOf(state, target)} aldı!`);
+  log(state, `⚔️ ${nameOf(state, actor)} took ${nameOf(state, target)}!`);
   if (target.kind === 'star') starOut(state, target);
   checkOver(state);
   return true;
@@ -494,7 +495,7 @@ function addScore(state, seat, points) {
 
 function grantBonus(state, seat, kind) {
   seat.bonuses[kind]++;
-  log(state, `🎁 ${seat.name} bonus kazandı: ${BONUS_NAMES[kind]}.`);
+  log(state, `🎁 ${seat.name} earned a bonus: ${BONUS_NAMES[kind]}.`);
 }
 
 function starOut(state, star) {
@@ -505,25 +506,25 @@ function starOut(state, star) {
   checkOver(state);
 }
 
-// Maç, çok oyunculuda tek yıldız kalınca biter; kazananı skor belirler (ranking).
-// Tek oyunculu: İkiz ve bütün botlar gidince kazanırsın, alınınca kaybedersin.
+// In multiplayer the match ends when one star is left; the score decides the winner (ranking).
+// Single player: you win when every bot is gone, you lose when you are taken.
 function checkOver(state) {
   if (state.over) return;
   const alive = state.pieces.filter(p => p.kind === 'star' && p.alive);
   const botsLeft = state.pieces.some(p => p.alive && p.kind !== 'star' && p.kind !== 'twin');
   if (state.solo) {
-    // İkiz tek başına kalınca da kazanırsın: onu almana gerek yok.
+    // You also win when only the Twin is left: you don't need to take it.
     if (alive.length && botsLeft) return;
     state.over = true;
     if (alive.length) survivorBonus(state, 0);
     state.winner = alive.length ? 0 : null;
-    log(state, alive.length ? '🏆 Kazandın! Arenada bot kalmadı.' : '❌ Alındın! Oyun bitti.');
+    log(state, alive.length ? '🏆 You won! No bots left in the arena.' : '❌ You were taken! Game over.');
     return;
   }
-  // Takımlı maçta rakip kalmaması için tek bir takımın ayakta olması yeter.
+  // In a team match it is enough that a single team is still standing.
   const teamsAlive = new Set(alive.map(p => (state.teams ? state.teams[p.seat] : p.seat))).size;
   if (state.decided) {
-    // Kazanan belli; kalan yıldız(lar) botlarla savaşmaya devam ediyor.
+    // The winner is decided; the remaining star(s) keep fighting the bots.
     if (alive.length >= 1 && teamsAlive === 1 && botsLeft) return;
     state.over = true;
     return;
@@ -535,8 +536,8 @@ function checkOver(state) {
     state.winTeam = state.teams ? state.teams[state.winner] : null;
     const w = state.seats[state.winner];
     log(state, state.teams
-      ? `🏆 Takım ${state.winTeam + 1} kazandı! (${w.score} puan)`
-      : `🏆 ${w.name} kazandı! (${w.score} puan)`);
+      ? `🏆 Team ${state.winTeam + 1} won! (${w.score} points)`
+      : `🏆 ${w.name} won! (${w.score} points)`);
   };
   if (state.keepGoing && alive.length >= 1 && botsLeft) {
     state.decided = true;
@@ -549,13 +550,13 @@ function checkOver(state) {
   finish();
 }
 
-// Bu koltuk kazananlar arasında mı? (Takımlı maçta kazanan takımın herkesi kazanır.)
+// Is this seat among the winners? (In a team match everyone on the winning team wins.)
 export function isWinner(state, seat) {
   if (state.winner == null) return false;
   return state.teams ? state.teams[seat] === state.teams[state.winner] : seat === state.winner;
 }
 
-// Kazananı belli olmuş maçı bitirir (oyuncu "Bitir" derse).
+// Ends a match whose winner is already decided (when the player chooses "End").
 export function endMatch(state) {
   if (state.decided) state.over = true;
   return state;
@@ -566,7 +567,7 @@ function survivorBonus(state, seat) {
   state.seats[seat].score += SURVIVOR_BONUS;
 }
 
-// Alınmış taşların sırası beklenmeden atlanır; tur bitince mod değişir, arena gerekirse daralır.
+// Turns of taken pieces are skipped at once; at the end of a round the mode flips and the arena shrinks if due.
 function settle(state) {
   while (!state.over) {
     while (state.turn < state.order.length && !pieceById(state, state.order[state.turn]).alive) state.turn++;
@@ -582,7 +583,7 @@ function endRound(state) {
   state.mode = flip(state.mode);
   state.order = roundOrder(state);
   state.turn = 0;
-  log(state, `— Tur ${state.round} · ${modeLabel(state.mode)} —`);
+  log(state, `— Round ${state.round} · ${modeLabel(state.mode)} —`);
 }
 
 function collapse(state) {
@@ -592,18 +593,18 @@ function collapse(state) {
   state.ring++;
   const side = state.size - 2 * state.ring;
   log(state, fallen.length
-    ? `🌀 Arena daraldı (${side}×${side})! Dışarıda kalan düştü: ${fallen.map(p => nameOf(state, p)).join(', ')}.`
-    : `🌀 Arena daraldı (${side}×${side}).`);
+    ? `🌀 The arena shrank (${side}×${side})! Fell off: ${fallen.map(p => nameOf(state, p)).join(', ')}.`
+    : `🌀 The arena shrank (${side}×${side}).`);
   fallen.filter(p => p.kind === 'star').forEach(p => starOut(state, p));
-  // İlk daralmayı atlatan her yıldız bir zırh kazanır.
+  // Every star that survives the first shrink earns armor.
   if (state.ring === 1) state.seats.filter(s => !s.out).forEach(s => grantBonus(state, s, 'armor'));
-  // İkinci daralmayı atlatan her yıldıza bir çift hamle.
+  // Every star that survives the second shrink gets a double move.
   if (state.ring === 2) state.seats.filter(s => !s.out).forEach(s => grantBonus(state, s, 'double'));
   checkOver(state);
 }
 
-// Kazanan önce, sonra en son çıkandan ilk çıkana.
-// Sıralama: önce skor, sonra alma sayısı, sonra hayatta kalma (ayakta kalan > geç elenen > erken elenen).
+// Winner first, then from the last one out to the first one out.
+// Order: score first, then number of takes, then survival (still standing > out late > out early).
 export function ranking(state) {
   const lasted = s => (s.out ? state.outOrder.indexOf(s.index) : state.seats.length);
   const wt = state.over || state.decided ? state.winTeam : null;

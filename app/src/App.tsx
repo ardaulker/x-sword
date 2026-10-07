@@ -20,7 +20,7 @@ const SETUP_KEY = 'xsword-app-setup';
 function loadSetup(): Setup {
   try {
     const s = JSON.parse(localStorage.getItem(SETUP_KEY) ?? 'null');
-    if (s && [1, 2, 3, 4].includes(s.players) && ['kolay', 'normal', 'zor'].includes(s.level)) {
+    if (s && [1, 2, 3, 4].includes(s.players) && ['easy', 'normal', 'hard'].includes(s.level)) {
       // Eski sürümden kalan kayıtta tahta/bot sayısı oyuncu sayısına göre seçilmemişti: varsayılana dön.
       return s.aiLevel ? { ...DEFAULT_SETUP, ...s } : { ...DEFAULT_SETUP, players: s.players, level: s.level };
     }
@@ -40,12 +40,12 @@ function saveSetup(s: Setup) {
 
 // Ekranlar adres çubuğundaki #/ ile seçilir; telefonun geri tuşu bir önceki ekrana döndürür.
 // #/katil/KOD davet linkidir: açınca o odaya katılır.
-type Screen = 'menu' | 'oyun' | 'kurallar' | 'ayarlar' | 'cok' | 'oda' | 'mac' | 'katil' | 'istatistik' | 'bulmaca' | 'izle' | 'profil';
-const SCREENS: Screen[] = ['oyun', 'kurallar', 'ayarlar', 'cok', 'oda', 'mac', 'istatistik', 'bulmaca', 'profil'];
+type Screen = 'menu' | 'play' | 'rules' | 'settings' | 'multiplayer' | 'room' | 'match' | 'join' | 'stats' | 'puzzles' | 'replay' | 'profile';
+const SCREENS: Screen[] = ['play', 'rules', 'settings', 'multiplayer', 'room', 'match', 'stats', 'puzzles', 'profile'];
 function readScreen(): Screen {
   const h = location.hash.replace(/^#\//, '');
-  if (h.startsWith('katil/')) return 'katil';
-  if (h.startsWith('izle/')) return 'izle';
+  if (h.startsWith('katil/')) return 'join';
+  if (h.startsWith('izle/')) return 'replay';
   return SCREENS.find(s => s === h) ?? 'menu';
 }
 const go = (s: Screen, replace = false) => {
@@ -72,7 +72,7 @@ export function App() {
 
   // Tek cihazda oyun: ekrana girince maç başlar (saklanan varsa sürer), çıkınca duraklatılıp saklanır.
   useEffect(() => {
-    if (screen !== 'oyun') return;
+    if (screen !== 'play') return;
     if (ctl.canResume) ctl.unpark(); else ctl.newGame(ctl.setup);
     return () => { ctl.leave(); setTick(n => n + 1); }; // menüde "Devam et" görünsün
   }, [ctl, screen]);
@@ -83,50 +83,50 @@ export function App() {
   roomRef.current = room;
   const joined = useRef('');
   useEffect(() => {
-    if (screen === 'oda' || screen === 'mac' || screen === 'katil' || !roomRef.current) return;
+    if (screen === 'room' || screen === 'match' || screen === 'join' || !roomRef.current) return;
     roomRef.current.close();
     setRoom(null);
     joined.current = '';
   }, [screen]);
 
   // Davet linki: odaya katıl ve lobiye geç. Kod ekran çizilirken okunur; katılma bir kez olur.
-  const joinCode = screen === 'katil' ? location.hash.replace(/^#\/katil\//, '').toUpperCase() : '';
+  const joinCode = screen === 'join' ? location.hash.replace(/^#\/katil\//, '').toUpperCase() : '';
   useEffect(() => {
     if (!joinCode || joined.current === joinCode) return;
     joined.current = joinCode;
-    if (isCode(joinCode)) { roomRef.current?.close(); setRoom(new GuestRoom(ctl, joinCode)); go('oda', true); }
-    else go('cok', true);
+    if (isCode(joinCode)) { roomRef.current?.close(); setRoom(new GuestRoom(ctl, joinCode)); go('room', true); }
+    else go('multiplayer', true);
   }, [ctl, joinCode]);
 
   // Odasız lobi ya da maç adresi açılırsa geri gönder; maç başlayınca ya da lobiye dönülünce ekran izler.
   useEffect(() => {
     if (!room) {
-      if (screen === 'oda') go('cok', true);
-      if (screen === 'mac') go('menu', true);
+      if (screen === 'room') go('multiplayer', true);
+      if (screen === 'match') go('menu', true);
       return;
     }
-    if (roomView?.status === 'playing' && screen === 'oda') go('mac');
-    if (roomView?.status === 'lobby' && screen === 'mac') go('oda', true);
+    if (roomView?.status === 'playing' && screen === 'room') go('match');
+    if (roomView?.status === 'lobby' && screen === 'match') go('room', true);
   }, [room, roomView?.status, screen]);
 
   const start = (s: Setup) => {
     if (!s.daily && s.puzzle == null) saveSetup(s);
-    if (screen === 'oyun') ctl.newGame(s);
-    else { ctl.discardParked(); ctl.setup = s; go('oyun'); }
+    if (screen === 'play') ctl.newGame(s);
+    else { ctl.discardParked(); ctl.setup = s; go('play'); }
   };
 
   const hostRoom = room instanceof HostRoom ? room : null;
 
-  if (screen === 'oyun') return <GameScreen ctl={ctl} onNewGame={start} onHome={() => go('menu')} onPuzzles={() => go('bulmaca')} />;
-  if (screen === 'istatistik') return <StatsScreen onBack={() => go('menu')} />;
-  if (screen === 'profil') return <ProfileScreen onBack={() => go('menu')} onStats={() => go('istatistik')} />;
-  if (screen === 'bulmaca') {
+  if (screen === 'play') return <GameScreen ctl={ctl} onNewGame={start} onHome={() => go('menu')} onPuzzles={() => go('puzzles')} />;
+  if (screen === 'stats') return <StatsScreen onBack={() => go('menu')} />;
+  if (screen === 'profile') return <ProfileScreen onBack={() => go('menu')} onStats={() => go('stats')} />;
+  if (screen === 'puzzles') {
     return <PuzzleScreen onBack={() => go('menu')} onPick={id => start({ ...ctl.setup, players: 1, daily: null, puzzle: id })} />;
   }
-  if (screen === 'izle') return <ReplayScreen code={location.hash.replace(/^#\/izle\//, '')} onBack={() => go('menu')} />;
-  if (screen === 'kurallar') return <RulesScreen onBack={() => go('menu')} />;
-  if (screen === 'ayarlar') return <SettingsScreen onBack={() => go('menu')} onRules={() => go('kurallar')} />;
-  if (screen === 'mac' && room) {
+  if (screen === 'replay') return <ReplayScreen code={location.hash.replace(/^#\/izle\//, '')} onBack={() => go('menu')} />;
+  if (screen === 'rules') return <RulesScreen onBack={() => go('menu')} />;
+  if (screen === 'settings') return <SettingsScreen onBack={() => go('menu')} onRules={() => go('rules')} />;
+  if (screen === 'match' && room) {
     return (
       <GameScreen
         ctl={ctl} onNewGame={start} onHome={() => go('menu')}
@@ -134,20 +134,20 @@ export function App() {
       />
     );
   }
-  if (screen === 'oda' && room) {
-    return <LobbyScreen room={room} onLeave={() => go('cok')} onStart={() => hostRoom?.start(ctl.setup.moveSeconds)} />;
+  if (screen === 'room' && room) {
+    return <LobbyScreen room={room} onLeave={() => go('multiplayer')} onStart={() => hostRoom?.start(ctl.setup.moveSeconds)} />;
   }
-  if (screen === 'cok') {
+  if (screen === 'multiplayer') {
     return (
       <MultiplayerEntry
         error=""
         onBack={() => go('menu')}
-        onHost={() => { room?.close(); setRoom(new HostRoom(ctl, ctl.setup.level)); go('oda'); }}
-        onJoin={code => { room?.close(); setRoom(new GuestRoom(ctl, code)); go('oda'); }}
+        onHost={() => { room?.close(); setRoom(new HostRoom(ctl, ctl.setup.level)); go('room'); }}
+        onJoin={code => { room?.close(); setRoom(new GuestRoom(ctl, code)); go('room'); }}
       />
     );
   }
-  return <MainMenu setup={ctl.setup} onStart={start} onResume={ctl.canResume ? () => go('oyun') : undefined} resumeInfo={ctl.canResume ? ctl.resumeInfo : undefined}
-    onPuzzles={() => go('bulmaca')} onStats={() => go('istatistik')} onProfile={() => go('profil')} onTutorial={() => start({ ...ctl.setup, players: 1, daily: null, puzzle: 201 })}
-    onDaily={() => start({ ...ctl.setup, players: 1, level: 'normal', daily: todayKey(), puzzle: null })} onRules={() => go('kurallar')} onMultiplayer={() => go('cok')} onSettings={() => go('ayarlar')} />;
+  return <MainMenu setup={ctl.setup} onStart={start} onResume={ctl.canResume ? () => go('play') : undefined} resumeInfo={ctl.canResume ? ctl.resumeInfo : undefined}
+    onPuzzles={() => go('puzzles')} onStats={() => go('stats')} onProfile={() => go('profile')} onTutorial={() => start({ ...ctl.setup, players: 1, daily: null, puzzle: 201 })}
+    onDaily={() => start({ ...ctl.setup, players: 1, level: 'normal', daily: todayKey(), puzzle: null })} onRules={() => go('rules')} onMultiplayer={() => go('multiplayer')} onSettings={() => go('settings')} />;
 }

@@ -18,11 +18,11 @@ export interface Theme {
 }
 
 export const THEMES: Theme[] = [
-  { id: 'gece', name: () => tr('Night'), kare: '#1A2452', kare2: '#1D2858', bosluk: '#070B1E', cerceve: '#0D1431', need: null },
-  { id: 'zumrut', name: () => tr('Emerald'), kare: '#15362F', kare2: '#193D35', bosluk: '#06130F', cerceve: '#0B1F1A', need: { kind: 'stars', n: 6 } },
-  { id: 'kor', name: () => tr('Ember'), kare: '#3A2220', kare2: '#432723', bosluk: '#180A09', cerceve: '#261311', need: { kind: 'wins', n: 5 } },
-  { id: 'buz', name: () => tr('Ice'), kare: '#1F3B54', kare2: '#244560', bosluk: '#07131E', cerceve: '#0F2133', need: { kind: 'daily', n: 3 } },
-  { id: 'mor', name: () => tr('Violet'), kare: '#2C2352', kare2: '#322959', bosluk: '#0D0A21', cerceve: '#171234', need: { kind: 'matches', n: 25 } },
+  { id: 'night', name: () => tr('Night'), kare: '#1A2452', kare2: '#1D2858', bosluk: '#070B1E', cerceve: '#0D1431', need: null },
+  { id: 'emerald', name: () => tr('Emerald'), kare: '#15362F', kare2: '#193D35', bosluk: '#06130F', cerceve: '#0B1F1A', need: { kind: 'stars', n: 6 } },
+  { id: 'ember', name: () => tr('Ember'), kare: '#3A2220', kare2: '#432723', bosluk: '#180A09', cerceve: '#261311', need: { kind: 'wins', n: 5 } },
+  { id: 'ice', name: () => tr('Ice'), kare: '#1F3B54', kare2: '#244560', bosluk: '#07131E', cerceve: '#0F2133', need: { kind: 'daily', n: 3 } },
+  { id: 'violet', name: () => tr('Violet'), kare: '#2C2352', kare2: '#322959', bosluk: '#0D0A21', cerceve: '#171234', need: { kind: 'matches', n: 25 } },
 ];
 
 const progress = (s: Stats, kind: Need['kind']) =>
@@ -57,7 +57,7 @@ export const skinById = (id: string) => SKINS.find(s => s.id === id) ?? SKINS[0]
 
 // Açılmış ama oyuncuya henüz haber verilmemiş temalar ve efektler.
 const SEEN = 'xsword-rewards-seen';
-const seenIds = (): string[] => { try { const d = JSON.parse(localStorage.getItem(SEEN) ?? 'null'); return Array.isArray(d) ? d : ['gece', 'none']; } catch { return ['gece', 'none']; } };
+const seenIds = (): string[] => { try { const d = JSON.parse(localStorage.getItem(SEEN) ?? 'null'); return Array.isArray(d) ? d : ['night', 'none']; } catch { return ['night', 'none']; } };
 export interface Reward { kind: 'theme' | 'skin'; id: string; name: string }
 const all = (): Reward[] => [
   ...THEMES.filter(t => isUnlocked(t)).map(t => ({ kind: 'theme' as const, id: t.id, name: t.name() })),

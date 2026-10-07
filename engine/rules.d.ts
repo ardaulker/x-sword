@@ -1,8 +1,8 @@
-// rules.js için tip bildirimleri. Kod rules.js'te; burası yalnız TypeScript'e onun şeklini anlatır.
-// rules.js'te dışa açılan bir şey değişirse burayı da güncelle.
+// Type declarations for rules.js. The code lives in rules.js; this file only tells TypeScript its shape.
+// If anything rules.js exports changes, update this file too.
 
-export type Mode = 'DUZ' | 'CAPRAZ';
-export type Level = 'kolay' | 'normal' | 'zor';
+export type Mode = 'STRAIGHT' | 'DIAGONAL';
+export type Level = 'easy' | 'normal' | 'hard';
 export type Dir = readonly [number, number];
 
 interface PieceBase {
@@ -19,7 +19,7 @@ export interface BotPiece extends PieceBase {
   kind: 'red' | 'blue';
   label: string;
 }
-// Tek oyunculu modda oyuncunun aynası: yıldızın kurallarıyla, onun yaptığı yönde oynar.
+// The player's mirror in single-player mode: plays by the star's rules, in the direction the star just played.
 export interface TwinPiece extends PieceBase {
   kind: 'twin';
   mirrors: string;
@@ -76,9 +76,9 @@ export interface GameState {
   matchOrder: string[];
   keepGoing: boolean;
   decided: boolean;
-  blocked: Set<number> | null;     // engel kareleri (r * size + c)
-  holes: Set<number> | null;       // bulmacada harita dışı kareler (blocked içinde de var)
-  teams: number[] | null;          // takımlı maç: koltuk → takım
+  blocked: Set<number> | null;     // obstacle squares (r * size + c)
+  holes: Set<number> | null;       // off-map squares in a puzzle (also included in blocked)
+  teams: number[] | null;          // team match: seat → team
   winTeam: number | null;
   puzzle: { limit: number; used: number } | null;
 }
@@ -101,7 +101,7 @@ export interface GameOptions {
   personas?: boolean;
   obstacles?: boolean;
   teams?: boolean;
-  /** 9, 11, 13 ya da 15; oyuncu sayısının varsayılanından küçükse yok sayılır. */
+  /** 9, 11, 13 or 15; ignored if smaller than the default for the player count. */
   size?: number;
 }
 

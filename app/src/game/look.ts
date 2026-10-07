@@ -23,7 +23,7 @@ export const colorOf = (p: Piece) =>
 
 // Şekil yürüme yönünü gösterir: kare düz, elmas çapraz yürür. Yıldız ve İkiz modla döner.
 export const diamondOf = (p: Pick<Piece, 'kind'>, mode: Mode) =>
-  p.kind === 'blue' || ((p.kind === 'star' || p.kind === 'twin') && mode === 'CAPRAZ');
+  p.kind === 'blue' || ((p.kind === 'star' || p.kind === 'twin') && mode === 'DIAGONAL');
 
 export const alpha = (hex: string, a: number) => {
   const v = parseInt(hex.slice(1), 16);

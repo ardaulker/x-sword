@@ -57,9 +57,9 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
   const inner = vis * cell + (vis - 1) * gap;
   const me = ctl.myStar();
   const myColor = PLAYER_COLORS[me.seat];
-  const myTurn = me.alive && (view.phase === 'sen' || view.phase === 'onizleme');
+  const myTurn = me.alive && (view.phase === 'mine' || view.phase === 'preview');
   const moves = myTurn ? legalMoves(st, me, st.mode, view.bonus).filter(m => !view.bonus || m.bonus) : [];
-  const sel = myTurn && view.phase === 'onizleme' ? view.sel : null;
+  const sel = myTurn && view.phase === 'preview' ? view.sel : null;
   const warn = collapseDue(st);
   // Bir tur önce: çökecek halka ince turuncu kenarla uyarılır.
   const soon = !warn && nextCollapseRound(st) === st.round + 1;
@@ -136,7 +136,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
   if (twinGhost) seg('twin', twinGhost.from, twinGhost.to, 'dot', alpha(myColor, 0.6));
 
   // Dokunulan taş: yolları ve alabilecekleri tahtada, botun hedefi çizgiyle. Zor modda hedef gizli.
-  const showTargets = ctl.setup.level !== 'zor' && settings.targets && !st.puzzle; // bulmacada botlar kovalamaz
+  const showTargets = ctl.setup.level !== 'hard' && settings.targets && !st.puzzle; // bulmacada botlar kovalamaz
   const inspected = view.inspect ? pieceById(st, view.inspect) : null;
   const inspectMoves = new Map<string, Move>();
   if (inspected?.alive && inspected.id !== me.id) {
@@ -280,13 +280,13 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
       const falling = gone && view.fall?.ring === ring;
       const rc = reach.get(`${r},${c}`);
       const im = rc ? undefined : inspectMoves.get(`${r},${c}`);
-      let background = (r + c) % 2 ? 'var(--kare-2)' : 'var(--kare)';
+      let background = (r + c) % 2 ? 'var(--square-2)' : 'var(--square)';
       let frame: { stroke: string; width: number; dash?: string } | null = null;
       let mark: { d: string; fill: string; stroke: string; width: number } | null = null;
       const hole = !!st.holes?.has(r * n + c);
       const wall = !gone && !hole && !!st.blocked?.has(r * n + c);
       if (hole) background = 'transparent';
-      else if (gone) { background = 'var(--bosluk)'; frame = { stroke: '#2B3670', width: 4, dash: '6 7' }; }
+      else if (gone) { background = 'var(--void)'; frame = { stroke: '#2B3670', width: 4, dash: '6 7' }; }
       else if (wall) {
         // Engel: eski çapraz çizgili desen, daha yüksek karşıtlık ve kalın açık çerçeveyle. Girilmez, çift adımla üstünden atlanamaz.
         background = 'repeating-linear-gradient(45deg, #42509A 0 5px, #0E1430 5px 10px)';
@@ -303,13 +303,13 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
       }
       if (rc) {
         const danger = settings.danger && (rc.doomed || rc.attackers > 0);
-        background = danger ? 'var(--pat-danger)' : `linear-gradient(${reach18}, ${reach18}), var(--kare)`;
+        background = danger ? 'var(--pat-danger)' : `linear-gradient(${reach18}, ${reach18}), var(--square)`;
         frame = { stroke: myColor, width: 7 };
         mark = rc.move.type === 'swap'
           ? { d: 'M28 40 H72 M62 30 L72 40 L62 50 M72 60 H28 M38 50 L28 60 L38 70', fill: 'none', stroke: '#FFFFFF', width: 7 }
           : rc.move.type === 'take'
           ? { d: MARK_AIM, fill: 'none', stroke: '#FFFFFF', width: 8 }
-          : { d: st.mode === 'DUZ' ? MARK_SQUARE : MARK_DIAMOND, fill: myColor, stroke: 'none', width: 0 };
+          : { d: st.mode === 'STRAIGHT' ? MARK_SQUARE : MARK_DIAMOND, fill: myColor, stroke: 'none', width: 0 };
         if (sel && sel.r === r && sel.c === c) frame = { stroke: '#FFFFFF', width: 11 };
       }
       const occupant = pieceAt(st, r, c);
@@ -345,7 +345,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
 
   const frameStyle: CSSProperties = {
     width: inner + 2 * fp, height: inner + 2 * fp, padding: fp,
-    background: st.mode === 'DUZ' ? 'var(--tex-duz)' : 'var(--tex-capraz)',
+    background: st.mode === 'STRAIGHT' ? 'var(--tex-straight)' : 'var(--tex-diagonal)',
     boxShadow: [
       `inset 0 0 0 ${warn ? `2px ${HAZARD}` : '1.5px rgba(233,240,255,.22)'}`,
       '0 18px 40px rgba(0,0,0,.35)',
@@ -449,7 +449,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
               className="pg-shape"
               style={{
                 background: alpha(myColor, 0.2), border: `2px dashed ${myColor}`, boxSizing: 'border-box',
-                transform: st.mode === 'CAPRAZ' ? 'rotate(45deg) scale(.95)' : 'none',
+                transform: st.mode === 'DIAGONAL' ? 'rotate(45deg) scale(.95)' : 'none',
               }}
             />
           </div>

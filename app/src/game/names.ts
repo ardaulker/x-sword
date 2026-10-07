@@ -60,8 +60,8 @@ export function objectOf(state: GameState, p: Piece) {
   return tr('#{n}', { n: p.label }) + (tr_() ? 'yı' : '');
 }
 
-export const modeWord = (mode: Mode) => mode === 'DUZ' ? tr('STRAIGHT') : tr('DIAGONAL');
-export const modeLower = (mode: Mode) => mode === 'DUZ' ? tr('straight') : tr('diagonally');
+export const modeWord = (mode: Mode) => mode === 'STRAIGHT' ? tr('STRAIGHT') : tr('DIAGONAL');
+export const modeLower = (mode: Mode) => mode === 'STRAIGHT' ? tr('straight') : tr('diagonally');
 
 export const clockText = (ms: number) => {
   const s = Math.max(0, Math.floor(ms / 1000));

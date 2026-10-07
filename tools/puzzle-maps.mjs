@@ -1,26 +1,27 @@
-// Bulmaca haritaları: her biri bir fikri öğretir. Haritayı elle çiziyoruz, taşların yerini üretici arar.
-// '.' zemin, '#' engel, '-' harita dışı, 'S' sen (yoksa üretici koyar), 'K' / 'C' sabit bot.
-// bots: üreticinin koyacağı bot sayısı. par: hedef en az hamle. bonuses: başta verilen bonuslar.
-// needBonus: bonus olmadan par+1 hamlede çözülmemeli (bonus şart). botCols: en az bir bot bu sütunlarda olur.
-// Yeni harita eklerken CLAUDE.md'deki "Bulmaca haritaları" listesine bak; aynı fikri tekrar etme.
-// near: botlar sana en çok bu kadar (Chebyshev) uzak konur.
-// trap: ilk hamlede en az bir "tuzak" olmalı (oynayınca hemen alınırsın).
-// shrink: { start, every } bulmacada da arena daralır.
-// tutorial: true olanlar Eğitim bölümüne girer (1. ve 2. sabit haritadır: fixed). İlk açılışta menüde önerilir.
+// Puzzle maps: each one teaches one idea. We draw the map by hand; the generator searches where the pieces go.
+// '.' floor, '#' obstacle, '-' off the map, 'S' you (placed by the generator if missing), 'R' / 'B' fixed red / blue bot.
+// bots: how many bots the generator places. par: target fewest moves. bonuses: bonuses held at the start.
+// needBonus: it must not be solvable in par+1 moves without the bonus. botCols: at least one bot lands in these columns.
+// near: bots are placed at most this far (Chebyshev) from you.
+// trap: the first move must offer at least one "trap" (a move that gets you taken right away).
+// shrink: { start, every } makes the arena shrink in the puzzle too.
+// tutorial: true puts the puzzle in the Tutorial section (fixed: a hand-placed map the generator only verifies).
+//   New players are offered the tutorial from the main menu.
+// Before adding a map, read the "Puzzle maps" list in CLAUDE.md and don't repeat an idea.
 export const MAPS = [
   {
-    id: 201, tutorial: true, fixed: true, title: 'Take straight', hint: 'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.', mode: 'DUZ', par: 1,
+    id: 201, tutorial: true, fixed: true, title: 'Take straight', hint: 'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.', mode: 'STRAIGHT', par: 1,
     map: [
       '.....',
-      '..K..',
+      '..R..',
       '..S..',
       '.....',
     ],
   },
   {
-    id: 202, tutorial: true, fixed: true, title: 'The mode changes', hint: 'The mode changes every round. Walk straight first, then take diagonally next round.', mode: 'DUZ', par: 2,
+    id: 202, tutorial: true, fixed: true, title: 'The mode changes', hint: 'The mode changes every round. Walk straight first, then take diagonally next round.', mode: 'STRAIGHT', par: 2,
     map: [
-      '.C...',
+      '.B...',
       '.....',
       '..S..',
       '.....',
@@ -28,17 +29,17 @@ export const MAPS = [
     ],
   },
   {
-    id: 203, tutorial: true, fixed: true, title: 'Danger', hint: 'A red-striped square is dangerous: a piece will take you there. Take both pieces; pick the unstriped square first.', mode: 'DUZ', par: 2,
+    id: 203, tutorial: true, fixed: true, title: 'Danger', hint: 'A red-striped square is dangerous: a piece will take you there. Take both pieces; pick the unstriped square first.', mode: 'STRAIGHT', par: 2,
     map: [
       '.....',
-      '.SC..',
-      '.K...',
+      '.SB..',
+      '.R...',
       '.....',
       '.....',
     ],
   },
   {
-    id: 101, title: 'Corridor', hint: 'The mode changes every round: straight this round, diagonal the next.', mode: 'DUZ', bots: 2, par: 3,
+    id: 101, title: 'Corridor', hint: 'The mode changes every round: straight this round, diagonal the next.', mode: 'STRAIGHT', bots: 2, par: 3,
     map: [
       '#.....#',
       '.......',
@@ -48,7 +49,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 102, title: 'Cross', hint: 'The arms are narrow. Choose well which bot to take first.', mode: 'CAPRAZ', bots: 2, par: 4,
+    id: 102, title: 'Cross', hint: 'The arms are narrow. Choose well which bot to take first.', mode: 'DIAGONAL', bots: 2, par: 4,
     map: [
       '--...--',
       '--...--',
@@ -60,7 +61,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 103, title: 'Ring', hint: 'The middle is empty. The short way is always along the edge.', mode: 'DUZ', bots: 3, par: 5,
+    id: 103, title: 'Ring', hint: 'The middle is empty. The short way is always along the edge.', mode: 'STRAIGHT', bots: 3, par: 5,
     map: [
       '-.....-',
       '.......',
@@ -72,7 +73,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 104, title: 'Pillars', hint: 'No one can enter a blocked square. Behind a pillar can be safe.', mode: 'CAPRAZ', bots: 3, par: 5,
+    id: 104, title: 'Pillars', hint: 'No one can enter a blocked square. Behind a pillar can be safe.', mode: 'DIAGONAL', bots: 3, par: 5,
     map: [
       '.......',
       '.#...#.',
@@ -84,7 +85,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 105, title: 'Staircase', hint: 'A diagonal strip: in a straight round your path gets narrow.', mode: 'DUZ', bots: 3, par: 5,
+    id: 105, title: 'Staircase', hint: 'A diagonal strip: in a straight round your path gets narrow.', mode: 'STRAIGHT', bots: 3, par: 5,
     map: [
       '...-----',
       '....----',
@@ -96,7 +97,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 106, title: 'Double step', hint: 'Double step takes you two squares. Wait for the right moment.', mode: 'DUZ', bots: 2, par: 3, bonuses: { step: 1 }, needBonus: true,
+    id: 106, title: 'Double step', hint: 'Double step takes you two squares. Wait for the right moment.', mode: 'STRAIGHT', bots: 2, par: 3, bonuses: { step: 1 }, needBonus: true,
     map: [
       '....---',
       '....---',
@@ -106,7 +107,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 107, title: 'Mirror', hint: 'Use the Mirror to take a bot\'s place. Sometimes it\'s the only way to change direction.', mode: 'CAPRAZ', bots: 2, par: 4, bonuses: { swap: 1 }, needBonus: true,
+    id: 107, title: 'Mirror', hint: 'Use the Mirror to take a bot\'s place. Sometimes it\'s the only way to change direction.', mode: 'DIAGONAL', bots: 2, par: 4, bonuses: { swap: 1 }, needBonus: true,
     map: [
       '.........',
       '.........',
@@ -117,7 +118,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 108, title: 'Diamond', hint: 'Double move: two moves in a row, the bots don\'t play in between.', mode: 'CAPRAZ', bots: 3, par: 4, bonuses: { double: 1 }, needBonus: true,
+    id: 108, title: 'Diamond', hint: 'Double move: two moves in a row, the bots don\'t play in between.', mode: 'DIAGONAL', bots: 3, par: 4, bonuses: { double: 1 }, needBonus: true,
     map: [
       '---.---',
       '--...--',
@@ -129,7 +130,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 109, title: 'Fortress', hint: 'The gates in the walls are narrow. Work out which gate to enter through.', mode: 'DUZ', bots: 3, par: 6,
+    id: 109, title: 'Fortress', hint: 'The gates in the walls are narrow. Work out which gate to enter through.', mode: 'STRAIGHT', bots: 3, par: 6,
     map: [
       '.........',
       '.###.###.',
@@ -143,7 +144,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 110, title: 'Maze', hint: 'Narrow paths and one double step. Plan the order well.', mode: 'CAPRAZ', bots: 3, par: 6, bonuses: { step: 1 },
+    id: 110, title: 'Maze', hint: 'Narrow paths and one double step. Plan the order well.', mode: 'DIAGONAL', bots: 3, par: 6, bonuses: { step: 1 },
     map: [
       '-...#...-',
       '.#.....#.',
@@ -156,9 +157,9 @@ export const MAPS = [
       '-...#...-',
     ],
   },
-  // ---------------------------------------------------------- ikinci set (daha zor): 111–120
+  // ---------------------------------------------------------- second set (harder): 111–120
   {
-    id: 111, title: 'L', hint: 'Four bots, a tight corner. A greedy take leads you into a trap.', mode: 'DUZ', bots: 4, par: 6, trap: true,
+    id: 111, title: 'L', hint: 'Four bots, a tight corner. A greedy take leads you into a trap.', mode: 'STRAIGHT', bots: 4, par: 6, trap: true,
     map: [
       '....-----',
       '....-----',
@@ -168,7 +169,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 112, title: 'U', hint: 'Two arms, one bottom. Which arm you start with changes everything.', mode: 'CAPRAZ', bots: 4, par: 6, trap: true,
+    id: 112, title: 'U', hint: 'Two arms, one bottom. Which arm you start with changes everything.', mode: 'DIAGONAL', bots: 4, par: 6, trap: true,
     map: [
       '...---...',
       '...---...',
@@ -178,7 +179,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 113, title: 'Armor', hint: 'Armor protects you once. Sometimes you must step into danger on purpose.', mode: 'DUZ', bots: 3, par: 4, bonuses: { armor: 1 }, needBonus: true,
+    id: 113, title: 'Armor', hint: 'Armor protects you once. Sometimes you must step into danger on purpose.', mode: 'STRAIGHT', bots: 3, par: 4, bonuses: { armor: 1 }, needBonus: true,
     map: [
       '.......',
       '.#...#.',
@@ -190,7 +191,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 114, title: 'Pair', hint: 'Double step and mirror together. Use both at the right moment.', mode: 'CAPRAZ', bots: 3, par: 5, near: 4, bonuses: { step: 1, swap: 1 }, needBonus: true,
+    id: 114, title: 'Pair', hint: 'Double step and mirror together. Use both at the right moment.', mode: 'DIAGONAL', bots: 3, par: 5, near: 4, bonuses: { step: 1, swap: 1 }, needBonus: true,
     map: [
       '........',
       '.##..##.',
@@ -201,7 +202,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 115, title: 'Collapse', hint: 'The arena shrinks at the end of round 2. Stay on the orange ring and you\'re out.', mode: 'DUZ', bots: 3, par: 5, shrink: { start: 2, every: 2 }, trap: true,
+    id: 115, title: 'Collapse', hint: 'The arena shrinks at the end of round 2. Stay on the orange ring and you\'re out.', mode: 'STRAIGHT', bots: 3, par: 5, shrink: { start: 2, every: 2 }, trap: true,
     map: [
       '.......',
       '.......',
@@ -213,7 +214,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 116, title: 'Butterfly', hint: 'Two wings, a narrow waist. The mirror can carry you to the other wing.', mode: 'CAPRAZ', bots: 3, par: 4, near: 4, bonuses: { swap: 1 }, needBonus: true,
+    id: 116, title: 'Butterfly', hint: 'Two wings, a narrow waist. The mirror can carry you to the other wing.', mode: 'DIAGONAL', bots: 3, par: 4, near: 4, bonuses: { swap: 1 }, needBonus: true,
     map: [
       '..-----..',
       '...---...',
@@ -225,7 +226,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 117, title: 'Courtyard', hint: 'A courtyard closed in the middle. Work out which side of the wall to go around.', mode: 'DUZ', bots: 3, par: 6, trap: true, near: 4,
+    id: 117, title: 'Courtyard', hint: 'A courtyard closed in the middle. Work out which side of the wall to go around.', mode: 'STRAIGHT', bots: 3, par: 6, trap: true, near: 4,
     map: [
       '.........',
       '.........',
@@ -239,7 +240,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 118, title: 'Zigzag', hint: 'The diagonal wall blocks you in straight rounds. Choose when to cross.', mode: 'DUZ', bots: 3, par: 6, trap: true, near: 4,
+    id: 118, title: 'Zigzag', hint: 'The diagonal wall blocks you in straight rounds. Choose when to cross.', mode: 'STRAIGHT', bots: 3, par: 6, trap: true, near: 4,
     map: [
       '#.......',
       '.#......',
@@ -252,7 +253,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 119, title: 'Hourglass', hint: 'The waist is a single square. Spend the double move at the pass.', mode: 'CAPRAZ', bots: 4, par: 5, bonuses: { double: 1 }, needBonus: true,
+    id: 119, title: 'Hourglass', hint: 'The waist is a single square. Spend the double move at the pass.', mode: 'DIAGONAL', bots: 4, par: 5, bonuses: { double: 1 }, needBonus: true,
     map: [
       '.......',
       '-.....-',
@@ -264,7 +265,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 120, title: 'Finale', hint: 'Four bots, two bonuses. Every move counts.', mode: 'DUZ', bots: 4, par: 6, near: 3, bonuses: { step: 1, double: 1 }, trap: true,
+    id: 120, title: 'Finale', hint: 'Four bots, two bonuses. Every move counts.', mode: 'STRAIGHT', bots: 4, par: 6, near: 3, bonuses: { step: 1, double: 1 }, trap: true,
     map: [
       '...#...',
       '.#...#.',

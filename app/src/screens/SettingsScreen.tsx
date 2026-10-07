@@ -14,9 +14,9 @@ import { SkinFx } from '../components/SkinFx';
 import { loadStats } from '../game/stats';
 
 const speeds = (): [Settings['speed'], string, string][] => [
-  ['yavas', tr('Slow'), tr('Slide 320 ms · bot turn ~2 s')],
+  ['slow', tr('Slow'), tr('Slide 320 ms · bot turn ~2 s')],
   ['normal', tr('Normal'), tr('Slide 220 ms · bot turn ~1.2 s')],
-  ['hizli', tr('Fast'), tr('Slide 140 ms · bot turn ~0.8 s')],
+  ['fast', tr('Fast'), tr('Slide 140 ms · bot turn ~0.8 s')],
 ];
 
 function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {

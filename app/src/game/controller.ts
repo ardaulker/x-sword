@@ -30,14 +30,14 @@ export interface NetRole {
 }
 
 export type Phase =
-  | 'hazir'     // maç başlıyor
-  | 'sen'       // sıra sende
-  | 'onizleme'  // bir kare seçtin, onay bekleniyor
-  | 'rakip'     // başka bir yıldız (yapay zekâ oyuncu) oynuyor
+  | 'ready'     // maç başlıyor
+  | 'mine'       // sıra sende
+  | 'preview'  // bir kare seçtin, onay bekleniyor
+  | 'rival'     // başka bir yıldız (yapay zekâ oyuncu) oynuyor
   | 'bot'       // arena botları oynuyor
-  | 'bekle'     // bir hamle oynandı, sıradaki adım geliyor
-  | 'mod'       // mod değişiyor
-  | 'bitti';
+  | 'wait'     // bir hamle oynandı, sıradaki adım geliyor
+  | 'mode'       // mod değişiyor
+  | 'over';
 
 export interface Setup {
   players: number;
@@ -69,7 +69,7 @@ export interface Toast { key: number; text: string; icon: 'sword' | 'clock' | 'i
 export interface Banner { key: number; title: string; sub: string; color: string; pieceId: string | null }
 // attackerId null: taş çöken halkada düştü.
 export interface TakeEvent { key: number; round: number; attackerId: string | null; victimId: string; at: number } // at: o ana kadar oynanan hamle sayısı (tekrarda o ana gitmek için)
-export type Sheet = { type: 'kayit' } | { type: 'menu' } | { type: 'sonuc' } | { type: 'ipucu'; step: number } | null;
+export type Sheet = { type: 'log' } | { type: 'menu' } | { type: 'results' } | { type: 'coach'; step: number } | null;
 
 export interface View {
   phase: Phase;
@@ -155,7 +155,7 @@ export class GameController {
     // İlk üç yerel maçta kısa bir ipucu kartı; "Anladım" deyince maç başlar.
     const step = this.net || !settings.tips || this.setup.puzzle != null ? null : coachStep();
     this.autoMap = step != null && step < 2;
-    if (step != null) { this.later(500, () => this.emit({ sheet: { type: 'ipucu', step } })); return; }
+    if (step != null) { this.later(500, () => this.emit({ sheet: { type: 'coach', step } })); return; }
     this.later(600, () => this.advance());
   }
 
@@ -200,7 +200,7 @@ export class GameController {
     this.emit({ clockStart: this.view.clockStart + dt, clockEnd: null });
     const fns = this.deferred.splice(0);
     fns.forEach(f => f());
-    if (!this.halted && ['sen', 'onizleme', 'rakip'].includes(this.view.phase)) this.startTicker();
+    if (!this.halted && ['mine', 'preview', 'rival'].includes(this.view.phase)) this.startTicker();
     if (!this.halted && collapseDue(this.state)) startTension();
   }
 
@@ -255,7 +255,7 @@ export class GameController {
       this.reset(undefined, { opts: s.opts, moves: decodeMoves(s.moves) });
       if (this.state.over) { clearSave(); return false; }
       const now = Date.now();
-      this.view = { ...this.view, phase: 'bekle', clockStart: now - s.elapsed, clockEnd: now };
+      this.view = { ...this.view, phase: 'wait', clockStart: now - s.elapsed, clockEnd: now };
       this.parked = true;
       this.restored = true;
       this.paused = true;
@@ -290,7 +290,7 @@ export class GameController {
       for (; done < n; done++) play(this.state, r.moves[done]);
     } catch { /* bozuk kayıt: gelinen yere kadar */ }
     r.i = done;
-    this.view = { ...this.freshView(), phase: 'bitti', clockEnd: Date.now(), version: this.view.version + 1 };
+    this.view = { ...this.freshView(), phase: 'over', clockEnd: Date.now(), version: this.view.version + 1 };
     this.listeners.forEach(fn => fn());
   }
 
@@ -346,7 +346,7 @@ export class GameController {
       i === ME ? { kind: 'human' } : { kind: 'bot', level: s.aiLevel });
     // Kolayda ilk sen oynarsın; normal ve zorda sıradaki yerin de rastgele.
     return {
-      seats, neutralLevel: s.level, seed: Math.floor(Math.random() * 2 ** 31), firstSeat: s.level === 'kolay' ? ME : null, keepGoing: true,
+      seats, neutralLevel: s.level, seed: Math.floor(Math.random() * 2 ** 31), firstSeat: s.level === 'easy' ? ME : null, keepGoing: true,
       size: s.boardSize, neutrals: s.bots,
       personas: s.players > 1 && !!s.personas, obstacles: !!s.obstacles, teams: s.players === 4 && !!s.teams,
     };
@@ -358,7 +358,7 @@ export class GameController {
 
   private freshView(): View {
     return {
-      phase: 'hazir', sel: null, showThreats: false, timer: this.setup.moveSeconds,
+      phase: 'ready', sel: null, showThreats: false, timer: this.setup.moveSeconds,
       trails: [], lastMoves: [], bursts: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null, bonus: null,
       bots: { done: 0, total: 0, currentId: null }, events: [],
       clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, hit: 0, version: 0,
@@ -403,7 +403,7 @@ export class GameController {
   // Uzak oyuncunun hamlesi beklenir; süre biterse kurucu onun yerine güvenli bir hamle yapar.
   private remoteTurn(a: Piece) {
     this.waitingSeat = a.kind === 'star' ? a.seat : null;
-    this.emit({ phase: 'rakip', timer: this.setup.moveSeconds });
+    this.emit({ phase: 'rival', timer: this.setup.moveSeconds });
     // Bağlantısı kopan oyuncuyu bekletmeyiz: onun yerine güvenli hamle oynanır, dönerse kaldığı yerden devam eder.
     if (a.kind === 'star' && this.away.has(a.seat)) { this.later(500, () => this.awayMove()); return; }
     this.startTicker();
@@ -450,7 +450,7 @@ export class GameController {
     this.waitingSeat = null;
     this.stopTicker();
     const o = this.apply(move);
-    this.emit({ phase: 'bekle' });
+    this.emit({ phase: 'wait' });
     if (o) this.continueAfter(o, 450);
   }
 
@@ -480,7 +480,7 @@ export class GameController {
     if (!a) return;
     if (a.kind === 'star' && a.seat === ME) return this.myTurn();
     if (a.kind === 'star') {
-      this.emit({ phase: 'rakip', timer: this.setup.moveSeconds });
+      this.emit({ phase: 'rival', timer: this.setup.moveSeconds });
       this.startTicker();
     } else if (isBot(a) && this.view.phase !== 'bot') {
       this.botQueue = this.botRun();
@@ -494,12 +494,12 @@ export class GameController {
     this.stopTicker();
     const o = this.apply(move);
     if (a && isBot(a)) this.view = { ...this.view, bots: { ...this.view.bots, done: this.botQueue.indexOf(a.id) + 1, currentId: a.id } };
-    this.emit({ phase: a && isBot(a) && !o?.roundEnded ? 'bot' : 'bekle' });
+    this.emit({ phase: a && isBot(a) && !o?.roundEnded ? 'bot' : 'wait' });
     if (!o) return;
     if (this.state.over) return this.finish();
     if (o.roundEnded) {
       // Kurucu da mod kartını aynı süre gösterip bekler; sıradaki hamle ondan sonra gelir.
-      this.emit({ phase: 'mod', modeOverlay: true });
+      this.emit({ phase: 'mode', modeOverlay: true });
       this.later(1300, () => { this.emit({ modeOverlay: false }); this.guestAdvance(); });
       return;
     }
@@ -531,10 +531,10 @@ export class GameController {
       this.toast(tr('Survival bonus +{n}', { n: this.state.seats[ME].bonus }), 'sword');
     }
     this.emit({
-      phase: 'bitti', clockEnd: pending ? null : this.view.clockEnd ?? Date.now(), sel: null, showThreats: false, modeOverlay: false,
+      phase: 'over', clockEnd: pending ? null : this.view.clockEnd ?? Date.now(), sel: null, showThreats: false, modeOverlay: false,
     });
     // Son hamleyi ve bantları gördükten sonra sonuç kartı açılır.
-    this.later(1600, () => { if (this.view.phase === 'bitti' && !this.view.sheet) this.emit({ sheet: { type: 'sonuc' } }); });
+    this.later(1600, () => { if (this.view.phase === 'over' && !this.view.sheet) this.emit({ sheet: { type: 'results' } }); });
     feel(isWinner(this.state, ME) ? 'win' : 'lose', isWinner(this.state, ME) ? BUZZ.win : BUZZ.lose);
   }
 
@@ -559,7 +559,7 @@ export class GameController {
   // Kazanan belliyken botlarla savaşa devam et.
   resume() {
     if (!this.state.decided || this.state.over) return;
-    this.emit({ sheet: null, phase: 'bekle' });
+    this.emit({ sheet: null, phase: 'wait' });
     this.advance();
   }
 
@@ -574,7 +574,7 @@ export class GameController {
 
   private myTurn() {
     if (this.undoPoints[this.undoPoints.length - 1] !== this.moves.length) this.undoPoints.push(this.moves.length);
-    this.emit({ phase: 'sen', sel: null, showThreats: false, bonus: null, timer: this.setup.moveSeconds });
+    this.emit({ phase: 'mine', sel: null, showThreats: false, bonus: null, timer: this.setup.moveSeconds });
     feel('myTurn', BUZZ.myTurn);
     if (!legalMoves(this.state, this.myStar(), this.state.mode).length) {
       this.toast(tr('No square to move to · turn passed'), 'info');
@@ -586,7 +586,7 @@ export class GameController {
   }
 
   private isMyMove() {
-    return this.view.phase === 'sen' || this.view.phase === 'onizleme';
+    return this.view.phase === 'mine' || this.view.phase === 'preview';
   }
 
   // Bir kare seç. Seçili kareye ikinci kez dokunmak onaylar.
@@ -594,16 +594,16 @@ export class GameController {
     if (!this.isMyMove()) return;
     this.view = { ...this.view, inspect: null };
     // Önizlemesiz oyna: dokunduğun kare hemen oynanır.
-    if (settings.quick && this.view.phase === 'sen') { feel('move', BUZZ.confirm); return this.commitMine(move); }
+    if (settings.quick && this.view.phase === 'mine') { feel('move', BUZZ.confirm); return this.commitMine(move); }
     const sel = this.view.sel;
-    if (this.view.phase === 'onizleme' && sel && sel.r === move.r && sel.c === move.c) return this.confirm();
+    if (this.view.phase === 'preview' && sel && sel.r === move.r && sel.c === move.c) return this.confirm();
     feel('select', BUZZ.select);
-    this.emit({ phase: 'onizleme', sel: move, showThreats: false });
+    this.emit({ phase: 'preview', sel: move, showThreats: false });
   }
 
   confirm() {
     const { phase, sel } = this.view;
-    if (phase !== 'onizleme' || !sel) return;
+    if (phase !== 'preview' || !sel) return;
     feel('move', BUZZ.confirm);
     this.commitMine(sel);
   }
@@ -612,17 +612,17 @@ export class GameController {
   selectBonus(kind: BonusKind) {
     if (!this.isMyMove() || kind === 'armor' || !this.state.seats[ME].bonuses[kind]) return;
     feel('select', BUZZ.select);
-    this.emit({ phase: 'sen', sel: null, showThreats: false, bonus: this.view.bonus === kind ? null : kind });
+    this.emit({ phase: 'mine', sel: null, showThreats: false, bonus: this.view.bonus === kind ? null : kind });
   }
 
   // Geri al: kolay modda (maçta 3 kez) ve bulmacada (sınırsız). Maç, kayıtlı hamlelerden bir önceki sıranın başına kurulur.
   get undoAvailable() {
     if (this.net || this.replay || this.setup.daily) return false;
     if (this.state.puzzle) return true;
-    return (this.setup.players === 1 ? this.setup.level : this.setup.aiLevel) === 'kolay';
+    return (this.setup.players === 1 ? this.setup.level : this.setup.aiLevel) === 'easy';
   }
   get canUndo() {
-    return this.undoAvailable && this.view.phase === 'sen' && this.undoPoints.length >= 2 && (!!this.state.puzzle || this.undosLeft > 0);
+    return this.undoAvailable && this.view.phase === 'mine' && this.undoPoints.length >= 2 && (!!this.state.puzzle || this.undosLeft > 0);
   }
   get undosRemaining() { return this.state.puzzle ? null : this.undosLeft; }
 
@@ -639,7 +639,7 @@ export class GameController {
     for (const m of keep) { play(this.state, m); this.moves.push(m); }
     this.undoPoints = points;
     this.undosLeft = left;
-    this.view = { ...this.freshView(), clockStart, clockEnd, events: events.filter(e => e.round < this.state.round), phase: 'bekle', version: this.view.version + 1 };
+    this.view = { ...this.freshView(), clockStart, clockEnd, events: events.filter(e => e.round < this.state.round), phase: 'wait', version: this.view.version + 1 };
     this.toast(tr('Move undone'), 'info');
     this.saveGame();
     this.emit();
@@ -647,12 +647,12 @@ export class GameController {
   }
 
   cancel() {
-    if (this.view.phase === 'onizleme') this.emit({ phase: 'sen', sel: null });
+    if (this.view.phase === 'preview') this.emit({ phase: 'mine', sel: null });
   }
 
   toggleThreats() {
     if (!this.isMyMove()) return;
-    this.emit({ phase: 'sen', sel: null, showThreats: !this.view.showThreats });
+    this.emit({ phase: 'mine', sel: null, showThreats: !this.view.showThreats });
   }
 
   private autoMove() {
@@ -665,30 +665,30 @@ export class GameController {
     this.stopTicker();
     if (this.net?.role === 'guest') {
       this.net.send?.(move);
-      this.emit({ phase: 'bekle', sel: null, showThreats: false });
+      this.emit({ phase: 'wait', sel: null, showThreats: false });
       return;
     }
     const o = this.apply(move);
-    this.emit({ phase: 'bekle', sel: null, showThreats: false, bonus: null });
+    this.emit({ phase: 'wait', sel: null, showThreats: false, bonus: null });
     if (o) this.continueAfter(o, move?.type === 'take' ? 750 : 500); // aldığında kısa bir bekleyiş: an hissedilsin
   }
 
   // ------------------------------------------------------------ yapay zekâ oyuncular, İkiz ve botlar
 
   private starBotTurn(a: Piece) {
-    this.emit({ phase: 'rakip', timer: this.setup.moveSeconds });
+    this.emit({ phase: 'rival', timer: this.setup.moveSeconds });
     this.startTicker();
     this.later(900 + Math.random() * 700, () => {
       this.stopTicker();
       const o = this.apply(chooseMove(this.state, a));
-      this.emit({ phase: 'bekle' });
+      this.emit({ phase: 'wait' });
       if (o) this.continueAfter(o, 450);
     });
   }
 
   // İkiz senden hemen sonra, senin yönünde oynar; kısa bir arayla, ayrı bir bölüm açmadan.
   private twinTurn(a: Piece) {
-    this.emit({ phase: 'bekle' });
+    this.emit({ phase: 'wait' });
     this.later(260, () => {
       const o = this.apply(chooseMove(this.state, a));
       this.emit();
@@ -768,7 +768,7 @@ export class GameController {
 
   private modeChange() {
     feel('mode', BUZZ.mode);
-    this.emit({ phase: 'mod', modeOverlay: true });
+    this.emit({ phase: 'mode', modeOverlay: true });
     this.later(settings.fastBots ? 800 : 1300, () => {
       // Çökecek turun başında açık uyarı: bu tur sonunda dış halkada kalan elenir.
       if (collapseDue(this.state)) {
@@ -927,8 +927,8 @@ export class GameController {
     this.emit({ inspect: this.view.inspect === id ? null : id });
   }
   closeInspect() { if (this.view.inspect) this.emit({ inspect: null }); }
-  openResults() { this.emit({ sheet: { type: 'sonuc' } }); }
-  openLog() { this.emit({ sheet: { type: 'kayit' } }); }
+  openResults() { this.emit({ sheet: { type: 'results' } }); }
+  openLog() { this.emit({ sheet: { type: 'log' } }); }
   openMenu() { this.pause(); this.emit({ sheet: { type: 'menu' } }); }
   closeSheet() {
     if (!this.view.sheet) return;
@@ -954,7 +954,7 @@ export class GameController {
         }
         if (t <= 5) feel('tick', BUZZ.lastSeconds);
         this.emit({ timer: t });
-      } else if (this.view.phase === 'rakip') {
+      } else if (this.view.phase === 'rival') {
         this.emit({ timer: Math.max(0, t) });
         if (t <= 0 && this.waitingSeat != null) {
           const a = currentActor(this.state)!;

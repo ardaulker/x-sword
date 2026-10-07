@@ -15,7 +15,7 @@ export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: V
   const prev = previous(st, view);
   const head = items[0] ? pieceById(st, items[0].id) : null;
   const meNext = head?.kind === 'star' && head.seat === ME && !st.over;
-  const mine = meNext && (view.phase === 'sen' || view.phase === 'onizleme');
+  const mine = meNext && (view.phase === 'mine' || view.phase === 'preview');
   const myColor = PLAYER_COLORS[ME];
 
   // Yerleşim: her taş bir yuva; tur değişince araya "TUR n" ayracı girer.

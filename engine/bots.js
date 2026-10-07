@@ -1,15 +1,15 @@
-// X Sword botları.
-// Kolay:  ilk sürümdeki gibi — alabiliyorsa alır, yoksa en yakın yıldıza yürür.
-// Normal: bir sonraki hamlesinden önce alınacağı kareye gitmez, çöken halkada kalmaz,
-//         alamadığı yıldızı bırakıp en çabuk ulaşabileceği yıldıza yönelir.
-// Zor:    buna ek olarak hedef yıldızın güvenli kaçış karelerini daraltır (kuşatır).
+// X Sword bots.
+// Easy:   as in the first version — takes if it can, otherwise walks toward the nearest star.
+// Normal: never steps onto a square where it would be taken before its next move, never stays on a collapsing ring,
+//         and gives up on a star it can't reach in favor of the star it can reach fastest.
+// Hard:   on top of that it narrows the target star's safe escape squares (surrounds it).
 
 import {
   legalMoves, attackersOf, threatsFor, random, ringOf, inArena,
   walkDirs, takeDirs, nextMode, flip, twinMove, friendly, pieceById,
 } from './rules.js';
 
-export const LEVELS = ['kolay', 'normal', 'zor'];
+export const LEVELS = ['easy', 'normal', 'hard'];
 
 export function levelOf(state, piece) {
   return piece.kind === 'star' ? state.seats[piece.seat].level : state.neutralLevel;
@@ -19,19 +19,19 @@ export function chooseMove(state, piece, level = levelOf(state, piece)) {
   if (piece.kind === 'twin') return twinMove(state, piece);
   const moves = legalMoves(state, piece, state.mode);
   if (!moves.length) return null;
-  // Bulmacada botlar yürümez: yalnız menzillerine giren yıldızı alır, yoksa yerinde bekler.
+  // In puzzles bots don't walk: they only take a star that steps into their reach, otherwise they wait.
   if (state.puzzle && piece.kind !== 'star') return moves.find(m => m.type === 'take' && pieceById(state, m.targetId).kind === 'star') ?? null;
-  if (level === 'kolay') return easyMove(state, piece, moves);
+  if (level === 'easy') return easyMove(state, piece, moves);
   let best = moves[0], bestScore = -Infinity, second = null, secondScore = -Infinity;
   for (const m of moves) {
-    // Küçük rastgelelik: eşit hamleler arasında hep aynısını seçip tahmin edilir olmasın.
+    // A little randomness: among equal moves don't always pick the same one, so it isn't predictable.
     const score = scoreMove(state, piece, m, level) + random(state);
     if (score > bestScore) { second = best; secondScore = bestScore; bestScore = score; best = m; }
     else if (score > secondScore) { second = m; secondScore = score; }
   }
-  // Normal yapay zekâ oyuncu ara sıra ikinci en iyi hamleyi seçer (insan gibi hata yapar); Zor hiç yapmaz.
+  // A Normal AI player sometimes picks the second best move (it makes human-like mistakes); Hard never does.
   if (level === 'normal' && piece.kind === 'star' && second && second !== best && random(state) < SLIP) { best = second; bestScore = secondScore; }
-  // Yapay zekâ oyuncular bonus da kullanır, ama bedeli var: ancak kazancı büyükse (bir yıldızı almak, ölümden kaçmak).
+  // AI players use bonuses too, but at a cost: only when the gain is big (taking a star, escaping death).
   if (piece.kind === 'star') {
     for (const m of bonusMoves(state, piece, level)) {
       const score = scoreMove(state, piece, m, level) + random(state) - BONUS_COST[m.bonus];
@@ -45,13 +45,13 @@ const SLIP = 0.3;
 const HUNT_PULL = 20, HUNT_SQUEEZE = 30;
 const BONUS_COST = { step: 220, swap: 320, double: 200 };
 
-// Zırh kendiliğinden çalışır. Çift adım ve ayna normalde; çift hamle yalnız zorda ve yıldız alırken kullanılır.
+// Armor works by itself. Double step and mirror are used on Normal; double move only on Hard and only when taking a star.
 function bonusMoves(state, piece, level) {
-  if (level === 'kolay') return [];
+  if (level === 'easy') return [];
   const have = state.seats[piece.seat].bonuses;
   const out = [];
   for (const kind of ['step', 'swap', 'double']) {
-    if (!(have[kind] > 0) || (kind === 'double' && level !== 'zor')) continue;
+    if (!(have[kind] > 0) || (kind === 'double' && level !== 'hard')) continue;
     for (const m of legalMoves(state, piece, state.mode, kind)) {
       if (!m.bonus) continue;
       if (kind === 'double' && !(m.type === 'take' && state.pieces.find(p => p.id === m.targetId)?.kind === 'star')) continue;
@@ -77,15 +77,15 @@ function scoreMove(state, piece, m, level) {
   const target = m.type === 'take' ? state.pieces.find(p => p.id === m.targetId) : null;
   let s = 0;
   if (target) s += target.kind === 'star' ? 1000 : piece.kind === 'star' ? 120 : 10;
-  // Fırsatçı kişilik: her almayı fazla sever.
+  // Opportunist personality: loves every take a bit too much.
   if (target && piece.kind === 'star' && state.seats[piece.seat].persona === 'opportunist') s += 90;
 
-  // Güvenlik: bir sonraki hamlemden önce burada alınır mıyım, kare çöker mi?
+  // Safety: will I be taken here before my next move, will the square collapse?
   const { attackers, doomed } = threatsFor(state, piece, m);
   if (doomed) s -= 3000;
   if (attackers.length) s -= piece.kind === 'star' ? 900 : 600;
 
-  // Planı, taş hedef karedeymiş gibi değerlendir.
+  // Evaluate the plan as if the piece were already on the target square.
   const from = [piece.r, piece.c];
   piece.r = m.r; piece.c = m.c;
   if (target) target.alive = false;
@@ -104,7 +104,7 @@ function occupancy(state) {
   return g;
 }
 
-// Bu taş, yıldızı alabileceği bir kareye en az kaç hamlede varır (yolu kapalıysa Infinity).
+// The fewest moves for this piece to reach a square from which it can take the star (Infinity if blocked).
 function huntDistance(state, piece, star, grid) {
   const n = state.size;
   const walks = walkDirs(piece, state.mode);
@@ -134,15 +134,15 @@ function huntDistance(state, piece, star, grid) {
   return Infinity;
 }
 
-// Bir arena botunun şu an kovaladığı yıldız; ekrandaki hedef işareti bunu gösterir.
-// Kolay en yakın yıldıza yürür. Normal ve zor, en az hamlede alabileceği yıldıza yönelir;
-// hiçbirine yolu yoksa en yakınına sokulur.
+// The star an arena bot is chasing right now; the target marker on screen shows it.
+// Easy walks toward the nearest star. Normal and Hard head for the star they can take in the fewest moves;
+// if no star is reachable they creep toward the nearest one.
 export function targetOf(state, piece, level = levelOf(state, piece)) {
   if (piece.kind === 'star' || piece.kind === 'twin' || !piece.alive) return null;
   const stars = state.pieces.filter(p => p.kind === 'star' && p.alive);
   if (!stars.length) return null;
   const nearest = dist => stars.reduce((a, b) => (dist(b) < dist(a) ? b : a));
-  if (level === 'kolay') return nearest(s => Math.abs(s.r - piece.r) + Math.abs(s.c - piece.c));
+  if (level === 'easy') return nearest(s => Math.abs(s.r - piece.r) + Math.abs(s.c - piece.c));
   const grid = occupancy(state);
   let best = Infinity, target = null;
   for (const st of stars) {
@@ -152,8 +152,8 @@ export function targetOf(state, piece, level = levelOf(state, piece)) {
   return target || nearest(s => Math.max(Math.abs(s.r - piece.r), Math.abs(s.c - piece.c)));
 }
 
-// Yıldızın verilen moddaki güvenli seçenek sayısı: yürüyebileceği ya da alabileceği,
-// ve orada bir sonraki hamlesinden önce alınmayacağı kareler.
+// The star's number of safe options in the given mode: squares it can walk to or take on,
+// where it won't be taken before its next move.
 function escapes(state, star, mode, grid) {
   const n = state.size;
   let count = 0;
@@ -178,7 +178,7 @@ function escapes(state, star, mode, grid) {
   return count;
 }
 
-// Arena botu: en çabuk ulaşabileceği yıldıza yönel; zorda o yıldızın kaçış yollarını kapat.
+// Arena bot: head for the star it can reach fastest; on Hard close that star's escape routes.
 function hunterPlan(state, piece, level) {
   const stars = state.pieces.filter(p => p.kind === 'star' && p.alive);
   if (!stars.length) return 0;
@@ -189,32 +189,32 @@ function hunterPlan(state, piece, level) {
     if (d < best) { best = d; target = st; }
   }
   if (!target) {
-    // Yol kapalı: en azından yıldızlara doğru sokul.
+    // Path blocked: at least creep toward the stars.
     return -2 * Math.min(...stars.map(st => Math.max(Math.abs(st.r - piece.r), Math.abs(st.c - piece.c))));
   }
   let s = -12 * best;
-  if (level === 'zor') s -= 20 * escapes(state, target, nextMode(state, target), grid);
+  if (level === 'hard') s -= 20 * escapes(state, target, nextMode(state, target), grid);
   return s;
 }
 
-// Yapay zekâ oyuncu (bot yıldız): önce hayatta kal — gelecek turda güvenli seçeneği bol, ortaya yakın kareler.
+// AI player (bot star): survive first — squares with many safe options next round, close to the center.
 function starPlan(state, piece, level) {
   const persona = state.seats[piece.seat].persona;
   const grid = occupancy(state);
   const next = flip(state.mode);
-  // Temkinli: kaçış ve merkezi daha çok önemser. Avcı: kaçışı daha az, rakibi kovalamayı daha çok.
+  // Careful: cares more about escapes and the center. Hunter: less about escapes, more about chasing rivals.
   const escW = persona === 'careful' ? 16 : persona === 'hunter' ? 5 : 8;
   const ringW = persona === 'careful' ? 10 : 5;
   let s = escW * escapes(state, piece, next, grid);
   s += ringW * ringOf(state, piece.r, piece.c);
-  const hunting = (level === 'zor' && persona !== 'careful') || persona === 'hunter';
+  const hunting = (level === 'hard' && persona !== 'careful') || persona === 'hunter';
   if (hunting) {
     const rivals = state.pieces.filter(o => o.kind === 'star' && o.alive && o.id !== piece.id && !friendly(state, piece, o));
-    // Başka bir yıldızı bir sonraki hamlede alabileceği yerde dur: rakip kaçmak zorunda kalır.
+    // Stand where it could take another star on its next move: the rival is forced to run.
     for (const o of rivals) {
       if (takeDirs(piece, next).some(([dr, dc]) => piece.r + dr === o.r && piece.c + dc === o.c)) s += 25;
     }
-    // Avcı gibi davran: en çabuk ulaşabildiği rakip yıldıza sokul ve onun güvenli kaçışlarını daralt.
+    // Act like a hunter: close in on the rival star it can reach fastest and narrow its safe escapes.
     const boost = persona === 'hunter' ? 1.5 : 1;
     let best = Infinity, target = null;
     for (const o of rivals) {

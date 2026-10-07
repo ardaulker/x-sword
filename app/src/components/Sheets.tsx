@@ -128,7 +128,7 @@ export function CoachSheet({ step, onDone }: { step: number; onDone: () => void 
 
 // ------------------------------------------------------------ menü (ana menü gelene kadar)
 
-const levelLabels = (): [Level, string][] => [['kolay', tr('Easy')], ['normal', tr('Normal')], ['zor', tr('Hard')]];
+const levelLabels = (): [Level, string][] => [['easy', tr('Easy')], ['normal', tr('Normal')], ['hard', tr('Hard')]];
 
 export function Opt({ label, sub, on, onChange }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -243,7 +243,7 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
         {players === 1
           ? tr('You, your mirror Twin and {bots} arena bots · {size}×{size} board. Clear out every bot.', { bots: botCount, size })
           : tr('You and {ai} AI {ai:player|players} · {size}×{size} board · {bots} arena bots.', { ai: players - 1, size, bots: botCount })}
-        {level === 'kolay' ? tr(' You go first.') : level === 'zor' ? tr(" The bots' targets are hidden.") : ''}
+        {level === 'easy' ? tr(' You go first.') : level === 'hard' ? tr(" The bots' targets are hidden.") : ''}
       </div>
       {(onRules || onEnd) && (
         <div className="btn-row" style={{ marginBottom: 8 }}>
@@ -321,7 +321,7 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
   const killer = fatal?.attackerId ? pieceById(st, fatal.attackerId) : null;
   const why = fatal
     ? killer
-      ? tr('{name} took you ({how}) · round {n}', { name: subjectOf(st, killer), how: modeLower(fatal.round % 2 === 1 ? 'DUZ' : 'CAPRAZ'), n: fatal.round })
+      ? tr('{name} took you ({how}) · round {n}', { name: subjectOf(st, killer), how: modeLower(fatal.round % 2 === 1 ? 'STRAIGHT' : 'DIAGONAL'), n: fatal.round })
       : tr('You were caught in the ring · round {n}', { n: fatal.round })
     : '';
   if (st.puzzle && onPuzzle) {

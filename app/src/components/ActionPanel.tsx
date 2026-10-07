@@ -63,7 +63,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
   const time = useMatchTime(view.clockStart, view.clockEnd);
 
   // ---------------------------------------------------------- oyun sonu
-  if (view.phase === 'bitti') {
+  if (view.phase === 'over') {
     const won = isWinner(st, ME);
     const mine = st.seats[ME];
     const order = ranking(st);
@@ -136,7 +136,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
   }
 
   // ---------------------------------------------------------- önizleme
-  if (view.phase === 'onizleme' && view.sel) {
+  if (view.phase === 'preview' && view.sel) {
     const sel = view.sel;
     const victim = sel.type === 'take' && sel.targetId ? pieceById(st, sel.targetId) : null;
     const { attackers, doomed } = threatsFor(st, me, sel);
@@ -170,7 +170,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
   }
 
   // ---------------------------------------------------------- seni alabilecekler
-  if (view.phase === 'sen' && view.showThreats) {
+  if (view.phase === 'mine' && view.showThreats) {
     const th = attackersOfMe(st, me);
     return (
       <section className="panel" aria-label={tr('Pieces that can take you')}>
@@ -234,7 +234,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
   let title = '', sub = '', hint = '', hintColor = TXT2, border: string | undefined, glow: string | undefined;
   let timer: number | null = null, barColor = myColor;
 
-  if (view.phase === 'sen') {
+  if (view.phase === 'mine') {
     who = me; timer = t; title = tr('Your turn'); sub = tr('Tap one of the lit squares');
     const threats = attackersOfMe(st, me).length;
     // Bulmacanın kendi ipucu tehdit uyarısından önce gelir: eğitim ipuçları hep okunsun, tehlike zaten çizgili karelerde görünür.
@@ -250,18 +250,18 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
       hint = tr('If time runs out, the game plays a safe move for you.'); hintColor = TXT2;
       border = DANGER; glow = '0 0 0 3px rgba(255,59,92,.18)';
     }
-  } else if (view.phase === 'rakip' && actor) {
+  } else if (view.phase === 'rival' && actor) {
     who = actor; timer = t; barColor = colorOf(actor);
     title = tr('{name} is playing', { name: actor.kind === 'star' ? seatName(st, actor.seat) : labelOf(st, actor) });
     const next = pieceById(st, st.order[st.turn + 1]);
     sub = !next ? tr('Next: new round') : next.kind === 'star' ? tr('Next: {name}', { name: labelOf(st, next) }) : tr('Next: bots');
     hint = me.alive ? untilMe(st, me) : tr("You're watching. Tap a piece: its paths show on the board.");
-  } else if (view.phase === 'mod') {
+  } else if (view.phase === 'mode') {
     const first = actor?.kind === 'star' ? actor : null;
     who = first; title = tr('Mode changed: {mode}', { mode: modeWord(st.mode) });
     sub = `${tr('Round {n}', { n: st.round })}${first ? ` · ${tr('{name} goes first', { name: labelOf(st, first) })}` : ''}`;
     hint = tr('Stars now move {mode} and take {mode}.', { mode: modeLower(st.mode) });
-  } else if (view.phase === 'hazir') {
+  } else if (view.phase === 'ready') {
     const k = st.matchOrder.indexOf(me.id) + 1;
     who = me; title = tr('Match starting'); sub = tr("Round 1 · {mode} · you're {k} of {total}", { mode: modeWord(st.mode), k, total: st.matchOrder.length });
     hint = k === 1 ? tr('You play first. The order stays the same all match.') : tr('{n} {n:piece plays|pieces play} before you. The order stays the same all match.', { n: k - 1 });
@@ -282,19 +282,19 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
             <div className="panel-sub">{sub}</div>
           </div>
           {timer != null && (
-            <div className={`panel-timer${lastSeconds && view.phase === 'sen' ? ' is-pulse' : ''}`} style={{ color: view.phase === 'sen' ? timerColor : TXT }}>
+            <div className={`panel-timer${lastSeconds && view.phase === 'mine' ? ' is-pulse' : ''}`} style={{ color: view.phase === 'mine' ? timerColor : TXT }}>
               {timer}
             </div>
           )}
         </div>
         {timer != null && (
           <div className="bar" aria-hidden="true">
-            <div style={{ width: `${Math.max(0, Math.min(100, Math.round((timer / total) * 100)))}%`, background: view.phase === 'sen' && lastSeconds ? DANGER : barColor }} />
+            <div style={{ width: `${Math.max(0, Math.min(100, Math.round((timer / total) * 100)))}%`, background: view.phase === 'mine' && lastSeconds ? DANGER : barColor }} />
           </div>
         )}
         <div className="panel-hint" style={{ color: hintColor }}>{hint}</div>
-        {view.phase === 'sen' && <BonusBar ctl={ctl} view={view} />}
-        {view.phase === 'sen' && (ctl.undoAvailable || (st.puzzle && onPuzzle)) && (
+        {view.phase === 'mine' && <BonusBar ctl={ctl} view={view} />}
+        {view.phase === 'mine' && (ctl.undoAvailable || (st.puzzle && onPuzzle)) && (
           <div className="mini-row">
             {ctl.undoAvailable && (
               <button type="button" className="btn btn-ghost btn-undo" disabled={!ctl.canUndo} onClick={() => ctl.undo()}>

@@ -12,7 +12,7 @@
   display: grid; grid-template-columns: repeat(9, 40px); gap: 4px; pointer-events: none;
 }
 .menu-deco div {
-  width: 40px; height: 40px; background: var(--kare);
+  width: 40px; height: 40px; background: var(--square);
   clip-path: polygon(26% 0, 74% 0, 100% 26%, 100% 74%, 74% 100%, 26% 100%, 0 74%, 0 26%);
 }
 
@@ -26,12 +26,12 @@
 }
 .menu-pill {
   display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 14px; border-radius: 17px;
-  border: 1px solid #2B3670; background: rgba(11, 16, 38, .7); font-size: 13px; font-weight: 600; color: var(--metin-2);
+  border: 1px solid #2B3670; background: rgba(11, 16, 38, .7); font-size: 13px; font-weight: 600; color: var(--text-2);
 }
 
 .menu-actions { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
 .menu-play {
-  height: 68px; border: 0; border-radius: 18px; background: var(--oyuncu-1); color: var(--murekkep);
+  height: 68px; border: 0; border-radius: 18px; background: var(--player-1); color: var(--ink);
   display: flex; align-items: center; gap: 14px; padding: 0 20px; text-align: left;
   box-shadow: 0 10px 30px rgba(59, 255, 143, .25);
 }
@@ -40,18 +40,18 @@
 .menu-play-text span { font-size: 13px; font-weight: 600; opacity: .75; }
 .menu-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .menu-btn {
-  position: relative; height: 58px; border-radius: 16px; border: 1.5px solid var(--cizgi-2);
-  background: rgba(18, 26, 58, .85); color: var(--metin-1);
+  position: relative; height: 58px; border-radius: 16px; border: 1.5px solid var(--line-2);
+  background: rgba(18, 26, 58, .85); color: var(--text-1);
   display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 700;
 }
 .menu-link {
-  height: 48px; border: 0; border-radius: 14px; background: transparent; color: var(--metin-2);
+  height: 48px; border: 0; border-radius: 14px; background: transparent; color: var(--text-2);
   display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 600;
 }
 .menu-btn:disabled, .menu-link:disabled { opacity: .55; cursor: default; }
 .menu-soon {
   font: 700 10px var(--font-display); letter-spacing: .08em; text-transform: uppercase;
-  padding: 2px 6px; border-radius: 6px; background: var(--yuzey-3); color: var(--metin-2);
+  padding: 2px 6px; border-radius: 6px; background: var(--surface-3); color: var(--text-2);
 }
 .menu-btn .menu-soon { position: absolute; top: -8px; right: 8px; }
 
@@ -72,6 +72,6 @@
 .menu-profile {
   position: absolute; z-index: 2; top: calc(env(safe-area-inset-top) + 10px); right: 14px; max-width: 60%;
   display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px 0 5px; border-radius: 20px;
-  border: 1px solid #2B3670; background: rgba(11, 16, 38, .75); color: var(--metin-1); font: 700 14px var(--font-ui);
+  border: 1px solid #2B3670; background: rgba(11, 16, 38, .75); color: var(--text-1); font: 700 14px var(--font-ui);
 }
 .menu-profile span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

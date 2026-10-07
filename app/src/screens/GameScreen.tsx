@@ -28,11 +28,11 @@ const GAP = 6;
 
 function announce(ctl: GameController, view: View) {
   const st = ctl.state;
-  if (view.phase === 'bitti') return isWinner(st, 0) ? tr('You won!') : tr('Match over.');
-  if (view.phase === 'sen') return tr('Your turn.');
+  if (view.phase === 'over') return isWinner(st, 0) ? tr('You won!') : tr('Match over.');
+  if (view.phase === 'mine') return tr('Your turn.');
   if (view.phase === 'bot') return tr('Bots are playing.');
-  if (view.phase === 'mod') return tr('New round. Mode {mode}.', { mode: modeWord(st.mode) });
-  if (view.phase === 'rakip') {
+  if (view.phase === 'mode') return tr('New round. Mode {mode}.', { mode: modeWord(st.mode) });
+  if (view.phase === 'rival') {
     const a = currentActor(st);
     return a ? tr('{name} is playing.', { name: labelOf(st, a) }) : '';
   }
@@ -97,7 +97,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
   const zoomed = canZoom && zoom;
   const cellZ = zoomed ? Math.max(cell, 34) : cell;
   const areaRef = useRef<HTMLDivElement>(null);
-  const myTurnNow = view.phase === 'sen';
+  const myTurnNow = view.phase === 'mine';
   useEffect(() => {
     const a = areaRef.current;
     if (!a || !zoomed) return;
@@ -154,9 +154,9 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
         ? [stageEl, <div key="side" className="land-side">{bars}<ActionPanel ctl={ctl} view={view} net={net} onPuzzle={goPuzzle} /></div>]
         : [<Fragment key="bars">{bars}</Fragment>, stageEl]}
 
-      {sheet?.type === 'ipucu' && <CoachSheet step={sheet.step} onDone={() => ctl.closeCoach()} />}
-      {sheet?.type === 'kayit' && <LogSheet ctl={ctl} events={view.events} />}
-      {sheet?.type === 'sonuc' && (
+      {sheet?.type === 'coach' && <CoachSheet step={sheet.step} onDone={() => ctl.closeCoach()} />}
+      {sheet?.type === 'log' && <LogSheet ctl={ctl} events={view.events} />}
+      {sheet?.type === 'results' && (
         <ResultsSheet
           ctl={ctl} time={matchTime} onClose={() => ctl.closeSheet()}
           onAgain={net ? net.onRematch : () => ctl.newGame()} againLabel={net ? tr('Back to lobby') : tr('Rematch')}

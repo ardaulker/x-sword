@@ -3,112 +3,112 @@
 
 :root {
   /* Zemin ve yüzey */
-  --zemin: #0B1026;
-  --zemin-degrade: radial-gradient(130% 55% at 50% 0%, #141E48 0%, #0B1026 62%);
-  --yuzey-1: #121A3A;
-  --yuzey-2: #1A2452;
-  --yuzey-3: #232D5E;
-  --yuzey-derin: #0E1534;
-  --tahta-cerceve: #0D1431;
-  --kare: #1A2452;
-  --kare-2: #1D2858;
-  --bosluk: #070B1E;
-  --cizgi: #26306A;
-  --cizgi-2: #3A4785;
-  --cizgi-ayrac: #1E2754;
+  --bg: #0B1026;
+  --bg-gradient: radial-gradient(130% 55% at 50% 0%, #141E48 0%, #0B1026 62%);
+  --surface-1: #121A3A;
+  --surface-2: #1A2452;
+  --surface-3: #232D5E;
+  --surface-deep: #0E1534;
+  --board-frame: #0D1431;
+  --square: #1A2452;
+  --square-2: #1D2858;
+  --void: #070B1E;
+  --line: #26306A;
+  --line-2: #3A4785;
+  --line-divider: #1E2754;
 
   /* Metin */
-  --metin-1: #EEF2FF;
-  --metin-2: #A9B4DA;
-  --metin-3: #8591BE; /* yalnız 12px ve üstü */
-  --murekkep: #0B1026; /* açık zeminde metin, taş içi işaretler */
+  --text-1: #EEF2FF;
+  --text-2: #A9B4DA;
+  --text-3: #8591BE; /* yalnız 12px ve üstü */
+  --ink: #0B1026; /* açık zeminde metin, taş içi işaretler */
 
   /* Mod */
   --ice: #E9F0FF; /* DÜZ zemin, açık buton */
 
   /* Oyuncular (renk + amblem) */
-  --oyuncu-1: #3BFF8F; /* Neon · daire */
-  --oyuncu-2: #FFC53D; /* Güneş · üçgen */
-  --oyuncu-3: #FF5CC0; /* Fuşya · çift çizgi */
-  --oyuncu-4: #B392FF; /* Lavanta · halka */
+  --player-1: #3BFF8F; /* Neon · daire */
+  --player-2: #FFC53D; /* Güneş · üçgen */
+  --player-3: #FF5CC0; /* Fuşya · çift çizgi */
+  --player-4: #B392FF; /* Lavanta · halka */
   /* Renk körü modu */
-  --rk-oyuncu-1: #56E0A6;
-  --rk-oyuncu-2: #F5D43B;
-  --rk-oyuncu-3: #FF8A5C;
-  --rk-oyuncu-4: #8FB8FF;
+  --cb-player-1: #56E0A6;
+  --cb-player-2: #F5D43B;
+  --cb-player-3: #FF8A5C;
+  --cb-player-4: #8FB8FF;
 
   /* Botlar (bilerek soluk) */
-  --bot-kizil: #D3765B; /* kare + × */
-  --bot-celik: #6F98DA; /* elmas + + */
+  --bot-red: #D3765B; /* kare + × */
+  --bot-blue: #6F98DA; /* elmas + + */
 
   /* Durumlar */
   --danger: #FF3B5C;
-  --danger-metin: #FF9AAC;
+  --danger-text: #FF9AAC;
   --hazard: #FF8A3D;
-  --hazard-metin: #FFB27F;
-  --vurus-parlama: #FFF6C9;
+  --hazard-text: #FFB27F;
+  --hit-flash: #FFF6C9;
 
   /* Desenler */
   --pat-danger: repeating-linear-gradient(-45deg, rgba(255,59,92,.6) 0 2px, rgba(255,59,92,.12) 2px 6px), #2A1B3E;
   --pat-hazard: repeating-linear-gradient(45deg, rgba(255,138,61,.55) 0 3px, rgba(255,138,61,.12) 3px 8px), #241B33;
-  --pat-git: linear-gradient(rgba(59,255,143,.18), rgba(59,255,143,.18)), #1A2452;
-  --tex-duz: repeating-linear-gradient(0deg, rgba(233,240,255,.09) 0 1.5px, transparent 1.5px 8px), repeating-linear-gradient(90deg, rgba(233,240,255,.09) 0 1.5px, transparent 1.5px 8px), #0D1431;
-  --tex-capraz: repeating-linear-gradient(45deg, rgba(233,240,255,.09) 0 1.5px, transparent 1.5px 8px), repeating-linear-gradient(-45deg, rgba(233,240,255,.09) 0 1.5px, transparent 1.5px 8px), #0D1431;
-  --mod-capraz-zemin: repeating-linear-gradient(45deg, rgba(233,240,255,.10) 0 2px, transparent 2px 10px), repeating-linear-gradient(-45deg, rgba(233,240,255,.10) 0 2px, transparent 2px 10px), #0B1026;
+  --pat-go: linear-gradient(rgba(59,255,143,.18), rgba(59,255,143,.18)), #1A2452;
+  --tex-straight: repeating-linear-gradient(0deg, rgba(233,240,255,.09) 0 1.5px, transparent 1.5px 8px), repeating-linear-gradient(90deg, rgba(233,240,255,.09) 0 1.5px, transparent 1.5px 8px), #0D1431;
+  --tex-diagonal: repeating-linear-gradient(45deg, rgba(233,240,255,.09) 0 1.5px, transparent 1.5px 8px), repeating-linear-gradient(-45deg, rgba(233,240,255,.09) 0 1.5px, transparent 1.5px 8px), #0D1431;
+  --mode-diagonal-bg: repeating-linear-gradient(45deg, rgba(233,240,255,.10) 0 2px, transparent 2px 10px), repeating-linear-gradient(-45deg, rgba(233,240,255,.10) 0 2px, transparent 2px 10px), #0B1026;
 
   /* Yazı */
   --font-display: 'Oxanium', 'Chakra Petch', system-ui, sans-serif;
   --font-ui: 'Barlow', system-ui, sans-serif;
-  --fs-mod-dev: 46px;    /* mod kartı, 64 masaüstü */
-  --fs-baslik-xl: 34px;
-  --fs-mod: 28px;        /* 48 masaüstü */
-  --fs-sayac: 34px;      /* 40 masaüstü */
-  --fs-panel-baslik: 18px;
-  --fs-buton: 16px;
-  --fs-govde: 15px;
-  --fs-ipucu: 13px;
-  --fs-etiket: 13px;     /* Oxanium 700, letter-spacing .14em */
-  --fs-mikro: 11px;
+  --fs-mode-xl: 46px;    /* mod kartı, 64 masaüstü */
+  --fs-title-xl: 34px;
+  --fs-mode: 28px;        /* 48 masaüstü */
+  --fs-counter: 34px;      /* 40 masaüstü */
+  --fs-panel-title: 18px;
+  --fs-button: 16px;
+  --fs-body: 15px;
+  --fs-hint: 13px;
+  --fs-label: 13px;     /* Oxanium 700, letter-spacing .14em */
+  --fs-micro: 11px;
 
   /* Köşe ve boşluk */
   --r-sm: 10px;
   --r-md: 14px;
   --r-lg: 20px;
   --r-xl: 24px;
-  --r-hap: 999px;
-  --hedef-min: 44px;
-  --bosluk-1: 4px;
-  --bosluk-2: 8px;
-  --bosluk-3: 12px;
-  --bosluk-4: 16px;
-  --bosluk-5: 24px;
+  --r-pill: 999px;
+  --target-min: 44px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
 
   /* Sekizgen kesik oranı */
-  --kesik-9: 26%;
-  --kesik-11: 22%;
-  --kesik-13: 18%;
+  --chamfer-9: 26%;
+  --chamfer-11: 22%;
+  --chamfer-13: 18%;
 
   /* Hareket */
-  --ease-kay: cubic-bezier(.2,.8,.2,1);
-  --ease-yay: cubic-bezier(.34,1.56,.64,1);
-  --ease-mod: cubic-bezier(.6,0,.2,1);
-  --t-yildiz: 220ms;
+  --ease-slide: cubic-bezier(.2,.8,.2,1);
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --ease-mode: cubic-bezier(.6,0,.2,1);
+  --t-star: 220ms;
   --t-bot: 130ms;
-  --t-secim: 120ms;
-  --t-vurus-parlama: 80ms;
-  --t-vurus-patlama: 160ms;
-  --t-olum: 180ms;
-  --t-mod: 700ms;
-  --t-mod-bant: 360ms;
-  --t-sekil: 320ms;
-  --t-panel-ac: 240ms;
-  --t-panel-kapa: 180ms;
-  --t-halka-kare: 220ms;
-  --hiz-carpan: 1; /* Yavaş 1.45 · Normal 1 · Hızlı 0.65 */
+  --t-select: 120ms;
+  --t-hit-flash: 80ms;
+  --t-hit-burst: 160ms;
+  --t-death: 180ms;
+  --t-mode: 700ms;
+  --t-mode-band: 360ms;
+  --t-shape: 320ms;
+  --t-panel-open: 240ms;
+  --t-panel-close: 180ms;
+  --t-ring-square: 220ms;
+  --speed-factor: 1; /* Yavaş 1.45 · Normal 1 · Hızlı 0.65 */
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { --t-yildiz: 120ms; --t-bot: 120ms; --t-mod-bant: 0ms; --t-sekil: 120ms; }
+  :root { --t-star: 120ms; --t-bot: 120ms; --t-mode-band: 0ms; --t-shape: 120ms; }
 }
 
 /* Sekizgen kare */

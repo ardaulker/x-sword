@@ -7,7 +7,7 @@ import { tr } from '../i18n';
 // Mod değişimi: tahtayı kapatmayan sakin bir işaret. Desenli bant tahtanın üstünden bir kez geçer,
 // üstte kısa bir şerit yeni modu söyler; mod çubuğu da aynı anda döner.
 export function ModeOverlay({ mode, round }: { mode: Mode; round: number }) {
-  const duz = mode === 'DUZ';
+  const duz = mode === 'STRAIGHT';
   return (
     <div className="mode-ov" aria-hidden="true">
       <div className="mode-ov-band" style={{ '--band-rot': duz ? '0deg' : '-45deg' } as CSSProperties} />
@@ -21,7 +21,7 @@ export function ModeOverlay({ mode, round }: { mode: Mode; round: number }) {
 }
 
 export function ModeIcon({ mode, size, stroke }: { mode: Mode; size: number; stroke: number }) {
-  const duz = mode === 'DUZ';
+  const duz = mode === 'STRAIGHT';
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" style={{ flex: 'none', overflow: 'visible' }} aria-hidden="true">
       <polygon points={duz ? SQUARE_POINTS : DIAMOND_POINTS} fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinejoin="round" />

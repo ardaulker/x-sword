@@ -3,7 +3,7 @@
 .board-frame {
   position: relative; flex: none; border-radius: 16px; box-sizing: border-box;
   touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
-  transition: background calc(var(--t-mod) * var(--hiz-carpan)) var(--ease-mod);
+  transition: background calc(var(--t-mode) * var(--speed-factor)) var(--ease-mode);
 }
 .board-frame:focus-visible { outline: 2px solid var(--ice); outline-offset: 3px; }
 
@@ -17,7 +17,7 @@
 .cell-soon { box-shadow: inset 0 0 0 2px rgba(255, 138, 61, .45); }
 
 /* Halka çöküşü: kareler sırayla parlar, içe göçer, karanlık boşluk olarak döner. */
-.cell-fall { animation: cell-fall calc(420ms * var(--hiz-carpan)) ease-in backwards; }
+.cell-fall { animation: cell-fall calc(420ms * var(--speed-factor)) ease-in backwards; }
 @keyframes cell-fall {
   0% { transform: scale(1); background: var(--pat-hazard); filter: brightness(1.8); }
   55% { transform: scale(.35); opacity: .3; }
@@ -25,7 +25,7 @@
 }
 
 /* Çökecek halka: şerit dışa akar. */
-.cell-flow { animation: hazard-flow calc(1200ms * var(--hiz-carpan)) linear infinite; }
+.cell-flow { animation: hazard-flow calc(1200ms * var(--speed-factor)) linear infinite; }
 @keyframes hazard-flow { to { background-position: 11.31px 0; } }
 
 .board-layer { position: absolute; pointer-events: none; }
@@ -44,10 +44,10 @@
 @media (prefers-reduced-motion: reduce) { .ring-trace { animation: none; } }
 
 .board-line { position: absolute; z-index: 1; transform-origin: 0 50%; }
-.board-trail { opacity: 0; animation: trail-fade calc(700ms * var(--hiz-carpan)) ease-out; }
+.board-trail { opacity: 0; animation: trail-fade calc(700ms * var(--speed-factor)) ease-out; }
 @keyframes trail-fade { 0%, 35% { opacity: .7; } 100% { opacity: 0; } }
 
-.board-burst { position: absolute; z-index: 4; animation: burst calc(240ms * var(--hiz-carpan)) ease-out forwards; }
+.board-burst { position: absolute; z-index: 4; animation: burst calc(240ms * var(--speed-factor)) ease-out forwards; }
 .board-burst svg { width: 100%; height: 100%; overflow: visible; }
 @keyframes burst {
   0% { transform: scale(.6); opacity: 1; filter: brightness(1.6); }
@@ -58,32 +58,32 @@
 .board-piece {
   position: absolute; left: 0; top: 0;
   transition:
-    transform calc(var(--t-bot) * var(--hiz-carpan)) var(--ease-kay),
-    opacity calc(var(--t-olum) * var(--hiz-carpan)) ease-in;
+    transform calc(var(--t-bot) * var(--speed-factor)) var(--ease-slide),
+    opacity calc(var(--t-death) * var(--speed-factor)) ease-in;
 }
-.board-piece.is-star { z-index: 3; transition-duration: calc(var(--t-yildiz) * var(--hiz-carpan)), calc(var(--t-olum) * var(--hiz-carpan)); }
+.board-piece.is-star { z-index: 3; transition-duration: calc(var(--t-star) * var(--speed-factor)), calc(var(--t-death) * var(--speed-factor)); }
 .board-piece.is-bot { z-index: 2; }
 
 .board-ghost {
   position: absolute; left: 0; top: 0; z-index: 1; opacity: .85;
-  animation: ghost-in calc(var(--t-secim) * var(--hiz-carpan)) ease-out;
+  animation: ghost-in calc(var(--t-select) * var(--speed-factor)) ease-out;
 }
 @keyframes ghost-in { from { opacity: 0; } }
 
 /* Senin aldığın taş: daha büyük patlama ve puan. */
-.board-burst.is-big { animation: burst-big calc(520ms * var(--hiz-carpan)) ease-out forwards; }
+.board-burst.is-big { animation: burst-big calc(520ms * var(--speed-factor)) ease-out forwards; }
 @keyframes burst-big {
   0% { transform: scale(.5); opacity: 1; filter: brightness(2); }
   30% { transform: scale(1.15); opacity: 1; filter: brightness(1.2); }
   100% { transform: scale(1.9); opacity: 0; }
 }
-.board-float.is-big { font-size: 28px; text-shadow: 0 0 10px currentColor, 0 0 3px #0B1026; animation-duration: calc(1500ms * var(--hiz-carpan)); z-index: 6; }
+.board-float.is-big { font-size: 28px; text-shadow: 0 0 10px currentColor, 0 0 3px #0B1026; animation-duration: calc(1500ms * var(--speed-factor)); z-index: 6; }
 
 /* Alınan taşın puanı: kareden yukarı süzülür. */
 .board-float {
   position: absolute; z-index: 5; transform: translate(-50%, 0); pointer-events: none;
   font: 800 16px var(--font-display); text-shadow: 0 0 6px rgba(11, 16, 38, .9), 0 0 2px #0B1026; white-space: nowrap;
-  animation: float-up calc(1000ms * var(--hiz-carpan)) var(--ease-kay) forwards;
+  animation: float-up calc(1000ms * var(--speed-factor)) var(--ease-slide) forwards;
 }
 @keyframes float-up {
   0% { transform: translate(-50%, 4px) scale(.7); opacity: 0; }
@@ -98,7 +98,7 @@
 .halo-ring { border: 2px dashed var(--hazard); }
 .halo-me { border: 2px solid; opacity: .5; animation: halo-me 2.4s ease-in-out infinite; }
 @keyframes halo-me { 0%, 100% { transform: scale(1); opacity: .3; } 50% { transform: scale(1.1); opacity: .75; } }
-.twin-ghost { z-index: 4; opacity: .75; filter: saturate(.7) drop-shadow(0 0 4px #fff); transition: none; animation: ghost-in calc(var(--t-secim) * var(--hiz-carpan)) ease-out; }
+.twin-ghost { z-index: 4; opacity: .75; filter: saturate(.7) drop-shadow(0 0 4px #fff); transition: none; animation: ghost-in calc(var(--t-select) * var(--speed-factor)) ease-out; }
 .halo-threat { border: 2px dashed var(--danger); }
 .halo-current { border: 2px solid #FFFFFF; }
 .halo-pinned { border: 2.5px solid #FFFFFF; box-shadow: 0 0 0 4px rgba(255, 255, 255, .2); }
@@ -107,20 +107,20 @@
 .pip {
   position: absolute; left: -4px; top: -4px; z-index: 1; min-width: 13px; height: 13px; padding: 0 2px;
   border-radius: 7px; font: 700 8.5px/13px var(--font-display); text-align: center;
-  box-shadow: 0 0 0 1.5px var(--murekkep); pointer-events: none;
+  box-shadow: 0 0 0 1.5px var(--ink); pointer-events: none;
   transition: background 160ms, color 160ms, transform 160ms;
 }
-.pip-idle { background: var(--yuzey-3); color: var(--metin-2); }
-.pip-next { background: #6F7FB8; color: var(--metin-1); }
-.pip-now { background: var(--ice); color: var(--murekkep); transform: scale(1.2); }
+.pip-idle { background: var(--surface-3); color: var(--text-2); }
+.pip-next { background: #6F7FB8; color: var(--text-1); }
+.pip-now { background: var(--ice); color: var(--ink); transform: scale(1.2); }
 .armor-badge {
   position: absolute; right: -4px; bottom: -4px; z-index: 1; width: 14px; height: 14px; border-radius: 4px 4px 7px 7px;
-  background: var(--ice); box-shadow: 0 0 0 1.5px var(--murekkep);
+  background: var(--ice); box-shadow: 0 0 0 1.5px var(--ink);
 }
 .threat-badge {
   position: absolute; right: -6px; top: -6px; z-index: 1; width: 16px; height: 16px; border-radius: 8px;
-  background: var(--danger); color: var(--murekkep); font: 800 11px/16px var(--font-display); text-align: center;
-  box-shadow: 0 0 0 2px var(--murekkep);
+  background: var(--danger); color: var(--ink); font: 800 11px/16px var(--font-display); text-align: center;
+  box-shadow: 0 0 0 2px var(--ink);
 }
 
 /* Mod değişimi */
@@ -130,8 +130,8 @@
 }
 .mode-ov-pill {
   position: relative; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 20px;
-  background: var(--ice); color: var(--murekkep); box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
-  animation: pill-in calc(1300ms * var(--hiz-carpan)) var(--ease-kay) forwards;
+  background: var(--ice); color: var(--ink); box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
+  animation: pill-in calc(1300ms * var(--speed-factor)) var(--ease-slide) forwards;
 }
 .mode-ov-pill b { font: 800 18px var(--font-display); letter-spacing: .08em; }
 .mode-ov-pill span { font-size: 12px; font-weight: 700; opacity: .7; }
@@ -140,7 +140,7 @@
   position: absolute; left: -30%; top: calc(50% - 42px); width: 160%; height: 84px;
   background: repeating-linear-gradient(90deg, rgba(233, 240, 255, .24) 0 3px, transparent 3px 12px);
   transform: rotate(var(--band-rot));
-  animation: band-sweep calc(var(--t-mod-bant) * var(--hiz-carpan)) var(--ease-mod);
+  animation: band-sweep calc(var(--t-mode-band) * var(--speed-factor)) var(--ease-mode);
 }
 @keyframes band-sweep { from { transform: rotate(var(--band-rot)) translateY(-260px); } }
 
@@ -149,11 +149,11 @@
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 6; pointer-events: none;
   display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: 16px;
   background: rgba(11, 16, 38, .94); white-space: nowrap;
-  animation: banner-in calc(var(--t-panel-ac) * var(--hiz-carpan)) var(--ease-kay);
+  animation: banner-in calc(var(--t-panel-open) * var(--speed-factor)) var(--ease-slide);
 }
 .center-banner-text { display: flex; flex-direction: column; gap: 2px; }
 .center-banner-text span:first-child { font-size: 17px; font-weight: 700; }
-.center-banner-text span:last-child { font-size: 13px; font-weight: 500; color: var(--metin-2); }
+.center-banner-text span:last-child { font-size: 13px; font-weight: 500; color: var(--text-2); }
 @keyframes banner-in { from { opacity: 0; transform: translate(-50%, -40%); } }
 
 @media (prefers-reduced-motion: reduce) {

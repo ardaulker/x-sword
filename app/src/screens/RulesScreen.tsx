@@ -78,7 +78,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         <h2>{tr('Board')}</h2>
         <Card title={tr('The arena shrinks')} visual={<div className="anim-ring">{Array.from({ length: 25 }, (_, i) => {
           const r = Math.floor(i / 5), c = i % 5, edge = r === 0 || c === 0 || r === 4 || c === 4;
-          return <div key={i} className={edge ? 'cell-flow' : ''} style={{ background: edge ? 'var(--pat-hazard)' : 'var(--kare)' }} />;
+          return <div key={i} className={edge ? 'cell-flow' : ''} style={{ background: edge ? 'var(--pat-hazard)' : 'var(--square)' }} />;
         })}</div>}>
           <p>{tr('Every 6 rounds (6th, 12th, 18th), the outermost ring collapses at the end of the round.')}</p>
           <p>{tr('One round before, the ring gets a thin orange edge; in the collapsing round it is marked with orange stripes. A piece left there is out. Move inward!')}</p>

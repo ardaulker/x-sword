@@ -27,8 +27,8 @@ export function PlayerStrip({ ctl, view, compact }: { ctl: GameController; view:
   const st = ctl.state;
   const four = st.seats.length >= 4;
   const narrow = st.seats.length >= 3 || st.solo; // dar kutuda skor adın altına iner
-  const actor = view.phase === 'bitti' ? null : currentActor(st);
-  const timed = view.phase === 'sen' || view.phase === 'onizleme' || view.phase === 'rakip';
+  const actor = view.phase === 'over' ? null : currentActor(st);
+  const timed = view.phase === 'mine' || view.phase === 'preview' || view.phase === 'rival';
   return (
     <div className="strip">
       {st.seats.map(seat => {

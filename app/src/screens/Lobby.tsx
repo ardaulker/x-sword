@@ -10,7 +10,7 @@ import type { AnyRoom } from '../net/room';
 import './Lobby.css';
 import { tr } from '../i18n';
 
-const levels = (): [Level, string][] => [['kolay', tr('Easy')], ['normal', tr('Normal')], ['zor', tr('Hard')]];
+const levels = (): [Level, string][] => [['easy', tr('Easy')], ['normal', tr('Normal')], ['hard', tr('Hard')]];
 
 export const inviteLink = (code: string) =>
   `${location.origin}${location.pathname}#/katil/${code}`;
