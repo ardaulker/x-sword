@@ -85,8 +85,7 @@ const dict: Record<string, string> = {
   'Arena daha fazla daralmaz': 'L\'arène ne rétrécira plus',
   'Halka çöküyor': 'L\'anneau s\'effondre',
   'Çöküyor': 'S\'effondre',
-  'Halka {k} tur sonra': 'Anneau dans {k} {k:tour|tours}',
-  '{k} tur sonra': 'dans {k} {k:tour|tours}',
+  'Daralma: {k} tur': 'Réduction : {k} {k:tour|tours}',
   'Dış halka {k} tur sonra çökecek': 'L\'anneau extérieur s\'effondre dans {k} {k:tour|tours}',
   'İZLEYİCİ · ': 'SPECTATEUR · ',
   'TUR {n}': 'TOUR {n}',
@@ -426,5 +425,8 @@ const dict: Record<string, string> = {
   'Duvarların kapısı dar. Hangi kapıdan gireceğini hesapla.': 'Les portes des murs sont étroites. Calcule par quelle porte entrer.',
   'Dar yollar ve bir çift adım. Sırayı iyi kur.': 'Des chemins étroits et un double pas. Planifie bien l\'ordre.',
   'Sınırlı hamlede bütün botları al. Botlar yürümez ama menziline girersen seni alır. Az hamlede çözmek daha çok yıldız verir.': 'Prends tous les bots en un nombre limité de coups. Les bots ne marchent pas, mais ils te prennent si tu entres à leur portée. Moins de coups, plus d\'étoiles.',
+  'Adım ×2': 'Pas ×2',
+  'Hamle ×2': 'Coup ×2',
+  'Kayıt': 'Journal',
 };
 export default dict;

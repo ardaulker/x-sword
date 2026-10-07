@@ -290,6 +290,9 @@ const BONUS_ICONS: Record<BonusKind, string> = {
   swap: 'M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19',
 };
 
+// Düğmede kısa ad: "Çift adım" ile "Çift hamle" dar ekranda aynı görünüyordu.
+const shortBonus = (k: BonusKind) => (k === 'step' ? tr('Adım ×2') : k === 'double' ? tr('Hamle ×2') : tr(BONUS_NAMES[k]));
+
 // Sırandayken elindeki bonuslar. Zırh kendiliğinden çalışır; diğerine dokun, kareler ona göre yanar.
 function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
   const b = ctl.state.seats[ME].bonuses;
@@ -301,7 +304,7 @@ function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
           className={`bonus${view.bonus === k ? ' is-on' : ''}${k === 'armor' && b[k] ? ' is-passive' : ''}`}
           onClick={() => ctl.selectBonus(k)} aria-label={`${tr(BONUS_NAMES[k])}: ${b[k]}`}>
           <Icon d={BONUS_ICONS[k]} size={18} stroke={2} fill={k === 'double' ? 'currentColor' : 'none'} />
-          <span>{tr(BONUS_NAMES[k])}</span>
+          <span>{shortBonus(k)}</span>
           {b[k] > 0 && <b>{b[k]}</b>}
         </button>
       ))}

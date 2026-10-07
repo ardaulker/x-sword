@@ -85,8 +85,7 @@ const dict: Record<string, string> = {
   'Arena daha fazla daralmaz': 'The arena won\'t shrink any more',
   'Halka çöküyor': 'Ring collapsing',
   'Çöküyor': 'Collapsing',
-  'Halka {k} tur sonra': 'Ring in {k} {k:round|rounds}',
-  '{k} tur sonra': 'in {k} {k:round|rounds}',
+  'Daralma: {k} tur': 'Shrink: {k} {k:round|rounds}',
   'Dış halka {k} tur sonra çökecek': 'The outer ring collapses in {k} {k:round|rounds}',
   'İZLEYİCİ · ': 'SPECTATOR · ',
   'TUR {n}': 'ROUND {n}',
@@ -426,5 +425,8 @@ const dict: Record<string, string> = {
   'Duvarların kapısı dar. Hangi kapıdan gireceğini hesapla.': 'The gates in the walls are narrow. Work out which gate to enter through.',
   'Dar yollar ve bir çift adım. Sırayı iyi kur.': 'Narrow paths and one double step. Plan the order well.',
   'Sınırlı hamlede bütün botları al. Botlar yürümez ama menziline girersen seni alır. Az hamlede çözmek daha çok yıldız verir.': 'Take every bot within a limited number of moves. Bots don\'t walk, but they take you if you step into their reach. Solving in fewer moves earns more stars.',
+  'Adım ×2': 'Step ×2',
+  'Hamle ×2': 'Move ×2',
+  'Kayıt': 'Log',
 };
 export default dict;

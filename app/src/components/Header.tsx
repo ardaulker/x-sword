@@ -17,7 +17,8 @@ function ringInfo(st: GameState) {
   if (next == null) return { long: tr('Arena en dar'), short: tr('En dar'), full: tr('Arena daha fazla daralmaz'), warn: false, soon: false };
   if (next === st.round) return { long: tr('Halka çöküyor'), short: tr('Çöküyor'), full: tr('Dış halka bu turun sonunda çöküyor'), warn: collapseDue(st), soon: false };
   const k = next - st.round;
-  return { long: tr('Halka {k} tur sonra', { k }), short: tr('{k} tur sonra', { k }), full: tr('Dış halka {k} tur sonra çökecek', { k }), warn: false, soon: k === 1 };
+  const text = tr('Daralma: {k} tur', { k });
+  return { long: text, short: text, full: tr('Dış halka {k} tur sonra çökecek', { k }), warn: false, soon: k === 1 };
 }
 
 const watching = (st: GameState) => !st.over && !starOf(st, ME)?.alive;
@@ -28,6 +29,7 @@ function LogButton({ ctl, view, size }: { ctl: GameController; view: View; size:
   return (
     <button type="button" className="icon-btn" style={{ width: size }} aria-label={tr('Savaş kaydı, {n} alma', { n })} onClick={() => ctl.openLog()}>
       <Icon d={ICON.sword} size={size > 40 ? 22 : 20} />
+      <span className="icon-cap" aria-hidden="true">{tr('Kayıt')}</span>
       {n > 0 && <span className="icon-badge">{n}</span>}
     </button>
   );
@@ -37,6 +39,7 @@ function MenuButton({ ctl, size }: { ctl: GameController; size: number }) {
   return (
     <button type="button" className="icon-btn" style={{ width: size }} aria-label={tr('Menü')} onClick={() => ctl.openMenu()}>
       <Icon d={ICON.menu} size={size > 40 ? 22 : 20} />
+      <span className="icon-cap" aria-hidden="true">{tr('Menü')}</span>
     </button>
   );
 }
@@ -51,7 +54,7 @@ export function TopBar({ ctl, view }: { ctl: GameController; view: View }) {
       <div className="topbar-mid">
         <span className="topbar-tur">
           {watching(st) && <span className="topbar-eye" aria-label={tr('İzleyici')}><Icon d={ICON.eye} size={16} stroke={2.2} /></span>}
-          TUR {st.round}
+          {tr('TUR {n}', { n: st.round })}
         </span>
         <span className={`ring-chip${ring.warn ? ' is-warn' : ring.soon ? ' is-soon' : ''}${watching(st) ? ' is-short' : ''}`} aria-label={ring.full}>
           <RingIcon />
