@@ -1,6 +1,6 @@
 // Runs the game's <script> against a tiny fake DOM with a virtual clock.
 const fs = require('fs');
-const src = fs.readFileSync(process.env.GAME_FILE || require('path').join(__dirname, '..', 'index.html'), 'utf8');
+const src = fs.readFileSync(process.env.GAME_FILE || require('path').join(__dirname, '..', 'demo', 'index.html'), 'utf8');
 const script = src.split('<script>')[1].split('</script>')[0];
 
 class El {

@@ -27,13 +27,14 @@
   engine is seeded, the boards stay identical. The connection is PeerJS phone to phone today (no server, no account).
   Only `transport.ts` knows the connection, so moving to an X Sword server later changes only that file. Arda said on
   6 October 2026: "serverless for now, maybe a product later".
-- `arena/` is a test bench for the engine (https://ardaulker.github.io/x-sword/arena/). The root `index.html` is the
-  cousin's first demo and doesn't use the engine.
+- `arena/` is a test bench for the engine (https://ardaulker.github.io/x-sword/arena/). `demo/index.html` is the
+  cousin's first demo (https://ardaulker.github.io/x-sword/demo/) and doesn't use the engine. The root `index.html`
+  only redirects to `/play/` (Arda found the demo at the root confusing, 8 October 2026).
 - Tests: `node tests/engine.test.mjs` (rules + bot strength), `node tests/tests.js` and `node tests/tests2.js` (the old
   demo). Run them before and after touching rules or bots.
 - Publishing: a push to `main` runs `.github/workflows/pages.yml`, which runs the engine tests, builds `app/` and
-  publishes the site to GitHub Pages. Root pages (`index.html`, `arena/`, `engine/`) go out as they are; the game is
-  served at https://ardaulker.github.io/x-sword/play/. The old address `/oyun/` (before the English rename) redirects
+  publishes the site to GitHub Pages. Root pages (`index.html`, `demo/`, `arena/`, `engine/`) go out as they are; the game is
+  served at https://ardaulker.github.io/x-sword/play/ and https://ardaulker.github.io/x-sword/ redirects there. The old address `/oyun/` (before the English rename) redirects
   to `/play/` and keeps the `#/` route.
 - Translation (`app/src/i18n/`): in `tr('English sentence', {variable})` the key is the English text itself, so English
   needs no dictionary. `tr de fr es it pt` dictionaries translate it; a missing entry falls back to English. Plural:
@@ -61,7 +62,7 @@
 - When rules or bot intelligence change, update the rule texts in the same change: the in-game "How to play" screen
   (`app/src/screens/RulesScreen.tsx`), the arena's Rules window (`arena/index.html`) and the game section of
   `docs/design-prompt.md`. The player guide changes together with the code.
-- The root `index.html` uses Windows line endings (CRLF) and a BOM. If a tool rewrites the file, keep both, or the
+- `demo/index.html` uses Windows line endings (CRLF) and a BOM. If a tool rewrites the file, keep both, or the
   diff shows the whole file as changed.
 
 ## Game rules (current summary; details in `RulesScreen.tsx`)
@@ -154,7 +155,7 @@
 ## Watch out
 - The first argument of `tr()` must be a plain quoted string. Engine `log` texts are not translated, but a bot's name
   (`label`) appears in game text.
-- `index.html` is CRLF + BOM; when editing it, keep the line endings (read and write with `newline=''`).
+- `demo/index.html` is CRLF + BOM; when editing it, keep the line endings (read and write with `newline=''`).
 - Test setups (like `position()`) recompute bot `label`s when they call `roundOrder`; don't assume fixed numbers in a
   test, use `pieceById(...).label`.
 - `app/src/game/names.ts` keeps Turkish grammar data (accusative suffixes) because Turkish needs it; that is language

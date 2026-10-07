@@ -9,7 +9,7 @@ import { ME, winnerLine } from './names';
 
 export interface ShareInfo { st: GameState; time: string; daily: string | null }
 
-const URL_TEXT = 'ardaulker.github.io/x-sword/play';
+const URL_TEXT = 'ardaulker.github.io/x-sword';
 
 function headline({ st }: ShareInfo) {
   const won = isWinner(st, ME);

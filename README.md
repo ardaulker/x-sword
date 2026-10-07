@@ -10,9 +10,11 @@ The first version was made by Arda's cousin; the repo's first commit is that ver
 - **Game:** https://ardaulker.github.io/x-sword/play/ — the `app/` folder (React + TypeScript + Vite), built on the
   rules engine in `engine/`. Single player (you + your mirror Twin + arena bots), 2–4 stars against AI,
   multiplayer over phone-to-phone connections (PeerJS), puzzles, a tutorial and a daily challenge.
-  The old address `/oyun/` redirects here.
+  The old address `/oyun/` and the root address redirect here.
 - **Arena (engine test bench):** https://ardaulker.github.io/x-sword/arena/
-- **The cousin's first demo:** https://ardaulker.github.io/x-sword/ (`index.html`, open it in a browser; no setup).
+- **The cousin's first demo:** https://ardaulker.github.io/x-sword/demo/ (`demo/index.html`, open it in a browser; no setup).
+
+https://ardaulker.github.io/x-sword/ opens the game.
 
 Every push to `main` runs the engine tests, builds the game and publishes the whole site to GitHub Pages
 (`.github/workflows/pages.yml`).

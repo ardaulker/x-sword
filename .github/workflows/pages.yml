@@ -1,5 +1,5 @@
 # Publishes the site to GitHub Pages on every push to main.
-# Root pages (index.html, arena/, engine/ ...) are copied as they are; app/ is built and served under /play/.
+# Root pages (index.html redirect, demo/, arena/, engine/ ...) are copied as they are; app/ is built and served under /play/.
 # The old address /oyun/ (before the English rename) redirects to /play/ and keeps the #/ route.
 # Requires: Settings → Pages → Source: "GitHub Actions".
 

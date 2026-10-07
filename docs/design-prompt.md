@@ -13,7 +13,7 @@ a clickable prototype.
 The game is called **X Sword**. In the logo two swords cross to form an "X". This "×" is also the sign of the diagonal
 taking direction in the game.
 
-Attached is the current demo of the game: `index.html`. It is a single-player prototype. Read the rules, the visual
+Attached is the current demo of the game: `index.html` (now `demo/index.html`). It is a single-player prototype. Read the rules, the visual
 language and the color codes from it. Don't copy its look one to one. Keep its spirit and mature it.
 
 A working version of the rules below is here: https://ardaulker.github.io/x-sword/arena/ — 2–4 seats, bots, the
