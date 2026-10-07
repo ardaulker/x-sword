@@ -1,282 +1,334 @@
-# Taktiksel Satranç Arenası — Geliştirici aktarımı (Claude Code için)
+# Tactical Chess Arena — Developer handoff (for Claude Code)
 
-Bu klasör, tasarım tuvalindeki her şeyi kodlanabilir hale getirir. Claude Code'a önce bu dosyayı okut, sonra `tokens/` ve `reference/` klasörlerini kullan.
+> **Note (8 October 2026):** This handoff came with the first design and was written in Turkish; it was translated to
+> English when the repository moved to English. The game is now called **X Sword**, "hit" became "take", the
+> "Twin" in the lobby became an AI player, and the colors were settled later. Where this file and the root `CLAUDE.md`
+> disagree, `CLAUDE.md` wins.
 
-- **Tasarım tuvali:** https://claude.ai/artifact/M3HUrLN5y4CpEwXtVrFQdn (özel; erişim için paylaşman gerekir)
-- **Arayüz dili:** Türkçe. Tüm metinler `reference/*.dc.html` dosyalarındaki gibi.
-- **Oyuncu adları:** Şimdilik "Oyuncu 1 … Oyuncu 4". Takma ad sistemi gelince bu alan kullanıcının takma adıyla dolar. Bakan kişi kendini metinlerde "Sen" olarak görür ("Senin sıran", savaş kaydında "Sen").
+This folder makes everything on the design canvas codeable. Have Claude Code read this file first, then use the
+`tokens/` and `reference/` folders.
+
+- **Design canvas:** https://claude.ai/artifact/M3HUrLN5y4CpEwXtVrFQdn (private; it must be shared to be opened)
+- **Interface language:** Turkish at the time of the design. All texts as in the `reference/*.dc.html` files.
+- **Player names:** "Player 1 … Player 4" for now. When a nickname system arrives, this field holds the user's
+  nickname. The viewer sees themselves as "You" in texts ("Your turn", "You" in the battle log).
 
 ---
 
-## 0. Claude Code'a önerilen ilk mesaj
+## 0. Suggested first message to Claude Code
 
-> `satranc-arenasi-tasarim/CLAUDE_CODE_HANDOFF.md` dosyasını baştan sona oku. `tokens/tokens.css` ve `reference/` klasöründeki `.dc.html` dosyaları tasarımın kaynağıdır (çalıştırılabilir uygulama değil, referans). Önce bölüm 9'daki kural motorunu saf TypeScript olarak, birim testleriyle yaz. Sonra bölüm 3'teki bileşenleri ve bölüm 4'teki ekranları kur. Mobil (390×844) ve masaüstü (1440×900) düzenleri aynı bileşenleri kullanmalı. Her adımda bana ne yaptığını özetle.
+> Read `CLAUDE_CODE_HANDOFF.md` from start to finish. `tokens/tokens.css` and the `.dc.html` files in `reference/` are
+> the source of the design (a reference, not a runnable app). First write the rules engine in section 9 as pure
+> TypeScript with unit tests. Then build the components in section 3 and the screens in section 4. The mobile
+> (390×844) and desktop (1440×900) layouts should use the same components. Summarize what you did at every step.
 
 ---
 
-## 1. Klasör içeriği
+## 1. Folder contents
 
-| Yol | Ne |
+| Path | What |
 |---|---|
-| `CLAUDE_CODE_HANDOFF.md` | Bu belge: yapı, bileşenler, durumlar, etkileşim, hareket |
-| `tokens/tokens.css` | Renk, yazı, boşluk, köşe, hareket token'ları (CSS değişkenleri) |
-| `tokens/tokens.json` | Aynı token'lar, JSON (Tailwind / tema dosyası üretmek için) |
-| `reference/*.dc.html` | Tuvaldeki her artboard'un kaynağı. İşaretleme + stil + mantık burada. `OyunEkrani.dc.html` en önemlisi: tahta çizimi, kurallar, prototip durum makinesi, mobil ve masaüstü düzen |
-| `reference/DC_FORMAT.md` | `.dc.html` dosyalarını nasıl okuyacağın |
+| `CLAUDE_CODE_HANDOFF.md` | This document: structure, components, states, interaction, motion |
+| `tokens/tokens.css` | Color, type, spacing, radius and motion tokens (CSS variables) |
+| `tokens/tokens.json` | The same tokens as JSON (to generate Tailwind / theme files) |
+| `reference/*.dc.html` | The source of every artboard on the canvas. Markup + style + logic live here. `GameScreen.dc.html` is the most important: board drawing, rules, the prototype state machine, mobile and desktop layout |
+| `reference/DC_FORMAT.md` | How to read the `.dc.html` files |
 
-## 2. Önerilen teknik yapı (öneri, zorunlu değil)
+## 2. Suggested technical structure (a suggestion, not a requirement)
 
-- **Tek web uygulaması**, mobil öncelikli ve duyarlı. Telefonda tarayıcıdan ya da PWA olarak; masaüstünde tarayıcıda.
-- React + TypeScript + Vite. Stil için CSS değişkenleri (`tokens.css`) + CSS Modules ya da Tailwind (token'lar `tokens.json`'dan).
-- **Kural motoru** (`/src/game/`) arayüzden bağımsız, saf fonksiyonlar. Aynı kod sunucuda da çalışmalı.
-- **Çok oyunculu:** sunucu otoriter oda durumu + WebSocket. Supabase Realtime, PartyKit ya da kendi Node sunucun olabilir. İstemci yalnız niyet gönderir (`hamle {r,c}`), durumu sunucu yayar. Bot hamleleri sunucuda hesaplanır, istemciye sıralı olay listesi olarak gelir; istemci bunları art arda oynatır.
-- **Düzen eşikleri:**
-  - `< 900px` genişlik: mobil düzen (dikey, tek sütun). 390 tasarım genişliği; 375'te (iPhone SE) sıkışık başlık.
-  - `900–1199px`: mobil düzen ortalanmış (en fazla 480px) + yanlarda boşluk.
-  - `≥ 1200px`: masaüstü 3 sütun düzeni (300 | tahta | 340), 24px dış boşluk. Tasarım 1440×900; 1280×720'de tahta yüksekliğe göre küçülür (bkz. 5.2).
-- Güvenli alanlar: `env(safe-area-inset-top/bottom)`. Tasarımdaki 47/34 px bu değerlerin yer tutucusu.
+- **A single web app**, mobile first and responsive. In the phone browser or as a PWA; in the browser on desktop.
+- React + TypeScript + Vite. CSS variables for style (`tokens.css`) + CSS Modules or Tailwind (tokens from
+  `tokens.json`).
+- **The rules engine** (`/src/game/`) is independent of the interface: pure functions. The same code should run on a
+  server.
+- **Multiplayer:** server-authoritative room state + WebSocket. Supabase Realtime, PartyKit or your own Node server.
+  The client sends only intents (`move {r,c}`); the server broadcasts the state. Bot moves are computed on the server and
+  reach the client as an ordered event list; the client plays them one after another.
+- **Layout breakpoints:**
+  - width `< 900px`: mobile layout (portrait, single column). 390 design width; at 375 (iPhone SE) a compact header.
+  - `900–1199px`: the mobile layout centered (at most 480px) + space on the sides.
+  - `≥ 1200px`: the desktop 3-column layout (300 | board | 340), 24px outer margin. Designed at 1440×900; at 1280×720
+    the board shrinks with the height (see 5.2).
+- Safe areas: `env(safe-area-inset-top/bottom)`. The 47/34 px in the design are placeholders for these values.
 
-## 3. Bileşenler
+## 3. Components
 
-### 3.1 Taş (`Piece`)
-Props: `kind: 'star' | 'red' | 'blue'`, `player?: 0..3`, `mode: 'duz'|'capraz'`, `size: number`, `state?: 'normal'|'ghost'|'dead'`, `halo?: 'turn'|'threat'|'ring'|'current'|'pinned'`, `targetColor?`, `targetDir?: 0..7`, `orderPip?: number`, `threatBadge?: number`.
+### 3.1 Piece (`Piece`)
+Props: `kind: 'star' | 'red' | 'blue'`, `player?: 0..3`, `mode: 'straight'|'diagonal'`, `size: number`,
+`state?: 'normal'|'ghost'|'dead'`, `halo?: 'turn'|'threat'|'ring'|'current'|'pinned'`, `targetColor?`,
+`targetDir?: 0..7`, `orderPip?: number`, `threatBadge?: number`.
 
-Geometri (kutu = kare hücre, viewBox 0 0 100 100):
-- **Dış şekil** = bir div: `left/top 17%`, `width/height 66%`, `border-radius 10%`.
-  - Kare (düz yürür): `rotate(0)`. Elmas (çapraz yürür): `rotate(45deg) scale(.95)`.
-  - Yıldız: şekil moda göre (DÜZ → kare, ÇAPRAZ → elmas). Kızıl bot hep kare, Çelik bot hep elmas.
-  - Geçiş: `transform 320ms cubic-bezier(.34,1.56,.64,1)`.
-- **Oyuncu dolgusu:** oyuncu rengi + `box-shadow: 0 0 0 max(1.5px, 6% boyut) #FFF, 0 0 35% renk/AA` (beyaz halka + parıltı).
-- **Bot dolgusu:** `--bot-kizil` / `--bot-celik` + `inset 0 0 0 Xpx rgba(11,16,38,.30)`.
-- **İç işaret** (SVG path, mürekkep `#0B1026`):
-  - Kızıl bot `×`: `M33 33 L67 67 M67 33 L33 67`, stroke 10, round
-  - Çelik bot `+`: `M50 27 V73 M27 50 H73`, stroke 10, round
-  - Amblemler: O1 daire `M50 36 A14 14 0 1 1 49.99 36 Z` (dolu) · O2 üçgen `M50 33 L66 62 L34 62 Z` (dolu + 3 stroke) · O3 çift çizgi `M33 42 H67 M33 58 H67` (stroke 9) · O4 halka `M50 37 A13 13 0 1 1 49.99 37 Z` (dolgusuz, stroke 8)
-- **Hedef işareti** (bot → kovaladığı yıldız): açı 45°'ye yuvarlanır (8 yön). Uç R=64, taban R=44, yarı genişlik 13; dolgu hedef oyuncunun rengi, kenar mürekkep 4. Kod: `OyunEkrani.dc.html` → `notch()`. Ayarlardan kapatılabilir.
-- **Halo:** `inset -6%`, daire. Sıra sende: 2px düz oyuncu rengi · Tehdit: 2px kesik `--danger` · Çökecek halkada: 2px kesik `--hazard` · Oynayan bot: 2px düz beyaz · Seçili/bilgi: 2.5px beyaz + 4px %20 beyaz.
-- **Sıra rozeti** (yalnız bot turunda; oynayan + sonraki 3): 15px (masaüstü 18), sol üst −5px, `--ice` zemin, Oxanium 700.
-- **Tehdit rozeti** (kendi taşında, sırandayken): 16px (masaüstü 20) kırmızı daire, sağ üst, sayı.
-- **Hayalet** (önizleme): dolgu renk/33, 2px kesik kenar. Fare üstü önizlemede opaklık .55, seçilince .85.
+Geometry (box = the square cell, viewBox 0 0 100 100):
+- **Outer shape** = a div: `left/top 17%`, `width/height 66%`, `border-radius 10%`.
+  - Square (walks straight): `rotate(0)`. Diamond (walks diagonally): `rotate(45deg) scale(.95)`.
+  - Star: shape by mode (STRAIGHT → square, DIAGONAL → diamond). The red bot is always a square, the steel bot always a
+    diamond.
+  - Transition: `transform 320ms cubic-bezier(.34,1.56,.64,1)`.
+- **Player fill:** the player color + `box-shadow: 0 0 0 max(1.5px, 6% size) #FFF, 0 0 35% color/AA` (white ring +
+  glow).
+- **Bot fill:** `--bot-red` / `--bot-blue` + `inset 0 0 0 Xpx rgba(11,16,38,.30)`.
+- **Inner mark** (SVG path, ink `#0B1026`):
+  - Red bot `×`: `M33 33 L67 67 M67 33 L33 67`, stroke 10, round
+  - Steel bot `+`: `M50 27 V73 M27 50 H73`, stroke 10, round
+  - Emblems: P1 dot `M50 36 A14 14 0 1 1 49.99 36 Z` (filled) · P2 triangle `M50 33 L66 62 L34 62 Z` (filled + 3
+    stroke) · P3 double bar `M33 42 H67 M33 58 H67` (stroke 9) · P4 ring `M50 37 A13 13 0 1 1 49.99 37 Z` (no fill,
+    stroke 8)
+- **Target marker** (bot → the star it chases): the angle snaps to 45° (8 directions). Tip R=64, base R=44, half width
+  13; fill in the target player's color, ink edge 4. Code: `GameScreen.dc.html` → `notch()`. Can be turned off in the
+  settings.
+- **Halo:** `inset -6%`, a circle. Your turn: 2px solid player color · Threat: 2px dashed `--danger` · On the ring
+  about to collapse: 2px dashed `--hazard` · Bot playing: 2px solid white · Selected/info: 2.5px white + 4px 20% white.
+- **Turn badge** (only during the bot turn; the moving bot + the next 3): 15px (desktop 18), top left −5px, `--ice`
+  background, Oxanium 700.
+- **Threat badge** (on your own piece, on your turn): a 16px (desktop 20) red circle, top right, with a number.
+- **Ghost** (preview): fill color/33, 2px dashed edge. Opacity .55 in the hover preview, .85 once selected.
 
-### 3.2 Kare (`Cell`)
-- Sekizgen `clip-path`. Köşe kesiği tahta boyuna göre: **9×9 %26 · 11×11 %22 · 13×13 %18**.
-- İki ton dama: `--kare` / `--kare-2`.
-- Durumlar (öncelik sırasıyla üst üste biner):
+### 3.2 Square (`Cell`)
+- Octagon `clip-path`. The corner cut depends on the board size: **9×9 26% · 11×11 22% · 13×13 18%**.
+- Two-tone checkerboard: `--square` / `--square-2`.
+- States (stacked in order of priority):
 
-| Durum | Zemin | Çerçeve (SVG, iç 6 birim) | Orta işaret |
+| State | Background | Frame (SVG, inner 6 units) | Center mark |
 |---|---|---|---|
-| normal | dama tonu | — | — |
-| gidilebilir, güvenli | oyuncu rengi %18 | oyuncu rengi, 7 | DÜZ: küçük kare · ÇAPRAZ: küçük elmas |
-| gidilebilir, tehlikeli | `-45°` kırmızı çizgi deseni | oyuncu rengi, 7 | aynı |
-| vurulabilir | dama tonu | oyuncu rengi, 7 | 4 nişan çizgisi `M50 2 V18 M50 82 V98 M2 50 H18 M82 50 H98`, beyaz 8 |
-| fare üstü (masaüstü) | — | `--ice`, 9 | — |
-| seçili | — | beyaz, 11 | — |
-| çökecek halka | `45°` turuncu kalın şerit | — | — |
-| çöktü | `#070B1E` | kesik `#2B3670` 4, `6 7` | — |
+| normal | checker tone | — | — |
+| reachable, safe | player color 18% | player color, 7 | STRAIGHT: small square · DIAGONAL: small diamond |
+| reachable, dangerous | `-45°` red stripe pattern | player color, 7 | same |
+| can be hit | checker tone | player color, 7 | 4 crosshair lines `M50 2 V18 M50 82 V98 M2 50 H18 M82 50 H98`, white 8 |
+| hover (desktop) | — | `--ice`, 9 | — |
+| selected | — | white, 11 | — |
+| ring about to collapse | `45°` thick orange stripes | — | — |
+| collapsed | `#070B1E` | dashed `#2B3670` 4, `6 7` | — |
 
-Desen değerleri `tokens.css` içinde (`--pat-danger`, `--pat-hazard`).
+The pattern values are in `tokens.css` (`--pat-danger`, `--pat-hazard`).
 
-### 3.3 Tahta (`Board`)
-- Katmanlar: ızgara (kareler) → çizgiler (iz, tehdit çizgisi) → efektler → taşlar → üst katmanlar (mod kartı, bildirim) → dokunma/tıklama katmanı.
-- **Taşlar ayrı katmanda, `transform: translate()` ile konumlanır.** Böylece kayma animasyonu kendiliğinden olur. Ölü taş DOM'da kalır: `scale(.4)`, `opacity 0`, 180ms.
-- **Çerçeve dokusu moda göre:** DÜZ `0°/90°` ızgara, ÇAPRAZ `45°/-45°` ızgara (`--tex-duz`, `--tex-capraz`). Çökecek halka turunda çerçeve kenarı `--hazard`.
-- **Hücre boyu:**
-  - Mobil: `floor((W − 12 − 2·6 − gap·(n−1)) / n)`; gap 9×9'da 3, diğerlerinde 2. 390'da 9×9 → 38, 11×11 → 29, 13×13 → 26. 375'te 13×13 → 25.
-  - Masaüstü: `min(72, floor((704 − 16 − gap·(n−1)) / n))`; gap 9×9'da 4, diğerlerinde 3. Yükseklik 900'den azsa 704 yerine `min(merkezGenişliği, yükseklik − 48)` kullan.
-- **Çizgiler:**
-  - iz: degrade, kalınlık `max(3, 16% hücre)`, %70 opak
-  - tehdit: 2.5px kesik kırmızı `6/4`
-  - kendinden seçime: 2.5px noktalı oyuncu rengi `3/4`
+### 3.3 Board (`Board`)
+- Layers: grid (squares) → lines (trail, threat line) → effects → pieces → overlays (mode card, toast) →
+  touch/click layer.
+- **Pieces sit on their own layer and are placed with `transform: translate()`.** That way the slide animation comes
+  for free. A dead piece stays in the DOM: `scale(.4)`, `opacity 0`, 180ms.
+- **The frame texture follows the mode:** STRAIGHT a `0°/90°` grid, DIAGONAL a `45°/-45°` grid (`--tex-straight`,
+  `--tex-diagonal`). In a ring-collapse round the frame edge is `--hazard`.
+- **Cell size:**
+  - Mobile: `floor((W − 12 − 2·6 − gap·(n−1)) / n)`; gap 3 on 9×9, 2 otherwise. At 390: 9×9 → 38, 11×11 → 29,
+    13×13 → 26. At 375: 13×13 → 25.
+  - Desktop: `min(72, floor((704 − 16 − gap·(n−1)) / n))`; gap 4 on 9×9, 3 otherwise. If the height is under 900, use
+    `min(centerWidth, height − 48)` instead of 704.
+- **Lines:**
+  - trail: gradient, thickness `max(3, 16% cell)`, 70% opacity
+  - threat: 2.5px dashed red `6/4`
+  - from yourself to the selection: 2.5px dotted player color `3/4`
 
-### 3.4 Mod göstergesi (`ModeIndicator`) — oyunun en önemli bilgisi
-- DÜZ: `--ice` zemin, mürekkep yazı, kare ikonu + `+`.
-- ÇAPRAZ: gece zemin, `--ice` 2px iç kenar, `±45°` çizgi deseni, elmas + `×`.
-- Mobil: başlık altında, 56px yükseklik, etiket Oxanium 800 28px; sağda "SONRAKİ TUR ◇ ÇAPRAZ". SE'de başlık çubuğuyla birleşir (44px).
-- Masaüstü: sol sütunda büyük kart, etiket 48px, altında "TUR n · SONRAKİ …".
-- Mod değişim kartı tahtanın ortasında belirir (bölüm 7).
+### 3.4 Mode indicator (`ModeIndicator`) — the most important information in the game
+- STRAIGHT: `--ice` background, ink text, a square icon + `+`.
+- DIAGONAL: night background, a 2px `--ice` inner edge, a `±45°` line pattern, a diamond + `×`.
+- Mobile: under the header, 56px tall, label Oxanium 800 28px; on the right "NEXT ROUND ◇ DIAGONAL". On SE it merges
+  with the header bar (44px).
+- Desktop: a big card in the left column, label 48px, below it "ROUND n · NEXT …".
+- The mode change card appears in the middle of the board (section 7).
 
-### 3.5 Diğer bileşenler
-- **Oyuncu şeridi (mobil) / oyuncu listesi (masaüstü):** amblemli küçük taş, ad, alt satırda "n vuruş", "Oynuyor · 14 sn", "Koptu · 23 sn" ya da "3. · elendi". Sırası olan oyuncunun kenarı rengiyle yanar, `0 0 0 3px renk/33`. 4 oyuncuda ad 11px.
-- **Eylem paneli** (mobil altta, masaüstü sağ üstte). Varyantlar:
-  - `gen`: kim, başlık, alt başlık, sayaç, süre çubuğu, ipucu
-  - `onz`: önizleme; risk satırı, tehdit çipleri, Vazgeç / Onayla. Riskliyse Onayla `--danger` ve "Riskli · Onayla"
-  - `threat`: seni vurabilecekler
-  - `bot`: "Botlar oynuyor n/N", parça çubuğu, Hızlandır
-  - `spect`: izleyici; Maçtan çık / İzlemeye devam
-  - `win`: kazandın
-- **Taş bilgi kartı:** mobilde alttan açılan kart (uzun basma). Masaüstünde sağ sütunda satır içi kart (fare üstü; tıklayınca sabitlenir). İçerik: ad + sıra, YÜRÜR / VURUR 3×3 diyagram, hedef, "Bu tur seni vurabilir" uyarısı.
-- **Savaş kaydı:** mobilde alttan açılan kart (başlıktaki kılıç ikonu, rozetle sayı). Masaüstünde sağ sütunda hep açık. Satır: [saldıran] Ad ⚔ [gri kurban] üstü çizili ad. Tur başlıklarıyla gruplu, en yeni üstte.
-- **Bildirim** (toast): buz zemin, mürekkep yazı, 36–40px hap. Vuruş ("Çelik #12 vuruldu · +1"), süre doldu.
-- **Bant (banner):** tahta ortasında "Oyuncu 3 elendi · 3. sıra", "Dış halka çöktü".
-- **Bağlantı bandı:** turuncu kenarlı, "Bağlantı koptu · Yeniden bağlanıyor… [Tekrar dene]". Tahta %45 opak ve gri.
+### 3.5 Other components
+- **Player strip (mobile) / player list (desktop):** a small piece with an emblem, the name, and below it "n hits",
+  "Playing · 14 s", "Disconnected · 23 s" or "3rd · out". The edge of the player whose turn it is glows in their color,
+  `0 0 0 3px color/33`. With 4 players the name is 11px.
+- **Action panel** (bottom on mobile, top right on desktop). Variants:
+  - `gen`: who, title, subtitle, timer, time bar, hint
+  - `onz`: preview; the risk line, threat chips, Cancel / Confirm. If risky, Confirm is `--danger` and says
+    "Risky · Confirm"
+  - `threat`: the pieces that can hit you
+  - `bot`: "Bots playing n/N", a segmented bar, Speed up
+  - `spect`: spectator; Leave match / Keep watching
+  - `win`: you won
+- **Piece info card:** on mobile a card that opens from the bottom (long press). On desktop an inline card in the
+  right column (hover; a click pins it). Content: name + turn, a 3×3 WALKS / HITS diagram, the target, a "Can hit you
+  this round" warning.
+- **Battle log:** on mobile a card that opens from the bottom (the sword icon in the header, with a count badge). On
+  desktop always open in the right column. A line: [attacker] Name ⚔ [gray victim] struck-through name. Grouped by
+  round headings, newest on top.
+- **Toast:** ice background, ink text, a 36–40px pill. A hit ("Steel #12 was hit · +1"), time's up.
+- **Banner:** in the middle of the board, "Player 3 is out · 3rd place", "Outer ring collapsed".
+- **Connection banner:** orange edge, "Connection lost · Reconnecting… [Try again]". The board at 45% opacity and gray.
 
-## 4. Ekran → referans dosyası eşlemesi
+## 4. Screen → reference file map
 
-**Mobil (390×844):**
-- `Main` (ana menü)
-- `OdaKatil` (kod)
-- `Davet` (linkle gelen davet)
-- `Lobi` (kurucu)
-- `LobiMisafir`
-- `Egitim` (5 adımlık etkileşimli eğitim)
-- `Ayarlar`
-- `OyunSonu`
-- `Prototip` (oynanabilir tur)
-- `Oyun-01…17` (oyun durumları)
-- `Tahta-09/11/13`
-- `SE-13`, `SE-09-Onizleme` (375×667)
+**Mobile (390×844):**
+- `Main` (main menu)
+- `JoinRoom` (code)
+- `Invite` (invite by link)
+- `Lobby` (host)
+- `LobbyGuest`
+- `Tutorial` (an interactive 5-step tutorial)
+- `Settings`
+- `GameOver`
+- `Prototype` (a playable round)
+- `Game-01…17` (game states)
+- `Board-09/11/13`
+- `SE-13`, `SE-09-Preview` (375×667)
 
-**Masaüstü (1440×900):**
-- `MasaustuMenu`
-- `MasaustuLobi`
-- `MasaustuPrototip` (oynanabilir, fare + klavye)
-- `MasaustuSonu`
-- `MasaustuAyarlar`, `MasaustuEgitim`: mobil bileşen ortada 390×844 pencere olarak; "Geri" pencereyi kapatır
-- `M-Oyun-*` (oyun durumları)
+**Desktop (1440×900):**
+- `DesktopMenu`
+- `DesktopLobby`
+- `DesktopPrototype` (playable, mouse + keyboard)
+- `DesktopGameOver`
+- `DesktopSettings`, `DesktopTutorial`: the mobile component in the middle as a 390×844 window; "Back" closes the
+  window
+- `Desktop-Game-*` (game states)
 
-**Ortak:** `TasarimSistemi` (token ve bileşen kataloğu), `Notlar` (kararlar, varsayımlar, açık sorular).
+**Shared:** `DesignSystem` (token and component catalog), `Notes` (decisions, assumptions, open questions).
 
-Oyun durumlarının hepsi tek bileşenden gelir: `OyunEkrani.dc.html`. Prop'ları `durum`, `boyut`, `cihaz` (`390|se|masaustu`) ve `canli` (prototip). `staticUi()` her durumun sahnesini, `panel()` panel metinlerini üretir.
+Every game state comes from a single component: `GameScreen.dc.html`. Its props are `scene`, `size`, `device`
+(`390|se|desktop`) and `live` (prototype). `staticUi()` builds each state's scene, `panel()` the panel texts.
 
-## 5. Düzen ölçüleri
+## 5. Layout measurements
 
-### 5.1 Mobil oyun ekranı (390×844)
-Yukarıdan aşağı, aralar 6px:
+### 5.1 Mobile game screen (390×844)
+Top to bottom, 6px gaps:
 
-| Bölüm | Ölçü |
+| Section | Size |
 |---|---|
-| güvenli alan | 47 |
-| başlık | 44: menü · TUR n + halka çipi · kayıt |
-| mod göstergesi | 56 |
-| oyuncu şeridi | 48 |
-| tahta | esnek alan, ortalanmış |
-| eylem paneli | doğal yükseklik |
-| alt güvenli alan | 34 |
+| safe area | 47 |
+| header | 44: menu · ROUND n + ring chip · log |
+| mode indicator | 56 |
+| player strip | 48 |
+| board | flexible area, centered |
+| action panel | natural height |
+| bottom safe area | 34 |
 
-- Önemli butonlar panelde, başparmak bölgesinde. Onayla sağda ve iki kat geniş.
-- SE (375×667): başlık ve mod tek satır (48), şerit 40, alt güvenli alan 6.
+- Important buttons are in the panel, in the thumb zone. Confirm is on the right and twice as wide.
+- SE (375×667): header and mode on one line (48), strip 40, bottom safe area 6.
 
-### 5.2 Masaüstü oyun ekranı (1440×900)
-3 sütun, dış boşluk 24, aralar 24:
+### 5.2 Desktop game screen (1440×900)
+3 columns, outer margin 24, gaps 24:
 
-- **Sol (300px):**
+- **Left (300px):**
   - logo
-  - mod kartı
-  - halka çipi (44)
-  - oyuncu listesi (60px satırlar)
-  - en altta klavye kısayolları kartı
-- **Orta:** tahta, ortalanmış. Bildirim ve bağlantı bandı tahtanın üstünde.
-- **Sağ (340px):**
-  - eylem paneli
-  - (varsa) taş bilgi kartı
-  - savaş kaydı (kalan yüksekliği doldurur, taşanı kesilir/kayar)
+  - mode card
+  - ring chip (44)
+  - player list (60px rows)
+  - a keyboard shortcuts card at the bottom
+- **Center:** the board, centered. The toast and the connection banner sit above the board.
+- **Right (340px):**
+  - action panel
+  - (if any) piece info card
+  - battle log (fills the remaining height; overflow is clipped/scrolls)
 
-## 6. Etkileşim
+## 6. Interaction
 
-### 6.1 Mobil (dokunma)
-- Sıra gelince gidilebilir kareler kendiliğinden yanar. Sayaç 20 sn'den akar (lobide 10/20/30).
-- **Geniş dokunma:** dokunulan nokta, merkezi **1,6 adım** içinde kalan en yakın gidilebilir kareye çekilir. Böylece 26 pt karede bile her hedef ≥ 44 pt davranır.
-- Kendi taşına dokun → seni şu an vurabilecekler (tehdit çizgileri + `threat` paneli). Tekrar dokun → kapanır.
-- Bir bota/yıldıza dokun ya da uzun bas (450 ms) → bilgi kartı.
-- İki adımlı hamle: kareye dokun → önizleme (hayalet + tehdit çizgileri + risk paneli) → **Onayla**. Aynı kareye ikinci dokunuş da onaylar. Vazgeç önizlemeyi kapatır.
-- Bot turunda tahtaya dokunmak ya da "Hızlandır": kalan bot hamleleri anında uygulanır.
-- Yakınlaştırma (öneri): 13×13'te iki parmak / çift dokunuşla oyuncu taşı merkezli 1,6×.
+### 6.1 Mobile (touch)
+- When your turn comes, the reachable squares light up by themselves. The timer runs down from 20 s (10/20/30 in the
+  lobby).
+- **Wide touch:** the touched point snaps to the nearest reachable square whose center is within **1.6 steps**. That
+  way every target behaves as ≥ 44 pt even on a 26 pt square.
+- Tap your own piece → who can hit you right now (threat lines + the `threat` panel). Tap again → closes.
+- Tap a bot/star or long press it (450 ms) → info card.
+- A two-step move: tap a square → preview (ghost + threat lines + risk panel) → **Confirm**. A second tap on the same
+  square also confirms. Cancel closes the preview.
+- Tapping the board during the bot turn, or "Speed up": the remaining bot moves are applied at once.
+- Zoom (suggestion): on 13×13, 1.6× centered on the player's piece with two fingers / a double tap.
 
-### 6.2 Masaüstü (fare + klavye)
-- **Fare üstü** (sırandayken): en yakın gidilebilir kare (0,75 adım içinde) hayaletle önizlenir; tehdit çizgileri çizilir, panel ipucu risk yazar. Bu adım hiçbir şey kilitlemez.
-- **Tıkla:** seç (önizleme kilitlenir, panel `onz`). **Aynı kareye tekrar tıkla ya da Enter:** onayla.
-- Fare bir taşın üstünde → sağ sütunda bilgi kartı. Tıkla → sabitle, boş yere tıkla → kapat.
-- **Klavye** (tahta odaktayken; global dinleyici değil, tahta bileşeninde `onKeyDown`):
+### 6.2 Desktop (mouse + keyboard)
+- **Hover** (on your turn): the nearest reachable square (within 0.75 steps) is previewed with a ghost; threat lines
+  are drawn, the panel hint shows the risk. This step locks nothing.
+- **Click:** select (the preview locks, panel `onz`). **Click the same square again or Enter:** confirm.
+- Mouse over a piece → info card in the right column. Click → pin, click empty space → close.
+- **Keyboard** (when the board has focus; not a global listener, `onKeyDown` on the board component):
 
-| Tuş | İş |
+| Key | Action |
 |---|---|
-| `↑ ↓ ← →` / `W A S D` | DÜZ turda yön seç |
-| `Q E Z C` / Numpad `7 9 1 3` | ÇAPRAZ turda yön seç |
-| `Enter` | onayla |
-| `Esc` | vazgeç / kartı kapat |
-| `Boşluk` | bot turunu hızlandır |
-| `Tab` | tahtaya odaklan (görünür odak halkası: 2px `--ice`) |
+| `↑ ↓ ← →` / `W A S D` | pick a direction in a STRAIGHT round |
+| `Q E Z C` / Numpad `7 9 1 3` | pick a direction in a DIAGONAL round |
+| `Enter` | confirm |
+| `Esc` | cancel / close the card |
+| `Space` | speed up the bot turn |
+| `Tab` | focus the board (visible focus ring: 2px `--ice`) |
 
-- İmleç: gidilebilir karede `pointer`, diğer yerde `default`.
+- Cursor: `pointer` on a reachable square, `default` elsewhere.
 
-## 7. Hareket ve titreşim
+## 7. Motion and vibration
 
-| An | Süre | Eğri | Not |
+| Moment | Duration | Curve | Note |
 |---|---|---|---|
-| Yıldız kayması | 220 ms | `cubic-bezier(.2,.8,.2,1)` | iz 300 ms'de söner |
-| Bot kayması | 130 ms | aynı | botlar arası 60–110 ms (`1200 / botSayısı`), tüm tur ≤ 1,2 sn |
-| Kare seçimi / hayalet | 120 ms | ease-out | |
-| Vuruş | 80 ms parlama + 160 ms patlama | ease-out | tahta 2px × 3 sarsılır (120 ms) |
-| Ölen taş | 180 ms | ease-in | scale .4, opacity 0 |
-| Mod değişimi | 700 ms toplam | `cubic-bezier(.6,0,.2,1)` | desenli bant tahtayı 360 ms'de süpürür, kart 280 ms döner, doku + ↔ × |
-| Yıldız şekil değişimi | 320 ms | `cubic-bezier(.34,1.56,.64,1)` | 45° dönüş, yaylanma |
-| Son 5 sn | 1 sn döngü | ease-in-out | sayaç kırmızı, 1→1,08 nabız, panel kenarı kırmızı |
-| Halka uyarısı | 1,2 sn döngü | linear | şerit dışa akar |
-| Halka çökmesi | ≤ 700 ms | ease-in | kareler 12 ms kademeyle 220 ms'de çöker |
-| Panel / kart | 240 açılış / 180 kapanış | açılış `(.2,.8,.2,1)` · kapanış ease-in | arka plan %64 kararır |
+| Star slide | 220 ms | `cubic-bezier(.2,.8,.2,1)` | the trail fades in 300 ms |
+| Bot slide | 130 ms | same | 60–110 ms between bots (`1200 / botCount`), the whole round ≤ 1.2 s |
+| Square selection / ghost | 120 ms | ease-out | |
+| Hit | 80 ms flash + 160 ms burst | ease-out | the board shakes 2px × 3 (120 ms) |
+| Dying piece | 180 ms | ease-in | scale .4, opacity 0 |
+| Mode change | 700 ms total | `cubic-bezier(.6,0,.2,1)` | a patterned band sweeps the board in 360 ms, the card flips in 280 ms, texture + ↔ × |
+| Star shape change | 320 ms | `cubic-bezier(.34,1.56,.64,1)` | 45° turn, spring |
+| Last 5 s | 1 s loop | ease-in-out | timer red, 1→1.08 pulse, panel edge red |
+| Ring warning | 1.2 s loop | linear | the stripe flows outward |
+| Ring collapse | ≤ 700 ms | ease-in | squares collapse in 220 ms with a 12 ms stagger |
+| Panel / card | 240 open / 180 close | open `(.2,.8,.2,1)` · close ease-in | the background dims to 64% |
 
-- Animasyon hızı ayarı tüm süreleri çarpar: Yavaş ×1,45 · Normal ×1 · Hızlı ×0,65.
-- `prefers-reduced-motion`: kaymalar 120 ms solmaya döner, sarsıntı yok.
+- The animation speed setting multiplies every duration: Slow ×1.45 · Normal ×1 · Fast ×0.65.
+- `prefers-reduced-motion`: slides become a 120 ms fade, no shake.
 
-**Titreşim** (`navigator.vibrate`; iOS Safari desteklemez, sessizce atla):
+**Vibration** (`navigator.vibrate`; iOS Safari doesn't support it, skip silently):
 
-| An | Desen |
+| Moment | Pattern |
 |---|---|
-| Seçim | 10 ms |
-| Onay | 20 ms |
-| Vuruş | `[30, 40, 20]` |
-| Seni vurdular / elendin | `[60, 50, 60]` |
-| Son 5 sn | her saniye 8 ms |
-| Halka çökmesi | 60 ms |
+| Selection | 10 ms |
+| Confirm | 20 ms |
+| Hit | `[30, 40, 20]` |
+| You were hit / you're out | `[60, 50, 60]` |
+| Last 5 s | 8 ms every second |
+| Ring collapse | 60 ms |
 
-Masaüstünde titreşim yok; yerine ses.
+No vibration on desktop; sound instead.
 
-## 8. Erişilebilirlik
-- Metin kontrastları `TasarimSistemi`'nde hesaplı. Tümü #0B1026 üstünde AA. `--metin-3` yalnız 12px ve üstü.
-- Renkten bağımsız işaretler: şekil (yürüme), kılıç (vurma), amblem (oyuncu), desen (tehlike/halka).
-- **Renk körü modu:** oyuncu paleti `#56E0A6 #F5D43B #FF8A5C #8FB8FF`, amblem ve kılıç çizgileri +2 kalın.
-- Tüm kontroller gerçek `<button>` / `<a>`. İkon butonlarda `aria-label`.
-- Tahta için `role="grid"` + her hücreye `aria-label`. Örnek: "Satır 6, sütun 5, gidilebilir, 2 taş vurabilir".
-- Sıra değişimleri `aria-live="polite"` ile duyurulur.
-- Dokunma hedefleri ≥ 44px.
+## 8. Accessibility
+- Text contrasts are computed in `DesignSystem`. All are AA on #0B1026. `--text-3` only at 12px and up.
+- Color-independent cues: shape (walking), sword (hitting), emblem (player), pattern (danger/ring).
+- **Color-blind mode:** player palette `#56E0A6 #F5D43B #FF8A5C #8FB8FF`, emblem and sword strokes +2 thicker.
+- All controls are real `<button>` / `<a>`. Icon buttons get an `aria-label`.
+- `role="grid"` for the board + an `aria-label` on every cell. Example: "Row 6, column 5, reachable, 2 pieces can hit".
+- Turn changes are announced with `aria-live="polite"`.
+- Touch targets ≥ 44px.
 
-## 9. Kural motoru (oyun kurallarını değiştirme)
+## 9. Rules engine (don't change the game rules)
 
-Referans uygulama: `OyunEkrani.dc.html` → `wd()`, `hd()`, `moves()`, `hitters()`, `targetOf()`, `botMove()`.
+Reference implementation: `GameScreen.dc.html` → `wd()`, `hd()`, `moves()`, `hitters()`, `targetOf()`, `botMove()`.
 
 - `ORTH = [[-1,0],[1,0],[0,-1],[0,1]]`, `DIAG = [[-1,-1],[-1,1],[1,-1],[1,1]]`
-- **Yıldız:** yürüme = vurma = mod yönleri (DÜZ → ORTH, ÇAPRAZ → DIAG).
-- **Kızıl bot:** yürür ORTH, vurur DIAG. **Çelik bot:** yürür DIAG, vurur ORTH.
-- Tek kare. Yürüme yalnız boş kareye. Vurma = dolu kareye geçmek; hedef oyundan çıkar. Herkes herkesi vurabilir.
-- Çöken halkalar geçersiz kare. `ring = min(r, c, n−1−r, n−1−c)`, `ring < collapsed` ise geçersiz.
-- **Tur akışı:**
-  1. Oyuncular sırayla oynar; her tur başlayan değişir.
-  2. Botlar `num` sırasıyla oynar; ölen atlanır.
-  3. Halka çökmesi (varsa).
-  4. Mod değişir.
-- **Süre biterse:** en az riskli hamle (risk = hitters sayısı); eşitlikte vurmasız, sonra merkeze yakın.
-- **Önizleme riski:** seçilen karede, bu turun kalanında oynayacak taşlardan seni vurabilenler.
-- **Bot ilkesi** (brief): en yakın yıldızı kovalar; "bir sonraki hamlede yenir miyim?" kontrolüyle yenecekse gitmez. Zor: bir sonraki tura vuruş hazırlar. Prototipteki bot basit bir yer tutucudur. Zekâ kodda çözülecek.
-- **Tahta / bot sayısı / başlangıç:**
-  - 2 yıldız: 9×9, ~14 bot
-  - 3 yıldız: 11×11, ~21 bot
-  - 4 yıldız: 13×13, ~28 bot
-  - Başlangıç noktaları `Lobi` mantığında (`starts`).
-- **Halka takvimi (varsayım):** ilk çöküş 9×9'da tur 11 sonunda, sonra her 4 turda. Uyarı çökecek turun başında.
-- **Bağlantı:** kopan oyuncu için 30 sn. Sırası gelmişse oyun bekler, sonra İkiz oynar. Dönerse yerini alır.
+- **Star:** walking = hitting = the mode directions (STRAIGHT → ORTH, DIAGONAL → DIAG).
+- **Red bot:** walks ORTH, hits DIAG. **Steel bot:** walks DIAG, hits ORTH.
+- One square. Walking only onto an empty square. Hitting = moving onto an occupied square; the target leaves the game.
+  Anyone can hit anyone.
+- Collapsed rings are invalid squares. `ring = min(r, c, n−1−r, n−1−c)`; invalid if `ring < collapsed`.
+- **Round flow:**
+  1. Players play in turn; the starting player changes every round.
+  2. Bots play in `num` order; dead ones are skipped.
+  3. Ring collapse (if any).
+  4. The mode changes.
+- **If time runs out:** the least risky move (risk = number of hitters); on a tie the one without a hit, then the one
+  closest to the center.
+- **Preview risk:** on the chosen square, the pieces still to play this round that can hit you.
+- **Bot principle** (brief): chases the nearest star; with the check "will I be taken on the next move?" it doesn't go
+  where it would be taken. Hard: sets up a hit for the next round. The bot in the prototype is a simple placeholder.
+  The intelligence is solved in code.
+- **Board / bot count / start:**
+  - 2 stars: 9×9, ~14 bots
+  - 3 stars: 11×11, ~21 bots
+  - 4 stars: 13×13, ~28 bots
+  - Starting points are in the `Lobby` logic (`starts`).
+- **Ring schedule (assumption):** on 9×9 the first collapse is at the end of round 11, then every 4 rounds. The warning
+  shows at the start of the collapse round.
+- **Connection:** 30 s for a disconnected player. If it is their turn the game waits, then the Twin plays. If they come
+  back they take their seat again.
 
-## 10. Çok oyunculu akış
-- Hesap yok. Takma ad (≤ 12 karakter) + renk/amblem; cihazda saklanır.
-- **Oda kodu:** 5 karakter, A–Z ve 0–9. Karışan karakterleri (0/O, 1/I) çıkarmak önerilir.
-- **Davet linki:** `https://<alan>/o/K7Q2M`. WhatsApp paylaşımı: `https://wa.me/?text=…`. Masaüstünde QR + link kopyala öne çıkar.
-- **Lobi:** 4 koltuk. Boş koltuk: Davet et / İkiz ekle / Kapat. Bot zorluğu, hamle süresi, tahta önizlemesi. Başlat yalnız kurucuda; misafirde "Hazırım".
-- **Hızlı oyun:** tek oyuncu + botlar (ve istenirse İkiz).
+## 10. Multiplayer flow
+- No account. A nickname (≤ 12 characters) + color/emblem; stored on the device.
+- **Room code:** 5 characters, A–Z and 0–9. Leaving out confusable characters (0/O, 1/I) is recommended.
+- **Invite link:** `https://<domain>/o/K7Q2M`. WhatsApp sharing: `https://wa.me/?text=…`. On desktop the QR + copy
+  link come first.
+- **Lobby:** 4 seats. Empty seat: Invite / Add Twin / Close. Bot difficulty, move time, a board preview. Start only for
+  the host; "I'm ready" for a guest.
+- **Quick game:** one player + bots (and the Twin if wanted).
 
-## 11. Açık sorular
-`reference/Notlar.dc.html` içinde. Özet:
+## 11. Open questions
+In `reference/Notes.dc.html`. Summary:
 
-- Bot sayısı ve halka aralığı testle ayarlanacak.
-- Sol el modu gerekli mi?
-- Paylaş: görsel sonuç kartı mı, yalnız link mi?
-- Ses karakteri seçilmeli.
-- Oyun adı seçilmeli (öneriler: Sekiz · Düz Çapraz · Yıldız Meydanı).
+- The bot count and ring interval will be tuned by testing.
+- Is a left-hand mode needed?
+- Share: a visual result card, or just a link?
+- A sound character should be chosen.
+- A game name should be chosen (ideas: Eight · Straight Diagonal · Star Square).

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>How to play</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; padding: 47px 0 34px; background: radial-gradient(120% 50% at 50% 0%, #141E48 0%, #0B1026 62%); color: #EEF2FF; font-family: 'Barlow', system-ui, sans-serif; display: flex; flex-direction: column; gap: 14px">
+  <div style="height: 52px; display: flex; align-items: center; gap: 8px; padding: 0 10px">
+    <a href="Main.dc.html" aria-label="Close" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #EEF2FF">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6 L18 18 M18 6 L6 18"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; gap: 6px; justify-content: center">
+      <sc-for list="{{dots}}" as="d" hint-placeholder-count="5">
+        <div style="height: 6px; border-radius: 3px; {{d.st}}"></div>
+      </sc-for>
+    </div>
+    <button type="button" onClick="{{skip}}" style="height: 44px; padding: 0 12px; border: 0; background: transparent; color: #A9B4DA; font: 600 14px 'Barlow', sans-serif">{{skipTxt}}</button>
+  </div>
+
+  <div style="padding: 0 20px; display: flex; flex-direction: column; gap: 6px; min-height: 108px">
+    <div style="font-family: 'Oxanium', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: #3BFF8F">{{stepLabel}}</div>
+    <div style="font-family: 'Oxanium', sans-serif; font-size: 28px; font-weight: 800; line-height: 1.1">{{title}}</div>
+    <div style="font-size: 15px; font-weight: 500; line-height: 1.4; color: #A9B4DA">{{body}}</div>
+  </div>
+
+  <sc-if value="{{playing}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 14px; border-radius: 12px; font-family: 'Oxanium', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: 0.08em; {{modeBox}}">
+        <svg width="20" height="20" viewBox="0 0 100 100" style="overflow: visible"><polygon points="{{modeShape}}" fill="none" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></polygon><path d="{{modeGlyph}}" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round"></path></svg>
+        <span>{{modeLabel}}</span>
+      </div>
+      <div style="position: relative; width: 322px; height: 322px; padding: 8px; box-sizing: border-box; border-radius: 18px; background: #0D1431; box-shadow: inset 0 0 0 1.5px {{frameEdge}}">
+        <div style="display: grid; grid-template-columns: repeat(5, 58px); gap: 4px">
+          <sc-for list="{{cells}}" as="c" hint-placeholder-count="25">
+            <button type="button" aria-label="{{c.label}}" onClick="{{c.tap}}" style="position: relative; width: 58px; height: 58px; padding: 0; border: 0; clip-path: polygon(26% 0,74% 0,100% 26%,100% 74%,74% 100%,26% 100%,0 74%,0 26%); {{c.st}}">
+              <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%">
+                <path d="{{c.d1}}" fill="none" stroke="{{c.s1}}" stroke-width="{{c.w1}}" stroke-linejoin="round"></path>
+                <path d="{{c.d2}}" fill="{{c.f2}}" stroke="{{c.s2}}" stroke-width="{{c.w2}}" stroke-linecap="round"></path>
+              </svg>
+            </button>
+          </sc-for>
+        </div>
+        <div style="position: absolute; left: 8px; top: 8px; width: 306px; height: 306px; pointer-events: none">
+          <sc-for list="{{pcs}}" as="p" hint-placeholder-count="3">
+            <div style="position: absolute; left: 0; top: 0; width: 58px; height: 58px; transition: transform 220ms cubic-bezier(.2,.8,.2,1), opacity 180ms ease-in; {{p.st}}">
+              <div style="position: absolute; left: 17%; top: 17%; width: 66%; height: 66%; border-radius: 10%; transition: transform 320ms cubic-bezier(.34,1.56,.64,1); {{p.shape}}"></div>
+              <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{p.gd}}" fill="{{p.gf}}" stroke="{{p.gs}}" stroke-width="{{p.gw}}" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="width: 358px; min-height: 44px; display: flex; align-items: center; gap: 10px; padding: 10px 14px; box-sizing: border-box; border-radius: 14px; {{msgSt}}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="{{msgIcon}}"></path></svg>
+        <span style="font-size: 14px; font-weight: 600; line-height: 1.35">{{msg}}</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{finished}}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 0 24px; text-align: center">
+      <svg width="140" height="140" viewBox="0 0 200 200" style="overflow: visible">
+        <rect x="44" y="44" width="112" height="112" rx="6" fill="#0B1026" stroke="#E9F0FF" stroke-width="7"></rect>
+        <polygon points="100,21 179,100 100,179 21,100" fill="none" stroke="#3BFF8F" stroke-width="7" stroke-linejoin="round"></polygon>
+        <path d="M74 102 L92 120 L128 82" fill="none" stroke="#3BFF8F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+      <div style="font-size: 15px; font-weight: 500; color: #A9B4DA; line-height: 1.5">A square moves straight, a diamond diagonally. + hits straight, × diagonally. The mode changes every round. Stay away from striped squares, run in from the ring.</div>
+    </div>
+  </sc-if>
+
+  <div style="margin: auto 16px 0; display: flex; gap: 8px">
+    <sc-if value="{{showConfirm}}" hint-placeholder-val="{{ true }}">
+      <button type="button" onClick="{{confirm}}" style="flex: 1; height: 58px; border-radius: 16px; border: 0; font: 700 18px 'Barlow', sans-serif; {{confirmSt}}">{{confirmTxt}}</button>
+    </sc-if>
+    <sc-if value="{{showNext}}" hint-placeholder-val="{{ false }}">
+      <button type="button" onClick="{{nextStep}}" style="flex: 1; height: 58px; border-radius: 16px; border: 0; background: #3BFF8F; color: #0B1026; font: 700 18px 'Barlow', sans-serif">Next step</button>
+    </sc-if>
+    <sc-if value="{{finished}}" hint-placeholder-val="{{ false }}">
+      <a href="Main.dc.html" style="flex: 1; height: 58px; border-radius: 16px; border: 1.5px solid #3A4785; color: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; text-decoration: none">Main menu</a>
+      <a href="Prototype.dc.html" style="flex: 2; height: 58px; border-radius: 16px; background: #3BFF8F; color: #0B1026; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; text-decoration: none">Open a quick game</a>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  cfg(i) {
+    var C = [
+      { title: 'Walk', mode: 'straight', me: [2, 2], bots: [], body: 'Your piece is a square: this round it moves STRAIGHT. Tap a lit square, see the preview, then Confirm.', goal: 'any' },
+      { title: 'Hit', mode: 'straight', me: [3, 2], bots: [['r', 2, 2]], body: 'Hitting means moving onto the target’s square. A star hits in the direction it moves. Hit the bot above you.', goal: 'cap' },
+      { title: 'The mode changes', mode: 'diagonal', me: [2, 2], bots: [['r', 1, 2], ['b', 1, 3]], body: 'This round is DIAGONAL. Your piece became a diamond: it now moves and hits diagonally. Hit the bot on the diagonal.', goal: 'cap' },
+      { title: 'Run from danger', mode: 'straight', me: [2, 2], bots: [['b', 1, 3], ['r', 4, 1]], body: 'Bots move after you. If you go to a striped square they can hit you. Look at the swords: + hits straight, × diagonally. Find the safe square.', goal: 'safe' },
+      { title: 'The arena shrinks', mode: 'straight', me: [0, 2], bots: [['r', 4, 4]], body: 'The orange ring collapses at the end of this round. Pieces left on it are out. Run inside.', goal: 'inner', warn: true }
+    ];
+    return C[i];
+  }
+  load(i) {
+    var c = this.cfg(i);
+    this.setState({ step: i, me: { r: c.me[0], c: c.me[1] }, bots: c.bots.map(function (b, j) { return { k: b[0], r: b[1], c: b[2], alive: true, n: j + 1 }; }), sel: null, status: 'play', msg: '' });
+  }
+  componentDidMount() { this.load(0); }
+  dirs(k, mode, kind) {
+    var O = [[-1, 0], [1, 0], [0, -1], [0, 1]], D = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+    if (k === 's') return mode === 'straight' ? O : D;
+    if (kind === 'w') return k === 'r' ? O : D;
+    return k === 'r' ? D : O;
+  }
+  renderVals() {
+    var self = this, s = this.state || {};
+    var step = s.step === undefined ? 0 : s.step;
+    var INK = '#0B1026', G = '#3BFF8F', RED = '#FF3B5C', HAZ = '#FF8A3D';
+    var dots = [];
+    for (var i = 0; i < 5; i++) dots.push({ st: 'width:' + (i === step ? 28 : 14) + 'px;background:' + (i < step ? '#3BFF8F' : (i === step ? '#E9F0FF' : '#2B3670')) });
+    if (step >= 5) {
+      return { dots: dots, skip: function () {}, skipTxt: '', stepLabel: 'DONE', title: 'You\'re ready!', body: 'You tried all five rules on the board.', playing: false, finished: true, showConfirm: false, showNext: false, cells: [], pcs: [] };
+    }
+    var c = this.cfg(step), mode = c.mode, me = s.me || { r: c.me[0], c: c.me[1] };
+    var bots = s.bots || c.bots.map(function (b, j) { return { k: b[0], r: b[1], c: b[2], alive: true, n: j + 1 }; });
+    var status = s.status || 'play', sel = s.sel;
+    var botAt = function (r, cc) { return bots.find(function (b) { return b.alive && b.r === r && b.c === cc; }); };
+    var hitters = function (r, cc) { return bots.filter(function (b) { return b.alive && !(b.r === r && b.c === cc) && self.dirs(b.k, mode, 'h').some(function (d) { return b.r + d[0] === r && b.c + d[1] === cc; }); }); };
+    var reach = {};
+    if (status === 'play') this.dirs('s', mode).forEach(function (d) { var r = me.r + d[0], cc = me.c + d[1]; if (r < 0 || cc < 0 || r > 4 || cc > 4) return; reach[r + ',' + cc] = { r: r, c: cc, cap: botAt(r, cc) || null }; });
+    var cells = [];
+    for (var r = 0; r < 5; r++) for (var cc = 0; cc < 5; cc++) {
+      var ring = Math.min(r, cc, 4 - r, 4 - cc), m = reach[r + ',' + cc];
+      var bg = ((r + cc) % 2) ? '#1D2858' : '#1A2452';
+      if (c.warn && ring === 0) bg = 'repeating-linear-gradient(45deg, rgba(255,138,61,.55) 0 4px, rgba(255,138,61,.12) 4px 10px), #241B33';
+      var d1 = '', s1 = 'none', w1 = 0, d2 = '', f2 = 'none', s2 = 'none', w2 = 0;
+      if (m) {
+        var hz = hitters(r, cc).length;
+        if (hz) bg = 'repeating-linear-gradient(-45deg, rgba(255,59,92,.6) 0 3px, rgba(255,59,92,.12) 3px 8px), #2A1B3E';
+        else if (!(c.warn && ring === 0)) bg = 'linear-gradient(rgba(59,255,143,.18), rgba(59,255,143,.18)), #1A2452';
+        d1 = 'M28.4 6 L71.6 6 L94 28.4 L94 71.6 L71.6 94 L28.4 94 L6 71.6 L6 28.4 Z'; s1 = (sel && sel.r === r && sel.c === cc) ? '#FFFFFF' : G; w1 = (sel && sel.r === r && sel.c === cc) ? 9 : 6;
+        if (m.cap) { d2 = 'M50 2 V16 M50 84 V98 M2 50 H16 M84 50 H98'; s2 = '#FFFFFF'; w2 = 7; }
+        else { d2 = mode === 'straight' ? 'M42 42 H58 V58 H42 Z' : 'M50 39 L61 50 L50 61 L39 50 Z'; f2 = G; }
+      }
+      (function (mm, rr, c2) {
+        cells.push({ st: 'background:' + bg + (mm ? ';cursor:pointer' : ''), d1: d1, s1: s1, w1: w1, d2: d2, f2: f2, s2: s2, w2: w2, label: 'Square ' + (rr + 1) + '-' + (c2 + 1),
+          tap: function () { if (mm && status === 'play') self.setState({ sel: { r: rr, c: c2 } }); } });
+      })(m, r, cc);
+    }
+    var pcs = [];
+    var rot = mode === 'straight' ? 0 : 45;
+    pcs.push({ st: 'transform:translate(' + (me.c * 62) + 'px,' + (me.r * 62) + 'px);z-index:3', shape: 'background:' + G + ';box-shadow:0 0 0 2.5px #FFFFFF, 0 0 18px ' + G + 'AA;transform:rotate(' + rot + 'deg) scale(' + (rot ? 0.95 : 1) + ')', gd: 'M50 36 A14 14 0 1 1 49.99 36 Z', gf: INK, gs: 'none', gw: 0 });
+    bots.forEach(function (b) {
+      var col = b.k === 'r' ? '#D3765B' : '#6F98DA', br = b.k === 'r' ? 0 : 45;
+      pcs.push({ st: 'transform:translate(' + (b.c * 62) + 'px,' + (b.r * 62) + 'px) scale(' + (b.alive ? 1 : 0.4) + ');opacity:' + (b.alive ? 1 : 0) + ';z-index:2', shape: 'background:' + col + ';box-shadow:inset 0 0 0 2px rgba(11,16,38,.3);transform:rotate(' + br + 'deg) scale(' + (br ? 0.95 : 1) + ')', gd: b.k === 'r' ? 'M33 33 L67 67 M67 33 L33 67' : 'M50 27 V73 M27 50 H73', gf: 'none', gs: INK, gw: 10 });
+    });
+    if (sel && status === 'play') {
+      pcs.push({ st: 'transform:translate(' + (sel.c * 62) + 'px,' + (sel.r * 62) + 'px);z-index:1;opacity:.85', shape: 'background:' + G + '33;border:2px dashed ' + G + ';box-sizing:border-box;transform:rotate(' + rot + 'deg) scale(' + (rot ? 0.95 : 1) + ')', gd: '', gf: 'none', gs: 'none', gw: 0 });
+    }
+    var msg = s.msg || 'The squares you can move to are lit. Tap one.', msgSt = 'background: #121A3A; color: #A9B4DA', msgIcon = 'M12 3 A9 9 0 1 1 11.99 3 Z M12 11 V16 M12 8 V8.2';
+    if (sel && status === 'play') {
+      var th = hitters(sel.r, sel.c), cap = botAt(sel.r, sel.c);
+      if (th.length) { msg = 'Risky: ' + th.length + ' bot(s) can hit you here.'; msgSt = 'background: rgba(255,59,92,.14); color: #FF9AAC'; msgIcon = 'M12 3.5 L21.5 20 H2.5 Z M12 10 V14 M12 17 V17.2'; }
+      else { msg = cap ? 'Move onto this square and you hit the bot. This spot is safe.' : 'Safe: nobody can hit you here.'; msgSt = 'background: rgba(59,255,143,.12); color: #3BFF8F'; msgIcon = 'M5 12.5 L10 17 L19 7'; }
+    }
+    if (status === 'win') { msgSt = 'background: rgba(59,255,143,.14); color: #3BFF8F'; msgIcon = 'M5 12.5 L10 17 L19 7'; }
+    if (status === 'fail') { msgSt = 'background: rgba(255,59,92,.14); color: #FF9AAC'; msgIcon = 'M12 3.5 L21.5 20 H2.5 Z M12 10 V14 M12 17 V17.2'; }
+    var confirm = function () {
+      if (status === 'fail') { self.load(step); return; }
+      if (!sel || status !== 'play') return;
+      var cap = botAt(sel.r, sel.c), th = hitters(sel.r, sel.c);
+      var nb = bots.map(function (b) { return Object.assign({}, b, { alive: b.alive && !(cap && b === cap) }); });
+      var ok = false, m2 = '';
+      if (c.goal === 'any') { ok = true; m2 = 'It slid over. One square, straight. Great.'; }
+      if (c.goal === 'cap') { ok = !!cap; m2 = ok ? 'You hit it! A piece that is hit leaves the game.' : 'The bot is still there. Move onto its square in the sword’s direction.'; }
+      if (c.goal === 'safe') { ok = th.length === 0; m2 = ok ? 'Right. When the bots move they won’t be able to hit you.' : th.length + ' bot(s) hit you here. Try an unstriped square.'; }
+      if (c.goal === 'inner') { ok = Math.min(sel.r, sel.c, 4 - sel.r, 4 - sel.c) >= 1; m2 = ok ? 'You made it. You’ll be inside when the ring collapses.' : 'You’re still on the ring. The ring is collapsing!'; }
+      self.setState({ me: { r: sel.r, c: sel.c }, bots: nb, sel: null, status: ok ? 'win' : 'fail', msg: m2 });
+    };
+    var modeBox = mode === 'straight' ? 'background: #E9F0FF; color: #0B1026' : 'background: repeating-linear-gradient(45deg, rgba(233,240,255,.1) 0 2px, transparent 2px 9px), #0B1026; color: #E9F0FF; box-shadow: inset 0 0 0 2px #E9F0FF';
+    return {
+      dots: dots, stepLabel: 'STEP ' + (step + 1) + ' / 5', title: c.title, body: c.body,
+      skip: function () { self.setState({ step: 5 }); }, skipTxt: 'Skip',
+      playing: true, finished: false,
+      modeBox: modeBox, modeLabel: mode === 'straight' ? 'STRAIGHT' : 'DIAGONAL', modeShape: mode === 'straight' ? '17,17 83,17 83,83 17,83' : '50,5 95,50 50,95 5,50', modeGlyph: mode === 'straight' ? 'M50 27 V73 M27 50 H73' : 'M33 33 L67 67 M67 33 L33 67',
+      frameEdge: c.warn ? HAZ : 'rgba(233,240,255,.22)',
+      cells: cells, pcs: pcs, msg: msg, msgSt: msgSt, msgIcon: msgIcon,
+      showConfirm: status !== 'win', showNext: status === 'win',
+      confirm: confirm,
+      confirmSt: status === 'fail' ? 'background: #E9F0FF; color: #0B1026' : (sel ? 'background: #3BFF8F; color: #0B1026' : 'background: #232D5E; color: #A9B4DA'),
+      confirmTxt: status === 'fail' ? 'Try again' : (sel ? 'Confirm' : 'Pick a square first'),
+      nextStep: function () { if (step + 1 >= 5) self.setState({ step: 5 }); else self.load(step + 1); }
+    };
+  }
+}
+</script>
+</body>
+</html>

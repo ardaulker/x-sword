@@ -1,19 +1,21 @@
-# .dc.html dosyalarını okuma
+# Reading .dc.html files
 
-Bu dosyalar tasarım tuvalinin kaynağıdır; doğrudan tarayıcıda çalışmazlar (tuvalin çalışma zamanı gerekir). Referans olarak okunur.
+These files are the source of the design canvas; they don't run directly in a browser (they need the canvas runtime).
+Read them as a reference.
 
-- `<x-dc>` içindeki HTML = işaretleme ve satır içi stiller (ölçüler, renkler birebir buradan alınır).
-- `{{ad}}` = `renderVals()` fonksiyonunun döndürdüğü değer. `{{p.st}}` gibi stil boşlukları JS'te hesaplanan CSS metnidir.
-- `<sc-for list="{{x}}" as="y">` = döngü (React'te `x.map`). `<sc-if value="{{k}}">` = koşullu gösterim.
-- `<dc-import name="OyunEkrani" durum="bot" …>` = başka dosyayı bileşen olarak, prop'larla çağırır.
-- `<script type="text/x-dc">` içindeki `class Component extends DCLogic` = mantık (React sınıf bileşeni gibi; `state`, `setState`, `componentDidMount`).
-- `<a href="X.dc.html">` = prototipte ekranlar arası geçiş → uygulamada route.
+- The HTML inside `<x-dc>` = markup and inline styles (sizes and colors are taken from here exactly).
+- `{{name}}` = a value returned by `renderVals()`. Style slots such as `{{p.st}}` are CSS text computed in JS.
+- `<sc-for list="{{x}}" as="y">` = a loop (`x.map` in React). `<sc-if value="{{k}}">` = conditional rendering.
+- `<dc-import name="GameScreen" scene="bot" …>` = calls another file as a component, with props.
+- `class Component extends DCLogic` inside `<script type="text/x-dc">` = the logic (like a React class component;
+  `state`, `setState`, `componentDidMount`).
+- `<a href="X.dc.html">` = navigation between screens in the prototype → a route in the app.
 
-En önemli dosya `OyunEkrani.dc.html`:
-- `scene9()`, `sceneGen()` örnek sahneler
-- `wd/hd/moves/hitters/targetOf` kurallar
-- `staticUi()` her ekran durumunun tanımı
-- `startGame/next/runBots/botStep/flipMode` canlı tur akışı
-- `boardTap/boardHover/boardKey` etkileşim (geniş dokunma, fare üstü, klavye)
-- `look/oct/notch/seg` çizim geometrisi
-- `build()` mobil ve masaüstü düzen ölçüleri
+The most important file is `GameScreen.dc.html`:
+- `scene9()`, `sceneGen()` sample scenes
+- `wd/hd/moves/hitters/targetOf` the rules
+- `staticUi()` the definition of every screen state
+- `startGame/next/runBots/botStep/flipMode` the live round flow
+- `boardTap/boardHover/boardKey` interaction (wide touch, mouse hover, keyboard)
+- `look/oct/notch/seg` drawing geometry
+- `build()` mobile and desktop layout measurements

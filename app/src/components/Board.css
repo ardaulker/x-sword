@@ -144,7 +144,7 @@
 }
 @keyframes band-sweep { from { transform: rotate(var(--band-rot)) translateY(-260px); } }
 
-/* Bant */
+/* Banner */
 .center-banner {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 6; pointer-events: none;
   display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: 16px;

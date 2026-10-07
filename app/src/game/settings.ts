@@ -5,7 +5,7 @@ import { isUnlocked, skinById, themeById } from './themes';
 import { legacySpeed, legacyTheme } from './legacy';
 
 export interface Settings {
-  sound: boolean;       // ses efektleri
+  sound: boolean;       // sound effects
   music: boolean;       // tension music
   tips: boolean;        // tip card at the start of the first three matches
   volume: number;       // 0–1, shared level for effects and music

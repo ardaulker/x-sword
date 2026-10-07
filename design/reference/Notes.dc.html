@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Decisions and open questions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 960px; min-height: 3400px; box-sizing: border-box; padding: 72px 64px 96px; background: #F3F5FC; color: #0B1026; font-family: 'Barlow', system-ui, sans-serif; display: flex; flex-direction: column; gap: 48px">
+  <div style="display: flex; flex-direction: column; gap: 12px">
+    <div style="font-family: 'Oxanium', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.3em; color: #1F7A4D">TASARIM NOTU</div>
+    <div style="font-family: 'Oxanium', sans-serif; font-size: 52px; font-weight: 800; line-height: 1.05">Decisions, reasons and open questions</div>
+    <div style="font-size: 18px; line-height: 1.55; color: #3A4470">The attached demo HTML file did not reach me; the rules and visual language were built from the brief’s description. When the file arrives, the design should be compared against its details.</div>
+  </div>
+
+  <sc-for list="{{sections}}" as="s" hint-placeholder-count="4">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div style="font-family: 'Oxanium', sans-serif; font-size: 30px; font-weight: 800">{{s.title}}</div>
+      <sc-for list="{{s.items}}" as="i" hint-placeholder-count="5">
+        <div style="display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; padding: 18px 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D9DEEF">
+          <div style="width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Oxanium', sans-serif; font-size: 15px; font-weight: 800; {{s.badge}}">{{i.n}}</div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <div style="font-size: 18px; font-weight: 700; line-height: 1.35">{{i.t}}</div>
+            <div style="font-size: 16px; line-height: 1.55; color: #3A4470">{{i.d}}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":3400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var num = function (arr) { return arr.map(function (x, i) { return { n: String(i + 1), t: x[0], d: x[1] }; }); };
+    var sections = [
+      { title: 'Key decisions', badge: 'background: #0B1026; color: #3BFF8F', items: num([
+        ['The mode indicator sits right above the board, with two opposite surfaces', 'STRAIGHT is a light ice surface + square icon + "+"; DIAGONAL is a dark surface + diamond + a "×" pattern. They tell apart without looking at color, even from the corner of the eye. The board frame texture also turns into a + or × grid; the star\'s shape is the third cue.'],
+        ['Shape = walking, inner mark = hitting', 'The brief\'s language was kept and tied to one rule: the outer shape (square/diamond) is the walking direction, the sword in the middle (+/×) the hitting direction. On a star the hitting direction equals the walking direction, so the inner area carries the emblem.'],
+        ['Players differ by color + emblem', 'Neon/dot, Sun/triangle, Fuchsia/double line, Lavender/ring. The emblems are drawn to fit inside the square and the diamond; they read at 26 pt too. Color-blind mode spreads the palette by brightness and thickens the emblem stroke.'],
+        ['Bots are muted on purpose', 'Because shape and sword carry the type, bot colors were pulled toward brick and steel tones. That way they don’t compete with the danger red, the ring orange and the player colors.'],
+        ['The octagon square stays; the corner cut shrinks with the board', '26% on 9×9, 22% on 11×11, 18% on 13×13. At 26 pt the inner area stays large and the piece fits; the notches between squares make the grid readable. Fallback if needed: a square with 3 pt rounded corners (same tokens).'],
+        ['A wide touch area solves the 13×13 problem', 'Since at most 4 squares are reachable on a turn, a tap snaps to the nearest lit square (radius ≈ 1.6 squares). In practice every target behaves larger than 44 pt. Tapping your own piece shows threats; tapping a bot opens the info card. Zoom is still suggested: 1.6× around the piece with two fingers or a double tap.'],
+        ['The preview counts the risk and leaves the decision to the player', 'Pieces that could take you on the chosen square this round are linked with a red dashed line and listed in the panel. On a risky move the Confirm button turns red and says "Risky · Confirm"; it doesn\'t block.'],
+        ['Thumb zone', 'Every decision (Confirm, Cancel, Speed up, Keep watching) is in the bottom panel. Confirm is on the right and twice as wide. The top holds only information; menu and log are secondary in the corner.'],
+        ['The bot order is shown in time', 'No numbers on the board during a player’s turn. During the bot turn only the moving bot and the next 3 get a badge. Numbers also show on the long-press card and in the preview list.']
+      ]) },
+      { title: 'Assumptions', badge: 'background: #E9F0FF; color: #0B1026', items: num([
+        ['Ring schedule', 'On 9×9 the first collapse is at the end of round 11, then every 4 rounds. On 11×11 and 13×13 the first collapse is round 12–13, same interval. The warning shows at the start of the collapse round; the collapse happens after the bots, before the mode changes. Should be tested against the 5–10 minute target.'],
+        ['Threat calculation', 'The preview counts every piece that will still move this round on the chosen square (players whose turn hasn’t come yet and all bots).'],
+        ['Disconnected player', 'If it is their turn, the game waits at most 30 s, then the Twin plays. If not, the game doesn\'t stop; if they aren\'t back within 30 s, the Twin plays when their turn comes.'],
+        ['Move time options', '10 / 20 / 30 s in the lobby. Default 20.'],
+        ['Starting points', '9×9: (2,5) and (8,5); 11×11: a triangle layout; 13×13: the middle of the four edges, one square in. The lobby preview shows this.'],
+        ['Prototype', 'The prototype plays one full round on 9×9 with 2 stars (preview, confirm, rival, bot turn, mode change). Bot intelligence is a simple placeholder; the rules are real. After round 8 a "skip to game over" shortcut appears.']
+      ]) },
+      { title: 'Where the rules make the design hard', badge: 'background: #FFE2C8; color: #0B1026', items: num([
+        ['A 1–1.5 s bot turn with 28 bots', 'That is ≈ 45 ms per bot; following them one by one is impossible. Proposal: the slides overlap (130 ms each), badges and line trails tell the order. If a bot that takes you comes up, the round slows down for a moment (250 ms).'],
+        ['The mode changes every round, but so does the first player', 'Who starts can get confusing. The mode card and the panel name the round’s first player ("Round 8 · first turn Player 2").'],
+        ['The Twin is both a bot and a player', 'The Twin sits in the player strip with the seat\'s color and emblem, named "Twin". It is a star, not a bot; the bots chase it too.']
+      ]) },
+      { title: 'Open questions', badge: 'background: #FFD0D8; color: #0B1026', items: num([
+        ['How will the bot count and the ring interval be tuned?', 'My proposal: measure match length and the "first knockout round" in the first tests; the target first knockout is round 6–9.'],
+        ['How should the hit count show when a star hits a star?', 'Right now a bot hit and a star hit count the same. At the end of a match they could be separate stats.'],
+        ['Is a left-hand mode needed?', 'The Confirm button is on the right. A mirrored layout for left-handed players could be a setting; it isn\'t in the brief, so I didn\'t add it.'],
+        ['Shared result card', 'Should the Share button make an image card (board + ranking) or only an invite link?'],
+        ['Sound language', 'A sound character (mechanical / electronic) should be chosen for hits, mode changes and the ring.'],
+        ['Name', 'Eight, Straight Diagonal, Star Square. The chosen name doesn’t change the logo direction.']
+      ]) }
+    ];
+    return { sections: sections };
+  }
+}
+</script>
+</body>
+</html>

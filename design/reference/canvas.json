@@ -4,7 +4,7 @@
   "v": 1,
   "at": "2026-10-05T20:10:00Z"
  },
- "title": "Taktiksel Satranç Arenası",
+ "title": "Tactical Chess Arena",
  "launch": {
   "view": "canvas"
  },
@@ -15,254 +15,254 @@
    "y": 3800,
    "w": 390,
    "h": 844,
-   "title": "01 Ana menü",
+   "title": "01 Main menu",
    "is_interactive": true,
    "radius": 44
   },
-  "TasarimSistemi.dc.html": {
+  "DesignSystem.dc.html": {
    "x": 0,
    "y": 0,
    "w": 1440,
    "h": 3400,
-   "title": "Tasarım sistemi"
+   "title": "Design system"
   },
-  "Notlar.dc.html": {
+  "Notes.dc.html": {
    "x": 1520,
    "y": 0,
    "w": 960,
    "h": 3400,
-   "title": "Kararlar ve açık sorular"
+   "title": "Decisions and open questions"
   },
-  "OdaKatil.dc.html": {
+  "JoinRoom.dc.html": {
    "x": 470,
    "y": 3800,
    "w": 390,
    "h": 844,
-   "title": "02 Odaya katıl · kod",
+   "title": "02 Join a room · code",
    "is_interactive": true,
    "radius": 44
   },
-  "Davet.dc.html": {
+  "Invite.dc.html": {
    "x": 940,
    "y": 3800,
    "w": 390,
    "h": 844,
-   "title": "03 Linkle gelen davet",
+   "title": "03 Invite by link",
    "is_interactive": true,
    "radius": 44
   },
-  "Lobi.dc.html": {
+  "Lobby.dc.html": {
    "x": 1410,
    "y": 3800,
    "w": 390,
    "h": 844,
-   "title": "04 Lobi · kurucu",
+   "title": "04 Lobby · host",
    "is_interactive": true,
    "radius": 44
   },
-  "LobiMisafir.dc.html": {
+  "LobbyGuest.dc.html": {
    "x": 1880,
    "y": 3800,
    "w": 390,
    "h": 844,
-   "title": "05 Lobi · misafir",
+   "title": "05 Lobby · guest",
    "is_interactive": true,
    "radius": 44
   },
-  "Egitim.dc.html": {
+  "Tutorial.dc.html": {
    "x": 2350,
    "y": 3800,
    "w": 390,
    "h": 844,
-   "title": "06 Nasıl oynanır",
+   "title": "06 How to play",
    "is_interactive": true,
    "radius": 44
   },
-  "Ayarlar.dc.html": {
+  "Settings.dc.html": {
    "x": 2820,
    "y": 3800,
    "w": 390,
    "h": 844,
-   "title": "07 Ayarlar",
+   "title": "07 Settings",
    "is_interactive": true,
    "radius": 44
   },
-  "OyunSonu.dc.html": {
+  "GameOver.dc.html": {
    "x": 3290,
    "y": 3800,
    "w": 390,
    "h": 844,
-   "title": "08 Oyun sonu",
+   "title": "08 Game over",
    "is_interactive": true,
    "radius": 44
   },
-  "Prototip.dc.html": {
+  "Prototype.dc.html": {
    "x": 3760,
    "y": 3800,
    "w": 390,
    "h": 844,
-   "title": "Prototip · tam tur (oyna)",
+   "title": "Prototype · full round (play)",
    "is_interactive": true,
    "radius": 44
   },
-  "Oyun-01-Sira.dc.html": {
+  "Game-01-Turn.dc.html": {
    "x": 0,
    "y": 5064,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Senin sıran",
+   "title": "Game · Your turn",
    "radius": 44
   },
-  "Oyun-02-Son5.dc.html": {
+  "Game-02-Last5.dc.html": {
    "x": 470,
    "y": 5064,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Son 5 saniye",
+   "title": "Game · Last 5 seconds",
    "radius": 44
   },
-  "Oyun-03-Onizleme.dc.html": {
+  "Game-03-Preview.dc.html": {
    "x": 940,
    "y": 5064,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Önizleme ve onay",
+   "title": "Game · Preview and confirm",
    "radius": 44
   },
-  "Oyun-04-Tehdit.dc.html": {
+  "Game-04-Threat.dc.html": {
    "x": 1410,
    "y": 5064,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Seni vurabilecekler",
+   "title": "Game · Pieces that can hit you",
    "radius": 44
   },
-  "Oyun-05-Rakip.dc.html": {
+  "Game-05-Rival.dc.html": {
    "x": 1880,
    "y": 5064,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Başkasının sırası",
+   "title": "Game · Someone else's turn",
    "radius": 44
   },
-  "Oyun-06-Bot.dc.html": {
+  "Game-06-Bot.dc.html": {
    "x": 2350,
    "y": 5064,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Bot turu",
+   "title": "Game · Bot turn",
    "radius": 44
   },
-  "Oyun-07-Mod.dc.html": {
+  "Game-07-Mode.dc.html": {
    "x": 2820,
    "y": 5064,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Mod değişimi",
+   "title": "Game · Mode change",
    "radius": 44
   },
-  "Oyun-08-Vurus.dc.html": {
+  "Game-08-Hit.dc.html": {
    "x": 3290,
    "y": 5064,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Vuruş",
+   "title": "Game · Hit",
    "radius": 44
   },
-  "Oyun-09-Elenme.dc.html": {
+  "Game-09-Out.dc.html": {
    "x": 3760,
    "y": 5064,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Elenme (11×11)",
+   "title": "Game · Knocked out (11×11)",
    "radius": 44
   },
-  "Oyun-10-HalkaUyari.dc.html": {
+  "Game-10-RingWarning.dc.html": {
    "x": 0,
    "y": 6328,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Halka uyarısı",
+   "title": "Game · Ring warning",
    "radius": 44
   },
-  "Oyun-11-HalkaCokme.dc.html": {
+  "Game-11-RingCollapse.dc.html": {
    "x": 470,
    "y": 6328,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Halka çöktü",
+   "title": "Game · Ring collapsed",
    "radius": 44
   },
-  "Oyun-12-Izleyici.dc.html": {
+  "Game-12-Spectator.dc.html": {
    "x": 940,
    "y": 6328,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Elendin → izleyici",
+   "title": "Game · You're out → spectator",
    "radius": 44
   },
-  "Oyun-13-SureBitti.dc.html": {
+  "Game-13-TimeUp.dc.html": {
    "x": 1410,
    "y": 6328,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Süre bitti",
+   "title": "Game · Time's up",
    "radius": 44
   },
-  "Oyun-14-Kopan.dc.html": {
+  "Game-14-Dropped.dc.html": {
    "x": 1880,
    "y": 6328,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Rakibin bağlantısı koptu",
+   "title": "Game · A rival disconnected",
    "radius": 44
   },
-  "Oyun-15-Baglaniyor.dc.html": {
+  "Game-15-Reconnecting.dc.html": {
    "x": 2350,
    "y": 6328,
    "w": 390,
    "h": 844,
-   "title": "Oyun · Yeniden bağlanıyor",
+   "title": "Game · Reconnecting",
    "radius": 44
   },
-  "Oyun-16-TasBilgi.dc.html": {
+  "Game-16-PieceInfo.dc.html": {
    "x": 2820,
    "y": 6328,
    "w": 390,
    "h": 844,
-   "title": "Taş bilgi kartı",
+   "title": "Piece info card",
    "radius": 44
   },
-  "Oyun-17-SavasKaydi.dc.html": {
+  "Game-17-BattleLog.dc.html": {
    "x": 3290,
    "y": 6328,
    "w": 390,
    "h": 844,
-   "title": "Savaş kaydı",
+   "title": "Battle log",
    "radius": 44
   },
-  "Tahta-09.dc.html": {
+  "Board-09.dc.html": {
    "x": 0,
    "y": 7592,
    "w": 390,
    "h": 844,
-   "title": "9×9 · 2 yıldız",
+   "title": "9×9 · 2 stars",
    "radius": 44
   },
-  "Tahta-11.dc.html": {
+  "Board-11.dc.html": {
    "x": 470,
    "y": 7592,
    "w": 390,
    "h": 844,
-   "title": "11×11 · 3 yıldız",
+   "title": "11×11 · 3 stars",
    "radius": 44
   },
-  "Tahta-13.dc.html": {
+  "Board-13.dc.html": {
    "x": 940,
    "y": 7592,
    "w": 390,
    "h": 844,
-   "title": "13×13 · 4 yıldız",
+   "title": "13×13 · 4 stars",
    "radius": 44
   },
   "SE-13.dc.html": {
@@ -273,240 +273,240 @@
    "title": "iPhone SE · 13×13",
    "radius": 20
   },
-  "SE-09-Onizleme.dc.html": {
+  "SE-09-Preview.dc.html": {
    "x": 1865,
    "y": 7592,
    "w": 375,
    "h": 667,
-   "title": "iPhone SE · önizleme",
+   "title": "iPhone SE · preview",
    "radius": 20
   },
-  "OyunEkrani.dc.html": {
+  "GameScreen.dc.html": {
    "x": 2400,
    "y": 7592,
    "w": 390,
    "h": 844,
-   "title": "Bileşen · Oyun ekranı (ana)",
+   "title": "Component · Game screen (main)",
    "radius": 44
   },
-  "MasaustuMenu.dc.html": {
+  "DesktopMenu.dc.html": {
    "x": 0,
    "y": 8856,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Ana menü",
+   "title": "Desktop · Main menu",
    "is_interactive": true
   },
-  "MasaustuLobi.dc.html": {
+  "DesktopLobby.dc.html": {
    "x": 1520,
    "y": 8856,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Lobi",
+   "title": "Desktop · Lobby",
    "is_interactive": true
   },
-  "MasaustuPrototip.dc.html": {
+  "DesktopPrototype.dc.html": {
    "x": 3040,
    "y": 8856,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Prototip (oyna)",
+   "title": "Desktop · Prototype (play)",
    "is_interactive": true
   },
-  "MasaustuSonu.dc.html": {
+  "DesktopGameOver.dc.html": {
    "x": 4560,
    "y": 8856,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Oyun sonu",
+   "title": "Desktop · Game over",
    "is_interactive": true
   },
-  "MasaustuAyarlar.dc.html": {
+  "DesktopSettings.dc.html": {
    "x": 6080,
    "y": 8856,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Ayarlar (pencere)",
+   "title": "Desktop · Settings (window)",
    "is_interactive": true
   },
-  "MasaustuEgitim.dc.html": {
+  "DesktopTutorial.dc.html": {
    "x": 7600,
    "y": 8856,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Nasıl oynanır (pencere)",
+   "title": "Desktop · How to play (window)",
    "is_interactive": true
   },
-  "M-Oyun-Sira.dc.html": {
+  "Desktop-Game-Turn.dc.html": {
    "x": 0,
    "y": 10176,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Senin sıran"
+   "title": "Desktop · Your turn"
   },
-  "M-Oyun-Onizleme.dc.html": {
+  "Desktop-Game-Preview.dc.html": {
    "x": 1520,
    "y": 10176,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Önizleme ve onay"
+   "title": "Desktop · Preview and confirm"
   },
-  "M-Oyun-Tehdit.dc.html": {
+  "Desktop-Game-Threat.dc.html": {
    "x": 3040,
    "y": 10176,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Seni vurabilecekler"
+   "title": "Desktop · Who can hit you"
   },
-  "M-Oyun-Bot.dc.html": {
+  "Desktop-Game-Bot.dc.html": {
    "x": 4560,
    "y": 10176,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Bot turu"
+   "title": "Desktop · Bot turn"
   },
-  "M-Oyun-Mod.dc.html": {
+  "Desktop-Game-Mode.dc.html": {
    "x": 6080,
    "y": 10176,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Mod değişimi"
+   "title": "Desktop · Mode change"
   },
-  "M-Oyun-Bilgi.dc.html": {
+  "Desktop-Game-Info.dc.html": {
    "x": 7600,
    "y": 10176,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Taş bilgisi (fare üstü)"
+   "title": "Desktop · Piece info (hover)"
   },
-  "M-Oyun-HalkaUyari.dc.html": {
+  "Desktop-Game-RingWarning.dc.html": {
    "x": 9120,
    "y": 10176,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Halka uyarısı"
+   "title": "Desktop · Ring warning"
   },
-  "M-Oyun-Izleyici.dc.html": {
+  "Desktop-Game-Spectator.dc.html": {
    "x": 10640,
    "y": 10176,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · İzleyici (11×11)"
+   "title": "Desktop · Spectator (11×11)"
   },
-  "M-Oyun-Baglaniyor.dc.html": {
+  "Desktop-Game-Reconnecting.dc.html": {
    "x": 12160,
    "y": 10176,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · Yeniden bağlanıyor"
+   "title": "Desktop · Reconnecting"
   },
-  "M-Oyun-13.dc.html": {
+  "Desktop-Game-13.dc.html": {
    "x": 13680,
    "y": 10176,
    "w": 1440,
    "h": 900,
-   "title": "Masaüstü · 13×13, 4 yıldız"
+   "title": "Desktop · 13×13, 4 stars"
   }
  },
  "order": [
   "Main.dc.html",
-  "TasarimSistemi.dc.html",
-  "Notlar.dc.html",
-  "OdaKatil.dc.html",
-  "Davet.dc.html",
-  "Lobi.dc.html",
-  "LobiMisafir.dc.html",
-  "Egitim.dc.html",
-  "Ayarlar.dc.html",
-  "OyunSonu.dc.html",
-  "Prototip.dc.html",
-  "Oyun-01-Sira.dc.html",
-  "Oyun-02-Son5.dc.html",
-  "Oyun-03-Onizleme.dc.html",
-  "Oyun-04-Tehdit.dc.html",
-  "Oyun-05-Rakip.dc.html",
-  "Oyun-06-Bot.dc.html",
-  "Oyun-07-Mod.dc.html",
-  "Oyun-08-Vurus.dc.html",
-  "Oyun-09-Elenme.dc.html",
-  "Oyun-10-HalkaUyari.dc.html",
-  "Oyun-11-HalkaCokme.dc.html",
-  "Oyun-12-Izleyici.dc.html",
-  "Oyun-13-SureBitti.dc.html",
-  "Oyun-14-Kopan.dc.html",
-  "Oyun-15-Baglaniyor.dc.html",
-  "Oyun-16-TasBilgi.dc.html",
-  "Oyun-17-SavasKaydi.dc.html",
-  "Tahta-09.dc.html",
-  "Tahta-11.dc.html",
-  "Tahta-13.dc.html",
+  "DesignSystem.dc.html",
+  "Notes.dc.html",
+  "JoinRoom.dc.html",
+  "Invite.dc.html",
+  "Lobby.dc.html",
+  "LobbyGuest.dc.html",
+  "Tutorial.dc.html",
+  "Settings.dc.html",
+  "GameOver.dc.html",
+  "Prototype.dc.html",
+  "Game-01-Turn.dc.html",
+  "Game-02-Last5.dc.html",
+  "Game-03-Preview.dc.html",
+  "Game-04-Threat.dc.html",
+  "Game-05-Rival.dc.html",
+  "Game-06-Bot.dc.html",
+  "Game-07-Mode.dc.html",
+  "Game-08-Hit.dc.html",
+  "Game-09-Out.dc.html",
+  "Game-10-RingWarning.dc.html",
+  "Game-11-RingCollapse.dc.html",
+  "Game-12-Spectator.dc.html",
+  "Game-13-TimeUp.dc.html",
+  "Game-14-Dropped.dc.html",
+  "Game-15-Reconnecting.dc.html",
+  "Game-16-PieceInfo.dc.html",
+  "Game-17-BattleLog.dc.html",
+  "Board-09.dc.html",
+  "Board-11.dc.html",
+  "Board-13.dc.html",
   "SE-13.dc.html",
-  "SE-09-Onizleme.dc.html",
-  "OyunEkrani.dc.html",
-  "MasaustuMenu.dc.html",
-  "MasaustuLobi.dc.html",
-  "MasaustuPrototip.dc.html",
-  "MasaustuSonu.dc.html",
-  "MasaustuAyarlar.dc.html",
-  "MasaustuEgitim.dc.html",
-  "M-Oyun-Sira.dc.html",
-  "M-Oyun-Onizleme.dc.html",
-  "M-Oyun-Tehdit.dc.html",
-  "M-Oyun-Bot.dc.html",
-  "M-Oyun-Mod.dc.html",
-  "M-Oyun-Bilgi.dc.html",
-  "M-Oyun-HalkaUyari.dc.html",
-  "M-Oyun-Izleyici.dc.html",
-  "M-Oyun-Baglaniyor.dc.html",
-  "M-Oyun-13.dc.html"
+  "SE-09-Preview.dc.html",
+  "GameScreen.dc.html",
+  "DesktopMenu.dc.html",
+  "DesktopLobby.dc.html",
+  "DesktopPrototype.dc.html",
+  "DesktopGameOver.dc.html",
+  "DesktopSettings.dc.html",
+  "DesktopTutorial.dc.html",
+  "Desktop-Game-Turn.dc.html",
+  "Desktop-Game-Preview.dc.html",
+  "Desktop-Game-Threat.dc.html",
+  "Desktop-Game-Bot.dc.html",
+  "Desktop-Game-Mode.dc.html",
+  "Desktop-Game-Info.dc.html",
+  "Desktop-Game-RingWarning.dc.html",
+  "Desktop-Game-Spectator.dc.html",
+  "Desktop-Game-Reconnecting.dc.html",
+  "Desktop-Game-13.dc.html"
  ],
  "notes": {
   "tA": {
    "x": 0,
    "y": -300,
-   "text": "Tasarım sistemi ve kararlar",
+   "text": "Design system and decisions",
    "kind": "title1",
    "maxW": 2480
   },
   "tB": {
    "x": 0,
    "y": 3500,
-   "text": "Akış ekranları ve prototip (Play: 01 Ana menü)",
+   "text": "Flow screens and prototype (Play: 01 Main menu)",
    "kind": "title1",
    "maxW": 4150
   },
   "tC": {
    "x": 0,
    "y": 4764,
-   "text": "Oyun ekranı durumları · 1",
+   "text": "Game screen states · 1",
    "kind": "title1",
    "maxW": 4150
   },
   "tD": {
    "x": 0,
    "y": 6028,
-   "text": "Oyun ekranı durumları · 2",
+   "text": "Game screen states · 2",
    "kind": "title1",
    "maxW": 4150
   },
   "tE": {
    "x": 0,
    "y": 7292,
-   "text": "Tahta boyları ve küçük ekran",
+   "text": "Board sizes and small screen",
    "kind": "title1",
    "maxW": 2790
   },
   "tF": {
    "x": 0,
    "y": 8596,
-   "text": "Masaüstü tarayıcı · akış ve prototip (Play: Masaüstü · Ana menü)",
+   "text": "Desktop browser · flow and prototype (Play: Desktop · Main menu)",
    "kind": "title1",
    "maxW": 9040
   },
   "tG": {
    "x": 0,
    "y": 9916,
-   "text": "Masaüstü tarayıcı · oyun ekranı durumları",
+   "text": "Desktop browser · game screen states",
    "kind": "title1",
    "maxW": 15120
   }

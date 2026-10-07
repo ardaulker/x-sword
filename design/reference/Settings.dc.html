@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; padding: 47px 0 34px; background: #0B1026; color: #EEF2FF; font-family: 'Barlow', system-ui, sans-serif; display: flex; flex-direction: column; gap: 12px">
+  <div style="height: 52px; display: flex; align-items: center; gap: 8px; padding: 0 10px">
+    <a href="Main.dc.html" aria-label="Back" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #EEF2FF">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 L8 12 L15 19"></path></svg>
+    </a>
+    <span style="font-size: 20px; font-weight: 700">Settings</span>
+  </div>
+
+  <div style="margin: 0 12px; border-radius: 18px; background: #121A3A; border: 1px solid #26306A; overflow: hidden">
+    <sc-for list="{{basic}}" as="t" hint-placeholder-count="2">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 0 14px; min-height: 60px; border-bottom: 1px solid #1E2754">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A9B4DA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="{{t.icon}}"></path></svg>
+        <span style="flex: 1; font-size: 16px; font-weight: 600">{{t.label}}</span>
+        <button type="button" aria-label="{{t.label}}" aria-pressed="{{t.on}}" onClick="{{t.toggle}}" style="width: 56px; height: 44px; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center">
+          <span style="width: 52px; height: 32px; border-radius: 16px; position: relative; transition: background 180ms ease; {{t.track}}"><span style="position: absolute; top: 3px; width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; transition: left 180ms cubic-bezier(.2,.8,.2,1); {{t.knob}}"></span></span>
+        </button>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="padding: 4px 24px 0; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #A9B4DA">ON THE BOARD</div>
+  <div style="margin: 0 12px; border-radius: 18px; background: #121A3A; border: 1px solid #26306A; overflow: hidden">
+    <sc-for list="{{board}}" as="t" hint-placeholder-count="3">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #1E2754">
+        <div style="width: 40px; height: 40px; flex: none; position: relative">
+          <div style="position: absolute; inset: 0; clip-path: polygon(26% 0,74% 0,100% 26%,100% 74%,74% 100%,26% 100%,0 74%,0 26%); {{t.prevBg}}"></div>
+          <div style="position: absolute; left: 17%; top: 17%; width: 66%; height: 66%; border-radius: 10%; {{t.prevShape}}"></div>
+          <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible"><path d="{{t.prevG}}" fill="none" stroke="#0B1026" stroke-width="10" stroke-linecap="round"></path><path d="{{t.prevN}}" fill="{{t.prevNf}}" stroke="#0B1026" stroke-width="4" stroke-linejoin="round"></path></svg>
+        </div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 16px; font-weight: 600">{{t.label}}</span>
+          <span style="font-size: 13px; font-weight: 500; line-height: 1.3; color: #A9B4DA">{{t.desc}}</span>
+        </div>
+        <button type="button" aria-label="{{t.label}}" aria-pressed="{{t.on}}" onClick="{{t.toggle}}" style="width: 56px; height: 44px; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center; flex: none">
+          <span style="width: 52px; height: 32px; border-radius: 16px; position: relative; transition: background 180ms ease; {{t.track}}"><span style="position: absolute; top: 3px; width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; transition: left 180ms cubic-bezier(.2,.8,.2,1); {{t.knob}}"></span></span>
+        </button>
+      </div>
+    </sc-for>
+    <div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; justify-content: space-between"><span style="font-size: 16px; font-weight: 600">Animation speed</span><span style="font-size: 13px; font-weight: 500; color: #A9B4DA">{{speedHint}}</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 3px; border-radius: 12px; background: #0B1026">
+        <sc-for list="{{speeds}}" as="o" hint-placeholder-count="3">
+          <button type="button" onClick="{{o.pick}}" style="height: 40px; border-radius: 9px; border: 0; font: 700 14px 'Barlow', sans-serif; {{o.st}}">{{o.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin: 0 12px; padding: 12px 14px; border-radius: 18px; background: #121A3A; border: 1px solid #26306A; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 16px; font-weight: 600">Color-blind mode</span>
+        <span style="font-size: 13px; font-weight: 500; color: #A9B4DA">Separates colors by brightness and enlarges the emblems</span>
+      </div>
+      <button type="button" aria-label="Color-blind mode" aria-pressed="{{cb.on}}" onClick="{{cb.toggle}}" style="width: 56px; height: 44px; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center; flex: none">
+        <span style="width: 52px; height: 32px; border-radius: 16px; position: relative; {{cb.track}}"><span style="position: absolute; top: 3px; width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; transition: left 180ms cubic-bezier(.2,.8,.2,1); {{cb.knob}}"></span></span>
+      </button>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px">
+      <sc-for list="{{cb.swatches}}" as="w" hint-placeholder-count="6">
+        <div style="height: 46px; border-radius: 10px; background: #0B1026; display: flex; align-items: center; justify-content: center; position: relative">
+          <div style="position: relative; width: 32px; height: 32px">
+            <div style="position: absolute; left: 17%; top: 17%; width: 66%; height: 66%; border-radius: 10%; {{w.shape}}"></div>
+            <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{w.d}}" fill="{{w.f}}" stroke="{{w.s}}" stroke-width="{{w.w}}" stroke-linecap="round"></path></svg>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <a href="Main.dc.html" style="margin: auto 12px 0; height: 56px; border-radius: 16px; border: 1.5px solid #3A4785; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; color: #EEF2FF; text-decoration: none">
+    <span style="display: flex; flex-direction: column; line-height: 1.2"><span style="font-size: 15px; font-weight: 700">Nickname and color</span><span style="font-size: 12px; font-weight: 500; color: #A9B4DA">Player 1 · Neon dot</span></span>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A9B4DA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L16 12 L9 19"></path></svg>
+  </a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var get = function (k, d) { return s[k] === undefined ? d : s[k]; };
+    var sw = function (on) { return { track: 'background:' + (on ? '#3BFF8F' : '#2B3670'), knob: 'left:' + (on ? 23 : 3) + 'px' }; };
+    var mk = function (key, label, icon, def) { var on = get(key, def), w = sw(on); var o = {}; o[key] = !on; return { label: label, icon: icon, on: on ? 'true' : 'false', track: w.track, knob: w.knob, toggle: function () { self.setState(o); } }; };
+    var basic = [
+      mk('sound', 'Sound', 'M4 9 H8 L13 5 V19 L8 15 H4 Z M16.5 8.5 A5 5 0 0 1 16.5 15.5 M19 6 A8.5 8.5 0 0 1 19 18', true),
+      mk('vibration', 'Vibration', 'M8 4 H16 V20 H8 Z M4 8 V16 M20 8 V16 M11 17 H13', true)
+    ];
+    var b1 = mk('danger', 'Danger indicator', '', true), b2 = mk('target', 'Bot target marker', '', true), b3 = mk('numbers', 'Bot turn numbers', '', false);
+    b1.desc = 'Marks the squares of pieces that can hit you with stripes.';
+    b1.prevBg = get('danger', true) ? 'background: repeating-linear-gradient(-45deg, rgba(255,59,92,.6) 0 2px, rgba(255,59,92,.12) 2px 6px), #2A1B3E' : 'background: #1A2452';
+    b1.prevShape = 'display: none'; b1.prevG = ''; b1.prevN = ''; b1.prevNf = 'none';
+    b2.desc = 'The triangle on a bot’s edge is in the color of the player it chases.';
+    b2.prevBg = 'background: #1A2452'; b2.prevShape = 'background: #D3765B'; b2.prevG = 'M33 33 L67 67 M67 33 L33 67';
+    b2.prevN = get('target', true) ? 'M114 50 L94 37 L94 63 Z' : ''; b2.prevNf = '#3BFF8F';
+    b3.desc = 'When off, the order shows only during the bot turn and on a long press.';
+    b3.prevBg = 'background: #1A2452'; b3.prevShape = 'background: #6F98DA; transform: rotate(45deg) scale(.95)'; b3.prevG = 'M50 27 V73 M27 50 H73'; b3.prevN = ''; b3.prevNf = 'none';
+    var sp = get('speed', 1), SL = ['Slow', 'Normal', 'Fast'], SH = ['Slide 320 ms · bot turn ~2 s', 'Slide 220 ms · bot turn ~1.2 s', 'Slide 140 ms · bot turn ~0.8 s'];
+    var speeds = SL.map(function (l, i) { return { label: l, st: i === sp ? 'background: #E9F0FF; color: #0B1026' : 'background: transparent; color: #A9B4DA', pick: function () { self.setState({ speed: i }); } }; });
+    var cbOn = get('colorBlind', false), cw = sw(cbOn), INK = '#0B1026';
+    var normal = ['#3BFF8F', '#FFC53D', '#FF5CC0', '#B392FF'], safe = ['#56E0A6', '#F5D43B', '#FF8A5C', '#8FB8FF'];
+    var pal = cbOn ? safe : normal;
+    var EMB = [
+      { d: 'M50 36 A14 14 0 1 1 49.99 36 Z', f: INK, s: 'none', w: 0 },
+      { d: 'M50 33 L66 62 L34 62 Z', f: INK, s: INK, w: 3 },
+      { d: 'M33 42 H67 M33 58 H67', f: 'none', s: INK, w: 9 },
+      { d: 'M50 37 A13 13 0 1 1 49.99 37 Z', f: 'none', s: INK, w: 8 }
+    ];
+    var swatches = pal.map(function (c, i) { var e = EMB[i]; return { shape: 'background:' + c + ';box-shadow:0 0 0 2px #FFFFFF', d: e.d, f: e.f, s: e.s, w: cbOn && e.w ? e.w + 2 : e.w }; });
+    swatches.push({ shape: 'background:#D3765B', d: 'M33 33 L67 67 M67 33 L33 67', f: 'none', s: INK, w: cbOn ? 13 : 10 });
+    swatches.push({ shape: 'background:#6F98DA;transform:rotate(45deg) scale(.95)', d: 'M50 27 V73 M27 50 H73', f: 'none', s: INK, w: cbOn ? 13 : 10 });
+    return {
+      basic: basic, board: [b1, b2, b3], speeds: speeds, speedHint: SH[sp],
+      cb: { on: cbOn ? 'true' : 'false', track: cw.track, knob: cw.knob, toggle: function () { self.setState({ colorBlind: !cbOn }); }, swatches: swatches }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Invite by link</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; padding: 47px 16px 34px; background: radial-gradient(120% 60% at 50% 10%, #17225A 0%, #0B1026 62%); color: #EEF2FF; font-family: 'Barlow', system-ui, sans-serif; display: flex; flex-direction: column; gap: 18px">
+  <div style="height: 44px; display: flex; align-items: center; justify-content: space-between">
+    <span style="font-size: 13px; font-weight: 600; color: #A9B4DA">Opened from a WhatsApp link</span>
+    <a href="Main.dc.html" aria-label="Close" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #A9B4DA">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6 L18 18 M18 6 L6 18"></path></svg>
+    </a>
+  </div>
+
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding-top: 6px">
+    <svg width="84" height="84" viewBox="0 0 200 200" aria-hidden="true" style="overflow: visible">
+      <rect x="44" y="44" width="112" height="112" rx="6" fill="#0B1026" stroke="#E9F0FF" stroke-width="8"></rect>
+      <polygon points="100,21 179,100 100,179 21,100" fill="none" stroke="#3BFF8F" stroke-width="8" stroke-linejoin="round"></polygon>
+      <polygon points="86,66 114,66 134,86 134,114 114,134 86,134 66,114 66,86" fill="#3BFF8F"></polygon>
+    </svg>
+    <div style="font-family: 'Oxanium', sans-serif; font-size: 26px; font-weight: 800; line-height: 1.15">Player 1 is inviting you to a match</div>
+    <div style="font-size: 15px; font-weight: 500; color: #A9B4DA">No account, no download. Pick your name and sit down.</div>
+  </div>
+
+  <div style="padding: 14px; border-radius: 18px; background: #121A3A; border: 1px solid #26306A; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <span style="font-size: 13px; font-weight: 700; color: #A9B4DA">Room</span>
+      <span style="font-family: 'Oxanium', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.16em">K7Q2M</span>
+    </div>
+    <div style="display: flex; gap: 8px">
+      <div style="flex: 1; height: 48px; border-radius: 12px; background: #0B1026; display: flex; align-items: center; gap: 8px; padding: 0 10px; border: 1.5px solid rgba(59,255,143,.4)">
+        <span style="position: relative; width: 26px; height: 26px; flex: none">
+          <span style="position: absolute; left: 17%; top: 17%; width: 66%; height: 66%; border-radius: 10%; background: #3BFF8F; box-shadow: 0 0 0 1.5px #FFFFFF"></span>
+          <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="M50 36 A14 14 0 1 1 49.99 36 Z" fill="#0B1026"></path></svg>
+        </span>
+        <span style="display: flex; flex-direction: column; line-height: 1.15"><span style="font-size: 14px; font-weight: 700">Player 1</span><span style="font-size: 11px; font-weight: 600; color: #3BFF8F">Ready</span></span>
+      </div>
+      <div style="flex: 1; height: 48px; border-radius: 12px; border: 1.5px dashed #3A4785; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #A9B4DA">Your seat</div>
+    </div>
+    <div style="display: flex; gap: 6px; flex-wrap: wrap">
+      <span style="height: 28px; padding: 0 10px; border-radius: 14px; background: #232D5E; display: flex; align-items: center; font-size: 12px; font-weight: 600">9×9 board</span>
+      <span style="height: 28px; padding: 0 10px; border-radius: 14px; background: #232D5E; display: flex; align-items: center; font-size: 12px; font-weight: 600">Bots: Normal</span>
+      <span style="height: 28px; padding: 0 10px; border-radius: 14px; background: #232D5E; display: flex; align-items: center; font-size: 12px; font-weight: 600">Move: 20 s</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <label for="inviteName" style="font-size: 14px; font-weight: 700; color: #A9B4DA">Your nickname</label>
+    <input id="inviteName" value="{{name}}" onChange="{{onName}}" maxlength="12" style="height: 52px; box-sizing: border-box; padding: 0 14px; border-radius: 12px; border: 1.5px solid #3A4785; background: #121A3A; color: #EEF2FF; font: 600 18px 'Barlow', sans-serif">
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+      <sc-for list="{{colors}}" as="c" hint-placeholder-count="4">
+        <button type="button" aria-label="{{c.label}}" onClick="{{c.pick}}" style="height: 52px; border-radius: 12px; background: #121A3A; display: flex; align-items: center; justify-content: center; {{c.st}}">
+          <span style="position: relative; width: 28px; height: 28px">
+            <span style="position: absolute; left: 17%; top: 17%; width: 66%; height: 66%; border-radius: 10%; box-shadow: 0 0 0 2px #FFFFFF; background: {{c.col}}"></span>
+            <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%"><path d="{{c.d}}" fill="{{c.f}}" stroke="{{c.s}}" stroke-width="{{c.w}}" stroke-linecap="round"></path></svg>
+          </span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <a href="LobbyGuest.dc.html" style="margin-top: auto; height: 60px; border-radius: 16px; background: #3BFF8F; color: #0B1026; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; text-decoration: none">Take a seat</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var name = s.name === undefined ? 'Player 2' : s.name, col = s.col === undefined ? 1 : s.col;
+    var INK = '#0B1026', PC = ['#3BFF8F', '#FFC53D', '#FF5CC0', '#B392FF'], PN = ['Neon', 'Sun', 'Fuchsia', 'Lavender'];
+    var EMB = [
+      { d: 'M50 36 A14 14 0 1 1 49.99 36 Z', f: INK, s: 'none', w: 0 },
+      { d: 'M50 33 L66 62 L34 62 Z', f: INK, s: INK, w: 3 },
+      { d: 'M33 42 H67 M33 58 H67', f: 'none', s: INK, w: 9 },
+      { d: 'M50 37 A13 13 0 1 1 49.99 37 Z', f: 'none', s: INK, w: 8 }
+    ];
+    var colors = PC.map(function (c, i) {
+      var taken = i === 0;
+      return { col: c, d: EMB[i].d, f: EMB[i].f, s: EMB[i].s, w: EMB[i].w, label: PN[i] + (taken ? ' (Player 1)' : ''),
+        st: (i === col ? 'border: 2px solid ' + c : 'border: 1.5px solid #26306A') + (taken ? '; opacity: .35; pointer-events: none' : ''),
+        pick: function () { if (!taken) self.setState({ col: i }); } };
+    });
+    return { name: name, colors: colors, onName: function (e) { self.setState({ name: e.target.value }); } };
+  }
+}
+</script>
+</body>
+</html>
