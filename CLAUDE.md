@@ -10,6 +10,9 @@
   dictates Turkish wording for the UI, put it in the Turkish dictionary and write the English source yourself.
 - After changing rules or bots: run the tests, update the rule texts (see the checklist below), commit and push. After
   the push, wait for the Actions run to finish, open the live page and check that the console is clean.
+- The game ships in **Turkish first** (regional translations come later), so the Turkish terms in
+  `app/src/i18n/tr.ts` must read well and feel native, not like translated English. When naming something, pick the
+  Turkish name with care and keep the English source key a plain descriptive word.
 - End every commit message with the `Co-Authored-By` line from the system reminder.
 - X Sword shares no account, file or memory with any other project.
 - macOS notes: `sed -i ''` needs the empty argument and BSD sed has no `\b` (use perl); quote globs
@@ -27,13 +30,12 @@
   engine is seeded, the boards stay identical. The connection is PeerJS phone to phone today (no server, no account).
   Only `transport.ts` knows the connection, so moving to an X Sword server later changes only that file. Arda said on
   6 October 2026: "serverless for now, maybe a product later".
-- `arena/` is a test bench for the engine (https://ardaulker.github.io/x-sword/arena/). `demo/index.html` is the
-  cousin's first demo (https://ardaulker.github.io/x-sword/demo/) and doesn't use the engine. The root `index.html`
-  only redirects to `/play/` (Arda found the demo at the root confusing, 8 October 2026).
-- Tests: `node tests/engine.test.mjs` (rules + bot strength), `node tests/tests.js` and `node tests/tests2.js` (the old
-  demo). Run them before and after touching rules or bots.
+- `arena/` is a test bench for the engine (https://ardaulker.github.io/x-sword/arena/). The root `index.html` only
+  redirects to `/play/`. The cousin's first demo was retired on 8 October 2026 (Arda: "that version is finished"): it
+  lives in `archive/cousin-demo/` with its old tests, is not published (the workflow skips `archive/`) and nothing uses it.
+- Tests: `node tests/engine.test.mjs` (rules + bot strength). Run it before and after touching rules or bots.
 - Publishing: a push to `main` runs `.github/workflows/pages.yml`, which runs the engine tests, builds `app/` and
-  publishes the site to GitHub Pages. Root pages (`index.html`, `demo/`, `arena/`, `engine/`) go out as they are; the game is
+  publishes the site to GitHub Pages. Root pages (`index.html`, `arena/`, `engine/`) go out as they are; the game is
   served at https://ardaulker.github.io/x-sword/play/ and https://ardaulker.github.io/x-sword/ redirects there. The old address `/oyun/` (before the English rename) redirects
   to `/play/` and keeps the `#/` route.
 - Translation (`app/src/i18n/`): in `tr('English sentence', {variable})` the key is the English text itself, so English
@@ -62,8 +64,6 @@
 - When rules or bot intelligence change, update the rule texts in the same change: the in-game "How to play" screen
   (`app/src/screens/RulesScreen.tsx`), the arena's Rules window (`arena/index.html`) and the game section of
   `docs/design-prompt.md`. The player guide changes together with the code.
-- `demo/index.html` uses Windows line endings (CRLF) and a BOM. If a tool rewrites the file, keep both, or the
-  diff shows the whole file as changed.
 
 ## Game rules (current summary; details in `RulesScreen.tsx`)
 - Board 9/11/13/15 squares (at least the default for the player count: `BOARD_SIZES`, `defaultNeutrals`). The mode
@@ -82,11 +82,11 @@
   "Continue / End" (`keepGoing`, off online).
 - Single player: the **Twin** is the player's mirror. It moves right after the player in the same direction: walks if
   the square is empty, takes the piece there if occupied, stays put if blocked. So it can never take the player. You
-  win when every bot is gone (no need to take the Twin). A take by the Twin gives double points and a mirror bonus.
+  win when every bot is gone (no need to take the Twin). A take by the Twin gives double points and a Switcheroo bonus.
   Arda chose this on 6 October 2026. In the cousin's first file the Twin was different: a hunter that chose its own
   moves under the player's rules.
 - Bonuses: everyone starts with one double step. 20 points double step, 40 double move, 60 one of the two at random,
-  50 mirror (swap places with any piece on the board). Surviving the first shrink gives armor (one extra life), the
+  50 Switcheroo (swap places with any piece on the board; Turkish name "Yer Çalma"). Surviving the first shrink gives armor (one extra life), the
   second a double move. AI players use bonuses too (`bonusMoves`, `BONUS_COST`).
 - Difficulty: Easy (you move first), Normal (random place), Hard (random place, bot target triangles hidden). AI rivals
   (`Setup.aiLevel`) and arena bots (`Setup.level`) are set separately. A Normal rival picks the second best move 30%
@@ -155,7 +155,6 @@
 ## Watch out
 - The first argument of `tr()` must be a plain quoted string. Engine `log` texts are not translated, but a bot's name
   (`label`) appears in game text.
-- `demo/index.html` is CRLF + BOM; when editing it, keep the line endings (read and write with `newline=''`).
 - Test setups (like `position()`) recompute bot `label`s when they call `roundOrder`; don't assume fixed numbers in a
   test, use `pieceById(...).label`.
 - `app/src/game/names.ts` keeps Turkish grammar data (accusative suffixes) because Turkish needs it; that is language
@@ -173,7 +172,7 @@
   shifts the random sequence. Add the title and hint to `app/src/game/puzzleText.ts` and to the six dictionaries.
   Puzzle ids start at 101 (so old star records don't mix); the screen shows a running number. Tutorials are 201–203.
 - Design lessons: a row of obstacles on odd-odd squares boxes a piece in on all four sides in a diagonal round; avoid
-  it. A mirror swaps you with a bot and sends the bot to your old square, so a "separate islands" puzzle can't be
+  it. A Switcheroo swaps you with a bot and sends the bot to your old square, so a "separate islands" puzzle can't be
   solved. Far-away bots can't be solved in 5–6 moves; use `near`.
 - **Don't repeat the ideas and shapes below when adding puzzles.** Unused ideas so far: five bots, three bonuses at
   once, two shrinks, obstacles + collapse, a puzzle with the Twin, a bot that walks.
@@ -257,7 +256,7 @@ R.B.----
 ..#R...
 .......
 ```
-### 107 · Mirror — DIAGONAL, par 4, bonus swap:1 — idea: mirror required (to change direction / square color)
+### 107 · Switcheroo — DIAGONAL, par 4, bonus swap:1 — idea: Switcheroo required (to change direction / square color)
 ```
 .........
 ..RR.....
@@ -326,7 +325,7 @@ R#..S#.
 .#...#.
 .......
 ```
-### 114 · Pair — DIAGONAL, par 5, bonus step:1,swap:1 — idea: two bonuses together (double step + mirror)
+### 114 · Pair — DIAGONAL, par 5, bonus step:1,swap:1 — idea: two bonuses together (double step + Switcheroo)
 ```
 ...R....
 .##R.##.
@@ -345,7 +344,7 @@ R#..S#.
 .B.....
 ...S...
 ```
-### 116 · Butterfly — DIAGONAL, par 4, bonus swap:1 — idea: symmetric butterfly map + mirror required
+### 116 · Butterfly — DIAGONAL, par 4, bonus swap:1 — idea: symmetric butterfly map + Switcheroo required
 ```
 ..-----..
 ...---...
@@ -403,7 +402,7 @@ R#..S#.
 - The top bar shows "ROUND n" translated; the menu and battle-log buttons have small captions (hidden on short
   screens). The mode box subtitle shows only in the first two matches (`ctl.autoMap`) and in puzzles; otherwise the box
   is 44 px.
-- Bonus buttons use short names: Armor, Step ×2, Move ×2, Mirror (`shortBonus`). The ring chip says "Shrink: n rounds".
+- Bonus buttons use short names: Armor, Step ×2, Move ×2, Switcheroo (`shortBonus`). The ring chip says "Shrink: n rounds".
 - The danger map doesn't tint squares; it puts a faint red dot in the middle.
 - In single player the preview shows where the Twin will go as a faint Twin piece (`Board.tsx → twinGhost`, which copies
   the state and plays the move).

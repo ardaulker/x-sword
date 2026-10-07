@@ -127,7 +127,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
           <p>{tr('After your move you immediately make another.')}</p>
           <p className="rule-when">{rich('**How to earn it:** reach 40 points, and survive the second shrink. At 60 points it comes at random alongside Double step.')}</p>
         </Card>
-        <Card title={tr('Mirror')} visual={<Icon d="M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19" size={36} stroke={2} />}>
+        <Card title={tr('Switcheroo')} visual={<Icon d="M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19" size={36} stroke={2} />}>
           <p>{tr('Swap places with any piece on the board (a rival star or a bot).')}</p>
           <p className="rule-when">{rich('**How to earn it:** reach 50 points. In solo mode it also comes when the Twin takes a piece; that take scores you double points too.')}</p>
         </Card>

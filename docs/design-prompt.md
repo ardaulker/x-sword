@@ -67,7 +67,7 @@ shrinking arena and the move preview can be tried there. That screen is a test b
 - In single-player mode there is also a **Twin** on the board: the player's mirror. It moves right after the player, in
   the same direction the player just moved; it walks if that square is empty, takes the piece there if occupied and
   stays put if the way is closed. It can never take the player. The player wins when every bot is gone; the Twin
-  doesn't need to be taken. If the Twin takes a piece, the player gets double points and a mirror bonus.
+  doesn't need to be taken. If the Twin takes a piece, the player gets double points and a Switcheroo bonus.
 - A match has 2–4 stars. An AI player can take an empty seat. It is also called "Player N" and plays its turn like a
   player.
 - With 2 stars the board is 9×9 with about 14 bots.
@@ -88,14 +88,14 @@ shrinking arena and the move preview can be tried there. That screen is a test b
 
 ## Bonuses
 - Everyone starts with one double step. Bonuses are earned by conditions: 20 points double step, 40 points double
-  move, 60 points one of the two; 50 points mirror (swap places with any piece on the board); surviving the first
-  shrink gives armor; surviving the second gives a double move; in single player a take by the Twin also gives a mirror
+  move, 60 points one of the two; 50 points Switcheroo (swap places with any piece on the board); surviving the first
+  shrink gives armor; surviving the second gives a double move; in single player a take by the Twin also gives a Switcheroo
   bonus and double points. Optional in setup: teams (2 vs 2, 4 players), obstacle squares (can't be entered or jumped
   with a double step), rival personalities (hunter, careful, opportunist). In puzzle mode every bot must be taken in a
   limited number of moves. In single player you win when every bot is gone; with 2–4 players you can keep fighting the
   bots after the winner is decided.
 - Armor: protects you from being taken once and works by itself. Double step: move two squares. Double move: one more
-  move right away. Mirror: swap places with a piece.
+  move right away. Switcheroo: swap places with a piece.
 
 ## End
 - The match ends when one star is left. The score decides the winner: taking a player is 50, the Twin 30, a bot 10

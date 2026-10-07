@@ -192,7 +192,7 @@ test('armor: the taken star survives and the attacker stays put', () => {
   assert.equal(st.seats[1].bonuses.armor, 0);
 });
 
-test('double step goes two squares, double move keeps the turn, mirror swaps places', () => {
+test('double step goes two squares, double move keeps the turn, Switcheroo swaps places', () => {
   const st = position([{ kind: 'red', r: 4, c: 3 }]);
   st.seats[0].bonuses = { armor: 0, step: 1, double: 1, swap: 1 };
   assert.ok(!legalMoves(st, pieceById(st, 's0'), 'STRAIGHT').some(m => m.r === 3));
@@ -433,7 +433,7 @@ test('AI player: normal and hard win far more often than easy', () => {
   assert.ok(wins[1] > 3 * wins[0] && (wins[2] + wins[3]) / 2 > 3 * wins[0]);
 });
 
-test('when the Twin takes a piece its owner earns double points and a mirror bonus', () => {
+test('when the Twin takes a piece its owner earns double points and a Switcheroo bonus', () => {
   const st = soloPosition({ me: [1, 1], twin: [5, 5], bots: [{ kind: 'red', r: 5, c: 6 }, { kind: 'blue', r: 8, c: 8 }] });
   play(st, { r: 1, c: 2 });
   play(st, chooseMove(st, currentActor(st)));
@@ -471,7 +471,7 @@ test('single player: 13×13 board and the most bots', () => {
   assert.equal(createGame({ seats: seats(2), seed: 1, size: 7 }).size, 9);
 });
 
-test('mirror: comes at 50 points and swaps with a piece anywhere on the board', () => {
+test('Switcheroo: comes at 50 points and swaps with a piece anywhere on the board', () => {
   const st = position([{ kind: 'blue', r: 2, c: 1 }, { kind: 'red', r: 8, c: 8 }]);
   const seat = st.seats[0];
   seat.score = 40; seat.scoreTier = 2;

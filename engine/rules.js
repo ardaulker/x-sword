@@ -19,8 +19,8 @@ export const POINTS = { star: 50, twin: 30, red: 10, blue: 10 };
 export const SURVIVOR_BONUS = 30;
 
 // Bonuses are earned by conditions: 20 points double step, 40 points double move, 60 points one of the two (from the seed),
-// 50 points mirror (swap places with any piece), surviving the first shrink gives armor, the second shrink a double move.
-// In single player a mirror also comes when the Twin takes a piece.
+// 50 points Switcheroo (swap places with any piece), surviving the first shrink gives armor, the second shrink a double move.
+// In single player a Switcheroo also comes when the Twin takes a piece.
 // Armor works by itself (the piece that takes you bounces back). The others are used together with a move on your turn.
 export const BONUS_KINDS = ['armor', 'step', 'double', 'swap'];
 export const BONUS_SCORES = [20, 40, 60];
@@ -456,7 +456,7 @@ export function play(state, move) {
   return state;
 }
 
-export const BONUS_NAMES = { armor: 'Armor', step: 'Double step', double: 'Double move', swap: 'Mirror' };
+export const BONUS_NAMES = { armor: 'Armor', step: 'Double step', double: 'Double move', swap: 'Switcheroo' };
 
 // True if the take happens. An armored star isn't taken: it loses the armor and the attacker bounces back.
 function takePiece(state, actor, target) {
@@ -470,7 +470,7 @@ function takePiece(state, actor, target) {
     state.seats[actor.seat].takes++;
     addScore(state, state.seats[actor.seat], POINTS[target.kind]);
   } else if (actor.kind === 'twin') {
-    // A take by the Twin is hard to set up: it brings its owner double points and a mirror bonus.
+    // A take by the Twin is hard to set up: it brings its owner double points and a Switcheroo bonus.
     const seat = state.seats[pieceById(state, actor.mirrors).seat];
     if (!seat.out) {
       addScore(state, seat, POINTS[target.kind] * TWIN_TAKE_MULT);

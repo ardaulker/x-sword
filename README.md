@@ -12,7 +12,7 @@ The first version was made by Arda's cousin; the repo's first commit is that ver
   multiplayer over phone-to-phone connections (PeerJS), puzzles, a tutorial and a daily challenge.
   The old address `/oyun/` and the root address redirect here.
 - **Arena (engine test bench):** https://ardaulker.github.io/x-sword/arena/
-- **The cousin's first demo:** https://ardaulker.github.io/x-sword/demo/ (`demo/index.html`, open it in a browser; no setup).
+- **The cousin's first demo** is retired. It is kept in `archive/cousin-demo/` and is not published.
 
 https://ardaulker.github.io/x-sword/ opens the game.
 
@@ -34,8 +34,6 @@ with the code, tap "Ready" and the host starts. The host's phone runs the match;
 
 ```
 node tests/engine.test.mjs  # rules engine: rules, bots never taking needless risks, bot strength
-node tests/tests.js         # the cousin's demo: 2,000 random + 2,000 careful games in a fake DOM
-node tests/tests2.js        # the cousin's demo: colored paths, skipping dead bots, log texts
 ```
 
 ## Rules in short

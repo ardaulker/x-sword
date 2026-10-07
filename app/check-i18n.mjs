@@ -13,7 +13,7 @@ for (const f of src) {
   for (const m of s.matchAll(re)) keys.add((m[1] ?? m[2]).replace(/\\'/g, "'").replace(/\\"/g, '"'));
 }
 // Names that come from the engine and are translated indirectly through tr(BONUS_NAMES[k]).
-for (const k of ['Armor', 'Double step', 'Double move', 'Mirror']) keys.add(k);
+for (const k of ['Armor', 'Double step', 'Double move', 'Switcheroo']) keys.add(k);
 if (process.argv.includes('--dump')) { console.log(JSON.stringify([...keys], null, 1)); process.exit(0); }
 
 const vars = s => [...new Set([...s.matchAll(/\{(\w+)(?::[^}]*)?\}/g)].map(m => m[1]))].sort().join(',');

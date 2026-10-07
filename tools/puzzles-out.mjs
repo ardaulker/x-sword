@@ -156,8 +156,8 @@ export const PUZZLES = [
   {
     "tutorial": false,
     "id": 107,
-    "title": "Mirror",
-    "hint": "Use the Mirror to take a bot's place. Sometimes it's the only way to change direction.",
+    "title": "Switcheroo",
+    "hint": "Use the Switcheroo to take a bot's place. Sometimes it's the only way to change direction.",
     "mode": "DIAGONAL",
     "par": 4,
     "bonuses": {
@@ -290,7 +290,7 @@ export const PUZZLES = [
     "tutorial": false,
     "id": 114,
     "title": "Pair",
-    "hint": "Double step and mirror together. Use both at the right moment.",
+    "hint": "Double step and Switcheroo together. Use both at the right moment.",
     "mode": "DIAGONAL",
     "bonuses": {
       "step": 1,
@@ -332,7 +332,7 @@ export const PUZZLES = [
     "tutorial": false,
     "id": 116,
     "title": "Butterfly",
-    "hint": "Two wings, a narrow waist. The mirror can carry you to the other wing.",
+    "hint": "Two wings, a narrow waist. The Switcheroo can carry you to the other wing.",
     "mode": "DIAGONAL",
     "bonuses": {
       "swap": 1
