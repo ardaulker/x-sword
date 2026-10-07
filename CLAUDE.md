@@ -1,274 +1,360 @@
 # X Sword
 
-- `engine/rules.js` kural motoru, `engine/bots.js` botlar. İkisi de ekrana dokunmaz; tarayıcıda, testlerde ve ileride çevrimiçi sunucuda aynı kod çalışır. Ekran kodu kurala ancak motorun fonksiyonlarıyla erişir.
-- `engine/*.d.ts` motorun TypeScript tipleri. Motorun dışa açtığı bir şey değişirse bunları da güncelle.
-- `app/` tasarıma göre kurulan oyun: React + TypeScript + Vite. Şimdilik yalnız mobil oyun ekranı var. Maçın akışı `app/src/game/controller.ts`'te; kuralı yalnız motorun fonksiyonlarıyla sorar. Kurulum `npm --prefix app install`, geliştirme `npm --prefix app run dev` (5173), tip denetimi ve derleme `npm --prefix app run build`.
-- Çok oyunculu (`app/src/net/`): odayı kuran telefon maçı yürütür (otorite), misafirler yalnız kendi hamlesini gönderir. Herkes aynı tohumla `createGame` çağırır, sonra kurucunun yayınladığı hamleleri sırayla oynar; motor tohumlu olduğu için tahtalar aynı kalır. Bağlantı bugün PeerJS ile telefondan telefona (sunucusuz, hesapsız). Bağlantıyı yalnız `transport.ts` bilir; X Sword'e ait bir sunucuya geçerken yalnız o dosya değişir. Arda 6 Ekim 2026'da "şimdilik sunucusuz, sonra belki ürüne dönüşür" dedi.
-- `arena/` motoru deneyen test sahası (https://ardaulker.github.io/x-sword/arena/). `index.html` kuzenden gelen ilk demo; motoru kullanmaz.
-- Testler: `node tests/engine.test.mjs` (kurallar + bot gücü), `node tests/tests.js` ve `node tests/tests2.js` (eski demo). Kurala ya da bota dokunduysan önce bunları çalıştır.
-- Yayın: `main`'e push `.github/workflows/pages.yml`'ı çalıştırır. İş akışı motor testlerini koşar, `app/`'i derler, siteyi GitHub Pages'e yayınlar. Kökteki sayfalar (`index.html`, `arena/`, `engine/`) olduğu gibi gider; oyun https://ardaulker.github.io/x-sword/oyun/ adresine gider. Push'tan sonra Actions'ta işin bittiğini gör, canlı sayfayı aç ve console'u oku.
-- Çeviri (`app/src/i18n/`): `tr('Türkçe cümle', {değişken})` çağrısında anahtar Türkçe metnin kendisidir; Türkçede sözlük gerekmez. Dilleri `en de fr es it pt` dosyalarındaki sözlükler çevirir. Çoğul: `{n:tek|çoğul}`; kalın: `rich('**kalın** metin')`. Dil Ayarlar ekranından seçilir ve `xsword-lang` anahtarıyla saklanır. Yeni bir yazı eklersen altı sözlüğe de ekle; `npm run build` içindeki `app/check-i18n.mjs` eksik ya da uyuşmayan değişkeni yakalar. `tr()` çağrısının ilk argümanı düz tırnaklı yazı olmalı (çıkarıcı yalnız onu görür). Motorun `log` metinleri çevrilmez, ekranda görünmezler.
-- Oyuna eklenenler: günlük meydan okuma (`app/src/game/daily.ts`: tarihten tohum, 11×11, 20 bot, en iyi skor cihazda), ilk üç maçta ipucu kartı (`coach.ts`, Ayarlar'dan kapanır), maç sonu paylaşım kartı (`share.ts`, tuvale PNG çizer), çok oyunculuda kopan misafire 15 sn geri dönme hakkı (`net/room.ts`: misafirin gizli `token`'ı, kurucu kopan koltuğa güvenli hamle oynar, dönene `sync` yollar), geniş ekranda tahta solda sağda bilgi (`GameScreen.css` sonundaki medya sorgusu), müzik ve ses seviyesi ayarı, yapay zekâ oyuncuların bonus kullanması (`engine/bots.js` → `bonusMoves`).
-- Yeni maçta tahta (9/11/13/15; en az oyuncu sayısının varsayılanı) ve arena botu sayısı her oyuncu sayısında seçilir (`BOARD_SIZES`, `defaultNeutrals`). Zekâ iki ayrı ayardır: `Setup.aiLevel` yapay zekâ rakipler, `Setup.level` arena botları. Yapay zekâ rakipte Normal ara sıra ikinci en iyi hamleyi seçer (`SLIP`), Zor hiç hata yapmaz ve rakip yıldızı avlar (`HUNT_PULL`); ölçüm: Zor, Normal'e %75 kazanır, dikkatli oyuncu Normal'e %37, Zor'a %15 kazanır (`tests/engine.test.mjs`). Tehlike haritası (`threats.ts` → `heatMap`) ayardan ya da ilk iki maçta kendiliğinden açılır.
-- Duraklatma: yerel maçta menü düğmesi maçı durdurur (`GameController.pause/unpause`, zamanlayıcılar `deferred` listesine düşer). Ana menüye dönünce maç silinmez, `park` edilir; ana menüde "Devam et" çıkar. Yarım maç `xsword-save` anahtarıyla cihaza yazılır (seçenekler + hamle listesi, `game/record.ts`) ve uygulama yeniden açılınca aynen sürer. Çok oyunculu başlayınca saklı maç silinir. Maç tekrarı bağlantısı `#/izle/KOD` (tohum + hamleler, ekran `ReplayScreen`). İstatistikler `game/stats.ts`, bulmacalar `game/puzzles.ts` (aşağıda "Bulmaca haritaları"). Kurulum seçenekleri (varsayılan kapalı): `personas`, `obstacles`, `teams` (yalnız 4 oyuncu); motor: `state.blocked`, `state.teams`, `friendly()`, `isWinner()`.
-- **İkiz** yalnız tek oyunculu moddadır ve oyuncunun aynasıdır: oyuncudan hemen sonra, onun yaptığı yönün aynısını oynar. O kare boşsa yürür, doluysa oradaki taşı alır, kapalıysa yerinde kalır. Bu yüzden oyuncuyu hiç alamaz. Tek oyunculu modda bütün botlar gidince kazanırsın (İkiz'i almana gerek yok). İkiz bir taş alırsa sana çift puan ve ayna bonusu gelir. Arda 6 Ekim 2026'da böyle seçti. Bonuslar şartla gelir: 20 puan çift adım, 40 çift hamle, 60 ikisinden biri, 50 ayna (tahtadaki herhangi bir taşla yer değiştir), ilk daralma zırh, ikinci daralma çift hamle, tek oyunculuda İkiz'in aldığı taş ayna. 2–4 oyunculu yerel maçta kazanan belli olunca "Devam et / Bitir" sorulur (`keepGoing`, çevrimiçide kapalı). Daralacak turda gerilim müziği çalar (`startTension` / `stopTension`). `npm run build` sonunda `app/check-css.mjs` CSS parantezlerini denetler. Kuzenin ilk dosyasında İkiz başkaydı: oyuncunun kurallarıyla oynuyordu ama hamlesini kendi seçen bir avcıydı.
-- Oyun metinlerinde "yemek" geçmez. Taş satrançtaki gibi alınır: "5 numarayı aldın!", "3 numara seni aldı!".
-- Tasarım kaynağı `design/`: önce `design/CLAUDE_CODE_HANDOFF.md`, sonra `design/tokens/tokens.css` ve `design/reference/*.dc.html` (okunacak referans, çalışan uygulama değil; nasıl okunacağı `design/reference/DC_FORMAT.md`'de).
-- Tasarım ilk brief'le yapıldı; şu kararlar onda yok, kodda tasarımın önüne geçer:
-  - Oyunun adı **X Sword** ("Taktiksel Satranç Arenası" ve ad önerileri geçersiz).
-  - Tasarımdaki "vurmak / vuruş / vurdu" metinleri **"almak / alma / aldı"** olur.
-  - Tasarımdaki "İkiz" (boş koltuktaki bot oyuncu) artık **yapay zekâ oyuncu**dur ve insan gibi **"Oyuncu N"** diye anılır. "İkiz" adı yalnız tek oyunculu moddaki aynaya aittir.
-  - Üst çubukta **maç saati** vardır: maç başlar başlamaz 00:00'dan sayar, bitince durur; oyun sonunda maç süresi yazar.
-- Renkler tasarıma göre (Arda 6 Ekim 2026'da seçti): gidilebilir kareler oyuncunun **kendi renginde**, gidilebilir ama tehlikeli kare kırmızı çizgili, kırmızı (`--danger`) yalnız tehlike ve tehdit, turuncu (`--hazard`) yalnız çökecek halka. Önceki "yeşil = senin yolun, turuncu = botun yolu" kuralı geçersiz.
-- Kural ya da bot zekâsı değişince kural metinlerini aynı değişiklikte güncelle: oyundaki "Nasıl oynanır?" ekranı (`app/src/screens/RulesScreen.tsx`) ve arenadaki Kurallar penceresi (`arena/index.html`). `docs/tasarim-prompt.md` içindeki oyun bölümünü de güncelle. Oyuncu rehberi kodla birlikte değişir.
-- `index.html` Windows satır sonları (CRLF) ve BOM ile geldi. Dosyayı baştan yazan bir araç kullanırsan satır sonlarını koru. Yoksa diff bütün dosyayı değişmiş gösterir.
+## Working with Arda
+- **Everything in the repository is English:** file names, identifiers, comments, docs, this file, tests and their
+  output, tool scripts, commit messages. Arda writes prompts in Turkish; that changes nothing about the files.
+  Arda decided this on 8 October 2026 so that foreign developers can join later.
+- **Chat replies to Arda are Turkish** and start with "kanka". Short sentences, one idea per sentence; draw a
+  diagram when it helps. Don't ask long questions before working: pick a sensible default and say so in the reply.
+- Player-facing text is authored in English (`tr('English text')`) and translated in `app/src/i18n/`. When Arda
+  dictates Turkish wording for the UI, put it in the Turkish dictionary and write the English source yourself.
+- After changing rules or bots: run the tests, update the rule texts (see the checklist below), commit and push. After
+  the push, wait for the Actions run to finish, open the live page and check that the console is clean.
+- End every commit message with the `Co-Authored-By` line from the system reminder.
+- X Sword shares no account, file or memory with any other project.
+- macOS notes: `sed -i ''` needs the empty argument and BSD sed has no `\b` (use perl); quote globs
+  (`--include='*.tsx'`) because zsh fails on unmatched ones. Use a Python script for multi-line edits.
 
----
+## Layout
+- `engine/rules.js` is the rules engine, `engine/bots.js` the bots. Neither touches the screen; the same code runs in
+  the browser, in tests and, later, on an online server. Screen code reaches the rules only through engine functions.
+- `engine/*.d.ts` are the engine's TypeScript types. Update them when anything the engine exports changes.
+- `app/` is the game built from the design: React + TypeScript + Vite. The match flow lives in
+  `app/src/game/controller.ts`; it asks the engine for every rule. Setup `npm --prefix app install`, dev server
+  `npm --prefix app run dev` (5173), type check and build `npm --prefix app run build`.
+- Multiplayer (`app/src/net/`): the phone that creates the room runs the match (authority); guests only send their own
+  moves. Everyone calls `createGame` with the same seed and then plays the host's broadcast moves in order; because the
+  engine is seeded, the boards stay identical. The connection is PeerJS phone to phone today (no server, no account).
+  Only `transport.ts` knows the connection, so moving to an X Sword server later changes only that file. Arda said on
+  6 October 2026: "serverless for now, maybe a product later".
+- `arena/` is a test bench for the engine (https://ardaulker.github.io/x-sword/arena/). The root `index.html` is the
+  cousin's first demo and doesn't use the engine.
+- Tests: `node tests/engine.test.mjs` (rules + bot strength), `node tests/tests.js` and `node tests/tests2.js` (the old
+  demo). Run them before and after touching rules or bots.
+- Publishing: a push to `main` runs `.github/workflows/pages.yml`, which runs the engine tests, builds `app/` and
+  publishes the site to GitHub Pages. Root pages (`index.html`, `arena/`, `engine/`) go out as they are; the game is
+  served at https://ardaulker.github.io/x-sword/play/. The old address `/oyun/` (before the English rename) redirects
+  to `/play/` and keeps the `#/` route.
+- Translation (`app/src/i18n/`): in `tr('English sentence', {variable})` the key is the English text itself, so English
+  needs no dictionary. `tr de fr es it pt` dictionaries translate it; a missing entry falls back to English. Plural:
+  `{n:one|many}`; bold: `rich('**bold** text')`. The language is chosen in Settings and stored under `xsword-lang`.
+  When you add text, add it to all six dictionaries; `app/check-i18n.mjs` (part of `npm run build`) catches missing
+  or mismatched entries. The first argument of `tr()` must be a plain quoted string (the extractor only sees those).
+  The engine's `log` texts are English and never shown in the game.
+- Old saves and links: identifiers were Turkish until 8 October 2026 (levels `kolay`/`zor`, modes `DUZ`/`CAPRAZ`,
+  speeds `yavas`/`hizli`, theme ids, routes like `#/oyun`, `#/katil/CODE`, `#/izle/CODE`, puzzle map letters `K`/`C`).
+  `app/src/game/legacy.ts`, the route table in `App.tsx`, `createPuzzle` and the arena map them on load. Keep that
+  layer until old saves no longer matter.
+- Design source: `design/`. Read `design/CLAUDE_CODE_HANDOFF.md` first, then `design/tokens/tokens.css` and
+  `design/reference/*.dc.html` (references to read, not a running app; how to read them is in
+  `design/reference/DC_FORMAT.md`).
+- Decisions made after the first design brief override the design:
+  - The game is called **X Sword**.
+  - Pieces are **taken** ("take / took"), never hit, eaten or killed. Examples: "You took #5!", "#3 took you!".
+  - The design's "Twin" in an empty seat is now an **AI player**, called "Player N" like a human. "Twin" belongs only to
+    the mirror in single-player mode.
+  - The top bar has a **match clock**: it counts from 00:00 when the match starts and stops at the end; the end screen
+    shows the match time.
+- Colors follow the design (Arda chose this on 6 October 2026): reachable squares in the player's **own color**, a
+  reachable but dangerous square with red stripes, red (`--danger`) only for danger and threats, orange (`--hazard`)
+  only for the ring about to collapse.
+- When rules or bot intelligence change, update the rule texts in the same change: the in-game "How to play" screen
+  (`app/src/screens/RulesScreen.tsx`), the arena's Rules window (`arena/index.html`) and the game section of
+  `docs/design-prompt.md`. The player guide changes together with the code.
+- The root `index.html` uses Windows line endings (CRLF) and a BOM. If a tool rewrites the file, keep both, or the
+  diff shows the whole file as changed.
 
-# Geçmiş ve çalışma notları (modeli değiştirirsen sohbeti baştan okumana gerek yok; bunu oku)
+## Game rules (current summary; details in `RulesScreen.tsx`)
+- Board 9/11/13/15 squares (at least the default for the player count: `BOARD_SIZES`, `defaultNeutrals`). The mode
+  flips every round, STRAIGHT ↔ DIAGONAL. A star moves and takes straight or diagonally by the mode. Red bots walk
+  straight and take diagonally; blue bots walk diagonally and take straight. Everyone moves one square. Red and blue
+  bots are equal in number and balanced around the stars (`balancedKinds`).
+- The move order is shuffled once (`matchOrder`) and stays the same all match. **A piece's number is reassigned every
+  round among the survivors** (`roundOrder` also updates a bot's `label`; `app/src/game/order.ts → orderNo`). If a
+  piece is taken mid-round, numbers don't change that round. The turn queue shows future rounds with that round's new
+  numbers.
+- A move: tap a square, preview, confirm. 20 seconds per move; when time runs out a safe move is played.
+- Every 6 rounds (6, 12, 18 …) the outermost ring collapses; a thin orange edge warns one round before and stripes mark
+  the collapse round. Tension music plays.
+- Points: star / Twin / red-blue (`POINTS`), `SURVIVOR_BONUS` for the last star standing. Ranking: score, takes,
+  survival. The winner is decided when the rival stars are gone; in a local 2–4 player match the game asks
+  "Continue / End" (`keepGoing`, off online).
+- Single player: the **Twin** is the player's mirror. It moves right after the player in the same direction: walks if
+  the square is empty, takes the piece there if occupied, stays put if blocked. So it can never take the player. You
+  win when every bot is gone (no need to take the Twin). A take by the Twin gives double points and a mirror bonus.
+  Arda chose this on 6 October 2026. In the cousin's first file the Twin was different: a hunter that chose its own
+  moves under the player's rules.
+- Bonuses: everyone starts with one double step. 20 points double step, 40 double move, 60 one of the two at random,
+  50 mirror (swap places with any piece on the board). Surviving the first shrink gives armor (one extra life), the
+  second a double move. AI players use bonuses too (`bonusMoves`, `BONUS_COST`).
+- Difficulty: Easy (you move first), Normal (random place), Hard (random place, bot target triangles hidden). AI rivals
+  (`Setup.aiLevel`) and arena bots (`Setup.level`) are set separately. A Normal rival picks the second best move 30%
+  of the time (`SLIP`); Hard never slips and hunts the rival star (`HUNT_PULL`).
+- Options (off by default): personalities (hunter / careful / opportunist), obstacle squares (can't be entered or
+  jumped with a double step), teams (2 vs 2, 4 players only); engine: `state.blocked`, `state.teams`, `friendly()`,
+  `isWinner()`. Also: puzzles (bots don't walk), a daily challenge, statistics, replay links, a multiplayer lobby
+  (board + bot count + options).
+- Pause: the menu button pauses a local match (`GameController.pause/unpause`; timers fall into `deferred`). Going back
+  to the main menu doesn't delete the match; it is `park`ed and the main menu shows "Continue". The unfinished match is
+  saved under `xsword-save` (options + move list, `game/record.ts`) and resumes when the app reopens. Starting a
+  multiplayer match deletes the save. Pause menu: Continue, Restart, New game, Settings (in a match only sound,
+  vibration and language), Main menu.
 
-## Arda ile çalışma biçimi
-- Arda Türkçe yazar. Cevaplar "kanka" ile başlar, kısa cümle, her cümlede tek fikir; gerekince şema. İş yapmadan önce uzun soru sorma: makul varsayılanı seç, cevapta söyle.
-- Kural ya da bot değişince testi koş, metinleri güncelle (aşağıda "Kural değişince" listesi), commit + push et. Push'tan sonra Actions'ın bittiğini ve canlı sayfanın console'unun temiz olduğunu kontrol et. (Son iki turda bu bakılmadı; yine de yap.)
-- Commit sonuna `Co-Authored-By` satırı eklenir (sistem hatırlatması söyler).
-- X Sword başka hiçbir projeyle hesap, dosya, hafıza paylaşmaz.
-- macOS notları: `sed -i ''` ister; `*.tsx` gibi glob'ları tırnakla (`--include='*.tsx'`), zsh yoksa hata verir. Çok satırlı düzenlemede Python betiği kullan.
+## Measurements (printed by `tests/engine.test.mjs`)
+- Careful player: wins 92–96% against an Easy rival, ~35–37% against Normal, ~14–15% against Hard. Hard beats Normal
+  about 2:1 (149–51 and 134–66 in two runs).
+- Personality wins (90 matches, 4 Hard): hunter 42, careful 32, opportunist 16.
+- Team balance (100 matches, 4 AI): Normal A47/B53, Hard A42/B58; within noise, left alone. If "B always wins" comes up,
+  check with 300 matches.
+- Red/blue difference around stars: average 0.53.
 
-## Oyun kuralları (güncel özet; ayrıntı `RulesScreen.tsx`)
-- Tahta 9/11/13/15 kare (en az: 1 oyuncu 9, 2 oyuncu 11, 3–4 oyuncu 13 gibi `BOARD_SIZES`/`defaultNeutrals`). Her turda mod DÜZ ↔ ÇAPRAZ değişir. Yıldız moda göre düz ya da çapraz gider ve alır. Kızıl bot düz yürür çapraz alır; Çelik bot çapraz yürür düz alır. Herkes tek kare gider. Kızıl/Çelik botlar eşit ve yıldız çevresinde dengeli dağılır (`balancedKinds`).
-- Hamle sırası maç başında bir kez karılır (`matchOrder`), bütün maç aynı kalır. **Taş numarası her tur ayakta kalanlar arasında baştan verilir** (`roundOrder` botun `label`'ını da günceller; `app/src/game/order.ts → orderNo`). Tur içinde biri alınsa numaralar o tur değişmez. Sıra şeridi gelecek turları o turun yeni numaralarıyla gösterir.
-- Hamle: kareye dokun, önizle, onayla. Süre 20 sn; dolarsa güvenli hamle oynanır.
-- Her 6 turda (6., 12., 18. ...) en dış halka çöker; bir tur önce ince turuncu, çökeceği tur çizgili işaretlenir. Gerilim müziği çalar.
-- Puan: yıldız / İkiz / Kızıl-Çelik (`POINTS`), son ayakta kalan yıldıza `SURVIVOR_BONUS`. Sıralama: skor, alma sayısı, hayatta kalma. Rakip yıldızlar gidince kazanan belli olur; yerel 2–4 oyunculu maçta "Devam et / Bitir" sorulur (`keepGoing`, çevrimiçide kapalı).
-- Tek oyunculu: **İkiz** oyuncunun aynasıdır (oyuncudan hemen sonra aynı yönü oynar, oyuncuyu alamaz). Bütün botlar gidince kazanırsın. İkiz bir taş alırsa çift puan + ayna bonusu.
-- Bonuslar: maça bir çift adımla başlanır. 20 puan çift adım, 40 çift hamle, 60 ikisinden biri rastgele, 50 ayna (tahtada herhangi bir taşla yer değiştir). İlk daralmayı atlatan zırh (1 can), ikinci daralmayı atlatan çift hamle. Yapay zekâ da bonus kullanır (`bonusMoves`, `BONUS_COST`).
-- Zorluk: Kolay (sen ilk oynarsın), Normal (yer rastgele), Zor (yer rastgele, bot hedef üçgeni gizli). Rakip yapay zekâ (`Setup.aiLevel`) ile arena botları (`Setup.level`) ayrı ayarlanır. Normal rakip %30 ikinci en iyi hamleyi seçer, Zor avlar.
-- Seçenekler (varsayılan kapalı): kişilikler (avcı/temkinli/fırsatçı), engel kareleri, takım (2'ye 2, yalnız 4 oyuncu). Bulmacalar (10 haritalı bulmaca, botlar yürümez), günlük meydan okuma, istatistikler, maç tekrarı bağlantısı, çok oyunculu lobi (tahta + bot sayısı).
-- Duraklatma: menü düğmesi durdurur; ana menüde "Devam et"; yarım maç `xsword-save` ile cihaza yazılır. Duraklatma menüsü: Devam et, Yeniden başlat, Yeni oyun, Ayarlar (maç içinde yalnız ses, titreşim, dil), Ana menü.
+## Decisions and reasons (in order)
+- Name X Sword; "take", never "hit" or "eat".
+- The old "green = your path, orange = bot path" color rule is gone; colors follow the design (see above).
+- In single player you don't need to take the Twin; you win when the bots are gone. Bonuses are earned by conditions
+  (points, surviving shrinks), never handed out at random.
+- 7 languages (English source + Turkish, German, French, Spanish, Italian, Portuguese), a flag picker in Settings.
+- 7 suggestions were built: daily challenge, tip card, bonus balance + AI bonuses, share card, 15 s for a dropped
+  guest, wide layout, sound settings. Arda declined one of them (the 3rd).
+- Hard AI first played even with Normal (99–101); adding slips to Normal and hunting to Hard separated them.
+- The first 11 puzzles were random 9×9 positions; Arda found them "thin and illogical" (7 October 2026) because the bots
+  ran away unpredictably. They were replaced by hand-drawn maps where bots don't walk and only take what steps into
+  reach (`bots.js → chooseMove`, `state.puzzle`).
+- Slogan: "Direction changes hands every round." (Arda picked option 1). The color-blind mode is called "Color assist"
+  (kinder wording).
+- Pause survives going back to the main menu and reopening the app.
+- Arda didn't like the stone/brick obstacle pattern (8 October 2026); the striped pattern stayed, with higher contrast.
+- The demo switch that unlocked every reward was removed (8 October 2026); locked styles show a preview card instead.
+  Arda plans to sell rewards later.
+- Discussed but not done: the TestFlight / Capacitor path (memory note), themes beyond the five board themes.
 
-## Ölçümler (`tests/engine.test.mjs` yazdırır)
-- Dikkatli oyuncu: Kolay rakibe %92, Normal %37, Zor %15 kazanır. Zor, Normal'e 149–51.
-- Kişilik galibiyetleri (90 maç, 4 Zor): avcı 42, temkinli 32, fırsatçı 16.
-- Takım dengesi (100 maç, 4 yapay zekâ): Normal A47/B53, Zor A42/B58; gürültü içinde, dokunulmadı. "Hep B kazanıyor" gelirse 300 maçla bak.
-- Kızıl/Çelik farkı yıldız çevresinde ortalama 0.53.
-
-## Kararlar ve nedenleri (kronolojik özet)
-- Ad X Sword; "vurmak" yerine "almak"; "yemek" hiç geçmez.
-- Eski "yeşil/turuncu yol" renk kuralı iptal; renkler tasarıma göre (üstte "Renkler").
-- Tek oyunculuda İkiz'i almak şart değil, botlar bitince kazanılır. Bonus şartlı kazanılır (puan, daralmayı atlatma), rastgele dağıtılmaz.
-- Çeviri 7 dilde (tr + en de fr es it pt), bayraklı seçici, Ayarlar'dan.
-- 7 öneri yapıldı: günlük meydan okuma, ipucu kartı, bonus dengesi + yapay zekâ bonusu, paylaşım kartı, kopan misafire 15 sn, geniş ekran düzeni, ses ayarları. Arda önerilerden birini (3.) istemedi.
-- Zor yapay zekâ ilk başta Normal ile eşitti (99–101); Normal'e hata payı, Zor'a avlama eklenince ayrıştı.
-- İlk 11 bulmaca rastgele 9×9 pozisyonlardı; Arda "yetersiz ve mantıksız" buldu (7 Ekim 2026). Sebep: botlar kaçıyordu, hamleleri öngörülemiyordu. Yerine 10 elle çizilmiş harita geldi; bulmacada botlar yürümez, yalnız menzile gireni alır (`bots.js → chooseMove`, `state.puzzle`). Kişilikler (3. öneri) ve engel kareleri (6. öneri) zaten Yeni oyun → Seçenekler'deydi; Arda görmemişti.
-- Slogan: "Yön her tur el değiştirir." (Arda 1. seçeneği seçti). Renk körü modu adı "Renk desteği" (nazik dil).
-- Duraklatma ana menüye dönünce de korunur ve uygulama yeniden açılınca sürer.
-- Yapılmadı ama konuşuldu: TestFlight/Capacitor yolu (hafıza notu var), çok oyunculu lobiye kişilik/takım seçeneği, temalar.
-
-## Kural değişince (kontrol listesi)
-1. `engine/rules.js` / `bots.js` + `engine/rules.d.ts` tipleri.
-2. `node tests/engine.test.mjs`; gerekirse test ekle.
-3. `app/src/screens/RulesScreen.tsx`, `arena/index.html` Kurallar, `docs/tasarim-prompt.md` oyun bölümü, bu dosya.
-4. Yeni yazı varsa `tr()` ile ekle ve **altı sözlüğe de** (`app/src/i18n/*.ts`) elle ekle. Sözlükler artık elle düzenlenir (eskiden betikle üretiliyordu, betik repoda yok). Anahtar = Türkçe cümlenin kendisi; anahtarı değiştirirsen altı dosyada da değiştir.
+## When rules change (checklist)
+1. `engine/rules.js` / `bots.js` + the `engine/rules.d.ts` types.
+2. `node tests/engine.test.mjs`; add a test when needed.
+3. `app/src/screens/RulesScreen.tsx`, the Rules window in `arena/index.html`, the game section of
+   `docs/design-prompt.md`, this file.
+4. New text goes through `tr()` in English and into **all six dictionaries** (`app/src/i18n/{tr,de,fr,es,it,pt}.ts`),
+   edited by hand. The key is the English sentence; if you change a key, change it in all six files.
 5. `npm --prefix app run build` (tsc + vite + `check-css.mjs` + `check-i18n.mjs`).
-6. Commit, push, Actions ve canlı console.
+6. Commit, push, Actions and the live console.
 
-## Kod haritası (hızlı)
-- Motor: `engine/rules.js` (`createGame`, `play`, `roundOrder`, `matchOrder`, `createPuzzle`, `isWinner`, `friendly`, `ranking`, `attackersOf`), `engine/bots.js` (`chooseMove`, `SLIP`, `HUNT_*`, persona ağırlıkları). Tohumlu (`mulberry32`), tekrar = seçenekler + tohum + hamle listesi.
-- Uygulama: `app/src/App.tsx` (hash yönlendirme: `#/ #/oyun #/kurallar #/ayarlar #/cok #/oda #/mac #/katil/KOD #/istatistik #/bulmaca #/izle/KOD`), `game/controller.ts` (maç akışı, pause/park/save/restart/replay), `game/{settings,order,names,record,stats,daily,share,coach,haptics,threats,puzzles}.ts`, `components/{Board,Sheets,InfoChip,PlayerStrip,ActionPanel,TurnQueue,Header,Flag}.tsx`, `screens/*`, `net/{room,protocol,transport}.ts`, `i18n/`.
-- Araçlar: `tools/puzzle-maps.mjs` (elle çizilen haritalar) → `node tools/make-puzzles.mjs [id]` → `app/src/game/puzzles.ts` + `tools/puzzles-out.mjs`.
+## Code map (quick)
+- Engine: `engine/rules.js` (`createGame`, `play`, `roundOrder`, `matchOrder`, `createPuzzle`, `isWinner`, `friendly`,
+  `ranking`, `attackersOf`), `engine/bots.js` (`chooseMove`, `SLIP`, `HUNT_*`, personality weights). Seeded
+  (`mulberry32`); a replay is options + seed + move list.
+- App: `app/src/App.tsx` (hash routes `#/ #/play #/rules #/settings #/multiplayer #/room #/match #/join/CODE #/stats
+  #/puzzles #/replay/CODE #/profile`, plus the legacy Turkish paths), `game/controller.ts` (match flow, pause / park /
+  save / restart / replay / undo), `game/{settings,order,names,record,stats,daily,share,coach,haptics,threats,puzzles,
+  puzzleText,themes,profile,progress,platform,legacy}.ts`, `components/{Board,Sheets,InfoChip,PlayerStrip,ActionPanel,
+  TurnQueue,Header,Flag,SkinFx,PieceGlyph}.tsx`, `screens/*`, `net/{room,protocol,transport}.ts`, `i18n/`.
+- Tools: `tools/puzzle-maps.mjs` (hand-drawn maps) → `node tools/make-puzzles.mjs [id]` → `app/src/game/puzzles.ts` +
+  `tools/puzzles-out.mjs`.
+- Docs: `docs/design-prompt.md` (the design brief), `docs/profile-infrastructure.md` (profiles, platform accounts).
 
-## Dikkat
-- `tr()` ilk argümanı düz tırnaklı yazı olmalı. Motorun `log` metinleri çevrilmez ama bot adı (`label`) oyun metinlerinde görünür.
-- `index.html` CRLF + BOM; `arena/index.html` düzenlerken satır sonlarını koru (`newline=''` ile oku/yaz).
-- Test kurulumları (`position()` gibi) `roundOrder` çağırınca bot `label`'ı yeniden hesaplanır; testte sabit numara varsayma, `pieceById(...).label` kullan.
+## Watch out
+- The first argument of `tr()` must be a plain quoted string. Engine `log` texts are not translated, but a bot's name
+  (`label`) appears in game text.
+- `index.html` is CRLF + BOM; when editing it, keep the line endings (read and write with `newline=''`).
+- Test setups (like `position()`) recompute bot `label`s when they call `roundOrder`; don't assume fixed numbers in a
+  test, use `pieceById(...).label`.
+- `app/src/game/names.ts` keeps Turkish grammar data (accusative suffixes) because Turkish needs it; that is language
+  data, not prose.
 
-## Bulmaca haritaları
-- Kurallar: hedef, en çok par+1 hamlede bütün botları almak; par'da çözmek 3 yıldız, par+1 2 yıldız. Botlar yürümez, menzile giren yıldızı alır. Mod her tur değişir. Sayaç yok, ipucu kartı yok, hedef üçgeni yok.
-- Harita dili: `.` zemin, `#` engel, `-` harita dışı (tahta şekli kare olmak zorunda değil; motor kısa kenarı boşlukla doldurur, `state.holes`), `S` sen, `K` Kızıl, `C` Çelik.
-- Akış: haritayı `tools/puzzle-maps.mjs`'e çiz (ad, ipucu, mod, bot sayısı, hedef par, bonus, `needBonus`, `botCols`), `node tools/make-puzzles.mjs <id>` taşları yerleştirir ve çözücüyle doğrular (tam par, ilk hamlede en çok 2 doğru seçenek, botları oyuncu alır, `needBonus` ise bonussuz çözülmez). Ad ve ipucu `app/src/game/puzzleText.ts`'e ve altı sözlüğe eklenir. Bulmaca kimliği 101'den başlar (eski yıldız kayıtları karışmasın); ekranda sıra numarası görünür.
-- Tasarım dersleri: tek-tek (tek satır, tek sütun) karelerde engel dizisi çapraz turda taşı dört yandan kapatır, kaçın. Ayna seninle botun yerini değiştirir; bot senin eski karene gider, bu yüzden "ayrı adalar" bulmacası çözülemez.
-- **Yeni bulmaca eklerken aşağıdaki fikirleri ve şekilleri tekrar etme.** İkinci set (111–120, "daha zor", 8 Ekim 2026) zırh, dört bot, çöküş, iki bonus, simetrik harita, L/U şekillerini kullandı. Henüz kullanılmayan fikirler: beş bot, üç bonus birlikte, iki kez daralma, engel + çöküş, İkiz'li bulmaca, hareket eden bot.
-- İkinci sette üretici tam par ister (`def.id > 110`), `trap: true` ilk hamlede en az bir "oynayınca hemen alınırsın" seçeneği şart koşar, `near` botları sana yakın koyar (uzak botlar 5–6 hamlede çözülemez), `shrink` bulmacada daralmayı açar (`createPuzzle({ shrink })`).
+## Puzzle maps
+- Rules: take every bot in at most par+1 moves; solving in par gives 3 stars, par+1 gives 2. Bots don't walk; they take
+  a star that steps into their reach. The mode flips every round. No timer, no tip card, no target triangle.
+- Map language: `.` floor, `#` obstacle, `-` off the map (the board need not be square; the engine pads the short side
+  with void, `state.holes`), `S` you, `R` red bot, `B` blue bot.
+- Flow: draw the map in `tools/puzzle-maps.mjs` (title, hint, mode, bot count, target par, bonuses, `needBonus`,
+  `botCols`, `near`, `trap`, `shrink`, `tutorial`, `fixed`), then `node tools/make-puzzles.mjs <id>` places the pieces
+  and verifies with the solver (exact par, at most 2 right first moves, the player takes every bot, with `needBonus`
+  not solvable without the bonus; ids above 110 require the exact par). Regenerate one map at a time: a full run
+  shifts the random sequence. Add the title and hint to `app/src/game/puzzleText.ts` and to the six dictionaries.
+  Puzzle ids start at 101 (so old star records don't mix); the screen shows a running number. Tutorials are 201–203.
+- Design lessons: a row of obstacles on odd-odd squares boxes a piece in on all four sides in a diagonal round; avoid
+  it. A mirror swaps you with a bot and sends the bot to your old square, so a "separate islands" puzzle can't be
+  solved. Far-away bots can't be solved in 5–6 moves; use `near`.
+- **Don't repeat the ideas and shapes below when adding puzzles.** Unused ideas so far: five bots, three bonuses at
+  once, two shrinks, obstacles + collapse, a puzzle with the Twin, a bot that walks.
 
-### 101 · Koridor — DUZ, par 3, bonus - — fikir: mod değişimi (düz/çapraz) öğretir
+### 201 · Take straight — STRAIGHT, par 1, bonus - — idea: tutorial: take straight
+```
+.....
+..R..
+..S..
+.....
+```
+### 202 · The mode changes — STRAIGHT, par 2, bonus - — idea: tutorial: the mode flips
+```
+.B...
+.....
+..S..
+.....
+.....
+```
+### 203 · Danger — STRAIGHT, par 2, bonus - — idea: tutorial: greedy-take trap (taking blue puts you on red's diagonal; take red first, then blue diagonally)
+```
+.....
+.SB..
+.R...
+.....
+.....
+```
+### 101 · Corridor — STRAIGHT, par 3, bonus - — idea: teaches the mode flip (straight/diagonal)
 ```
 #.....#
 .......
-.KC....
+.RB....
 .......
 #..S..#
 ```
-### 102 · Haç — CAPRAZ, par 4, bonus - — fikir: dar kollar, alma sırası
+### 102 · Cross — DIAGONAL, par 4, bonus - — idea: narrow arms, order of takes
 ```
 --...--
 --...--
 .......
 .......
-....CK.
+....BR.
 --...--
 --.S.--
 ```
-### 103 · Halka — DUZ, par 5, bonus - — fikir: ortası boş halka; kenardan dolaşma
+### 103 · Ring — STRAIGHT, par 5, bonus - — idea: ring with an empty middle; going around the edge
 ```
--.CK..-
+-.BR..-
 .......
-.C---..
+.B---..
 ..---..
 S.---..
 .......
 -.....-
 ```
-### 104 · Sütunlar — CAPRAZ, par 5, bonus - — fikir: tek engel sütunları; engelin arkası
+### 104 · Pillars — DIAGONAL, par 5, bonus - — idea: single pillars; behind an obstacle
 ```
 .......
 .#...#.
-...#C..
+...#B..
 .......
-.#KC.#.
+.#RB.#.
 ...#.S.
 .......
 ```
-### 105 · Merdiven — DUZ, par 5, bonus - — fikir: çapraz şerit; düz turda yol daralır
+### 105 · Staircase — STRAIGHT, par 5, bonus - — idea: diagonal strip; the path narrows in straight rounds
 ```
 ...-----
-K.C.----
--...C---
+R.B.----
+-...B---
 --....--
 ---..S.-
 ----....
 -----...
 ```
-### 106 · Çift adım — DUZ, par 3, bonus step:1 — fikir: Çift adım bonusu şart
+### 106 · Double step — STRAIGHT, par 3, bonus step:1 — idea: double step required
 ```
 ....---
 ...S---
-..#..K.
-..#K...
+..#..R.
+..#R...
 .......
 ```
-### 107 · Ayna — CAPRAZ, par 4, bonus swap:1 — fikir: Ayna bonusu şart (yön/kare rengi değiştirmek için)
+### 107 · Mirror — DIAGONAL, par 4, bonus swap:1 — idea: mirror required (to change direction / square color)
 ```
 .........
-..KK.....
+..RR.....
 ---...---
 ---.S.---
 ---...---
 ---...---
 ```
-### 108 · Elmas — CAPRAZ, par 4, bonus double:1 — fikir: Çift hamle bonusu şart
+### 108 · Diamond — DIAGONAL, par 4, bonus double:1 — idea: double move required
 ```
 ---.---
 --...--
--...C.-
-....KC.
+-...B.-
+....RB.
 -.S...-
 --...--
 ---.---
 ```
-### 109 · Kale — DUZ, par 6, bonus - — fikir: kapılı kale duvarları
+### 109 · Fortress — STRAIGHT, par 6, bonus - — idea: castle walls with gates
 ```
 .........
 .###.###.
 .#.....#.
 .#.....#.
-S...C....
-.#..K..#.
-.#.C...#.
+S...B....
+.#..R..#.
+.#.B...#.
 .###.###.
 .........
 ```
-### 110 · Labirent — CAPRAZ, par 6, bonus step:1 — fikir: labirent + çift adım, 3 bot
+### 110 · Maze — DIAGONAL, par 6, bonus step:1 — idea: maze + double step, 3 bots
 ```
 -...#...-
 .#.....#.
 ...##....
 .#.....#S
-....#K...
-.#..C..#.
+....#R...
+.#..B..#.
 ....##...
-.#K....#.
+.#R....#.
 -...#...-
 ```
-
-### 201 · Düz al — DUZ, par 1, bonus - — fikir: undefined
-```
-.....
-..K..
-..S..
-.....
-```
-### 202 · Mod değişir — DUZ, par 2, bonus - — fikir: undefined
-```
-.C...
-.....
-..S..
-.....
-.....
-```
-### 203 · Tehlike — DUZ, par 2, bonus - — fikir: undefined
-```
-.....
-.SC..
-.K...
-.....
-.....
-```
-### 111 · L — DUZ, par 6, bonus - — fikir: L şekli, 4 bot, açgözlü alma tuzağı
+### 111 · L — STRAIGHT, par 6, bonus - — idea: L shape, 4 bots, greedy-take trap
 ```
 ....-----
 ....-----
-.K..-----
-C...C....
-..S.K....
+.R..-----
+B...B....
+..S.R....
 ```
-### 112 · U — CAPRAZ, par 6, bonus - — fikir: U şekli, 4 bot, hangi koldan başlanacağı
+### 112 · U — DIAGONAL, par 6, bonus - — idea: U shape, 4 bots, which arm to start with
 ```
 ...---...
-KK.---...
+RR.---...
 ...---...
-C..S.....
-.K.......
+B..S.....
+.R.......
 ```
-### 113 · Zırh — DUZ, par 4, bonus armor:1 — fikir: Zırh bonusu şart: bilerek tehlikeye gir
+### 113 · Armor — STRAIGHT, par 4, bonus armor:1 — idea: armor required: step into danger on purpose
 ```
 .......
-K#..S#.
-..K....
-..K....
+R#..S#.
+..R....
+..R....
 .......
 .#...#.
 .......
 ```
-### 114 · İkili — CAPRAZ, par 5, bonus step:1,swap:1 — fikir: iki bonus birlikte (çift adım + ayna)
+### 114 · Pair — DIAGONAL, par 5, bonus step:1,swap:1 — idea: two bonuses together (double step + mirror)
 ```
-...K....
-.##K.##.
+...R....
+.##R.##.
 ........
 .....S..
 .##..##.
-...K....
+...R....
 ```
-### 115 · Çöküş — DUZ, par 5, bonus -, daralma 2/2 — fikir: bulmacada çöküş: 2. tur sonunda dış halka düşer (shrink)
+### 115 · Collapse — STRAIGHT, par 5, bonus -, shrink 2/2 — idea: collapse inside a puzzle: the outer ring falls at the end of round 2 (shrink)
 ```
 .......
 .......
-...K...
+...R...
 .......
-...C...
-.C.....
+...B...
+.B.....
 ...S...
 ```
-### 116 · Kelebek — CAPRAZ, par 4, bonus swap:1 — fikir: simetrik kelebek haritası + ayna şart
+### 116 · Butterfly — DIAGONAL, par 4, bonus swap:1 — idea: symmetric butterfly map + mirror required
 ```
 ..-----..
 ...---...
 ....-....
-......KK.
-....-...C
+......RR.
+....-...B
 ...---...
 ..-----.S
 ```
-### 117 · Avlu — DUZ, par 6, bonus - — fikir: ortası kapalı avlu, duvarın etrafından dolaşma
+### 117 · Courtyard — STRAIGHT, par 6, bonus - — idea: courtyard closed in the middle, going around the wall
 ```
 .........
 .........
@@ -277,73 +363,106 @@ K#..S#.
 .........
 ..#...#..
 ..##.##.S
-......C..
-......K.C
+......B..
+......R.B
 ```
-### 118 · Zikzak — DUZ, par 6, bonus - — fikir: çapraz duvar: düz turda karşıya geçilemez
+### 118 · Zigzag — STRAIGHT, par 6, bonus - — idea: diagonal wall: no crossing in straight rounds
 ```
 #.......
 .#......
 ..#.....
 ...#....
 ....#...
-..C..#..
-....C.#.
-.S.C...#
+..B..#..
+....B.#.
+.S.B...#
 ```
-### 119 · Kum saati — CAPRAZ, par 5, bonus double:1 — fikir: kum saati, tek kare bel + çift hamle şart
+### 119 · Hourglass — DIAGONAL, par 5, bonus double:1 — idea: hourglass, one-square waist + double move required
 ```
 .......
--..C.C-
---..C--
----K---
+-..B.B-
+--..B--
+---R---
 --...--
 -.S...-
 .......
 ```
-### 120 · Final — DUZ, par 6, bonus step:1,double:1 — fikir: final: 4 bot, çift adım + çift hamle
+### 120 · Finale — STRAIGHT, par 6, bonus step:1,double:1 — idea: finale: 4 bots, double step + double move
 ```
 ...#...
 .#...#.
-..C#...
-#C....#
-...#.C.
-.#S.K#.
+..B#...
+#B....#
+...#.B.
+.#S.R#.
 ...#...
 ```
 
-## Arayüz notları (UI/UX turu, 7 Ekim 2026)
-- Üst çubukta "TUR n" çevrilir; menü ve savaş kaydı düğmelerinin altında küçük yazı var (kısa ekranda gizli). Mod kutusunun alt yazısı yalnız ilk iki maçta (`ctl.autoMap`) ve bulmacada görünür; sonra kutu 44 px.
-- Bonus düğmelerinde kısa ad: Zırh, Adım ×2, Hamle ×2, Ayna (`shortBonus`). Halka çipi "Daralma: n tur".
-- Tehlike haritası kareyi boyamaz, ortaya soluk kırmızı nokta koyar.
-- Tek oyunculuda önizlemede İkiz'in gideceği kare soluk İkiz taşıyla gösterilir (`Board.tsx → twinGhost`, durumu kopyalayıp hamleyi oynatır).
-- Başkaları oynarken panel "N hamle sonra sıra sende" der (`ActionPanel.tsx → untilMe`). Bu turda oynayan son 6 taşın geldiği yer soluk kesik çizgide kalır (`View.lastMoves`). Kendi taşın hep yumuşak nabızlı halkayla seçilir (`halo-me`).
-- Senin aldığın taş büyük patlama + büyük puan + 750 ms bekleyiş ile vurgulanır.
-- **Geri al** (`GameController.undo`): yalnız Kolay zorlukta (maçta 3 kez) ve bulmacada (sınırsız); günlük ve çok oyunculuda yok. Maçı kayıtlı hamlelerden bir önceki sıranın başına yeniden kurar (`undoPoints`). Ayarlar'da "Önizlemesiz oyna" (`settings.quick`) ve "Botları hızlı oynat" (`settings.fastBots`) seçenekleri var; ikisi de varsayılan kapalı.
+## UI notes (UI/UX pass, 7–8 October 2026)
+- The top bar shows "ROUND n" translated; the menu and battle-log buttons have small captions (hidden on short
+  screens). The mode box subtitle shows only in the first two matches (`ctl.autoMap`) and in puzzles; otherwise the box
+  is 44 px.
+- Bonus buttons use short names: Armor, Step ×2, Move ×2, Mirror (`shortBonus`). The ring chip says "Shrink: n rounds".
+- The danger map doesn't tint squares; it puts a faint red dot in the middle.
+- In single player the preview shows where the Twin will go as a faint Twin piece (`Board.tsx → twinGhost`, which copies
+  the state and plays the move).
+- While others move, the panel says "Your turn in N moves" (`ActionPanel.tsx → untilMe`). The last 6 movers of the
+  round leave a faint dashed line from where they came (`View.lastMoves`). Your own piece always has a soft pulsing halo
+  (`halo-me`).
+- Your own takes get a bigger burst, a bigger score and a 750 ms pause.
+- **Undo** (`GameController.undo`): only on Easy (3 per match) and in puzzles (unlimited); not in the daily or
+  multiplayer. It rebuilds the match from the recorded moves at the start of your previous turn (`undoPoints`).
+  Settings has "Play without preview" (`settings.quick`) and "Play bots fast" (`settings.fastBots`), both off by
+  default.
+- **Tutorial**: three mini puzzles (201 Take straight, 202 The mode changes, 203 Danger), all `fixed` (hand-placed; the
+  generator only verifies). 203 is a greedy-take trap: taking blue puts you on red's diagonal; take red first, then blue
+  diagonally. A puzzle's own hint is shown before the threat warning. New players (fewer than 3 matches, tutorial not
+  done) see a green "Tutorial · 1 minute" button on the main menu.
+- **Board themes** (`game/themes.ts`): Night (open), Emerald (6 puzzle stars), Ember (5 wins), Ice (3 dailies), Violet
+  (25 matches). Only square, void and frame colors change (`--square`, `--square-2`, `--void`, `--board-frame`);
+  player, danger and ring colors stay. Chosen in Settings; the result card announces new unlocks (`freshRewards`).
+- **Piece effects** (`components/SkinFx.tsx`, CSS at the end of `Board.css`): an animated decoration on your star only.
+  Flame (12 puzzle stars), Lightning (10 wins), Crystal (7 dailies), Gold (36 puzzle stars). Chosen in Settings
+  (`settings.skin`; the active one is `activeSkin`). Unlock rules live in `game/themes.ts` (`SKINS`, `THEMES`, shared
+  `Need`). Tapping a locked style opens a big animated preview card (`SettingsScreen.tsx → PeekCard`) with how to
+  unlock it and the progress. If rewards are sold later, add a "purchased" source next to `need` and make `isUnlocked`
+  check both; payment and accounts are Arda's clicks.
+- **Result rewards**: a won match shows a gold star, the daily a lightning star; a 3-star puzzle a flame star
+  ("Flawless!"), 2 stars a crystal star ("Well done!"); earned stars pop in one by one.
+- **Daily streak** (`daily.ts → dailyStreak`): played days in `xsword-daily-days`; the main menu shows "N day streak".
+- **"Why I lost"**: after a loss the card says "#9 took you (straight) · round 3" or "You were caught in the ring";
+  `TakeEvent.at` lets "Watch the last moves" open the replay near that moment (`#/replay/CODE~N`).
+- **Zoom**: on 13×13 and up a zoom button sits at the top right; squares become at least 34 px, the board scrolls and
+  centers on your piece (`board-scroll`).
+- **Phone turned sideways** (`GameScreen.tsx → landscape`: height under 520 and width over 1.2× height): the board at
+  full height on the left, the bars and panel in a right column (`land-side`). Portrait tablets get a 680 px column.
+- **Arena growth**: after a ring collapses and its fall animation ends (`GameScreen.tsx → shown`, ~0.95 s) the board
+  draws only the remaining area (`Board` → `offset`) and the squares grow: at most 1.7× the base and 64 px (a bigger
+  base stays). The transition is a smooth FLIP (800 ms). Each collapsed ring stays as a trace line outside the frame
+  (`.ring-trace`, `RING_W`, `RING_COLORS`: newest innermost in bright orange, older ones fade outward) with a slow,
+  low-amplitude ember glow. The replay screen keeps the old layout (offset 0).
+- The rules screen's "Pieces" and "Taking" examples are animated (`Mini` → `hop`, `prey`).
+- Haptic patterns in `BUZZ` have distinct rhythms (take, star take, being taken, shrink, armor, bonus, win / loss).
+- **Puzzle navigation**: during a puzzle the panel has "Undo · Previous · Next"; the result card has "Previous" and
+  "Next" (allowed without solving; "Next" is highlighted after a win). The order is the `PUZZLES` array (tutorials
+  first).
+- **Multiplayer lobby options**: the host can turn on personalities, obstacles and (with 4 filled seats) teams
+  (`RoomView.opts`, `MatchStart.personas/obstacles/teams`).
+- **Logo**: the middle X turns right into a plus and back left into an x, once a second in a 2 s loop (`.logo-x`,
+  `MainMenu.css`).
 
-## Arayüz notları 2 (8 Ekim 2026)
-- **Eğitim**: üç mini bulmaca (201 Düz al, 202 Mod değişir, 203 Tehlike). `tools/puzzle-maps.mjs`'te `tutorial: true` ve üçü de `fixed` (elle çizilmiş, üretici yalnız doğrular). 203: "açgözlü alma tuzağı": Çelik'i almak seni Kızıl'ın çaprazına koyar; önce Kızıl'ı alıp sonra çaprazdan Çelik'i almak gerekir. Bulmacada bulmacanın kendi ipucu tehdit uyarısından önce gösterilir. Bulmaca ekranında ayrı "Eğitim" bölümü; yeni oyuncuya (3 maçtan az, eğitimi bitirmemiş) ana menüde yeşil "Eğitim · 1 dakika" düğmesi çıkar. Tek harita üretirken `node tools/make-puzzles.mjs <id>` (hepsini yeniden üretme: tohum sırası kayar). `app/src/game/puzzleText.ts` haritalardan elle üretildi; yeni harita/ipucu eklenince oraya ve sözlüklere de ekle.
-- **Tahta temaları** (`game/themes.ts`): Gece (açık), Zümrüt (6 bulmaca yıldızı), Kor (5 galibiyet), Buz (3 günlük), Mor (25 maç). Yalnız kare, boşluk ve çerçeve rengi değişir (`--kare`, `--kare-2`, `--bosluk`, `--tahta-cerceve`); oyuncu/tehlike/halka renkleri sabit. Ayarlar'da seçilir; açılınca sonuç kartında haber verilir (`freshThemes`).
-- **Günlük seri** (`daily.ts → dailyStreak`): oynanan günler `xsword-daily-days`'te; ana menüde "N gün seri".
-- **Maç sonu "neden"**: kaybedince kartta "9 numara seni düz aldı · tur 3" ya da "Halkada kaldın"; `TakeEvent.at` ile "Son hamleleri izle" tekrarı o ana açar (`#/izle/KOD~N`).
-- **Büyüteç**: 13×13 ve üstünde sağ üstte yakınlaştır düğmesi; kareler ≥34 px, tahta kayar ve taşına ortalanır (`board-scroll`).
-- **Yan çevrilmiş telefon** (`GameScreen.tsx → landscape`: yükseklik <520 ve genişlik > 1,2×yükseklik): tahta solda tam yükseklikte, üst bilgiler ve panel sağ sütunda (`land-side`). Dik tablette sütun 680 px.
-- Kurallar ekranında "Taşlar" ve "Almak" örnekleri hareket eder (`Mini` → `hop`, `prey`).
-- Titreşim desenleri `BUZZ` içinde ayrı ritimlerle (alma, yıldız alma, alınma, daralma, zırh, bonus, galibiyet/yenilgi).
-- **Bulmaca gezintisi**: bulmaca sırasında panelde "Geri al · Önceki · Sonraki", sonuç kartında "Önceki" ve "Sonraki" (kazanmadan da geçilir; kazanınca Sonraki vurgulu). Sıra `PUZZLES` dizisi sırasıdır (eğitimler önce, sonra bulmacalar).
-
-## Ödüller ve lobi seçenekleri (8 Ekim 2026)
-- **Taş efektleri** (`components/SkinFx.tsx`, CSS `Board.css` sonu): yalnız senin yıldızında görünen animasyonlu süs. Alev (12 bulmaca yıldızı), Şimşek (10 galibiyet), Kristal (7 günlük meydan okuma), Altın (36 bulmaca yıldızı). Seçim Ayarlar → Taş efekti (`settings.skin`, geçerlisi `activeSkin`). Açılış şartları `game/themes.ts` içinde (`SKINS`, `THEMES`, ortak `Need`).
-- **Sonuç ödülleri**: kazanılan maç kartında altın efektli yıldız, günlükte şimşekli; bulmacada 3 yıldız alevli ("Kusursuz!"), 2 yıldız kristalli ("İyi iş!"); kazanılan yıldızlar sırayla patlayarak çıkar. Yeni tema ya da efekt açılınca kartta önizlemesiyle haber verilir (`freshRewards`).
-- **Demo anahtarı kaldırıldı** (8 Ekim 2026, Arda). Kilitli stile dokununca büyük animasyonlu önizleme kartı açılır (`SettingsScreen.tsx → PeekCard`): ne olduğunu, nasıl açıldığını ve ilerlemeyi gösterir. Arda bu ödülleri ileride satmayı düşünüyor: satış eklenirse `need` yanına bir "satın alındı" kaynağı eklenir ve `isUnlocked` ikisine de bakar; ödeme ve hesap Arda'nın tıklaması.
-- **Çok oyunculu lobi seçenekleri**: kurucu rakip kişilikleri, engel kareleri ve (4 dolu koltukta) takım seçebilir (`RoomView.opts`, `MatchStart.personas/obstacles/teams`). Motor tohumlu olduğu için herkes aynı tahtayı kurar.
-
-- **Logo**: ortadaki X, 2 sn'lik döngüde saniyede bir sağa dönüp artı olur, sonra sola dönüp x olur (`.logo-x`, `MainMenu.css`).- **Arena büyümesi**: halka çöküp düşme animasyonu bitince (`GameScreen.tsx → shown`, ~0,95 sn) tahta yalnız kalan alanı çizer (`Board` → `offset`) ve kareler büyür: en çok tabanın 1,7 katı ve 64 px (taban zaten büyükse o). Geçiş FLIP ile yumuşak (800 ms). Çöken her halka çerçevenin dışında bir iz çizgisi olarak kalır (`.ring-trace`, `RING_W`, `RING_COLORS`: en yeni en içte parlak turuncu, eskiler dışa doğru söner) ve göz yormayan, ~3 sn'lik kor ışıltısıyla titreşir. Tekrar ekranı (`ReplayScreen`) eski düzende kalır (offset 0).
-
-- **Engel kareleri** çapraz çizgili desenle çizilir (yüksek karşıtlık, kalın açık çerçeve). Arda taş blok/tuğla desenini beğenmedi (8 Ekim 2026), eski desenin belirgin hâli kaldı. Girilmez ve çift adımla üstünden atlanamaz; kural metinleri bunu söyler.
-## Profil (8 Ekim 2026)
-- Arda profil altyapısını tamamen bana bıraktı ("ben hiç bilmiyorum"). Karar: kimlik iPhone'da **Game Center**, Android'de **Google Play Games**; ilerleme platformun bulut kaydında; X Sword sunucusu yok (sunucusuz kararıyla uyumlu). Ayrıntı ve yol haritası: `docs/profil-altyapisi.md`.
-- Web tarafı hazır: `game/profile.ts` (ad, renk, kimlik, `provider`), `game/progress.ts` (ilerleme görüntüsü + `mergeProgress` + `XS1.` yedek kodu), `game/platform.ts` (yerel `XSwordGames` eklentisinin sözleşmesi; web'de no-op; açılışta `bootPlatform`, maç sonunda `syncCloud`), `screens/ProfileScreen.tsx` (`#/profil`, ana menüde sağ üst rozet).
-- Koltuk adları: `names.ts → setSeatNames` (controller `reset`'te doldurur). Profil adı olan insan koltukları o adla, yapay zekâ "Oyuncu N" diye anılır. Türkçe belirtme eki ünlü uyumuyla (`accusative`: Ada'yı, Mert'i, Kılıç 482'yi).
-- Çok oyunculu: `hello` mesajında `profile` (ad + renk, `readPublic` ile temizlenir), `LobbySeat.name/color`, `MatchStart.names`. Rakibe yalnız ad ve renk gider.
-- Sıradaki adımlar: Capacitor kabuğu + `XSwordGames` eklentisi (Claude), Apple Developer / App Store Connect / Game Center / Google Play Console / Play Games Services / gizlilik politikası (Arda'nın tıklamaları).
+## Profiles (8 October 2026)
+- Arda left the profile system entirely to Claude ("I know nothing about this"). Decision: identity comes from **Game
+  Center** on iPhone and **Google Play Games** on Android; progress lives in the platform's cloud save; no X Sword
+  server (consistent with the serverless decision). Details and roadmap: `docs/profile-infrastructure.md`.
+- The web side is ready: `game/profile.ts` (name, color, id, `provider`), `game/progress.ts` (progress snapshot +
+  `mergeProgress` + the `XS1.` backup code), `game/platform.ts` (the contract of the native `XSwordGames` plugin; a
+  no-op on the web; `bootPlatform` at startup, `syncCloud` at the end of a match), `screens/ProfileScreen.tsx`
+  (`#/profile`, the badge at the top right of the main menu).
+- Seat names: `names.ts → setSeatNames` (filled in the controller's `reset`). Human seats with a profile name use it;
+  AI seats are "Player N". The Turkish accusative suffix follows vowel harmony (`accusative`: Ada'yı, Mert'i,
+  Kılıç 482'yi).
+- Multiplayer: `profile` in the `hello` message (name + color, cleaned by `readPublic`), `LobbySeat.name/color`,
+  `MatchStart.names`. Only the name and color reach opponents.
+- Next steps: the Capacitor shell + the `XSwordGames` plugin (Claude); Apple Developer / App Store Connect / Game Center
+  / Google Play Console / Play Games Services / privacy policy (Arda's clicks).
