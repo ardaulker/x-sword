@@ -31,8 +31,8 @@
   Only `transport.ts` knows the connection, so moving to an X Sword server later changes only that file. Arda said on
   6 October 2026: "serverless for now, maybe a product later".
 - `arena/` is a test bench for the engine (https://ardaulker.github.io/x-sword/arena/). The root `index.html` only
-  redirects to `/play/`. The cousin's first demo was retired on 8 October 2026 (Arda: "that version is finished"): it
-  lives in `archive/cousin-demo/` with its old tests, is not published (the workflow skips `archive/`) and nothing uses it.
+  redirects to `/play/`. The first demo was retired on 8 October 2026 (Arda: "that version is finished"): it
+  lives in `archive/first-demo/` with its old tests, is not published (the workflow skips `archive/`) and nothing uses it.
 - Tests: `node tests/engine.test.mjs` (rules + bot strength). Run it before and after touching rules or bots.
 - Publishing: a push to `main` runs `.github/workflows/pages.yml`, which runs the engine tests, builds `app/` and
   publishes the site to GitHub Pages. Root pages (`index.html`, `arena/`, `engine/`) go out as they are; the game is
@@ -83,7 +83,7 @@
 - Single player: the **Twin** is the player's mirror. It moves right after the player in the same direction: walks if
   the square is empty, takes the piece there if occupied, stays put if blocked. So it can never take the player. You
   win when every bot is gone (no need to take the Twin). A take by the Twin gives double points and a Switcheroo bonus.
-  Arda chose this on 6 October 2026. In the cousin's first file the Twin was different: a hunter that chose its own
+  Arda chose this on 6 October 2026. In the first demo file the Twin was different: a hunter that chose its own
   moves under the player's rules.
 - Bonuses: everyone starts with one double step. 20 points double step, 40 double move, 60 one of the two at random,
   50 Switcheroo (swap places with any piece on the board; Turkish name "Yer Çalma"). Surviving the first shrink gives armor (one extra life), the
