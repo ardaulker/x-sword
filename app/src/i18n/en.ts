@@ -449,7 +449,7 @@ const dict: Record<string, string> = {
   'Tehlike': 'Danger',
   'DÜZ turdasın: yıldız düz gider ve düz alır. Üstündeki taşa dokun, sonra Onayla.': 'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.',
   'Mod her tur değişir. Önce düz yürü, sonraki turda çapraz al.': 'The mode changes every round. Walk straight first, then take diagonally next round.',
-  'Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. Önce güvenli kareden git.': 'A red-striped square is dangerous: a piece will take you there. Go through a safe square first.',
+  'Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. İki taşı da al; önce çizgisiz kareyi seç.': 'A red-striped square is dangerous: a piece will take you there. Take both pieces; pick the unstriped square first.',
   'Gece': 'Night',
   'Zümrüt': 'Emerald',
   'Kor': 'Ember',

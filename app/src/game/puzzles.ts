@@ -48,15 +48,15 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "id": 203,
     "title": "Tehlike",
-    "hint": "Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. Önce güvenli kareden git.",
+    "hint": "Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. İki taşı da al; önce çizgisiz kareyi seç.",
     "tutorial": true,
     "mode": "DUZ",
     "bonuses": null,
-    "par": 3,
+    "par": 2,
     "map": [
       ".....",
-      ".C...",
-      ".K.S.",
+      ".SC..",
+      ".K...",
       ".....",
       "....."
     ]

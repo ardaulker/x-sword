@@ -237,8 +237,9 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
   if (view.phase === 'sen') {
     who = me; timer = t; title = tr('Senin sıran'); sub = tr('Yanan karelerden birine dokun');
     const threats = attackersOfMe(st, me).length;
-    if (threats) { hint = tr('Şu an {n} taş seni alabilir. Çizgili kareler tehlikeli.', { n: threats }); hintColor = DANGER_TXT; }
-    else if (st.puzzle) hint = puzzleHint(PUZZLES.find(p => p.id === ctl.setup.puzzle)?.hint ?? '');
+    // Bulmacanın kendi ipucu tehdit uyarısından önce gelir: eğitim ipuçları hep okunsun, tehlike zaten çizgili karelerde görünür.
+    if (st.puzzle) hint = puzzleHint(PUZZLES.find(p => p.id === ctl.setup.puzzle)?.hint ?? '');
+    else if (threats) { hint = tr('Şu an {n} taş seni alabilir. Çizgili kareler tehlikeli.', { n: threats }); hintColor = DANGER_TXT; }
     else hint = tr('Bir taşa dokun: yolları ve kimi kovaladığı tahtada görünür.');
     if (collapseDue(st)) {
       sub = tr('Dış halka bu turun sonunda çöküyor');

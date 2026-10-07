@@ -449,7 +449,7 @@ const dict: Record<string, string> = {
   'Tehlike': 'Peligro',
   'DÜZ turdasın: yıldız düz gider ve düz alır. Üstündeki taşa dokun, sonra Onayla.': 'Es una ronda RECTA: tu estrella camina y toma en recto. Toca la ficha de arriba y confirma.',
   'Mod her tur değişir. Önce düz yürü, sonraki turda çapraz al.': 'El modo cambia cada ronda. Primero camina recto y en la siguiente ronda toma en diagonal.',
-  'Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. Önce güvenli kareden git.': 'Una casilla con rayas rojas es peligrosa: una ficha te toma allí. Ve primero por una casilla segura.',
+  'Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. İki taşı da al; önce çizgisiz kareyi seç.': 'Una casilla con rayas rojas es peligrosa: una ficha te toma allí. Toma las dos fichas; elige primero la casilla sin rayas.',
   'Gece': 'Noche',
   'Zümrüt': 'Esmeralda',
   'Kor': 'Brasa',

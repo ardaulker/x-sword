@@ -25,11 +25,11 @@ export const MAPS = [
     ],
   },
   {
-    id: 203, tutorial: true, title: 'Tehlike', hint: 'Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. Önce güvenli kareden git.', mode: 'DUZ', bots: 2, par: 3,
+    id: 203, tutorial: true, fixed: true, title: 'Tehlike', hint: 'Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. İki taşı da al; önce çizgisiz kareyi seç.', mode: 'DUZ', par: 2,
     map: [
       '.....',
-      '.....',
-      '.....',
+      '.SC..',
+      '.K...',
       '.....',
       '.....',
     ],
