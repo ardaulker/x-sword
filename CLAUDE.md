@@ -217,4 +217,4 @@ S...C....
 
 - **Logo**: ortadaki X, 2 sn'lik döngüde saniyede bir sağa dönüp artı olur, sonra sola dönüp x olur (`.logo-x`, `MainMenu.css`).- **Arena büyümesi**: halka çöküp düşme animasyonu bitince (`GameScreen.tsx → shown`, ~0,95 sn) tahta yalnız kalan alanı çizer (`Board` → `offset`) ve kareler büyür: en çok tabanın 1,7 katı ve 64 px (taban zaten büyükse o). Geçiş FLIP ile yumuşak (800 ms). Çöken her halka çerçevenin dışında bir iz çizgisi olarak kalır (`.ring-trace`, `RING_W`, `RING_COLORS`: en yeni en içte parlak turuncu, eskiler dışa doğru söner) ve göz yormayan, ~3 sn'lik kor ışıltısıyla titreşir. Tekrar ekranı (`ReplayScreen`) eski düzende kalır (offset 0).
 
-- **Engel kareleri** tahtada yükseltilmiş gri taş blok olarak çizilir (tuğla çizgileri, açık çerçeve): girilmez ve çift adımla üstünden atlanamaz; kural metinleri bunu söyler.
+- **Engel kareleri** çapraz çizgili desenle çizilir (yüksek karşıtlık, kalın açık çerçeve). Arda taş blok/tuğla desenini beğenmedi (8 Ekim 2026), eski desenin belirgin hâli kaldı. Girilmez ve çift adımla üstünden atlanamaz; kural metinleri bunu söyler.

@@ -288,10 +288,9 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
       if (hole) background = 'transparent';
       else if (gone) { background = 'var(--bosluk)'; frame = { stroke: '#2B3670', width: 4, dash: '6 7' }; }
       else if (wall) {
-        // Engel: yükseltilmiş taş blok. Girilmez ve çift adımla üstünden atlanamaz; bu yüzden tahtada en belirgin kare.
-        background = 'linear-gradient(155deg, #B4BCDB 0%, #7F89B0 45%, #4E577D 100%)';
-        frame = { stroke: '#DDE3FF', width: 6 };
-        mark = { d: 'M14 38 H86 M14 62 H86 M38 14 V38 M62 38 V62 M38 62 V86', fill: 'none', stroke: 'rgba(20,26,56,.55)', width: 6 };
+        // Engel: eski çapraz çizgili desen, daha yüksek karşıtlık ve kalın açık çerçeveyle. Girilmez, çift adımla üstünden atlanamaz.
+        background = 'repeating-linear-gradient(45deg, #42509A 0 5px, #0E1430 5px 10px)';
+        frame = { stroke: '#9AA8EC', width: 8 };
       }
       else if (doomedRing) background = 'var(--pat-hazard)';
       if (heat?.has(`${r},${c}`) && !gone && !doomedRing && !wall) background = `radial-gradient(circle at 50% 50%, rgba(255,59,92,.55) 0 6%, transparent 7%), linear-gradient(rgba(255,59,92,.07), rgba(255,59,92,.07)), ${background}`; // soluk nokta: kareler ikinci bir zemin rengi gibi okunmasın
