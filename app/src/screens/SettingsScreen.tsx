@@ -76,6 +76,10 @@ export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: ()
           </div>
           <p className="set-note">{speeds().find(x => x[0] === s.speed)?.[2]}</p>
         </div>
+        <Toggle label={tr('Önizlemesiz oyna')} sub={tr('Kareye dokununca hamle hemen oynanır. Onay ekranı çıkmaz.')} on={s.quick}
+          onChange={v => update({ quick: v })} />
+        <Toggle label={tr('Botları hızlı oynat')} sub={tr('Bot turları bekletmez. Hamleler tek seferde oynanır.')} on={s.fastBots}
+          onChange={v => update({ fastBots: v })} />
         <Toggle label={tr('Tehlike göstergesi')} sub={tr('Seni alabilecek taşların karelerini kırmızı çizgiyle gösterir.')} on={s.danger}
           onChange={v => update({ danger: v })} />
         <Toggle label={tr('Tehlike haritası')} sub={tr('Gelecek turda bir taşın seni alabileceği bütün kareleri soluk kırmızıyla gösterir.')} on={s.dangerMap}

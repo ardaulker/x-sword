@@ -85,7 +85,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
       {compact ? <CompactBar ctl={ctl} view={view} /> : (
         <>
           <TopBar ctl={ctl} view={view} />
-          <ModeIndicator mode={st.mode} />
+          <ModeIndicator mode={st.mode} showSub={ctl.autoMap || !!st.puzzle} />
         </>
       )}
       <TurnQueue ctl={ctl} view={view} compact={compact} />

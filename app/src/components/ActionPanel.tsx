@@ -10,6 +10,7 @@ import {
   DANGER, DANGER_TXT, HAZARD, HAZARD_TXT, ICON, PLAYER_COLORS, TXT, TXT2, colorOf, diamondOf, isBot, seatOf,
 } from '../game/look';
 import { attackersOfMe } from '../game/threats';
+import { orderNo } from '../game/order';
 import { ME, labelOf, modeLower, modeWord, seatName, winnerLine } from '../game/names';
 import { Icon, useMatchTime } from './bits';
 import { PieceGlyph } from './PieceGlyph';
@@ -33,6 +34,19 @@ function Chips({ st, pieces, danger }: { st: GameState; pieces: Piece[]; danger?
       ))}
     </div>
   );
+}
+
+// Başkaları oynarken: sıra sana kaç hamle sonra geliyor?
+function untilMe(st: GameState, me: Piece) {
+  if (!me.alive || st.over) return '';
+  let n = 0;
+  for (let i = st.turn; i < st.order.length; i++) {
+    const p = pieceById(st, st.order[i]);
+    if (!p?.alive) continue;
+    if (p.id === me.id) return n <= 1 ? tr('Bu hamleden sonra sıra sende') : tr('{n} hamle sonra sıra sende', { n });
+    n++;
+  }
+  return tr('Sonraki turda {n}. sıradasın', { n: orderNo(st, me.id, st.round + 1) });
 }
 
 function Who({ st, p }: { st: GameState; p: Piece | null | undefined }) {
@@ -202,6 +216,7 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
               <div key={i} style={{ background: i < done - 1 ? '#6F7FB8' : i === done - 1 ? '#EEF2FF' : '#232D5E' }} />
             ))}
           </div>
+          {me.alive && <div className="panel-hint">{untilMe(st, me)}</div>}
           {!ctl.isGuest && (
             <button type="button" className="btn btn-fast" onClick={() => ctl.speedUp()}>
               <Icon d={ICON.fast} size={18} fill="#EEF2FF" />
@@ -239,7 +254,7 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
     title = tr('{name} oynuyor', { name: actor.kind === 'star' ? seatName(st, actor.seat) : labelOf(st, actor) });
     const next = pieceById(st, st.order[st.turn + 1]);
     sub = !next ? tr('Sonra: yeni tur') : next.kind === 'star' ? tr('Sonra: {name}', { name: labelOf(st, next) }) : tr('Sonra: botlar');
-    hint = me.alive ? tr('Sıran gelince gidebileceğin kareler kendiliğinden yanar.') : tr('İzliyorsun. Bir taşa dokun: yolları tahtada görünür.');
+    hint = me.alive ? untilMe(st, me) : tr('İzliyorsun. Bir taşa dokun: yolları tahtada görünür.');
   } else if (view.phase === 'mod') {
     const first = actor?.kind === 'star' ? actor : null;
     who = first; title = tr('Mod değişti: {mode}', { mode: modeWord(st.mode) });
@@ -278,6 +293,12 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
         )}
         <div className="panel-hint" style={{ color: hintColor }}>{hint}</div>
         {view.phase === 'sen' && <BonusBar ctl={ctl} view={view} />}
+        {view.phase === 'sen' && ctl.undoAvailable && (
+          <button type="button" className="btn btn-ghost btn-undo" disabled={!ctl.canUndo} onClick={() => ctl.undo()}>
+            <Icon d="M9 14 L4 9 L9 4 M4 9 H15 A5 5 0 0 1 15 19 H8" size={16} stroke={2.2} />
+            {ctl.undosRemaining == null ? tr('Geri al') : tr('Geri al ({n})', { n: ctl.undosRemaining })}
+          </button>
+        )}
       </div>
     </section>
   );

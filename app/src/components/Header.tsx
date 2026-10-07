@@ -71,14 +71,14 @@ export function TopBar({ ctl, view }: { ctl: GameController; view: View }) {
 const modeSub = (mode: Mode) => (mode === 'DUZ' ? tr('Yıldızlar düz gider, düz alır') : tr('Yıldızlar çapraz gider, çapraz alır'));
 
 // Mod göstergesi: oyunun en önemli bilgisi. DÜZ buz zemin, ÇAPRAZ gece zemin + çapraz desen.
-export function ModeIndicator({ mode }: { mode: Mode }) {
+export function ModeIndicator({ mode, showSub }: { mode: Mode; showSub: boolean }) {
   const next: Mode = mode === 'DUZ' ? 'CAPRAZ' : 'DUZ';
   return (
-    <div key={mode} className={`mode-box mode-flip mode-${mode === 'DUZ' ? 'duz' : 'capraz'}`} role="status" aria-label={tr('Mod {mode}. {sub}. Sonraki tur {next}.', { mode: modeWord(mode), sub: modeSub(mode), next: modeWord(next) })}>
+    <div key={mode} className={`mode-box mode-flip mode-${mode === 'DUZ' ? 'duz' : 'capraz'}${showSub ? ' has-sub' : ''}`} role="status" aria-label={tr('Mod {mode}. {sub}. Sonraki tur {next}.', { mode: modeWord(mode), sub: modeSub(mode), next: modeWord(next) })}>
       <ModeIcon mode={mode} size={34} stroke={9} />
       <div className="mode-box-text">
         <span className="mode-box-label">{modeWord(mode)}</span>
-        <span className="mode-box-sub">{modeSub(mode)}</span>
+        {showSub && <span className="mode-box-sub">{modeSub(mode)}</span>}
       </div>
       <div className="mode-box-next">
         <span>{tr('SONRAKİ TUR')}</span>

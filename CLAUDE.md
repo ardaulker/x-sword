@@ -188,3 +188,12 @@ S...C....
 .#K....#.
 -...#...-
 ```
+
+## Arayüz notları (UI/UX turu, 7 Ekim 2026)
+- Üst çubukta "TUR n" çevrilir; menü ve savaş kaydı düğmelerinin altında küçük yazı var (kısa ekranda gizli). Mod kutusunun alt yazısı yalnız ilk iki maçta (`ctl.autoMap`) ve bulmacada görünür; sonra kutu 44 px.
+- Bonus düğmelerinde kısa ad: Zırh, Adım ×2, Hamle ×2, Ayna (`shortBonus`). Halka çipi "Daralma: n tur".
+- Tehlike haritası kareyi boyamaz, ortaya soluk kırmızı nokta koyar.
+- Tek oyunculuda önizlemede İkiz'in gideceği kare soluk İkiz taşıyla gösterilir (`Board.tsx → twinGhost`, durumu kopyalayıp hamleyi oynatır).
+- Başkaları oynarken panel "N hamle sonra sıra sende" der (`ActionPanel.tsx → untilMe`). Bu turda oynayan son 6 taşın geldiği yer soluk kesik çizgide kalır (`View.lastMoves`). Kendi taşın hep yumuşak nabızlı halkayla seçilir (`halo-me`).
+- Senin aldığın taş büyük patlama + büyük puan + 750 ms bekleyiş ile vurgulanır.
+- **Geri al** (`GameController.undo`): yalnız Kolay zorlukta (maçta 3 kez) ve bulmacada (sınırsız); günlük ve çok oyunculuda yok. Maçı kayıtlı hamlelerden bir önceki sıranın başına yeniden kurar (`undoPoints`). Ayarlar'da "Önizlemesiz oyna" (`settings.quick`) ve "Botları hızlı oynat" (`settings.fastBots`) seçenekleri var; ikisi de varsayılan kapalı.

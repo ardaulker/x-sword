@@ -59,8 +59,10 @@ export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', aiLevel: 'nor
 
 export interface Spot { r: number; c: number }
 export interface Trail { key: number; from: Spot; to: Spot; color: string }
-export interface Burst { key: number; r: number; c: number; color: string }
-export interface Float { key: number; r: number; c: number; text: string; color: string }
+export interface Burst { key: number; r: number; c: number; color: string; big?: boolean }
+export interface Float { key: number; r: number; c: number; text: string; color: string; big?: boolean }
+// Bu turda oynanan son hamleler: tahtada soluk kesik çizgi olarak kalır.
+export interface LastMove { id: string; round: number; from: Spot; to: Spot; color: string }
 export interface Toast { key: number; text: string; icon: 'sword' | 'clock' | 'info' | 'ring' }
 export interface Banner { key: number; title: string; sub: string; color: string; pieceId: string | null }
 // attackerId null: taş çöken halkada düştü.
@@ -73,6 +75,7 @@ export interface View {
   showThreats: boolean;
   timer: number;
   trails: Trail[];
+  lastMoves: LastMove[];
   bursts: Burst[];
   floats: Float[];
   toast: Toast | null;
@@ -127,6 +130,8 @@ export class GameController {
   private restored = false; // maç cihazdaki kayıttan geldi: devam edince sıradaki adım başlatılmalı
   private opts: Opts | null = null; // bu maçı kuran createGame seçenekleri (kayıt ve tekrar için)
   private statsDone = false;
+  private undoPoints: number[] = []; // her hamle sırasının başındaki hamle sayısı (geri al için)
+  private undosLeft = 3;
   replay: { opts: Opts; moves: (Move | null)[]; i: number } | null = null;
 
   constructor(setup: Setup = DEFAULT_SETUP) {
@@ -351,7 +356,7 @@ export class GameController {
   private freshView(): View {
     return {
       phase: 'hazir', sel: null, showThreats: false, timer: this.setup.moveSeconds,
-      trails: [], bursts: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null, bonus: null,
+      trails: [], lastMoves: [], bursts: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null, bonus: null,
       bots: { done: 0, total: 0, currentId: null }, events: [],
       clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, hit: 0, version: 0,
     };
@@ -366,6 +371,8 @@ export class GameController {
       this.state = this.makeState(this.opts);
     }
     this.moves = [];
+    this.undoPoints = [];
+    this.undosLeft = 3;
     for (const m of preset?.moves ?? []) { play(this.state, m); this.moves.push(m); }
     this.fast = false;
     this.decisionShown = false;
@@ -559,6 +566,7 @@ export class GameController {
   // ------------------------------------------------------------ senin sıran
 
   private myTurn() {
+    if (this.undoPoints[this.undoPoints.length - 1] !== this.moves.length) this.undoPoints.push(this.moves.length);
     this.emit({ phase: 'sen', sel: null, showThreats: false, bonus: null, timer: this.setup.moveSeconds });
     feel('myTurn', BUZZ.myTurn);
     if (!legalMoves(this.state, this.myStar(), this.state.mode).length) {
@@ -578,6 +586,8 @@ export class GameController {
   select(move: Move) {
     if (!this.isMyMove()) return;
     this.view = { ...this.view, inspect: null };
+    // Önizlemesiz oyna: dokunduğun kare hemen oynanır.
+    if (settings.quick && this.view.phase === 'sen') { feel('move', BUZZ.confirm); return this.commitMine(move); }
     const sel = this.view.sel;
     if (this.view.phase === 'onizleme' && sel && sel.r === move.r && sel.c === move.c) return this.confirm();
     feel('select', BUZZ.select);
@@ -596,6 +606,37 @@ export class GameController {
     if (!this.isMyMove() || kind === 'armor' || !this.state.seats[ME].bonuses[kind]) return;
     feel('select', BUZZ.select);
     this.emit({ phase: 'sen', sel: null, showThreats: false, bonus: this.view.bonus === kind ? null : kind });
+  }
+
+  // Geri al: kolay modda (maçta 3 kez) ve bulmacada (sınırsız). Maç, kayıtlı hamlelerden bir önceki sıranın başına kurulur.
+  get undoAvailable() {
+    if (this.net || this.replay || this.setup.daily) return false;
+    if (this.state.puzzle) return true;
+    return (this.setup.players === 1 ? this.setup.level : this.setup.aiLevel) === 'kolay';
+  }
+  get canUndo() {
+    return this.undoAvailable && this.view.phase === 'sen' && this.undoPoints.length >= 2 && (!!this.state.puzzle || this.undosLeft > 0);
+  }
+  get undosRemaining() { return this.state.puzzle ? null : this.undosLeft; }
+
+  undo() {
+    if (!this.canUndo || !this.opts) return;
+    const target = this.undoPoints[this.undoPoints.length - 2];
+    const keep = this.moves.slice(0, target);
+    const { clockStart, clockEnd, events } = this.view;
+    const points = this.undoPoints.slice(0, -2);
+    const left = this.state.puzzle ? this.undosLeft : this.undosLeft - 1;
+    this.dispose();
+    this.state = this.makeState(this.opts);
+    this.moves = [];
+    for (const m of keep) { play(this.state, m); this.moves.push(m); }
+    this.undoPoints = points;
+    this.undosLeft = left;
+    this.view = { ...this.freshView(), clockStart, clockEnd, events: events.filter(e => e.round < this.state.round), phase: 'bekle', version: this.view.version + 1 };
+    this.toast(tr('Hamle geri alındı'), 'info');
+    this.saveGame();
+    this.emit();
+    this.later(250, () => this.advance());
   }
 
   cancel() {
@@ -622,7 +663,7 @@ export class GameController {
     }
     const o = this.apply(move);
     this.emit({ phase: 'bekle', sel: null, showThreats: false, bonus: null });
-    if (o) this.continueAfter(o, 500);
+    if (o) this.continueAfter(o, move?.type === 'take' ? 750 : 500); // aldığında kısa bir bekleyiş: an hissedilsin
   }
 
   // ------------------------------------------------------------ yapay zekâ oyuncular, İkiz ve botlar
@@ -650,7 +691,7 @@ export class GameController {
 
   private botTurn() {
     this.botQueue = this.botRun();
-    this.fast = false;
+    this.fast = settings.fastBots;
     this.emit({ phase: 'bot', bots: { done: 0, total: this.botQueue.length, currentId: null } });
     this.botTimer = this.later(250, () => this.botStep());
   }
@@ -684,7 +725,7 @@ export class GameController {
 
     const next = currentActor(st);
     if (o && !o.roundEnded && !this.halted && next && isBot(next)) {
-      const stagger = Math.max(60, Math.min(110, Math.floor(1200 / Math.max(1, this.view.bots.total)))) * SPEED[settings.speed];
+      const stagger = Math.max(40, Math.min(80, Math.floor(1000 / Math.max(1, this.view.bots.total)))) * SPEED[settings.speed];
       this.botTimer = this.later(this.fast ? 0 : stagger, () => this.botStep());
       return;
     }
@@ -721,7 +762,7 @@ export class GameController {
   private modeChange() {
     feel('mode', BUZZ.mode);
     this.emit({ phase: 'mod', modeOverlay: true });
-    this.later(1300, () => {
+    this.later(settings.fastBots ? 800 : 1300, () => {
       // Çökecek turun başında açık uyarı: bu tur sonunda dış halkada kalan elenir.
       if (collapseDue(this.state)) {
         this.toast(tr('Dış halka bu tur sonunda çöküyor!'), 'ring');
@@ -766,17 +807,21 @@ export class GameController {
     const collapsed = st.ring !== ring;
     const events = [...this.view.events];
 
-    if (move) this.trail(from, { r: move.r, c: move.c }, colorOf(actor));
+    if (move) {
+      this.trail(from, { r: move.r, c: move.c }, colorOf(actor));
+      const last = [...this.view.lastMoves.filter(l => l.id !== actor.id && l.round === round), { id: actor.id, round, from, to: { r: move.r, c: move.c }, color: colorOf(actor) }];
+      this.view = { ...this.view, lastMoves: last.slice(-6) };
+    }
 
     if (victim && move && !victim.alive) {
       events.push({ key: this.key(), round, attackerId: actor.id, victimId: victim.id });
-      this.burst(move.r, move.c, colorOf(actor));
-      if (!(actor.kind === 'star' && actor.seat === ME)) sound('take');
-      this.view = { ...this.view, shake: this.view.shake + 1 };
       const mine = actor.kind === 'star' && actor.seat === ME;
+      this.burst(move.r, move.c, colorOf(actor), mine);
+      if (!mine) sound('take');
+      this.view = { ...this.view, shake: this.view.shake + 1 };
       const me = victim.kind === 'star' && victim.seat === ME;
       // Yalnız yıldızlar puan toplar: alınan taşın değeri tahtada uçar, skor tablosu anında güncellenir.
-      if (actor.kind === 'star') this.float(move.r, move.c, `+${POINTS[victim.kind]}`, colorOf(actor));
+      if (actor.kind === 'star') this.float(move.r, move.c, `+${POINTS[victim.kind]}`, colorOf(actor), mine);
       if (actor.kind === 'twin' && st.seats[ME].score > scoreBefore) {
         const pts = POINTS[victim.kind] * TWIN_TAKE_MULT;
         this.float(move.r, move.c, `+${pts}`, PLAYER_COLORS[ME]);
@@ -827,16 +872,16 @@ export class GameController {
     this.later(700, () => this.emit({ trails: this.view.trails.filter(t => t.key !== key) }));
   }
 
-  private burst(r: number, c: number, color: string) {
+  private burst(r: number, c: number, color: string, big = false) {
     const key = this.key();
-    this.view = { ...this.view, bursts: [...this.view.bursts, { key, r, c, color }] };
-    this.later(450, () => this.emit({ bursts: this.view.bursts.filter(b => b.key !== key) }));
+    this.view = { ...this.view, bursts: [...this.view.bursts, { key, r, c, color, big }] };
+    this.later(big ? 700 : 450, () => this.emit({ bursts: this.view.bursts.filter(b => b.key !== key) }));
   }
 
-  private float(r: number, c: number, text: string, color: string) {
+  private float(r: number, c: number, text: string, color: string, big = false) {
     const key = this.key();
-    this.view = { ...this.view, floats: [...this.view.floats, { key, r, c, text, color }] };
-    this.later(1000, () => this.emit({ floats: this.view.floats.filter(f => f.key !== key) }));
+    this.view = { ...this.view, floats: [...this.view.floats, { key, r, c, text, color, big }] };
+    this.later(big ? 1500 : 1000, () => this.emit({ floats: this.view.floats.filter(f => f.key !== key) }));
   }
 
   private toast(text: string, icon: Toast['icon']) {

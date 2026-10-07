@@ -57,6 +57,15 @@
 }
 @keyframes ghost-in { from { opacity: 0; } }
 
+/* Senin aldığın taş: daha büyük patlama ve puan. */
+.board-burst.is-big { animation: burst-big calc(520ms * var(--hiz-carpan)) ease-out forwards; }
+@keyframes burst-big {
+  0% { transform: scale(.5); opacity: 1; filter: brightness(2); }
+  30% { transform: scale(1.15); opacity: 1; filter: brightness(1.2); }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+.board-float.is-big { font-size: 28px; text-shadow: 0 0 10px currentColor, 0 0 3px #0B1026; animation-duration: calc(1500ms * var(--hiz-carpan)); z-index: 6; }
+
 /* Alınan taşın puanı: kareden yukarı süzülür. */
 .board-float {
   position: absolute; z-index: 5; transform: translate(-50%, 0); pointer-events: none;
@@ -74,6 +83,9 @@
 .halo { position: absolute; inset: -6%; border-radius: 50%; box-sizing: border-box; pointer-events: none; }
 .halo-turn { border: 2px solid; opacity: .9; }
 .halo-ring { border: 2px dashed var(--hazard); }
+.halo-me { border: 2px solid; opacity: .5; animation: halo-me 2.4s ease-in-out infinite; }
+@keyframes halo-me { 0%, 100% { transform: scale(1); opacity: .3; } 50% { transform: scale(1.1); opacity: .75; } }
+.twin-ghost { z-index: 4; opacity: .75; filter: saturate(.7) drop-shadow(0 0 4px #fff); transition: none; animation: ghost-in calc(var(--t-secim) * var(--hiz-carpan)) ease-out; }
 .halo-threat { border: 2px dashed var(--danger); }
 .halo-current { border: 2px solid #FFFFFF; }
 .halo-pinned { border: 2.5px solid #FFFFFF; box-shadow: 0 0 0 4px rgba(255, 255, 255, .2); }
@@ -132,5 +144,5 @@
 @keyframes banner-in { from { opacity: 0; transform: translate(-50%, -40%); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .cell-flow, .cell-fall, .mode-ov-band, .mode-ov-pill, .mode-flip { animation: none; }
+  .cell-flow, .cell-fall, .mode-ov-band, .mode-ov-pill, .mode-flip, .halo-me, .board-burst.is-big { animation: none; }
 } 

@@ -14,6 +14,8 @@ export interface Settings {
   targets: boolean;     // botun hedef üçgeni (zor modda hep gizli)
   numbers: boolean;     // bütün taşlarda sıra numarası; kapalıyken yalnız oynayan ve sıradaki 3 taş
   colorBlind: boolean;  // renk körü paleti
+  quick: boolean;       // önizlemesiz oyna: kareye dokununca hamle hemen oynanır
+  fastBots: boolean;    // bot turları bekletmez
 }
 
 const NORMAL_COLORS = ['#3BFF8F', '#FFC53D', '#FF5CC0', '#B392FF'];
@@ -24,7 +26,7 @@ const KEY = 'xsword-settings';
 export const SPEED = { yavas: 1.45, normal: 1, hizli: 0.65 } as const;
 
 function load(): Settings {
-  const def: Settings = { sound: true, music: true, tips: true, dangerMap: false, volume: 0.8, haptics: true, speed: 'normal', danger: true, targets: true, numbers: true, colorBlind: false };
+  const def: Settings = { sound: true, music: true, tips: true, dangerMap: false, volume: 0.8, haptics: true, speed: 'normal', danger: true, targets: true, numbers: true, colorBlind: false, quick: false, fastBots: false };
   try { return { ...def, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') }; } catch { return def; }
 }
 

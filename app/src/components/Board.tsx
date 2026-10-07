@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import {
-  collapseDue, legalMoves, nextCollapseRound, nextMode, pieceAt, pieceById, ringOf, threatsFor,
+  collapseDue, currentActor, legalMoves, nextCollapseRound, nextMode, pieceAt, pieceById, play, ringOf, threatsFor, twinMove,
 } from '../../../engine/rules.js';
 import type { Move, Piece } from '../../../engine/rules.js';
 import { targetOf } from '../../../engine/bots.js';
@@ -70,6 +70,20 @@ export function Board({ ctl, view, cell }: Props) {
     reach.set(`${m.r},${m.c}`, { move: m, attackers: t.attackers.length, doomed: t.doomed });
   }
 
+  // Tek oyunculuda seçili hamleden sonra İkiz'in nereye gideceği (aynan senin yönünü oynar).
+  const twinGhost = useMemo(() => {
+    if (!sel || !st.solo) return null;
+    try {
+      const c = structuredClone(st);
+      play(c, sel);
+      const t = currentActor(c);
+      if (c.over || !t || t.kind !== 'twin') return null;
+      const m = twinMove(c, t);
+      return m ? { from: { r: t.r, c: t.c }, to: { r: m.r, c: m.c }, diamond: diamondOf(t, c.mode) } : null;
+    } catch { return null; }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sel?.r, sel?.c, sel?.bonus, view.version]);
+
   // ---------------------------------------------------------- çizgiler
   const center = (p: Spot) => ({ x: p.c * step + cell / 2, y: p.r * step + cell / 2 });
   const lines: { key: string; style: CSSProperties; trail?: boolean }[] = [];
@@ -106,6 +120,13 @@ export function Board({ ctl, view, cell }: Props) {
     }
   }
   for (const t of view.trails) seg(`tr${t.key}`, t.from, t.to, 'trail', t.color);
+  // Bu turda oynayanların son hamlesi: nereden geldikleri soluk kesik çizgide kalır.
+  for (const l of view.lastMoves) {
+    const p = pieceById(st, l.id);
+    if (l.round !== st.round || !p?.alive || p.r !== l.to.r || p.c !== l.to.c) continue;
+    seg(`lm${l.id}`, l.from, l.to, 'dot', alpha(l.color, 0.5));
+  }
+  if (twinGhost) seg('twin', twinGhost.from, twinGhost.to, 'dot', alpha(myColor, 0.6));
 
   // Dokunulan taş: yolları ve alabilecekleri tahtada, botun hedefi çizgiyle. Zor modda hedef gizli.
   const showTargets = ctl.setup.level !== 'zor' && settings.targets && !st.puzzle; // bulmacada botlar kovalamaz
@@ -131,6 +152,7 @@ export function Board({ ctl, view, cell }: Props) {
     if (threatIds.has(p.id)) return 'threat';
     if (warn && ringOf(st, p.r, p.c) === st.ring) return 'ring';
     if (p.id === me.id && myTurn) return 'turn';
+    if (p.id === me.id) return 'me'; // kalabalıkta kendi taşın hep seçilsin
     return null;
   };
 
@@ -331,7 +353,7 @@ export function Board({ ctl, view, cell }: Props) {
         {lines.map(l => <div key={l.key} className={`board-line${l.trail ? ' board-trail' : ''}`} style={l.style} />)}
 
         {view.bursts.map(b => (
-          <div key={b.key} className="board-burst" style={{ left: b.c * step + cell / 2 - cell, top: b.r * step + cell / 2 - cell, width: cell * 2, height: cell * 2 }}>
+          <div key={b.key} className={`board-burst${b.big ? ' is-big' : ''}`} style={{ left: b.c * step + cell / 2 - cell, top: b.r * step + cell / 2 - cell, width: cell * 2, height: cell * 2 }}>
             <svg viewBox="0 0 100 100">
               <path d="M50 0 L57 37 L85 15 L63 43 L100 50 L63 57 L85 85 L57 63 L50 100 L43 63 L15 85 L37 57 L0 50 L37 43 L15 15 L43 37 Z" fill="#FFF6C9" fillOpacity="0.9" stroke={b.color} strokeWidth="2.5" strokeLinejoin="round" />
               <circle cx="50" cy="50" r="44" fill="none" stroke={b.color} strokeWidth="3" strokeDasharray="5 6" />
@@ -340,7 +362,7 @@ export function Board({ ctl, view, cell }: Props) {
         ))}
 
         {view.floats.map(f => (
-          <div key={f.key} className="board-float" style={{ left: f.c * step + cell / 2, top: f.r * step, color: f.color }}>{f.text}</div>
+          <div key={f.key} className={`board-float${f.big ? ' is-big' : ''}`} style={{ left: f.c * step + cell / 2, top: f.r * step, color: f.color }}>{f.text}</div>
         ))}
 
         {st.pieces.map(p => {
@@ -362,13 +384,20 @@ export function Board({ ctl, view, cell }: Props) {
               }}
               svgExtra={target && <path d={notchPath(p, target)} fill={PLAYER_COLORS[target.seat]} stroke="#0B1026" strokeWidth="4" strokeLinejoin="round" />}
             >
-              {halo && <div className={`halo halo-${halo}`} style={halo === 'turn' ? { borderColor: myColor } : undefined} />}
+              {halo && <div className={`halo halo-${halo}`} style={halo === 'turn' || halo === 'me' ? { borderColor: myColor } : undefined} />}
               {pip && <div className={`pip pip-${pip}`}>{orderNo(st, p.id)}</div>}
               {badge > 0 && <div className="threat-badge">{badge}</div>}
               {p.kind === 'star' && p.alive && st.seats[p.seat].bonuses.armor > 0 && <div className="armor-badge" aria-label={tr('Zırhlı')} />}
             </PieceGlyph>
           );
         })}
+
+        {twinGhost && (
+          <PieceGlyph
+            kind="twin" seat={me.seat} size={cell} diamond={twinGhost.diamond} className="board-piece twin-ghost"
+            style={{ transform: `translate(${twinGhost.to.c * step}px, ${twinGhost.to.r * step}px)` }}
+          />
+        )}
 
         {sel && (
           <div
