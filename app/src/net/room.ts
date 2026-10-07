@@ -6,7 +6,7 @@ import type { Level } from '../../../engine/rules.js';
 import type { GameController } from '../game/controller';
 import { peerTransport } from './transport';
 import type { HostEndpoint, Link, Transport } from './transport';
-import type { LobbySeat, MatchStart, ToGuest, ToHost } from './protocol';
+import type { LobbyOpts, LobbySeat, MatchStart, ToGuest, ToHost } from './protocol';
 import { tr } from '../i18n';
 
 export type RoomStatus = 'connecting' | 'lobby' | 'playing' | 'error' | 'closed';
@@ -19,6 +19,7 @@ export interface RoomView {
   level: Level;
   size: number;           // seçilen tahta (en az, dolu koltuk sayısının varsayılanı kadar olur)
   bots: number | null;    // null: tahtaya göre varsayılan
+  opts: LobbyOpts;        // kişilik, engel, takım (varsayılan kapalı)
   error: string;
   version: number;
 }
@@ -34,7 +35,7 @@ const GRACE_MS = 15000;
 abstract class Room {
   abstract readonly role: 'host' | 'guest';
   view: RoomView = {
-    status: 'connecting', code: '', you: 0, seats: [], level: 'normal', size: 9, bots: null, error: '', version: 0,
+    status: 'connecting', code: '', you: 0, seats: [], level: 'normal', size: 9, bots: null, opts: { personas: false, obstacles: false, teams: false }, error: '', version: 0,
   };
   private listeners = new Set<() => void>();
   constructor(protected ctl: GameController) {}
@@ -134,8 +135,8 @@ export class HostRoom extends Room {
   }
 
   private broadcastLobby() {
-    const { code, seats, level, size, bots } = this.view;
-    this.links.forEach((l, i) => l?.send({ t: 'lobby', code, you: i, seats, level, size, bots }));
+    const { code, seats, level, size, bots, opts } = this.view;
+    this.links.forEach((l, i) => l?.send({ t: 'lobby', code, you: i, seats, level, size, bots, opts }));
   }
 
   addBot(i: number) { if (this.view.seats[i].kind === 'empty') this.setSeat(i, { kind: 'bot', ready: true }); }
@@ -149,6 +150,7 @@ export class HostRoom extends Room {
   setLevel(level: Level) { this.set({ level }); this.broadcastLobby(); }
   setSize(size: number) { this.set({ size }); this.broadcastLobby(); }
   setBots(bots: number | null) { this.set({ bots }); this.broadcastLobby(); }
+  setOpts(patch: Partial<LobbyOpts>) { this.set({ opts: { ...this.view.opts, ...patch } }); this.broadcastLobby(); }
 
   canStart() {
     const filled = this.view.seats.filter(s => s.kind !== 'empty');
@@ -167,6 +169,7 @@ export class HostRoom extends Room {
       seed: Math.floor(Math.random() * 2 ** 31),
       seats: order.map(i => (this.view.seats[i].kind === 'bot' ? { kind: 'bot', level } : { kind: 'human' })),
       level, moveSeconds, size, neutrals,
+      personas: this.view.opts.personas, obstacles: this.view.opts.obstacles, teams: this.view.opts.teams && order.length === 4,
     };
     this.links.forEach((l, i) => l?.send({ t: 'start', match: this.match!, you: this.engineSeat[i] }));
     this.ctl.startMatch(this.match, 0, {
@@ -249,7 +252,7 @@ export class GuestRoom extends Room {
   private message(m: ToGuest) {
     if (m.t === 'lobby') {
       if (this.view.status === 'playing') this.ctl.dispose();
-      this.set({ status: 'lobby', code: m.code, you: m.you, seats: m.seats, level: m.level, size: m.size, bots: m.bots });
+      this.set({ status: 'lobby', code: m.code, you: m.you, seats: m.seats, level: m.level, size: m.size, bots: m.bots, opts: m.opts ?? { personas: false, obstacles: false, teams: false } });
     } else if (m.t === 'start' || m.t === 'sync') {
       this.ctl.startMatch(m.match, m.you, { role: 'guest', send: move => this.link?.send({ t: 'move', move }) },
         m.t === 'sync' ? m.moves : []);

@@ -18,7 +18,13 @@ export interface MatchStart {
   moveSeconds: number;
   size: number;      // tahta kenarı
   neutrals: number;  // arena botu sayısı
+  personas?: boolean;  // yapay zekâ rakiplere kişilik
+  obstacles?: boolean; // engel kareleri
+  teams?: boolean;     // 2'ye 2 (yalnız 4 oyuncu)
 }
+
+// Lobide kurucunun seçtiği, varsayılanı kapalı seçenekler.
+export interface LobbyOpts { personas: boolean; obstacles: boolean; teams: boolean }
 
 export type ToHost =
   | { t: 'hello'; token?: string }
@@ -27,7 +33,7 @@ export type ToHost =
   | { t: 'move'; move: Move | null };
 
 export type ToGuest =
-  | { t: 'lobby'; code: string; you: number; seats: LobbySeat[]; level: Level; size: number; bots: number | null }
+  | { t: 'lobby'; code: string; you: number; seats: LobbySeat[]; level: Level; size: number; bots: number | null; opts?: LobbyOpts }
   | { t: 'start'; match: MatchStart; you: number }
   // n: maçtaki kaçıncı hamle (1'den başlar). Misafir sırayı kaçırırsa baştan eşitlenir.
   | { t: 'move'; n: number; move: Move | null }

@@ -208,3 +208,9 @@ S...C....
 - Kurallar ekranında "Taşlar" ve "Almak" örnekleri hareket eder (`Mini` → `hop`, `prey`).
 - Titreşim desenleri `BUZZ` içinde ayrı ritimlerle (alma, yıldız alma, alınma, daralma, zırh, bonus, galibiyet/yenilgi).
 - **Bulmaca gezintisi**: bulmaca sırasında panelde "Geri al · Önceki · Sonraki", sonuç kartında "Önceki" ve "Sonraki" (kazanmadan da geçilir; kazanınca Sonraki vurgulu). Sıra `PUZZLES` dizisi sırasıdır (eğitimler önce, sonra bulmacalar).
+
+## Ödüller ve lobi seçenekleri (8 Ekim 2026)
+- **Taş efektleri** (`components/SkinFx.tsx`, CSS `Board.css` sonu): yalnız senin yıldızında görünen animasyonlu süs. Alev (12 bulmaca yıldızı), Şimşek (10 galibiyet), Kristal (7 günlük meydan okuma), Altın (36 bulmaca yıldızı). Seçim Ayarlar → Taş efekti (`settings.skin`, geçerlisi `activeSkin`). Açılış şartları `game/themes.ts` içinde (`SKINS`, `THEMES`, ortak `Need`).
+- **Sonuç ödülleri**: kazanılan maç kartında altın efektli yıldız, günlükte şimşekli; bulmacada 3 yıldız alevli ("Kusursuz!"), 2 yıldız kristalli ("İyi iş!"); kazanılan yıldızlar sırayla patlayarak çıkar. Yeni tema ya da efekt açılınca kartta önizlemesiyle haber verilir (`freshRewards`).
+- **Demo anahtarı**: Ayarlar → "Demo: bütün ödülleri aç" (`xsword-demo`) bütün tema ve efektlerin kilidini açar; gerçek ilerlemeyi ve "yeni açıldı" bildirimlerini bozmaz. Yayına çıkarken kaldırmak ya da gizlemek Arda'nın kararı.
+- **Çok oyunculu lobi seçenekleri**: kurucu rakip kişilikleri, engel kareleri ve (4 dolu koltukta) takım seçebilir (`RoomView.opts`, `MatchStart.personas/obstacles/teams`). Motor tohumlu olduğu için herkes aynı tahtayı kurar.

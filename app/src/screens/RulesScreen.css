@@ -34,6 +34,8 @@
 .theme-chip small { font-size: 10.5px; line-height: 1.25; color: var(--metin-2); }
 .theme-chip:disabled { opacity: .6; }
 .theme-chip.is-on { border-color: var(--ice); background: var(--yuzey-3); }
+.skin-pv { position: relative; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; color: var(--metin-2); }
+.skin-pv > svg { position: absolute; right: -2px; bottom: -2px; }
 .theme-sw { width: 54px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--metin-2); }
 .mini { display: grid; grid-template-columns: repeat(3, 26px); gap: 2px; }
 .mini-cell {

@@ -365,7 +365,7 @@ export class GameController {
   private reset(match?: MatchStart, preset?: { opts: Opts; moves: (Move | null)[] }) {
     if (match) {
       this.opts = null;
-      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals });
+      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals, personas: !!match.personas, obstacles: !!match.obstacles, teams: !!match.teams });
     } else {
       this.opts = preset?.opts ?? this.buildOpts();
       this.state = this.makeState(this.opts);

@@ -13,7 +13,8 @@ import {
 import { attackersOfMe, heatMap } from '../game/threats';
 import { labelOf, modeWord } from '../game/names';
 import { orderNo, upcoming } from '../game/order';
-import { settings } from '../game/settings';
+import { activeSkin, settings } from '../game/settings';
+import { SkinFx } from './SkinFx';
 import { PieceGlyph } from './PieceGlyph';
 import { CenterBanner } from './CenterBanner';
 import { ModeOverlay } from './ModeOverlay';
@@ -384,6 +385,7 @@ export function Board({ ctl, view, cell }: Props) {
               }}
               svgExtra={target && <path d={notchPath(p, target)} fill={PLAYER_COLORS[target.seat]} stroke="#0B1026" strokeWidth="4" strokeLinejoin="round" />}
             >
+              {p.id === me.id && p.alive && activeSkin !== 'none' && <SkinFx id={activeSkin} />}
               {halo && <div className={`halo halo-${halo}`} style={halo === 'turn' || halo === 'me' ? { borderColor: myColor } : undefined} />}
               {pip && <div className={`pip pip-${pip}`}>{orderNo(st, p.id)}</div>}
               {badge > 0 && <div className="threat-badge">{badge}</div>}

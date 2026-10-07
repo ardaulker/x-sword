@@ -5,6 +5,8 @@ import { tr } from '../i18n';
 import { loadStats } from './stats';
 import type { Stats } from './stats';
 
+export type Need = { kind: 'stars' | 'wins' | 'daily' | 'matches'; n: number };
+
 export interface Theme {
   id: string;
   name: () => string;
@@ -12,7 +14,7 @@ export interface Theme {
   kare2: string;
   bosluk: string;
   cerceve: string;
-  need: null | { kind: 'stars' | 'wins' | 'daily' | 'matches'; n: number };
+  need: null | Need;
 }
 
 export const THEMES: Theme[] = [
@@ -23,15 +25,19 @@ export const THEMES: Theme[] = [
   { id: 'mor', name: () => tr('Mor'), kare: '#2C2352', kare2: '#322959', bosluk: '#0D0A21', cerceve: '#171234', need: { kind: 'matches', n: 25 } },
 ];
 
-const progress = (s: Stats, kind: NonNullable<Theme['need']>['kind']) =>
+const progress = (s: Stats, kind: Need['kind']) =>
   kind === 'stars' ? Object.values(s.puzzleStars).reduce((a, b) => a + b, 0)
   : kind === 'wins' ? s.wins : kind === 'daily' ? s.dailyPlayed : s.matches;
 
-export const isUnlocked = (t: Theme, s: Stats = loadStats()) => !t.need || progress(s, t.need.kind) >= t.need.n;
+// Demo: Ayarlar'daki anahtar her tema ve efekti açar (tasarımı görmek için).
+export const demoUnlock = () => { try { return localStorage.getItem('xsword-demo') === '1'; } catch { return false; } };
+export function setDemoUnlock(on: boolean) { try { localStorage.setItem('xsword-demo', on ? '1' : '0'); } catch { /* gizli sekme */ } }
+
+export const isUnlocked = (t: { need: null | Need }, s: Stats = loadStats(), real = false) => !t.need || (!real && demoUnlock()) || progress(s, t.need.kind) >= t.need.n;
 
 export const themeById = (id: string) => THEMES.find(t => t.id === id) ?? THEMES[0];
 
-export function needText(t: Theme) {
+export function needText(t: { need: null | Need }) {
   if (!t.need) return '';
   const { kind, n } = t.need;
   return kind === 'stars' ? tr('Bulmacalardan {n} yıldız topla', { n })
@@ -40,12 +46,29 @@ export function needText(t: Theme) {
     : tr('{n} maç oyna', { n });
 }
 
-export const needProgress = (t: Theme, s: Stats = loadStats()) => (t.need ? Math.min(progress(s, t.need.kind), t.need.n) : 0);
+export const needProgress = (t: { need: null | Need }, s: Stats = loadStats()) => (t.need ? Math.min(progress(s, t.need.kind), t.need.n) : 0);
 
-// Açılmış ama oyuncuya henüz haber verilmemiş temalar.
-const SEEN = 'xsword-themes-seen';
-const seenIds = (): string[] => { try { const d = JSON.parse(localStorage.getItem(SEEN) ?? 'null'); return Array.isArray(d) ? d : ['gece']; } catch { return ['gece']; } };
-export const freshThemes = (): Theme[] => { const seen = seenIds(); return THEMES.filter(t => isUnlocked(t) && !seen.includes(t.id)); };
-export function markThemesSeen() {
-  try { localStorage.setItem(SEEN, JSON.stringify(THEMES.filter(t => isUnlocked(t)).map(t => t.id))); } catch { /* gizli sekme */ }
+// Taş efektleri (yalnız senin yıldızında görünür, animasyonludur). Başarıyla açılır.
+export interface Skin { id: string; name: () => string; need: null | Need }
+export const SKINS: Skin[] = [
+  { id: 'none', name: () => tr('Yok'), need: null },
+  { id: 'flame', name: () => tr('Alev'), need: { kind: 'stars', n: 12 } },
+  { id: 'bolt', name: () => tr('Şimşek'), need: { kind: 'wins', n: 10 } },
+  { id: 'crystal', name: () => tr('Kristal'), need: { kind: 'daily', n: 7 } },
+  { id: 'gold', name: () => tr('Altın'), need: { kind: 'stars', n: 36 } },
+];
+export const skinById = (id: string) => SKINS.find(s => s.id === id) ?? SKINS[0];
+
+// Açılmış ama oyuncuya henüz haber verilmemiş temalar ve efektler.
+const SEEN = 'xsword-rewards-seen';
+const seenIds = (): string[] => { try { const d = JSON.parse(localStorage.getItem(SEEN) ?? 'null'); return Array.isArray(d) ? d : ['gece', 'none']; } catch { return ['gece', 'none']; } };
+export interface Reward { kind: 'theme' | 'skin'; id: string; name: string }
+const all = (): Reward[] => [
+  ...THEMES.filter(t => isUnlocked(t, undefined, true)).map(t => ({ kind: 'theme' as const, id: t.id, name: t.name() })),
+  ...SKINS.filter(s => isUnlocked(s, undefined, true)).map(s => ({ kind: 'skin' as const, id: s.id, name: s.name() })),
+];
+// Demo açıkken kimseye "yeni açıldı" denmez.
+export const freshRewards = (): Reward[] => { const seen = seenIds(); return all().filter(r => !seen.includes(r.id)); };
+export function markRewardsSeen() {
+  try { localStorage.setItem(SEEN, JSON.stringify([...new Set([...seenIds(), ...all().map(r => r.id)])])); } catch { /* gizli sekme */ }
 }

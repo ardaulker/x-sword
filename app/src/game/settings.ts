@@ -1,7 +1,7 @@
 // Oyuncu ayarları: cihazda saklanır.
 
 import { PLAYER_COLORS } from './look';
-import { isUnlocked, themeById } from './themes';
+import { isUnlocked, skinById, themeById } from './themes';
 
 export interface Settings {
   sound: boolean;       // ses efektleri
@@ -18,6 +18,7 @@ export interface Settings {
   quick: boolean;       // önizlemesiz oyna: kareye dokununca hamle hemen oynanır
   fastBots: boolean;    // bot turları bekletmez
   theme: string;        // tahta teması (game/themes.ts)
+  skin: string;         // senin yıldızında görünen animasyonlu efekt (game/themes.ts → SKINS)
 }
 
 const NORMAL_COLORS = ['#3BFF8F', '#FFC53D', '#FF5CC0', '#B392FF'];
@@ -28,17 +29,21 @@ const KEY = 'xsword-settings';
 export const SPEED = { yavas: 1.45, normal: 1, hizli: 0.65 } as const;
 
 function load(): Settings {
-  const def: Settings = { sound: true, music: true, tips: true, dangerMap: false, volume: 0.8, haptics: true, speed: 'normal', danger: true, targets: true, numbers: true, colorBlind: false, quick: false, fastBots: false, theme: 'gece' };
+  const def: Settings = { sound: true, music: true, tips: true, dangerMap: false, volume: 0.8, haptics: true, speed: 'normal', danger: true, targets: true, numbers: true, colorBlind: false, quick: false, fastBots: false, theme: 'gece', skin: 'none' };
   try { return { ...def, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') }; } catch { return def; }
 }
 
 export let settings = load();
+// Geçerli (açık) efekt: kilitli bir efekt seçili kalmışsa görünmez.
+export let activeSkin = 'none';
 
 // Animasyon hızı bütün süreleri çarpar (tokens.css: --hiz-carpan).
 // Renk körü modu oyuncu renklerini değiştirir: kodda PLAYER_COLORS, CSS'te --oyuncu-N.
 export function applySettings() {
   const root = document.documentElement.style;
   root.setProperty('--hiz-carpan', String(SPEED[settings.speed]));
+  const skin = skinById(settings.skin);
+  activeSkin = isUnlocked(skin) ? skin.id : 'none';
   // Kilitli tema kalıntısı varsa varsayılana dön.
   const theme = themeById(settings.theme);
   const t = isUnlocked(theme) ? theme : themeById('gece');

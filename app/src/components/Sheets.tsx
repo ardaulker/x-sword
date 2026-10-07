@@ -10,7 +10,8 @@ import { Icon, RingIcon } from './bits';
 import { PieceGlyph } from './PieceGlyph';
 import { shareReplay, shareResult } from '../game/share';
 import { replayCode } from '../game/record';
-import { freshThemes, markThemesSeen } from '../game/themes';
+import { freshRewards, markRewardsSeen } from '../game/themes';
+import { SkinFx } from './SkinFx';
 import { PUZZLES } from '../game/puzzles';
 import { puzzleNo, puzzleTitle } from '../game/puzzleText';
 import { tr } from '../i18n';
@@ -129,7 +130,7 @@ export function CoachSheet({ step, onDone }: { step: number; onDone: () => void 
 
 const levelLabels = (): [Level, string][] => [['kolay', tr('Kolay')], ['normal', tr('Normal')], ['zor', tr('Zor')]];
 
-function Opt({ label, sub, on, onChange }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {
+export function Opt({ label, sub, on, onChange }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {
   return (
     <button type="button" className="opt-row" role="switch" aria-checked={on} onClick={() => onChange(!on)}>
       <span className="opt-text"><b>{label}</b><small>{sub}</small></span>
@@ -277,6 +278,16 @@ export function LeaveSheet({ onLeave, onClose }: { onLeave: () => void; onClose:
   );
 }
 
+// Ödül: animasyonlu efektli yıldız. Bulmaca 3 yıldız alevli, 2 yıldız kristal, maç galibiyeti altın, günlük şimşek.
+function Trophy({ fx, label }: { fx: string; label?: string }) {
+  return (
+    <div className="res-trophy" aria-hidden="true">
+      <PieceGlyph kind="star" seat={ME} size={64} diamond={false}><SkinFx id={fx} /></PieceGlyph>
+      {label && <span>{label}</span>}
+    </div>
+  );
+}
+
 // Maç sonu özeti: başlık, senin istatistiklerin, sıralama.
 export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle }: {
   ctl: GameController; time: string; onAgain?: () => void; againLabel: string; onClose: () => void;
@@ -287,9 +298,18 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
   const won = isWinner(st, ME);
   const [shared, setShared] = useState(false);
   const [linked, setLinked] = useState(false);
-  const [fresh] = useState(() => freshThemes());
-  useEffect(() => { markThemesSeen(); }, []);
-  const unlocked = fresh.length > 0 && <div className="res-unlock">{tr('Yeni tahta teması açıldı: {name}', { name: fresh.map(t => t.name()).join(', ') })} · {tr('Ayarlar → Tahta teması')}</div>;
+  const [fresh] = useState(() => freshRewards());
+  useEffect(() => { markRewardsSeen(); }, []);
+  const newSkin = fresh.find(r => r.kind === 'skin');
+  const unlocked = fresh.length > 0 && (
+    <div className="res-unlock">
+      {newSkin && <PieceGlyph kind="star" seat={ME} size={44} diamond={false} className="res-unlock-pv"><SkinFx id={newSkin.id} /></PieceGlyph>}
+      <div>
+        <b>{tr('Yeni ödül açıldı: {name}', { name: fresh.map(r => r.name).join(', ') })}</b>
+        <span>{tr('Ayarlar → Taş efekti ve Tahta teması')}</span>
+      </div>
+    </div>
+  );
   const daily = ctl.setup.daily ?? null;
   const order = ranking(st);
   const lasted = (i: number) => (st.seats[i].out ? st.seats[i].outRound ?? st.round : st.round);
@@ -316,7 +336,8 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
         <div className="res-head">
           <div className="res-daily">{def?.tutorial ? tr('Eğitim {n}', { n: no }) : tr('Bulmaca {n}', { n: no })}{def ? ` · ${puzzleTitle(def.title)}` : ''}</div>
           <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{won ? tr('Çözüldü!') : tr('Çözülemedi')}</div>
-          <div className="puzzle-stars res-stars" aria-label={tr('{n} yıldız', { n: stars })}>{'★'.repeat(stars)}{'☆'.repeat(3 - stars)}</div>
+          {won && <Trophy fx={stars === 3 ? 'flame' : 'crystal'} label={stars === 3 ? tr('Kusursuz!') : tr('İyi iş!')} />}
+          <div className="puzzle-stars res-stars" aria-label={tr('{n} yıldız', { n: stars })}>{[0, 1, 2].map(i => i < stars ? <span key={i} className="star-on" style={{ animationDelay: `${300 + i * 260}ms` }}>★</span> : <span key={i}>☆</span>)}</div>
           <div className="res-sub">{tr('{a}/{b} hamle kullandın', { a: st.puzzle.used, b: st.puzzle.limit })}</div>
         </div>
         {unlocked}
@@ -335,6 +356,7 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
     <SheetFrame label={tr('Maç sonucu')} onClose={onClose}>
       <div className="res-head">
         {daily && <div className="res-daily">{tr('Günlük {date}', { date: daily })}</div>}
+        {won && !pending && <Trophy fx={daily ? 'bolt' : 'gold'} />}
         <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{title}</div>
         <div className="res-sub">{pending ? tr('Rakip yıldız kalmadı. Botlarla savaşa devam edebilirsin') : st.solo ? (won ? tr('Arenada bot kalmadı') : tr('Bir dahaki sefere')) : tr('{n}. oldun', { n: order.indexOf(ME) + 1 })} · {time}</div>
       </div>

@@ -3,6 +3,7 @@ import { BOARD_SIZES, SIZE_BY_STARS, defaultNeutrals, maxNeutrals } from '../../
 import type { Level } from '../../../engine/rules.js';
 import { Icon } from '../components/bits';
 import { PieceGlyph } from '../components/PieceGlyph';
+import { Opt } from '../components/Sheets';
 import { cleanCode, isCode } from '../net/protocol';
 import { GuestRoom, HostRoom, lobbySize } from '../net/room';
 import type { AnyRoom } from '../net/room';
@@ -165,6 +166,13 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
           <input type="range" min={2} max={maxBots} value={botCount} disabled={!host} aria-label={tr('Arena botu sayısı')}
             onChange={e => hostRoom?.setBots(Number(e.target.value))} />
           {host && <button type="button" className="btn btn-ghost bots-max" onClick={() => hostRoom?.setBots(maxBots)}>{tr('Maks {n}', { n: maxBots })}</button>}
+        </div>
+
+        <div className="field-label">{tr('SEÇENEKLER')}</div>
+        <div className="lobby-opts">
+          <Opt label={tr('Rakip kişilikleri')} sub={tr('Yapay zekâ rakipler avcı, temkinli ya da fırsatçı oynar.')} on={v.opts.personas} onChange={x => host && hostRoom?.setOpts({ personas: x })} />
+          <Opt label={tr('Engel kareleri')} sub={tr('Tahtaya birbirine değmeyen kapalı kareler koyar.')} on={v.opts.obstacles} onChange={x => host && hostRoom?.setOpts({ obstacles: x })} />
+          {filled === 4 && <Opt label={tr("Takımlı (2'ye 2)")} sub={tr('Karşılıklı köşeler takım olur; takım arkadaşını alamazsın.')} on={v.opts.teams} onChange={x => host && hostRoom?.setOpts({ teams: x })} />}
         </div>
 
         <div className="field-label">{tr('BOT ZORLUĞU')}</div>

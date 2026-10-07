@@ -7,7 +7,8 @@ import type { Settings } from '../game/settings';
 import './RulesScreen.css';
 import { Flag } from '../components/Flag';
 import { LANGS, setLang, tr, useLang } from '../i18n';
-import { THEMES, isUnlocked, needProgress, needText } from '../game/themes';
+import { SKINS, THEMES, demoUnlock, isUnlocked, needProgress, needText, setDemoUnlock } from '../game/themes';
+import { SkinFx } from '../components/SkinFx';
 import { loadStats } from '../game/stats';
 
 const speeds = (): [Settings['speed'], string, string][] => [
@@ -30,6 +31,7 @@ export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: ()
   const lang = useLang();
   const [s, setS] = useState(settings);
   const stats = loadStats();
+  const demo = demoUnlock();
   const update = (patch: Partial<Settings>) => { const next = { ...s, ...patch }; setS(next); saveSettings(next); };
   return (
     <div className="rules">
@@ -79,6 +81,8 @@ export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: ()
           </div>
           <p className="set-note">{speeds().find(x => x[0] === s.speed)?.[2]}</p>
         </div>
+        <Toggle label={tr('Demo: bütün ödülleri aç')} sub={tr('Tüm tahta temalarını ve taş efektlerini denemek için kilitleri kaldırır. Gerçek ilerlemeni etkilemez.')} on={demo}
+          onChange={v => { setDemoUnlock(v); update({}); }} />
         <Toggle label={tr('Önizlemesiz oyna')} sub={tr('Kareye dokununca hamle hemen oynanır. Onay ekranı çıkmaz.')} on={s.quick}
           onChange={v => update({ quick: v })} />
         <Toggle label={tr('Botları hızlı oynat')} sub={tr('Bot turları bekletmez. Hamleler tek seferde oynanır.')} on={s.fastBots}
@@ -96,6 +100,25 @@ export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: ()
             onChange={v => update({ colorBlind: v })} />
           <div className="set-swatches" aria-hidden="true">
             {paletteOf(s.colorBlind).map((_, i) => <PieceGlyph key={`${i}${s.colorBlind}`} kind="star" seat={i} size={36} diamond={false} />)}
+          </div>
+        </div>
+        <div className="rule set-col">
+          <div className="rule-text"><h3>{tr('Taş efekti')}</h3><p>{tr('Senin yıldızında görünür. Başarılarla açılır.')}</p></div>
+          <div className="theme-grid" role="radiogroup" aria-label={tr('Taş efekti')}>
+            {SKINS.map(k => {
+              const open = isUnlocked(k, stats);
+              return (
+                <button key={k.id} type="button" role="radio" aria-checked={s.skin === k.id} disabled={!open}
+                  className={`theme-chip${s.skin === k.id ? ' is-on' : ''}`} onClick={() => update({ skin: k.id })}>
+                  <span className="skin-pv" aria-hidden="true">
+                    <PieceGlyph kind="star" seat={0} size={34} diamond={false}>{open && <SkinFx id={k.id} />}</PieceGlyph>
+                    {!open && <Icon d="M7 11 V8 A5 5 0 0 1 17 8 V11 M6 11 H18 V20 H6 Z" size={16} stroke={2.2} />}
+                  </span>
+                  <b>{k.name()}</b>
+                  {!open && k.need && <small>{needText(k)} ({needProgress(k, stats)}/{k.need.n})</small>}
+                </button>
+              );
+            })}
           </div>
         </div>
         <div className="rule set-col">
