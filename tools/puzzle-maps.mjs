@@ -9,7 +9,7 @@
 // tutorial: true olanlar Eğitim bölümüne girer (1. ve 2. sabit haritadır: fixed). İlk açılışta menüde önerilir.
 export const MAPS = [
   {
-    id: 201, tutorial: true, fixed: true, title: 'Düz al', hint: 'DÜZ turdasın: yıldız düz gider ve düz alır. Üstündeki taşa dokun, sonra Onayla.', mode: 'DUZ', par: 1,
+    id: 201, tutorial: true, fixed: true, title: 'Take straight', hint: 'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.', mode: 'DUZ', par: 1,
     map: [
       '.....',
       '..K..',
@@ -18,7 +18,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 202, tutorial: true, fixed: true, title: 'Mod değişir', hint: 'Mod her tur değişir. Önce düz yürü, sonraki turda çapraz al.', mode: 'DUZ', par: 2,
+    id: 202, tutorial: true, fixed: true, title: 'The mode changes', hint: 'The mode changes every round. Walk straight first, then take diagonally next round.', mode: 'DUZ', par: 2,
     map: [
       '.C...',
       '.....',
@@ -28,7 +28,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 203, tutorial: true, fixed: true, title: 'Tehlike', hint: 'Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. İki taşı da al; önce çizgisiz kareyi seç.', mode: 'DUZ', par: 2,
+    id: 203, tutorial: true, fixed: true, title: 'Danger', hint: 'A red-striped square is dangerous: a piece will take you there. Take both pieces; pick the unstriped square first.', mode: 'DUZ', par: 2,
     map: [
       '.....',
       '.SC..',
@@ -38,7 +38,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 101, title: 'Koridor', hint: 'Mod her tur değişir: bu tur düz, sonraki tur çapraz.', mode: 'DUZ', bots: 2, par: 3,
+    id: 101, title: 'Corridor', hint: 'The mode changes every round: straight this round, diagonal the next.', mode: 'DUZ', bots: 2, par: 3,
     map: [
       '#.....#',
       '.......',
@@ -48,7 +48,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 102, title: 'Haç', hint: 'Kollar dar. Hangi botu önce alacağını iyi seç.', mode: 'CAPRAZ', bots: 2, par: 4,
+    id: 102, title: 'Cross', hint: 'The arms are narrow. Choose well which bot to take first.', mode: 'CAPRAZ', bots: 2, par: 4,
     map: [
       '--...--',
       '--...--',
@@ -60,7 +60,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 103, title: 'Halka', hint: 'Ortası boş. Kısa yol hep kenardan.', mode: 'DUZ', bots: 3, par: 5,
+    id: 103, title: 'Ring', hint: 'The middle is empty. The short way is always along the edge.', mode: 'DUZ', bots: 3, par: 5,
     map: [
       '-.....-',
       '.......',
@@ -72,7 +72,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 104, title: 'Sütunlar', hint: 'Engel karesine kimse giremez. Sütunun arkası güvenli olabilir.', mode: 'CAPRAZ', bots: 3, par: 5,
+    id: 104, title: 'Pillars', hint: 'No one can enter a blocked square. Behind a pillar can be safe.', mode: 'CAPRAZ', bots: 3, par: 5,
     map: [
       '.......',
       '.#...#.',
@@ -84,7 +84,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 105, title: 'Merdiven', hint: 'Çapraz şerit: düz turda yolun daralır.', mode: 'DUZ', bots: 3, par: 5,
+    id: 105, title: 'Staircase', hint: 'A diagonal strip: in a straight round your path gets narrow.', mode: 'DUZ', bots: 3, par: 5,
     map: [
       '...-----',
       '....----',
@@ -96,7 +96,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 106, title: 'Çift adım', hint: 'Çift adım iki kare götürür. Doğru anı bekle.', mode: 'DUZ', bots: 2, par: 3, bonuses: { step: 1 }, needBonus: true,
+    id: 106, title: 'Double step', hint: 'Double step takes you two squares. Wait for the right moment.', mode: 'DUZ', bots: 2, par: 3, bonuses: { step: 1 }, needBonus: true,
     map: [
       '....---',
       '....---',
@@ -106,7 +106,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 107, title: 'Ayna', hint: 'Ayna ile bir botun yerine geç. Bazen yön değiştirmenin tek yolu budur.', mode: 'CAPRAZ', bots: 2, par: 4, bonuses: { swap: 1 }, needBonus: true,
+    id: 107, title: 'Mirror', hint: 'Use the Mirror to take a bot\'s place. Sometimes it\'s the only way to change direction.', mode: 'CAPRAZ', bots: 2, par: 4, bonuses: { swap: 1 }, needBonus: true,
     map: [
       '.........',
       '.........',
@@ -117,7 +117,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 108, title: 'Elmas', hint: 'Çift hamle: iki hamle art arda, botlar arada oynamaz.', mode: 'CAPRAZ', bots: 3, par: 4, bonuses: { double: 1 }, needBonus: true,
+    id: 108, title: 'Diamond', hint: 'Double move: two moves in a row, the bots don\'t play in between.', mode: 'CAPRAZ', bots: 3, par: 4, bonuses: { double: 1 }, needBonus: true,
     map: [
       '---.---',
       '--...--',
@@ -129,7 +129,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 109, title: 'Kale', hint: 'Duvarların kapısı dar. Hangi kapıdan gireceğini hesapla.', mode: 'DUZ', bots: 3, par: 6,
+    id: 109, title: 'Fortress', hint: 'The gates in the walls are narrow. Work out which gate to enter through.', mode: 'DUZ', bots: 3, par: 6,
     map: [
       '.........',
       '.###.###.',
@@ -143,7 +143,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 110, title: 'Labirent', hint: 'Dar yollar ve bir çift adım. Sırayı iyi kur.', mode: 'CAPRAZ', bots: 3, par: 6, bonuses: { step: 1 },
+    id: 110, title: 'Maze', hint: 'Narrow paths and one double step. Plan the order well.', mode: 'CAPRAZ', bots: 3, par: 6, bonuses: { step: 1 },
     map: [
       '-...#...-',
       '.#.....#.',
@@ -158,7 +158,7 @@ export const MAPS = [
   },
   // ---------------------------------------------------------- ikinci set (daha zor): 111–120
   {
-    id: 111, title: 'L', hint: 'Dört bot, dar bir köşe. Açgözlü alma seni tuzağa çeker.', mode: 'DUZ', bots: 4, par: 6, trap: true,
+    id: 111, title: 'L', hint: 'Four bots, a tight corner. A greedy take leads you into a trap.', mode: 'DUZ', bots: 4, par: 6, trap: true,
     map: [
       '....-----',
       '....-----',
@@ -168,7 +168,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 112, title: 'U', hint: 'İki kol, tek dip. Hangi koldan başladığın her şeyi değiştirir.', mode: 'CAPRAZ', bots: 4, par: 6, trap: true,
+    id: 112, title: 'U', hint: 'Two arms, one bottom. Which arm you start with changes everything.', mode: 'CAPRAZ', bots: 4, par: 6, trap: true,
     map: [
       '...---...',
       '...---...',
@@ -178,7 +178,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 113, title: 'Zırh', hint: 'Zırh seni bir kez korur. Bazen bilerek tehlikeye girmek gerekir.', mode: 'DUZ', bots: 3, par: 4, bonuses: { armor: 1 }, needBonus: true,
+    id: 113, title: 'Armor', hint: 'Armor protects you once. Sometimes you must step into danger on purpose.', mode: 'DUZ', bots: 3, par: 4, bonuses: { armor: 1 }, needBonus: true,
     map: [
       '.......',
       '.#...#.',
@@ -190,7 +190,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 114, title: 'İkili', hint: 'Çift adım ve ayna birlikte. İkisini de doğru anda kullan.', mode: 'CAPRAZ', bots: 3, par: 5, near: 4, bonuses: { step: 1, swap: 1 }, needBonus: true,
+    id: 114, title: 'Pair', hint: 'Double step and mirror together. Use both at the right moment.', mode: 'CAPRAZ', bots: 3, par: 5, near: 4, bonuses: { step: 1, swap: 1 }, needBonus: true,
     map: [
       '........',
       '.##..##.',
@@ -201,7 +201,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 115, title: 'Çöküş', hint: 'Arena 2. turun sonunda daralır. Turuncu halkada kalırsan elenirsin.', mode: 'DUZ', bots: 3, par: 5, shrink: { start: 2, every: 2 }, trap: true,
+    id: 115, title: 'Collapse', hint: 'The arena shrinks at the end of round 2. Stay on the orange ring and you\'re out.', mode: 'DUZ', bots: 3, par: 5, shrink: { start: 2, every: 2 }, trap: true,
     map: [
       '.......',
       '.......',
@@ -213,7 +213,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 116, title: 'Kelebek', hint: 'İki kanat, dar bir bel. Ayna seni öbür kanada taşıyabilir.', mode: 'CAPRAZ', bots: 3, par: 4, near: 4, bonuses: { swap: 1 }, needBonus: true,
+    id: 116, title: 'Butterfly', hint: 'Two wings, a narrow waist. The mirror can carry you to the other wing.', mode: 'CAPRAZ', bots: 3, par: 4, near: 4, bonuses: { swap: 1 }, needBonus: true,
     map: [
       '..-----..',
       '...---...',
@@ -225,7 +225,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 117, title: 'Avlu', hint: 'Ortası kapalı bir avlu. Duvarın hangi yanından dolaşacağını hesapla.', mode: 'DUZ', bots: 3, par: 6, trap: true, near: 4,
+    id: 117, title: 'Courtyard', hint: 'A courtyard closed in the middle. Work out which side of the wall to go around.', mode: 'DUZ', bots: 3, par: 6, trap: true, near: 4,
     map: [
       '.........',
       '.........',
@@ -239,7 +239,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 118, title: 'Zikzak', hint: 'Çapraz duvar düz turda yolunu keser. Karşıya ne zaman geçeceğini seç.', mode: 'DUZ', bots: 3, par: 6, trap: true, near: 4,
+    id: 118, title: 'Zigzag', hint: 'The diagonal wall blocks you in straight rounds. Choose when to cross.', mode: 'DUZ', bots: 3, par: 6, trap: true, near: 4,
     map: [
       '#.......',
       '.#......',
@@ -252,7 +252,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 119, title: 'Kum saati', hint: 'Bel tek kare. Çift hamleyi geçitte harca.', mode: 'CAPRAZ', bots: 4, par: 5, bonuses: { double: 1 }, needBonus: true,
+    id: 119, title: 'Hourglass', hint: 'The waist is a single square. Spend the double move at the pass.', mode: 'CAPRAZ', bots: 4, par: 5, bonuses: { double: 1 }, needBonus: true,
     map: [
       '.......',
       '-.....-',
@@ -264,7 +264,7 @@ export const MAPS = [
     ],
   },
   {
-    id: 120, title: 'Final', hint: 'Dört bot, iki bonus. Her hamle sayılır.', mode: 'DUZ', bots: 4, par: 6, near: 3, bonuses: { step: 1, double: 1 }, trap: true,
+    id: 120, title: 'Finale', hint: 'Four bots, two bonuses. Every move counts.', mode: 'DUZ', bots: 4, par: 6, near: 3, bonuses: { step: 1, double: 1 }, trap: true,
     map: [
       '...#...',
       '.#...#.',

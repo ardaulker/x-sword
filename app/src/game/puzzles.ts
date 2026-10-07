@@ -18,8 +18,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": true,
     "id": 201,
-    "title": "Düz al",
-    "hint": "DÜZ turdasın: yıldız düz gider ve düz alır. Üstündeki taşa dokun, sonra Onayla.",
+    "title": "Take straight",
+    "hint": "It's a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.",
     "mode": "DUZ",
     "bonuses": null,
     "par": 1,
@@ -33,8 +33,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": true,
     "id": 202,
-    "title": "Mod değişir",
-    "hint": "Mod her tur değişir. Önce düz yürü, sonraki turda çapraz al.",
+    "title": "The mode changes",
+    "hint": "The mode changes every round. Walk straight first, then take diagonally next round.",
     "mode": "DUZ",
     "bonuses": null,
     "par": 2,
@@ -49,8 +49,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": true,
     "id": 203,
-    "title": "Tehlike",
-    "hint": "Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. İki taşı da al; önce çizgisiz kareyi seç.",
+    "title": "Danger",
+    "hint": "A red-striped square is dangerous: a piece will take you there. Take both pieces; pick the unstriped square first.",
     "mode": "DUZ",
     "bonuses": null,
     "par": 2,
@@ -65,8 +65,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 101,
-    "title": "Koridor",
-    "hint": "Mod her tur değişir: bu tur düz, sonraki tur çapraz.",
+    "title": "Corridor",
+    "hint": "The mode changes every round: straight this round, diagonal the next.",
     "mode": "DUZ",
     "par": 3,
     "bonuses": null,
@@ -81,8 +81,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 102,
-    "title": "Haç",
-    "hint": "Kollar dar. Hangi botu önce alacağını iyi seç.",
+    "title": "Cross",
+    "hint": "The arms are narrow. Choose well which bot to take first.",
     "mode": "CAPRAZ",
     "par": 4,
     "bonuses": null,
@@ -99,8 +99,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 103,
-    "title": "Halka",
-    "hint": "Ortası boş. Kısa yol hep kenardan.",
+    "title": "Ring",
+    "hint": "The middle is empty. The short way is always along the edge.",
     "mode": "DUZ",
     "par": 5,
     "bonuses": null,
@@ -117,8 +117,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 104,
-    "title": "Sütunlar",
-    "hint": "Engel karesine kimse giremez. Sütunun arkası güvenli olabilir.",
+    "title": "Pillars",
+    "hint": "No one can enter a blocked square. Behind a pillar can be safe.",
     "mode": "CAPRAZ",
     "par": 5,
     "bonuses": null,
@@ -135,8 +135,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 105,
-    "title": "Merdiven",
-    "hint": "Çapraz şerit: düz turda yolun daralır.",
+    "title": "Staircase",
+    "hint": "A diagonal strip: in a straight round your path gets narrow.",
     "mode": "DUZ",
     "par": 5,
     "bonuses": null,
@@ -153,8 +153,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 106,
-    "title": "Çift adım",
-    "hint": "Çift adım iki kare götürür. Doğru anı bekle.",
+    "title": "Double step",
+    "hint": "Double step takes you two squares. Wait for the right moment.",
     "mode": "DUZ",
     "par": 3,
     "bonuses": {
@@ -171,8 +171,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 107,
-    "title": "Ayna",
-    "hint": "Ayna ile bir botun yerine geç. Bazen yön değiştirmenin tek yolu budur.",
+    "title": "Mirror",
+    "hint": "Use the Mirror to take a bot's place. Sometimes it's the only way to change direction.",
     "mode": "CAPRAZ",
     "par": 4,
     "bonuses": {
@@ -190,8 +190,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 108,
-    "title": "Elmas",
-    "hint": "Çift hamle: iki hamle art arda, botlar arada oynamaz.",
+    "title": "Diamond",
+    "hint": "Double move: two moves in a row, the bots don't play in between.",
     "mode": "CAPRAZ",
     "par": 4,
     "bonuses": {
@@ -210,8 +210,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 109,
-    "title": "Kale",
-    "hint": "Duvarların kapısı dar. Hangi kapıdan gireceğini hesapla.",
+    "title": "Fortress",
+    "hint": "The gates in the walls are narrow. Work out which gate to enter through.",
     "mode": "DUZ",
     "par": 6,
     "bonuses": null,
@@ -230,8 +230,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 110,
-    "title": "Labirent",
-    "hint": "Dar yollar ve bir çift adım. Sırayı iyi kur.",
+    "title": "Maze",
+    "hint": "Narrow paths and one double step. Plan the order well.",
     "mode": "CAPRAZ",
     "par": 6,
     "bonuses": {
@@ -253,7 +253,7 @@ export const PUZZLES: PuzzleDef[] = [
     "tutorial": false,
     "id": 111,
     "title": "L",
-    "hint": "Dört bot, dar bir köşe. Açgözlü alma seni tuzağa çeker.",
+    "hint": "Four bots, a tight corner. A greedy take leads you into a trap.",
     "mode": "DUZ",
     "bonuses": null,
     "par": 6,
@@ -269,7 +269,7 @@ export const PUZZLES: PuzzleDef[] = [
     "tutorial": false,
     "id": 112,
     "title": "U",
-    "hint": "İki kol, tek dip. Hangi koldan başladığın her şeyi değiştirir.",
+    "hint": "Two arms, one bottom. Which arm you start with changes everything.",
     "mode": "CAPRAZ",
     "bonuses": null,
     "par": 6,
@@ -284,8 +284,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 113,
-    "title": "Zırh",
-    "hint": "Zırh seni bir kez korur. Bazen bilerek tehlikeye girmek gerekir.",
+    "title": "Armor",
+    "hint": "Armor protects you once. Sometimes you must step into danger on purpose.",
     "mode": "DUZ",
     "bonuses": {
       "armor": 1
@@ -304,8 +304,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 114,
-    "title": "İkili",
-    "hint": "Çift adım ve ayna birlikte. İkisini de doğru anda kullan.",
+    "title": "Pair",
+    "hint": "Double step and mirror together. Use both at the right moment.",
     "mode": "CAPRAZ",
     "bonuses": {
       "step": 1,
@@ -324,8 +324,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 115,
-    "title": "Çöküş",
-    "hint": "Arena 2. turun sonunda daralır. Turuncu halkada kalırsan elenirsin.",
+    "title": "Collapse",
+    "hint": "The arena shrinks at the end of round 2. Stay on the orange ring and you're out.",
     "mode": "DUZ",
     "bonuses": null,
     "shrink": {
@@ -345,8 +345,8 @@ export const PUZZLES: PuzzleDef[] = [
   },
   {
     "id": 116,
-    "title": "Kelebek",
-    "hint": "İki kanat, dar bir bel. Ayna seni öbür kanada taşıyabilir.",
+    "title": "Butterfly",
+    "hint": "Two wings, a narrow waist. The mirror can carry you to the other wing.",
     "tutorial": false,
     "mode": "CAPRAZ",
     "bonuses": {
@@ -366,8 +366,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 117,
-    "title": "Avlu",
-    "hint": "Ortası kapalı bir avlu. Duvarın hangi yanından dolaşacağını hesapla.",
+    "title": "Courtyard",
+    "hint": "A courtyard closed in the middle. Work out which side of the wall to go around.",
     "mode": "DUZ",
     "bonuses": null,
     "par": 6,
@@ -386,8 +386,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 118,
-    "title": "Zikzak",
-    "hint": "Çapraz duvar düz turda yolunu keser. Karşıya ne zaman geçeceğini seç.",
+    "title": "Zigzag",
+    "hint": "The diagonal wall blocks you in straight rounds. Choose when to cross.",
     "mode": "DUZ",
     "bonuses": null,
     "par": 6,
@@ -405,8 +405,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 119,
-    "title": "Kum saati",
-    "hint": "Bel tek kare. Çift hamleyi geçitte harca.",
+    "title": "Hourglass",
+    "hint": "The waist is a single square. Spend the double move at the pass.",
     "mode": "CAPRAZ",
     "bonuses": {
       "double": 1
@@ -425,8 +425,8 @@ export const PUZZLES: PuzzleDef[] = [
   {
     "tutorial": false,
     "id": 120,
-    "title": "Final",
-    "hint": "Dört bot, iki bonus. Her hamle sayılır.",
+    "title": "Finale",
+    "hint": "Four bots, two bonuses. Every move counts.",
     "mode": "DUZ",
     "bonuses": {
       "step": 1,

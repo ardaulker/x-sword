@@ -37,7 +37,7 @@ export function useMatchTime(start: number, end: number | null) {
 export function MatchClock({ start, end }: { start: number; end: number | null }) {
   const t = useMatchTime(start, end);
   return (
-    <span className="clock-chip" role="timer" aria-label={tr('Maç süresi {time}', { time: t })}>
+    <span className="clock-chip" role="timer" aria-label={tr('Match time {time}', { time: t })}>
       <Icon d={ICON.clock} size={13} stroke={2.2} />
       <span>{t}</span>
     </span>

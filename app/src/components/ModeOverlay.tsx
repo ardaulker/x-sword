@@ -14,7 +14,7 @@ export function ModeOverlay({ mode, round }: { mode: Mode; round: number }) {
       <div className="mode-ov-pill">
         <ModeIcon mode={mode} size={22} stroke={9} />
         <b>{modeWord(mode)}</b>
-        <span>{tr('TUR {n}', { n: round })} · {duz ? tr('kare gider') : tr('elmas gider')}</span>
+        <span>{tr('ROUND {n}', { n: round })} · {duz ? tr('squares move') : tr('diamonds move')}</span>
       </div>
     </div>
   );

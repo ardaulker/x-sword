@@ -419,14 +419,14 @@ export class GameController {
   awaySeat(seat: number) {
     if (!this.state.seats[seat] || this.state.seats[seat].kind === 'bot') return;
     this.away.add(seat);
-    this.toast(tr('{name} bağlantısı koptu · dönmesi bekleniyor', { name: seatName(this.state, seat) }), 'info');
+    this.toast(tr('{name} lost connection · waiting for them to return', { name: seatName(this.state, seat) }), 'info');
     this.emit();
     if (this.waitingSeat === seat) { this.stopTicker(); this.later(300, () => this.awayMove()); }
   }
 
   returnSeat(seat: number) {
     if (!this.away.delete(seat)) return;
-    this.toast(tr('{name} geri döndü', { name: seatName(this.state, seat) }), 'info');
+    this.toast(tr('{name} is back', { name: seatName(this.state, seat) }), 'info');
     this.emit();
   }
 
@@ -461,7 +461,7 @@ export class GameController {
     if (!s || s.kind === 'bot') return;
     s.kind = 'bot';
     s.level = this.setup.level;
-    this.toast(tr('{name} ayrıldı · yerine yapay zekâ oynuyor', { name: seatName(this.state, seat) }), 'info');
+    this.toast(tr('{name} left · an AI plays in their place', { name: seatName(this.state, seat) }), 'info');
     this.emit();
     if (this.waitingSeat === seat) {
       this.waitingSeat = null;
@@ -508,7 +508,7 @@ export class GameController {
 
   netLost() {
     this.stopTicker();
-    this.toast(tr('Odayla bağlantı koptu'), 'info');
+    this.toast(tr('Lost connection to the room'), 'info');
     this.emit();
   }
 
@@ -528,7 +528,7 @@ export class GameController {
     if (this.state.seats[ME].bonus && me && !this.bonusShown) {
       this.bonusShown = true;
       this.float(me.r, me.c, `+${this.state.seats[ME].bonus}`, PLAYER_COLORS[ME]);
-      this.toast(tr('Hayatta kalma bonusu +{n}', { n: this.state.seats[ME].bonus }), 'sword');
+      this.toast(tr('Survival bonus +{n}', { n: this.state.seats[ME].bonus }), 'sword');
     }
     this.emit({
       phase: 'bitti', clockEnd: pending ? null : this.view.clockEnd ?? Date.now(), sel: null, showThreats: false, modeOverlay: false,
@@ -577,7 +577,7 @@ export class GameController {
     this.emit({ phase: 'sen', sel: null, showThreats: false, bonus: null, timer: this.setup.moveSeconds });
     feel('myTurn', BUZZ.myTurn);
     if (!legalMoves(this.state, this.myStar(), this.state.mode).length) {
-      this.toast(tr('Gidecek kare yok · sıra geçti'), 'info');
+      this.toast(tr('No square to move to · turn passed'), 'info');
       this.emit();
       this.later(1200, () => this.commitMine(null));
       return;
@@ -640,7 +640,7 @@ export class GameController {
     this.undoPoints = points;
     this.undosLeft = left;
     this.view = { ...this.freshView(), clockStart, clockEnd, events: events.filter(e => e.round < this.state.round), phase: 'bekle', version: this.view.version + 1 };
-    this.toast(tr('Hamle geri alındı'), 'info');
+    this.toast(tr('Move undone'), 'info');
     this.saveGame();
     this.emit();
     this.later(250, () => this.advance());
@@ -657,7 +657,7 @@ export class GameController {
 
   private autoMove() {
     const m = chooseMove(this.state, this.myStar(), 'normal');
-    this.toast(tr('Süre doldu · güvenli hamle yapıldı'), 'clock');
+    this.toast(tr("Time's up · a safe move was played"), 'clock');
     this.commitMine(m);
   }
 
@@ -772,7 +772,7 @@ export class GameController {
     this.later(settings.fastBots ? 800 : 1300, () => {
       // Çökecek turun başında açık uyarı: bu tur sonunda dış halkada kalan elenir.
       if (collapseDue(this.state)) {
-        this.toast(tr('Dış halka bu tur sonunda çöküyor!'), 'ring');
+        this.toast(tr('The outer ring collapses at the end of this round!'), 'ring');
         feel('collapse', BUZZ.collapse);
         startTension();
       }
@@ -799,12 +799,12 @@ export class GameController {
     // Bonus: kullanma, zırhla kurtulma, kazanma.
     if (move?.bonus && actor.kind === 'star' && actor.seat === ME) { this.toast(`${tr(BONUS_NAMES[move.bonus])}!`, 'info'); feel('bonusUse', BUZZ.bonusUse); }
     if (victim?.alive && victim.kind === 'star') {
-      this.toast(victim.seat === ME ? tr('Zırhın seni korudu!') : tr('{name} zırhıyla kurtuldu', { name: labelOf(st, victim) }), 'info');
+      this.toast(victim.seat === ME ? tr('Your armor saved you!') : tr('{name} survived thanks to armor', { name: labelOf(st, victim) }), 'info');
       this.burst(victim.r, victim.c, '#E9F0FF');
       feel('armor', BUZZ.armor);
     }
     for (const k of Object.keys(myBonuses) as BonusKind[]) {
-      if (st.seats[ME].bonuses[k] > myBonuses[k]) { this.toast(tr('Bonus kazandın: {name}', { name: tr(BONUS_NAMES[k]) }), 'info'); feel('bonusGain', BUZZ.bonusGain); }
+      if (st.seats[ME].bonuses[k] > myBonuses[k]) { this.toast(tr('Bonus earned: {name}', { name: tr(BONUS_NAMES[k]) }), 'info'); feel('bonusGain', BUZZ.bonusGain); }
     }
     this.moves.push(move);
     this.saveGame();
@@ -832,18 +832,18 @@ export class GameController {
       if (actor.kind === 'twin' && st.seats[ME].score > scoreBefore) {
         const pts = POINTS[victim.kind] * TWIN_TAKE_MULT;
         this.float(move.r, move.c, `+${pts}`, PLAYER_COLORS[ME]);
-        this.toast(tr('Aynan {obj} aldı! +{pts} (2×)', { obj: objectOf(st, victim), pts }), 'sword');
+        this.toast(tr('Your mirror took {obj}! +{pts} (2×)', { obj: objectOf(st, victim), pts }), 'sword');
         this.later(120, () => sound('points'));
       }
-      if (mine) { this.toast(tr('{obj} aldın! +{pts}', { obj: objectOf(st, victim), pts: POINTS[victim.kind] }), 'sword'); feel('take', victim.kind === 'star' ? BUZZ.takeStar : BUZZ.take); this.later(120, () => sound('points')); }
+      if (mine) { this.toast(tr('You took {obj}! +{pts}', { obj: objectOf(st, victim), pts: POINTS[victim.kind] }), 'sword'); feel('take', victim.kind === 'star' ? BUZZ.takeStar : BUZZ.take); this.later(120, () => sound('points')); }
       if (me) {
-        this.toast(tr('{name} seni aldı!', { name: subjectOf(st, actor) }), 'sword');
+        this.toast(tr('{name} took you!', { name: subjectOf(st, actor) }), 'sword');
         feel('out', BUZZ.takenOrOut);
         this.view = { ...this.view, hit: this.view.hit + 1 };
       }
       if (victim.kind === 'star') {
-        this.banner(me ? tr('Elendin') : tr('{name} elendi', { name: seatName(st, victim.seat) }),
-          tr('{name} aldı · {n} puanla', { name: labelOf(st, actor), n: st.seats[victim.seat].score }), PLAYER_COLORS[victim.seat], victim.id);
+        this.banner(me ? tr("You're out") : tr('{name} is out', { name: seatName(st, victim.seat) }),
+          tr('Taken by {name} · on {n} pts', { name: labelOf(st, actor), n: st.seats[victim.seat].score }), PLAYER_COLORS[victim.seat], victim.id);
       }
     }
 
@@ -857,13 +857,13 @@ export class GameController {
       const side = st.size - 2 * st.ring;
       const stars = fallen.filter(p => p.kind === 'star');
       const iFell = stars.some(p => p.kind === 'star' && p.seat === ME);
-      let sub = fallen.length ? tr('{n} taş düştü · arena {side}×{side}', { n: fallen.length, side }) : tr('Kimse düşmedi · arena {side}×{side}', { side });
+      let sub = fallen.length ? tr('{n} {n:piece|pieces} fell · arena {side}×{side}', { n: fallen.length, side }) : tr('Nobody fell · arena {side}×{side}', { side });
       if (iFell) {
-        sub = tr('Halkada kaldın, elendin');
+        sub = tr('You stayed on the ring and are out');
         this.view = { ...this.view, hit: this.view.hit + 1 };
       }
-      else if (stars.length) sub = tr('{names} düştü · arena {side}×{side}', { names: stars.map(p => labelOf(st, p)).join(', '), side });
-      this.banner(tr('Dış halka çöktü'), sub, HAZARD, null);
+      else if (stars.length) sub = tr('{names} fell · arena {side}×{side}', { names: stars.map(p => labelOf(st, p)).join(', '), side });
+      this.banner(tr('Outer ring collapsed'), sub, HAZARD, null);
       feel(iFell ? 'out' : 'collapse', iFell ? BUZZ.takenOrOut : BUZZ.collapse);
     }
 
@@ -958,7 +958,7 @@ export class GameController {
         this.emit({ timer: Math.max(0, t) });
         if (t <= 0 && this.waitingSeat != null) {
           const a = currentActor(this.state)!;
-          this.toast(tr('{name} için süre doldu', { name: labelOf(this.state, a) }), 'clock');
+          this.toast(tr("Time's up for {name}", { name: labelOf(this.state, a) }), 'clock');
           this.commitRemote(chooseMove(this.state, a, 'normal'));
         }
       } else {

@@ -55,9 +55,9 @@ function linkOf<In, Out>(conn: DataConnection, onDone: () => void): Link<In, Out
 }
 
 const describe = (err: PeerError<string>) =>
-  err.type === 'peer-unavailable' ? tr('Bu kodla açık bir oda yok.')
-    : err.type === 'browser-incompatible' ? tr('Bu tarayıcı telefonlar arası bağlantıyı desteklemiyor.')
-      : tr('Bağlantı kurulamadı. İnternetini kontrol et.');
+  err.type === 'peer-unavailable' ? tr('No open room with this code.')
+    : err.type === 'browser-incompatible' ? tr("This browser doesn't support phone-to-phone connections.")
+      : tr("Couldn't connect. Check your internet.");
 
 export const peerTransport: Transport = {
   host: () => loadPeer().then(Peer => new Promise((resolve, reject) => {
@@ -85,7 +85,7 @@ export const peerTransport: Transport = {
 
   join: code => loadPeer().then(Peer => new Promise((resolve, reject) => {
     const peer = new Peer({ debug: 0 });
-    const timer = window.setTimeout(() => { peer.destroy(); reject(new Error(tr('Oda yanıt vermedi.'))); }, 15000);
+    const timer = window.setTimeout(() => { peer.destroy(); reject(new Error(tr("The room didn't respond."))); }, 15000);
     peer.on('open', () => {
       const conn = peer.connect(PREFIX + code, { reliable: true, serialization: 'json' });
       conn.on('open', () => { linked = true; clearTimeout(timer); resolve(linkOf(conn, () => peer.destroy())); });

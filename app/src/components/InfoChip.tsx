@@ -18,9 +18,9 @@ function WalkTake({ walkStraight, takeStraight }: { walkStraight: boolean; takeS
   );
   return (
     <span className="walk-take">
-      {icon(walkStraight, ICE)} {tr('yürür')}
+      {icon(walkStraight, ICE)} {tr('walks')}
       <span className="walk-take-sep">·</span>
-      {icon(takeStraight, DANGER)} {tr('alır')}
+      {icon(takeStraight, DANGER)} {tr('takes')}
     </span>
   );
 }
@@ -34,10 +34,10 @@ export function InfoChip({ ctl, id }: { ctl: GameController; id: string }) {
   const me = ctl.myStar();
   const mode = nextMode(st, p);
   const straight = (d: readonly (readonly [number, number])[]) => d[0][0] === 0 || d[0][1] === 0;
-  const walk = straight(walkDirs(p, mode)) ? tr('düz') : tr('çapraz');
-  const take = straight(takeDirs(p, mode)) ? tr('düz') : tr('çapraz');
+  const walk = straight(walkDirs(p, mode)) ? tr('straight') : tr('diagonally');
+  const take = straight(takeDirs(p, mode)) ? tr('straight') : tr('diagonally');
   const wStraight = straight(walkDirs(p, mode)), tStraight = straight(takeDirs(p, mode));
-  const how = p.kind === 'twin' ? tr('senin yönünde oynar') : walk === take ? tr('{w} gider, {t} alır', { w: walk, t: take }) : tr('{w} yürür, {t} alır', { w: walk, t: take });
+  const how = p.kind === 'twin' ? tr('mirrors your move') : walk === take ? tr('moves {w}, takes {t}', { w: walk, t: take }) : tr('walks {w}, takes {t}', { w: walk, t: take });
   const hard = ctl.setup.level === 'zor';
   const target = isBot(p) && !hard && !st.puzzle ? targetOf(st, p) : null;
   const danger = me.alive && p.id !== me.id && attackersOfMe(st, me).some(q => q.id === p.id);
@@ -46,7 +46,7 @@ export function InfoChip({ ctl, id }: { ctl: GameController; id: string }) {
       type="button"
       className={`info-chip${danger ? ' is-danger' : ''}`}
       onClick={() => ctl.closeInspect()}
-      aria-label={tr('{name}, sıra {n}, {how}. Kapat.', { name: labelOf(st, p), n: orderNo(st, p.id), how })}
+      aria-label={tr('{name}, order {n}, {how}. Close.', { name: labelOf(st, p), n: orderNo(st, p.id), how })}
     >
       <PieceGlyph kind={p.kind} seat={seatOf(p)} size={22} diamond={diamondOf(p, st.mode)} />
       <span className="info-chip-name" style={{ color: isBot(p) ? undefined : colorOf(p) }}>{labelOf(st, p)}</span>
@@ -58,10 +58,10 @@ export function InfoChip({ ctl, id }: { ctl: GameController; id: string }) {
       {target && (
         <span className="info-chip-target">
           <Icon d="M5 12 H19 M13 6 L19 12 L13 18" size={14} stroke={2.4} />
-          <span style={{ color: PLAYER_COLORS[target.seat] }}>{target.seat === ME ? tr('Sen') : labelOf(st, target)}</span>
+          <span style={{ color: PLAYER_COLORS[target.seat] }}>{target.seat === ME ? tr('You') : labelOf(st, target)}</span>
         </span>
       )}
-      {isBot(p) && hard && <span className="info-chip-meta">{tr('· hedef gizli')}</span>}
+      {isBot(p) && hard && <span className="info-chip-meta">{tr('· target hidden')}</span>}
       {danger && <Icon d={ICON.warn} size={16} stroke={2.2} />}
     </button>
   );

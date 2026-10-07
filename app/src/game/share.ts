@@ -13,14 +13,14 @@ const URL_TEXT = 'ardaulker.github.io/x-sword/oyun';
 
 function headline({ st }: ShareInfo) {
   const won = isWinner(st, ME);
-  return won ? tr('Kazandın!') : st.solo ? tr('Alındın') : winnerLine(st);
+  return won ? tr('You won!') : st.solo ? tr('You were taken') : winnerLine(st);
 }
 
 export function shareText(info: ShareInfo) {
   const { st, time, daily } = info;
   const me = st.seats[ME];
-  const head = daily ? tr('X Sword · Günlük {date}', { date: daily }) : 'X Sword';
-  return `${head}\n${headline(info)} · ${tr('{n} puan', { n: me.score })} · ${tr('{n} alma', { n: me.takes })} · ${tr('{n} tur', { n: st.round })} · ${time}\n${URL_TEXT}`;
+  const head = daily ? tr('X Sword · Daily {date}', { date: daily }) : 'X Sword';
+  return `${head}\n${headline(info)} · ${tr('{n} pts', { n: me.score })} · ${tr('{n} {n:take|takes}', { n: me.takes })} · ${tr('{n} {n:round|rounds}', { n: st.round })} · ${time}\n${URL_TEXT}`;
 }
 
 async function draw(info: ShareInfo): Promise<HTMLCanvasElement> {
@@ -54,15 +54,15 @@ async function draw(info: ShareInfo): Promise<HTMLCanvasElement> {
   g.textAlign = 'center';
   g.fillStyle = '#E9F0FF'; g.font = font(800, 54); g.fillText('X SWORD', W / 2, 360);
   g.fillStyle = '#8FA0D8'; g.font = font(600, 24);
-  g.fillText(daily ? tr('Günlük {date}', { date: daily }) : `${st.size}×${st.size}${st.solo ? ' · ' + tr('Tek') : ''}`, W / 2, 400);
+  g.fillText(daily ? tr('Daily {date}', { date: daily }) : `${st.size}×${st.size}${st.solo ? ' · ' + tr('Solo') : ''}`, W / 2, 400);
 
   const won = isWinner(st, ME);
   g.fillStyle = won ? '#3BFF8F' : '#E9F0FF'; g.font = font(800, 64); g.fillText(headline(info), W / 2, 500);
 
   g.fillStyle = '#FFFFFF'; g.font = font(800, 150); g.fillText(String(me.score), W / 2, 650);
-  g.fillStyle = '#8FA0D8'; g.font = font(600, 26); g.fillText(tr('Skor').toUpperCase(), W / 2, 690);
+  g.fillStyle = '#8FA0D8'; g.font = font(600, 26); g.fillText(tr('Score').toUpperCase(), W / 2, 690);
 
-  const stats: [string, string][] = [[String(me.takes), tr('Alma')], [String(st.round), tr('Tur ayakta')], [time, tr('Süre')]];
+  const stats: [string, string][] = [[String(me.takes), tr('Takes')], [String(st.round), tr('Rounds alive')], [time, tr('Time')]];
   stats.forEach(([v, l], i) => {
     const x = W / 2 + (i - 1) * 210;
     g.fillStyle = '#E9F0FF'; g.font = font(800, 40); g.fillText(v, x, 770);
@@ -78,7 +78,7 @@ export async function shareReplay(ctl: GameController) {
   if (!spec) return;
   const url = replayUrl(spec);
   try {
-    if (navigator.share) { await navigator.share({ title: 'X Sword', text: tr('Bu maçı izle'), url }); return; }
+    if (navigator.share) { await navigator.share({ title: 'X Sword', text: tr('Watch this match'), url }); return; }
     await navigator.clipboard.writeText(url);
   } catch { /* vazgeçti */ }
 }

@@ -18,11 +18,11 @@ export interface Theme {
 }
 
 export const THEMES: Theme[] = [
-  { id: 'gece', name: () => tr('Gece'), kare: '#1A2452', kare2: '#1D2858', bosluk: '#070B1E', cerceve: '#0D1431', need: null },
-  { id: 'zumrut', name: () => tr('Zümrüt'), kare: '#15362F', kare2: '#193D35', bosluk: '#06130F', cerceve: '#0B1F1A', need: { kind: 'stars', n: 6 } },
-  { id: 'kor', name: () => tr('Kor'), kare: '#3A2220', kare2: '#432723', bosluk: '#180A09', cerceve: '#261311', need: { kind: 'wins', n: 5 } },
-  { id: 'buz', name: () => tr('Buz'), kare: '#1F3B54', kare2: '#244560', bosluk: '#07131E', cerceve: '#0F2133', need: { kind: 'daily', n: 3 } },
-  { id: 'mor', name: () => tr('Mor'), kare: '#2C2352', kare2: '#322959', bosluk: '#0D0A21', cerceve: '#171234', need: { kind: 'matches', n: 25 } },
+  { id: 'gece', name: () => tr('Night'), kare: '#1A2452', kare2: '#1D2858', bosluk: '#070B1E', cerceve: '#0D1431', need: null },
+  { id: 'zumrut', name: () => tr('Emerald'), kare: '#15362F', kare2: '#193D35', bosluk: '#06130F', cerceve: '#0B1F1A', need: { kind: 'stars', n: 6 } },
+  { id: 'kor', name: () => tr('Ember'), kare: '#3A2220', kare2: '#432723', bosluk: '#180A09', cerceve: '#261311', need: { kind: 'wins', n: 5 } },
+  { id: 'buz', name: () => tr('Ice'), kare: '#1F3B54', kare2: '#244560', bosluk: '#07131E', cerceve: '#0F2133', need: { kind: 'daily', n: 3 } },
+  { id: 'mor', name: () => tr('Violet'), kare: '#2C2352', kare2: '#322959', bosluk: '#0D0A21', cerceve: '#171234', need: { kind: 'matches', n: 25 } },
 ];
 
 const progress = (s: Stats, kind: Need['kind']) =>
@@ -36,10 +36,10 @@ export const themeById = (id: string) => THEMES.find(t => t.id === id) ?? THEMES
 export function needText(t: { need: null | Need }) {
   if (!t.need) return '';
   const { kind, n } = t.need;
-  return kind === 'stars' ? tr('Bulmacalardan {n} yıldız topla', { n })
-    : kind === 'wins' ? tr('{n} maç kazan', { n })
-    : kind === 'daily' ? tr('{n} günlük meydan okuma oyna', { n })
-    : tr('{n} maç oyna', { n });
+  return kind === 'stars' ? tr('Collect {n} stars from puzzles', { n })
+    : kind === 'wins' ? tr('Win {n} {n:match|matches}', { n })
+    : kind === 'daily' ? tr('Play {n} daily {n:challenge|challenges}', { n })
+    : tr('Play {n} matches', { n });
 }
 
 export const needProgress = (t: { need: null | Need }, s: Stats = loadStats()) => (t.need ? Math.min(progress(s, t.need.kind), t.need.n) : 0);
@@ -47,11 +47,11 @@ export const needProgress = (t: { need: null | Need }, s: Stats = loadStats()) =
 // Taş efektleri (yalnız senin yıldızında görünür, animasyonludur). Başarıyla açılır.
 export interface Skin { id: string; name: () => string; need: null | Need }
 export const SKINS: Skin[] = [
-  { id: 'none', name: () => tr('Yok'), need: null },
-  { id: 'flame', name: () => tr('Alev'), need: { kind: 'stars', n: 12 } },
-  { id: 'bolt', name: () => tr('Şimşek'), need: { kind: 'wins', n: 10 } },
-  { id: 'crystal', name: () => tr('Kristal'), need: { kind: 'daily', n: 7 } },
-  { id: 'gold', name: () => tr('Altın'), need: { kind: 'stars', n: 36 } },
+  { id: 'none', name: () => tr('None'), need: null },
+  { id: 'flame', name: () => tr('Flame'), need: { kind: 'stars', n: 12 } },
+  { id: 'bolt', name: () => tr('Lightning'), need: { kind: 'wins', n: 10 } },
+  { id: 'crystal', name: () => tr('Crystal'), need: { kind: 'daily', n: 7 } },
+  { id: 'gold', name: () => tr('Gold'), need: { kind: 'stars', n: 36 } },
 ];
 export const skinById = (id: string) => SKINS.find(s => s.id === id) ?? SKINS[0];
 

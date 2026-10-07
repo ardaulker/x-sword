@@ -46,10 +46,10 @@ export function ReplayScreen({ code, onBack }: { code: string; onBack: () => voi
     return (
       <div className="rules">
         <header className="rules-head">
-          <button type="button" className="round-btn" aria-label={tr('Geri')} onClick={onBack}><Icon d="M15 5 L8 12 L15 19" size={20} stroke={2.4} /></button>
-          <h1>{tr('Maç tekrarı')}</h1>
+          <button type="button" className="round-btn" aria-label={tr('Back')} onClick={onBack}><Icon d="M15 5 L8 12 L15 19" size={20} stroke={2.4} /></button>
+          <h1>{tr('Match replay')}</h1>
         </header>
-        <div className="rules-body"><p className="rules-foot">{tr('Bu tekrar bağlantısı bozuk.')}</p></div>
+        <div className="rules-body"><p className="rules-foot">{tr('This replay link is broken.')}</p></div>
       </div>
     );
   }
@@ -63,22 +63,22 @@ export function ReplayScreen({ code, onBack }: { code: string; onBack: () => voi
   return (
     <div className="rules replay">
       <header className="rules-head">
-        <button type="button" className="round-btn" aria-label={tr('Geri')} onClick={onBack}><Icon d="M15 5 L8 12 L15 19" size={20} stroke={2.4} /></button>
-        <h1>{tr('Maç tekrarı')}</h1>
+        <button type="button" className="round-btn" aria-label={tr('Back')} onClick={onBack}><Icon d="M15 5 L8 12 L15 19" size={20} stroke={2.4} /></button>
+        <h1>{tr('Match replay')}</h1>
       </header>
       <PlayerStrip ctl={ctl} view={view} compact />
-      <div className="replay-info">{tr('Tur {n}', { n: st.round })} · {modeWord(st.mode)} · {tr('hamle {a}/{b}', { a: i, b: total })}</div>
+      <div className="replay-info">{tr('Round {n}', { n: st.round })} · {modeWord(st.mode)} · {tr('move {a}/{b}', { a: i, b: total })}</div>
       <div ref={stageRef} className="replay-stage">
         {stage.w > 0 && <div style={{ width: outer, margin: '0 auto' }}><Board ctl={ctl} view={view} cell={cell} /></div>}
       </div>
-      <input className="replay-bar" type="range" min={0} max={total} value={i} aria-label={tr('Hamle')}
+      <input className="replay-bar" type="range" min={0} max={total} value={i} aria-label={tr('Move')}
         onChange={e => { setPlaying(false); ctl.seek(Number(e.target.value)); }} />
       <div className="replay-ctl">
-        {btn(tr('Başa dön'), 'M6 5 V19 M18 6 L9 12 L18 18 Z', () => { setPlaying(false); ctl.seek(0); }, i === 0)}
-        {btn(tr('Önceki hamle'), 'M15 5 L8 12 L15 19', () => { setPlaying(false); ctl.seek(i - 1); }, i === 0)}
-        {btn(playing ? tr('Duraklat') : tr('Oynat'), playing ? 'M8 5 V19 M16 5 V19' : 'M7 4.5 L19 12 L7 19.5 Z', () => { if (i >= total) ctl.seek(0); setPlaying(p => !p); })}
-        {btn(tr('Sonraki hamle'), 'M9 5 L16 12 L9 19', () => { setPlaying(false); ctl.seek(i + 1); }, i >= total)}
-        <button type="button" className="round-btn replay-speed" aria-label={tr('Hız')} onClick={() => setFast(f => (f >= 4 ? 1 : f * 2))}>{fast}×</button>
+        {btn(tr('Back to start'), 'M6 5 V19 M18 6 L9 12 L18 18 Z', () => { setPlaying(false); ctl.seek(0); }, i === 0)}
+        {btn(tr('Previous move'), 'M15 5 L8 12 L15 19', () => { setPlaying(false); ctl.seek(i - 1); }, i === 0)}
+        {btn(playing ? tr('Pause') : tr('Start playback'), playing ? 'M8 5 V19 M16 5 V19' : 'M7 4.5 L19 12 L7 19.5 Z', () => { if (i >= total) ctl.seek(0); setPlaying(p => !p); })}
+        {btn(tr('Next move'), 'M9 5 L16 12 L9 19', () => { setPlaying(false); ctl.seek(i + 1); }, i >= total)}
+        <button type="button" className="round-btn replay-speed" aria-label={tr('Speed')} onClick={() => setFast(f => (f >= 4 ? 1 : f * 2))}>{fast}×</button>
       </div>
     </div>
   );

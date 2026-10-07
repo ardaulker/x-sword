@@ -37,7 +37,7 @@ function Card({ visual, title, children, soon }: { visual: ReactNode; title: str
     <article className={`rule${soon ? ' is-soon' : ''}`}>
       <div className="rule-visual" aria-hidden="true">{visual}</div>
       <div className="rule-text">
-        <h3>{title}{soon && <span className="menu-soon">{tr('Yakında')}</span>}</h3>
+        <h3>{title}{soon && <span className="menu-soon">{tr('Soon')}</span>}</h3>
         {children}
       </div>
     </article>
@@ -49,89 +49,89 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
   return (
     <div className="rules">
       <header className="rules-head">
-        <button type="button" className="round-btn" aria-label={tr('Geri')} onClick={onBack}><Icon d="M15 5 L8 12 L15 19" size={20} stroke={2.4} /></button>
-        <h1>{tr('Nasıl oynanır?')}</h1>
+        <button type="button" className="round-btn" aria-label={tr('Back')} onClick={onBack}><Icon d="M15 5 L8 12 L15 19" size={20} stroke={2.4} /></button>
+        <h1>{tr('How to play')}</h1>
       </header>
 
       <div className="rules-body">
-        <h2>{tr('Temel kurallar')}</h2>
-        <Card title={tr('Amaç')} visual={<div className="anim-float">+{POINTS.star}</div>}>
-          <p>{tr('Rakipleri al ve puan topla. Maç tek yıldız kalınca biter. Kazananı skor belirler, saklanmak tek başına kazandırmaz.')}</p>
+        <h2>{tr('Basic rules')}</h2>
+        <Card title={tr('Goal')} visual={<div className="anim-float">+{POINTS.star}</div>}>
+          <p>{tr("Take your rivals and collect points. The match ends when one star is left. The score decides the winner; hiding alone doesn't win.")}</p>
         </Card>
-        <Card title={tr('Her tur mod değişir')} visual={<div className="anim-morph"><PieceGlyph {...star} size={44} diamond={false} /></div>}>
-          <p>{rich('**DÜZ** turda yıldızlar düz gider ve düz alır. **ÇAPRAZ** turda çapraz gider ve çapraz alır.')}</p>
-          <p>{tr('Şekil yönü söyler: kare düz, elmas çapraz.')}</p>
+        <Card title={tr('The mode changes every round')} visual={<div className="anim-morph"><PieceGlyph {...star} size={44} diamond={false} /></div>}>
+          <p>{rich('In a **STRAIGHT** round, stars move straight and take straight. In a **DIAGONAL** round, they move and take diagonally.')}</p>
+          <p>{tr('The shape tells the direction: square is straight, diamond is diagonal.')}</p>
         </Card>
-        <Card title={tr('Taşlar')} visual={<Mini piece={{ kind: 'red' }} diamond={false} walk={ORTH} take={DIAG} hop={[-1, 0]} />}>
-          <p>{rich('**Kızıl bot** (kare, ×): düz yürür, çapraz alır.')}</p>
-          <p>{rich('**Çelik bot** (elmas, +): çapraz yürür, düz alır.')}</p>
-          <p>{tr('Herkes tek kare gider. Noktalar yürüyüş, nişanlar almadır.')}</p>
+        <Card title={tr('Pieces')} visual={<Mini piece={{ kind: 'red' }} diamond={false} walk={ORTH} take={DIAG} hop={[-1, 0]} />}>
+          <p>{rich('**Red bot** (square, ×): walks straight, takes diagonally.')}</p>
+          <p>{rich('**Steel bot** (diamond, +): walks diagonally, takes straight.')}</p>
+          <p>{tr('Everyone moves one square. Dots are walks, crosshairs are takes.')}</p>
         </Card>
-        <Card title={tr('Almak')} visual={<Mini piece={star} diamond={false} walk={[]} take={ORTH} hop={[0, 1]} prey={{ kind: 'red' }} />}>
-          <p>{tr('Bir taşın karesine geçersen onu alırsın; o taş oyundan çıkar. Herkes herkesi alabilir: oyuncu oyuncuyu, bot oyuncuyu, bot botu.')}</p>
+        <Card title={tr('Taking')} visual={<Mini piece={star} diamond={false} walk={[]} take={ORTH} hop={[0, 1]} prey={{ kind: 'red' }} />}>
+          <p>{tr("Step onto a piece's square and you take it; that piece leaves the game. Anyone can take anyone: player takes player, bot takes player, bot takes bot.")}</p>
         </Card>
-        <Card title={tr('Hamle sırası')} visual={<div className="anim-queue">{[3, 4, 5, 6, 7].map(n => <span key={n}>{n}</span>)}</div>}>
-          <p>{tr('Sıra maç başında bir kez karılır ve bütün maç aynı kalır. Taşın üstündeki numara, o turda ayakta kalanlar arasındaki yeridir; her tur baştan verilir, sıra değişmez. Üstteki şerit şu an oynayanı ve sıradakileri gösterir.')}</p>
-          <p>{tr('Hamle iki adımdır: kareye dokun, önizlemeyi gör, onayla. Süren 20 saniye; biterse oyun senin yerine güvenli bir hamle yapar.')}</p>
+        <Card title={tr('Move order')} visual={<div className="anim-queue">{[3, 4, 5, 6, 7].map(n => <span key={n}>{n}</span>)}</div>}>
+          <p>{tr("The order is shuffled once at the start and stays the same all match. The number on a piece is its place among the players still alive; numbers are re-dealt every round, the order itself never changes. The strip on top shows who's playing and who's next.")}</p>
+          <p>{tr('A move takes two steps: tap a square, see the preview, confirm. You have 20 seconds; if time runs out, the game plays a safe move for you.')}</p>
         </Card>
 
-        <h2>{tr('Tahta')}</h2>
-        <Card title={tr('Arena daralır')} visual={<div className="anim-ring">{Array.from({ length: 25 }, (_, i) => {
+        <h2>{tr('Board')}</h2>
+        <Card title={tr('The arena shrinks')} visual={<div className="anim-ring">{Array.from({ length: 25 }, (_, i) => {
           const r = Math.floor(i / 5), c = i % 5, edge = r === 0 || c === 0 || r === 4 || c === 4;
           return <div key={i} className={edge ? 'cell-flow' : ''} style={{ background: edge ? 'var(--pat-hazard)' : 'var(--kare)' }} />;
         })}</div>}>
-          <p>{tr('Her 6 turda bir (6., 12., 18. tur), turun sonunda en dıştaki halka çöker.')}</p>
-          <p>{tr('Bir tur önce halka ince turuncu kenarla, çökeceği tur turuncu çizgiyle işaretlenir. Orada kalan taş elenir. İçeri gir!')}</p>
+          <p>{tr('Every 6 rounds (6th, 12th, 18th), the outermost ring collapses at the end of the round.')}</p>
+          <p>{tr('One round before, the ring gets a thin orange edge; in the collapsing round it is marked with orange stripes. A piece left there is out. Move inward!')}</p>
         </Card>
 
-        <h2>{tr('Skor')}</h2>
-        <Card title={tr('Puan')} visual={<div className="rule-points"><span>{tr('Oyuncu')} <b>{POINTS.star}</b></span><span>{tr('İkiz')} <b>{POINTS.twin}</b></span><span>{tr('Bot')} <b>{POINTS.red}</b></span></div>}>
-          <p>{tr('Almak puan kazandırır. Skor tablosu anında güncellenir; puan, aldığın karede de belirir.')}</p>
-          <p>{tr('Ayakta kalan son yıldız +{n} hayatta kalma bonusu alır.', { n: SURVIVOR_BONUS })}</p>
-          <p>{tr('2–4 oyunculu maçta rakip yıldızlar gidince kazanan belli olur; istersen botlarla savaşa devam edersin.')}</p>
+        <h2>{tr('Score')}</h2>
+        <Card title={tr('Points')} visual={<div className="rule-points"><span>{tr('Player')} <b>{POINTS.star}</b></span><span>{tr('Twin')} <b>{POINTS.twin}</b></span><span>{tr('Bot')} <b>{POINTS.red}</b></span></div>}>
+          <p>{tr('Taking earns points. The scoreboard updates instantly; the points also pop up on the square you took.')}</p>
+          <p>{tr('The last star standing gets a +{n} survival bonus.', { n: SURVIVOR_BONUS })}</p>
+          <p>{tr('In a 2–4 player match, the winner is decided once the rival stars are gone; if you like, you can keep fighting the bots.')}</p>
         </Card>
-        <Card title={tr('Sıralama')} visual={<ol className="rule-rank"><li>{tr('Skor')}</li><li>{tr('Alma sayısı')}</li><li>{tr('Hayatta kalma')}</li></ol>}>
-          <p>{tr('Önce skor bakılır. Eşitse daha çok alan, o da eşitse daha uzun ayakta kalan önde olur. Erken elenen ama çok alan oyuncu da birinci olabilir.')}</p>
-        </Card>
-
-        <h2>{tr('Modlar')}</h2>
-        <Card title={tr('Kolay · Normal · Zor')} visual={<PieceGlyph kind="blue" size={44} diamond svgExtra={<path d="M114 50 L94 37 L94 63 Z" fill="#3BFF8F" stroke="#0B1026" strokeWidth="4" />} />}>
-          <p>{rich('**Kolay:** ilk sen oynarsın. **Normal:** sıradaki yerin rastgele. **Zor:** yerin rastgele ve botların hedef üçgeni gizli; kimi kovaladığını tahmin etmen gerekir.')}</p>
-          <p>{tr('Botun kenarındaki üçgen, kovaladığı oyuncunun yönünde ve renginde durur.')}</p>
-          <p>{tr('Kolay modda hamleni maç boyunca 3 kez geri alabilirsin; bulmacada sınırsız.')}</p>
-          <p>{tr('Yeni maç ekranında tahtayı (en az 9, 11, 13; en çok 15) ve bot sayısını seçersin. Rakip yapay zekâların ve arena botlarının zekâsı ayrı ayarlanır: Zor rakip avcı gibi oynar, Normal ara sıra hata yapar.')}</p>
-        </Card>
-        <Card title={tr('Tek oyunculu: İkiz')} visual={<div className="rule-pair"><PieceGlyph {...star} size={34} diamond={false} /><PieceGlyph kind="twin" seat={0} size={34} diamond={false} /></div>}>
-          <p>{tr("İkiz senin aynandır: senden hemen sonra, senin yaptığın yönün aynısını oynar. O kare doluysa oradaki taşı alır, yol kapalıysa yerinde kalır. Seni hiç alamaz. Bütün botlar gidince kazanırsın; İkiz'i almana gerek yok. İkiz bir taş alırsa sana çift puan ve bir Ayna bonusu verir.")}</p>
+        <Card title={tr('Ranking')} visual={<ol className="rule-rank"><li>{tr('Score')}</li><li>{tr('Number of takes')}</li><li>{tr('Survival')}</li></ol>}>
+          <p>{tr('Score comes first. On a tie, more takes wins; if still tied, whoever lasted longer. A player who is knocked out early but took a lot can still finish first.')}</p>
         </Card>
 
-        <Card title={tr('Seçenekler')} visual={<Icon d="M4 7 H14 M18 7 H20 M4 17 H8 M12 17 H20 M16 5 V9 M10 15 V19" size={36} stroke={2} />}>
-          <p>{rich("**Takımlı (2'ye 2):** 4 oyuncuda karşılıklı köşeler takım olur. Takım arkadaşını alamazsın; karşı takımın iki yıldızı da gidince kazanırsın.")}</p>
-          <p>{rich('**Engel kareleri:** tahtada birbirine değmeyen kapalı kareler olur; taşlar oraya giremez ve çift adımla üstünden de atlayamaz.')}</p>
-          <p>{rich('**Rakip kişilikleri:** yapay zekâ rakipler avcı, temkinli ya da fırsatçı oynar.')}</p>
+        <h2>{tr('Modes')}</h2>
+        <Card title={tr('Easy · Normal · Hard')} visual={<PieceGlyph kind="blue" size={44} diamond svgExtra={<path d="M114 50 L94 37 L94 63 Z" fill="#3BFF8F" stroke="#0B1026" strokeWidth="4" />} />}>
+          <p>{rich("**Easy:** you play first. **Normal:** your place in the order is random. **Hard:** your place is random and the bots' target triangle is hidden; you must guess who they chase.")}</p>
+          <p>{tr("The triangle on a bot's edge points toward the player it chases, in that player's color.")}</p>
+          <p>{tr('On Easy you can undo your move 3 times per match; unlimited in puzzles.')}</p>
+          <p>{tr("On the new match screen you pick the board (at least 9, 11, 13; at most 15) and the number of bots. The AI rivals' and the arena bots' intelligence are set separately: a Hard rival hunts like a predator, a Normal one sometimes slips.")}</p>
         </Card>
-        <Card title={tr('Bulmacalar')} visual={<Icon d="M10 3 H14 V6 A2 2 0 1 0 18 6 V3 H21 V9 H18 A2 2 0 1 0 18 13 H21 V21 H3 V13 H6 A2 2 0 1 1 6 9 H3 V3 Z" size={36} stroke={2} />}>
-          <p>{tr('Sınırlı hamlede bütün botları al. Botlar yürümez ama menziline girersen seni alır. Az hamlede çözmek daha çok yıldız verir.')}</p>
+        <Card title={tr('Solo: the Twin')} visual={<div className="rule-pair"><PieceGlyph {...star} size={34} diamond={false} /><PieceGlyph kind="twin" seat={0} size={34} diamond={false} /></div>}>
+          <p>{tr("The Twin is your mirror: right after you, it plays the same direction you did. If that square is occupied it takes the piece there; if the way is blocked it stays put. It can never take you. You win when all bots are gone; you don't need to take the Twin. If the Twin takes a piece, you get double points and a Mirror bonus.")}</p>
         </Card>
 
-        <h2>{tr('Bonuslar')}</h2>
-        <Card title={tr('Zırh')} visual={<Icon d="M12 3 L20 6 V12 C20 16.5 16.5 20 12 21 C7.5 20 4 16.5 4 12 V6 Z" size={36} stroke={2} />}>
-          <p>{tr('+1 can: seni bir kez alınmaktan korur. Kendiliğinden çalışır; seni alan taş geri döner.')}</p>
-          <p className="rule-when">{rich('**Nasıl kazanılır:** arena ilk kez daraldığında hâlâ ayaktaysan.')}</p>
+        <Card title={tr('Options')} visual={<Icon d="M4 7 H14 M18 7 H20 M4 17 H8 M12 17 H20 M16 5 V9 M10 15 V19" size={36} stroke={2} />}>
+          <p>{rich("**Teams (2 vs 2):** with 4 players, opposite corners form a team. You can't take your teammate; you win when both stars of the other team are gone.")}</p>
+          <p>{rich("**Obstacle squares:** the board has blocked squares that never touch each other; pieces can't enter them or jump over them with a double step.")}</p>
+          <p>{rich('**Rival personalities:** AI rivals play as a hunter, a cautious one or an opportunist.')}</p>
         </Card>
-        <Card title={tr('Çift adım')} visual={<Icon d="M4 12 H12 M9 8 L13 12 L9 16 M12 12 H20 M17 8 L21 12 L17 16" size={36} stroke={2} />}>
-          <p>{tr('Bu hamlede iki kare gidersin (aradaki kare boş olmalı).')}</p>
-          <p className="rule-when">{rich('**Nasıl kazanılır:** 20 puana ulaşınca. 60 puanda ikisinden biri rastgele gelir. Maça bir tane ile başlarsın.')}</p>
+        <Card title={tr('Puzzles')} visual={<Icon d="M10 3 H14 V6 A2 2 0 1 0 18 6 V3 H21 V9 H18 A2 2 0 1 0 18 13 H21 V21 H3 V13 H6 A2 2 0 1 1 6 9 H3 V3 Z" size={36} stroke={2} />}>
+          <p>{tr("Take every bot within a limited number of moves. Bots don't walk, but they take you if you step into their reach. Solving in fewer moves earns more stars.")}</p>
         </Card>
-        <Card title={tr('Çift hamle')} visual={<Icon d="M3 5 L12 12 L3 19 Z M12 5 L21 12 L12 19 Z" size={36} stroke={2} />}>
-          <p>{tr('Hamlenden sonra hemen bir hamle daha yaparsın.')}</p>
-          <p className="rule-when">{rich('**Nasıl kazanılır:** 40 puana ulaşınca ve ikinci daralmayı atlatınca. 60 puanda çift adımla birlikte rastgele gelir.')}</p>
+
+        <h2>{tr('Bonuses')}</h2>
+        <Card title={tr('Armor')} visual={<Icon d="M12 3 L20 6 V12 C20 16.5 16.5 20 12 21 C7.5 20 4 16.5 4 12 V6 Z" size={36} stroke={2} />}>
+          <p>{tr('+1 life: protects you from being taken once. It works by itself; the piece that tried to take you bounces back.')}</p>
+          <p className="rule-when">{rich('**How to earn it:** be still standing when the arena shrinks for the first time.')}</p>
         </Card>
-        <Card title={tr('Ayna')} visual={<Icon d="M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19" size={36} stroke={2} />}>
-          <p>{tr('Tahtanın herhangi bir yerindeki bir taşla (rakip yıldız ya da bot) yer değiştirirsin.')}</p>
-          <p className="rule-when">{rich('**Nasıl kazanılır:** 50 puana ulaşınca. Tek oyunculu modda İkiz bir taş alınca da gelir; o alma sana çift puan da yazar.')}</p>
+        <Card title={tr('Double step')} visual={<Icon d="M4 12 H12 M9 8 L13 12 L9 16 M12 12 H20 M17 8 L21 12 L17 16" size={36} stroke={2} />}>
+          <p>{tr('This move you go two squares (the square between must be empty).')}</p>
+          <p className="rule-when">{rich('**How to earn it:** reach 20 points. At 60 points you get one of the two at random. You start the match with one.')}</p>
         </Card>
-        <p className="rules-foot">{tr('Herkes maça bir çift adımla başlar. Sıran gelince paneldeki bonusa dokun, kareler ona göre yanar.')}</p>
+        <Card title={tr('Double move')} visual={<Icon d="M3 5 L12 12 L3 19 Z M12 5 L21 12 L12 19 Z" size={36} stroke={2} />}>
+          <p>{tr('After your move you immediately make another.')}</p>
+          <p className="rule-when">{rich('**How to earn it:** reach 40 points, and survive the second shrink. At 60 points it comes at random alongside Double step.')}</p>
+        </Card>
+        <Card title={tr('Mirror')} visual={<Icon d="M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19" size={36} stroke={2} />}>
+          <p>{tr('Swap places with any piece on the board (a rival star or a bot).')}</p>
+          <p className="rule-when">{rich('**How to earn it:** reach 50 points. In solo mode it also comes when the Twin takes a piece; that take scores you double points too.')}</p>
+        </Card>
+        <p className="rules-foot">{tr('Everyone starts with a Double step. On your turn, tap a bonus in the panel and the squares light up for it.')}</p>
       </div>
     </div>
   );

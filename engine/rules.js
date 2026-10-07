@@ -455,7 +455,7 @@ export function play(state, move) {
   return state;
 }
 
-export const BONUS_NAMES = { armor: 'Zırh', step: 'Çift adım', double: 'Çift hamle', swap: 'Ayna' };
+export const BONUS_NAMES = { armor: 'Armor', step: 'Double step', double: 'Double move', swap: 'Mirror' };
 
 // Alma gerçekleşirse true. Zırhlı yıldız alınmaz: zırhı gider, saldıran geri döner.
 function takePiece(state, actor, target) {

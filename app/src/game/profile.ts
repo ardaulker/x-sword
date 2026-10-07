@@ -35,7 +35,7 @@ export function cleanName(raw: unknown): string {
   return raw.replace(/[\u0000-\u001F\u007F<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX);
 }
 
-export const defaultName = () => `${tr('Kılıç')} ${100 + Math.floor(Math.random() * 900)}`;
+export const defaultName = () => `${tr('Sword')} ${100 + Math.floor(Math.random() * 900)}`;
 
 function load(): Profile {
   try {
@@ -86,4 +86,4 @@ export function readPublic(raw: unknown): PublicProfile | null {
 }
 
 export const providerLabel = (p: Provider) =>
-  p === 'gamecenter' ? 'Game Center' : p === 'playgames' ? 'Google Play Games' : tr('Misafir (bu cihaz)');
+  p === 'gamecenter' ? 'Game Center' : p === 'playgames' ? 'Google Play Games' : tr('Guest (this device)');

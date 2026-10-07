@@ -28,13 +28,13 @@ const GAP = 6;
 
 function announce(ctl: GameController, view: View) {
   const st = ctl.state;
-  if (view.phase === 'bitti') return isWinner(st, 0) ? tr('Kazandın!') : tr('Maç bitti.');
-  if (view.phase === 'sen') return tr('Senin sıran.');
-  if (view.phase === 'bot') return tr('Botlar oynuyor.');
-  if (view.phase === 'mod') return tr('Yeni tur. Mod {mode}.', { mode: modeWord(st.mode) });
+  if (view.phase === 'bitti') return isWinner(st, 0) ? tr('You won!') : tr('Match over.');
+  if (view.phase === 'sen') return tr('Your turn.');
+  if (view.phase === 'bot') return tr('Bots are playing.');
+  if (view.phase === 'mod') return tr('New round. Mode {mode}.', { mode: modeWord(st.mode) });
   if (view.phase === 'rakip') {
     const a = currentActor(st);
-    return a ? tr('{name} oynuyor.', { name: labelOf(st, a) }) : '';
+    return a ? tr('{name} is playing.', { name: labelOf(st, a) }) : '';
   }
   return '';
 }
@@ -133,7 +133,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
           ? <div ref={areaRef} className="board-scroll"><Board ctl={ctl} view={view} cell={cellZ} offset={shown} /></div>
           : <Board ctl={ctl} view={view} cell={cell} offset={shown} />)}
         {canZoom && (
-          <button type="button" className="zoom-btn" aria-pressed={zoomed} aria-label={zoomed ? tr('Uzaklaştır') : tr('Yakınlaştır')} onClick={() => setZoom(z => !z)}>
+          <button type="button" className="zoom-btn" aria-pressed={zoomed} aria-label={zoomed ? tr('Zoom out') : tr('Zoom in')} onClick={() => setZoom(z => !z)}>
             <Icon d={zoomed ? 'M10 4 A6 6 0 1 0 10.01 4 Z M15 15 L20 20 M7.5 10 H12.5' : 'M10 4 A6 6 0 1 0 10.01 4 Z M15 15 L20 20 M7.5 10 H12.5 M10 7.5 V12.5'} size={20} stroke={2.2} />
           </button>
         )}
@@ -159,7 +159,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
       {sheet?.type === 'sonuc' && (
         <ResultsSheet
           ctl={ctl} time={matchTime} onClose={() => ctl.closeSheet()}
-          onAgain={net ? net.onRematch : () => ctl.newGame()} againLabel={net ? tr('Lobiye dön') : tr('Rövanş')}
+          onAgain={net ? net.onRematch : () => ctl.newGame()} againLabel={net ? tr('Back to lobby') : tr('Rematch')}
           onPuzzle={id => (id == null ? onPuzzles?.() : onNewGame({ ...ctl.setup, puzzle: id }))}
         />
       )}

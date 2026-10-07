@@ -1,9 +1,11 @@
-// Çeviri: anahtar Türkçe cümlenin kendisidir. Türkçede sözlük gerekmez; öteki dillerde sözlükte yoksa Türkçe görünür.
-// Değişken: {ad}. Çoğul: {n:tek|çoğul} (n 1 ise ilki). Eksik anahtarı `npm run build` içindeki check-i18n.mjs yakalar.
+// Translation: the key is the English source sentence itself, so English needs no dictionary.
+// Every other language has a dictionary; a missing entry falls back to the English text.
+// Variables: {name}. Plural: {n:one|many} (the first form when n is 1). check-i18n.mjs (run by `npm run build`)
+// catches missing keys and mismatched variables.
 
 import { createElement, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
-import en from './en';
+import trDict from './tr';
 import de from './de';
 import fr from './fr';
 import es from './es';
@@ -16,14 +18,14 @@ export const LANGS: { code: Lang; name: string }[] = [
   { code: 'fr', name: 'Français' }, { code: 'es', name: 'Español' }, { code: 'it', name: 'Italiano' }, { code: 'pt', name: 'Português' },
 ];
 
-const DICT: Partial<Record<Lang, Record<string, string>>> = { en, de, fr, es, it, pt };
+const DICT: Partial<Record<Lang, Record<string, string>>> = { tr: trDict, de, fr, es, it, pt };
 const KEY = 'xsword-lang';
 
 function detect(): Lang {
   try {
     const saved = localStorage.getItem(KEY);
     if (LANGS.some(l => l.code === saved)) return saved as Lang;
-  } catch { /* gizli sekme */ }
+  } catch { /* private tab */ }
   const nav = (typeof navigator !== 'undefined' ? navigator.language : 'en').slice(0, 2).toLowerCase();
   return LANGS.find(l => l.code === nav)?.code ?? 'en';
 }
@@ -35,7 +37,7 @@ if (typeof document !== 'undefined') document.documentElement.lang = lang;
 export const getLang = () => lang;
 export function setLang(next: Lang) {
   lang = next;
-  try { localStorage.setItem(KEY, next); } catch { /* gizli sekme */ }
+  try { localStorage.setItem(KEY, next); } catch { /* private tab */ }
   document.documentElement.lang = next;
   listeners.forEach(l => l());
 }
@@ -49,7 +51,7 @@ export function tr(key: string, params?: Record<string, string | number>): strin
     .replace(/\{(\w+)\}/g, (m, k) => (k in params ? String(params[k]) : m));
 }
 
-// **kalın** işaretli metni <b> ile böler (kurallar ekranı).
+// Splits **bold** marked text into <b> elements (rules screen).
 export function rich(key: string, params?: Record<string, string | number>): ReactNode[] {
   return tr(key, params).split('**').map((part, i) => (i % 2 ? createElement('b', { key: i }, part) : part));
 }

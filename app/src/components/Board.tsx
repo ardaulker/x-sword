@@ -313,15 +313,15 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
         if (sel && sel.r === r && sel.c === c) frame = { stroke: '#FFFFFF', width: 11 };
       }
       const occupant = pieceAt(st, r, c);
-      let label = tr('Satır {r}, sütun {c}', { r: r + 1, c: c + 1 });
+      let label = tr('Row {r}, column {c}', { r: r + 1, c: c + 1 });
       if (occupant) label += `, ${labelOf(st, occupant)}`;
-      if (rc) label += rc.move.type === 'take' ? tr(', alınabilir') : tr(', gidilebilir');
-      if (rc?.attackers) label += tr(', {n} taş seni alabilir', { n: rc.attackers });
-      if (wall) label += tr(', engel');
-      if (hole) label = tr('Satır {r}, sütun {c}', { r: r + 1, c: c + 1 }) + tr(', harita dışı');
-      if (gone) label += tr(', çöktü');
-      else if (doomedRing) label += tr(', tur sonunda çökecek');
-      else if (soonRing) label += tr(', gelecek tur çökecek');
+      if (rc) label += rc.move.type === 'take' ? tr(', can be taken') : tr(', reachable');
+      if (rc?.attackers) label += tr(', {n} {n:piece|pieces} can take you', { n: rc.attackers });
+      if (wall) label += tr(', obstacle');
+      if (hole) label = tr('Row {r}, column {c}', { r: r + 1, c: c + 1 }) + tr(', off the map');
+      if (gone) label += tr(', collapsed');
+      else if (doomedRing) label += tr(', will collapse at the end of the round');
+      else if (soonRing) label += tr(', will collapse next round');
       cells.push(
         <div
           key={c}
@@ -362,7 +362,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
       className="board-frame"
       style={frameStyle}
       role="grid"
-      aria-label={tr('Tahta {n}×{n}, mod {mode}. Ok tuşları ya da Q E Z C ile kare seç, Enter ile onayla.', { n, mode: modeWord(st.mode) })}
+      aria-label={tr('Board {n}×{n}, mode {mode}. Pick a square with the arrow keys or Q E Z C, confirm with Enter.', { n, mode: modeWord(st.mode) })}
       tabIndex={0}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -428,7 +428,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
               {halo && <div className={`halo halo-${halo}`} style={halo === 'turn' || halo === 'me' ? { borderColor: myColor } : undefined} />}
               {pip && <div className={`pip pip-${pip}`}>{orderNo(st, p.id)}</div>}
               {badge > 0 && <div className="threat-badge">{badge}</div>}
-              {p.kind === 'star' && p.alive && st.seats[p.seat].bonuses.armor > 0 && <div className="armor-badge" aria-label={tr('Zırhlı')} />}
+              {p.kind === 'star' && p.alive && st.seats[p.seat].bonuses.armor > 0 && <div className="armor-badge" aria-label={tr('Armored')} />}
             </PieceGlyph>
           );
         })}

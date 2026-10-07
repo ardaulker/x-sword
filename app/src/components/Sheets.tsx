@@ -48,7 +48,7 @@ export function LogSheet({ ctl, events }: { ctl: GameController; events: TakeEve
   let lastRound = -1;
   for (const e of [...events].reverse()) {
     if (e.round !== lastRound) {
-      rows.push(<div key={`h${e.round}`} className="log-head">{tr('TUR {n}', { n: e.round })}{e.round === st.round ? tr(' · BU TUR') : ''}</div>);
+      rows.push(<div key={`h${e.round}`} className="log-head">{tr('ROUND {n}', { n: e.round })}{e.round === st.round ? tr(' · THIS ROUND') : ''}</div>);
       lastRound = e.round;
     }
     const a = e.attackerId ? pieceById(st, e.attackerId) : null;
@@ -57,7 +57,7 @@ export function LogSheet({ ctl, events }: { ctl: GameController; events: TakeEve
       <div key={e.key} className="log-row">
         {a ? <Mini st={st} p={a} size={26} /> : <span className="log-ring"><RingIcon size={20} /></span>}
         <span className="log-name" style={{ color: a ? (a.kind === 'star' || a.kind === 'twin' ? colorOf(a) : TXT) : HAZARD_TXT }}>
-          {a ? labelOf(st, a) : tr('Halka')}
+          {a ? labelOf(st, a) : tr('Ring')}
         </span>
         <Icon d={ICON.sword} size={20} color="#A9B4DA" />
         <Mini st={st} p={v} size={26} grey />
@@ -67,13 +67,13 @@ export function LogSheet({ ctl, events }: { ctl: GameController; events: TakeEve
     );
   }
   return (
-    <SheetFrame label={tr('Savaş kaydı')} onClose={close}>
+    <SheetFrame label={tr('Battle log')} onClose={close}>
       <div className="sheet-head">
-        <div className="sheet-title">{tr('Savaş kaydı')}</div>
-        <button type="button" className="round-btn" aria-label={tr('Kapat')} onClick={close}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
+        <div className="sheet-title">{tr('Battle log')}</div>
+        <button type="button" className="round-btn" aria-label={tr('Close')} onClick={close}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
       </div>
       <div className="log-list">
-        {rows.length ? rows : <div className="log-empty">{tr('Henüz kimse alınmadı.')}</div>}
+        {rows.length ? rows : <div className="log-empty">{tr('Nobody has been taken yet.')}</div>}
       </div>
     </SheetFrame>
   );
@@ -83,21 +83,21 @@ export function LogSheet({ ctl, events }: { ctl: GameController; events: TakeEve
 
 export function CoachSheet({ step, onDone }: { step: number; onDone: () => void }) {
   const tips: [string, string[]][] = [
-    [tr('Başlarken'), [
-      tr('Yanan karelerden birine dokun, önizlemeyi gör, Onayla\'ya bas.'),
-      tr('Şekil yönü söyler: kare düz, elmas çapraz. Her tur mod değişir.'),
-      tr('Çizgili kare tehlikeli: orada bir taş seni alabilir.'),
-      tr('Soluk kırmızı kareler: gelecek tur orada bir taş seni alabilir.'),
+    [tr('Getting started'), [
+      tr('Tap a lit square, check the preview, press Confirm.'),
+      tr('The shape tells the direction: square is straight, diamond is diagonal. The mode changes every round.'),
+      tr('A striped square is dangerous: a piece can take you there.'),
+      tr('Pale red squares: next round a piece can take you there.'),
     ]],
-    [tr('Botları oku'), [
-      tr('Bir bota dokun: yolları ve kimi kovaladığı tahtada görünür.'),
-      tr('Kızıl bot düz yürür, çapraz alır. Çelik bot çapraz yürür, düz alır.'),
-      tr('Taşın üstündeki numara sıradaki yeridir: küçük numara önce oynar.'),
+    [tr('Read the bots'), [
+      tr('Tap a bot: its paths and who it chases show on the board.'),
+      tr('The Red bot walks straight and takes diagonally. The Steel bot walks diagonally and takes straight.'),
+      tr('The number on a piece is its place in the order: a lower number plays first.'),
     ]],
-    [tr('Arena ve bonuslar'), [
-      tr('Her 6 turda dış halka çöker. Turuncu çizgili halkada kalma.'),
-      tr('Bonuslar puan ve hayatta kalmayla gelir. Paneldeki bonusa dokun, sonra kareyi seç.'),
-      tr('Tek oyunculuda bütün botları temizle: İkiz seni taklit eder, seni alamaz.'),
+    [tr('Arena and bonuses'), [
+      tr("Every 6 rounds the outer ring collapses. Don't stay on the orange-striped ring."),
+      tr('Bonuses come from points and survival. Tap a bonus in the panel, then pick a square.'),
+      tr("In solo, clear all the bots: the Twin copies you and can't take you."),
     ]],
   ];
   const [page, setPage] = useState(Math.min(step, tips.length - 1));
@@ -110,17 +110,17 @@ export function CoachSheet({ step, onDone }: { step: number; onDone: () => void 
         <div className="coach-step">{page + 1} / {tips.length}</div>
       </div>
       <ul className="coach-list">{lines.map(l => <li key={l}>{l}</li>)}</ul>
-      <div className="coach-dots" role="tablist" aria-label={tr('İpucu sayfaları')}>
+      <div className="coach-dots" role="tablist" aria-label={tr('Tip pages')}>
         {tips.map((_, i) => (
-          <button key={i} type="button" role="tab" aria-selected={i === page} aria-label={tr('Sayfa {n}', { n: i + 1 })}
+          <button key={i} type="button" role="tab" aria-selected={i === page} aria-label={tr('Page {n}', { n: i + 1 })}
             className={i === page ? 'is-on' : ''} onClick={() => setPage(i)} />
         ))}
       </div>
       <div className="btn-row">
-        {page > 0 && <button type="button" className="btn btn-ghost" onClick={() => setPage(page - 1)}>{tr('Geri')}</button>}
+        {page > 0 && <button type="button" className="btn btn-ghost" onClick={() => setPage(page - 1)}>{tr('Back')}</button>}
         {last
-          ? <button type="button" className="btn btn-main" onClick={onDone}>{tr('Anladım')}</button>
-          : <button type="button" className="btn btn-main" onClick={() => setPage(page + 1)}>{tr('İleri')}</button>}
+          ? <button type="button" className="btn btn-main" onClick={onDone}>{tr('Got it')}</button>
+          : <button type="button" className="btn btn-main" onClick={() => setPage(page + 1)}>{tr('Next tip')}</button>}
       </div>
     </SheetFrame>
   );
@@ -128,7 +128,7 @@ export function CoachSheet({ step, onDone }: { step: number; onDone: () => void 
 
 // ------------------------------------------------------------ menü (ana menü gelene kadar)
 
-const levelLabels = (): [Level, string][] => [['kolay', tr('Kolay')], ['normal', tr('Normal')], ['zor', tr('Zor')]];
+const levelLabels = (): [Level, string][] => [['kolay', tr('Easy')], ['normal', tr('Normal')], ['zor', tr('Hard')]];
 
 export function Opt({ label, sub, on, onChange }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -147,18 +147,18 @@ export function PauseSheet({ onResume, onNew, onRestart, onSettings, onHome, onE
     <button type="button" className={`btn ${main ? 'btn-main' : 'btn-ghost'} pause-btn`} onClick={on}>{label}</button>
   );
   return (
-    <SheetFrame label={tr('Duraklatıldı')} onClose={onResume}>
+    <SheetFrame label={tr('Paused')} onClose={onResume}>
       <div className="sheet-head">
-        <div className="sheet-title">{tr('Duraklatıldı')}</div>
-        <button type="button" className="round-btn" aria-label={tr('Kapat')} onClick={onResume}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
+        <div className="sheet-title">{tr('Paused')}</div>
+        <button type="button" className="round-btn" aria-label={tr('Close')} onClick={onResume}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
       </div>
       <div className="pause-list">
-        {row(tr('Devam et'), onResume, true)}
-        {onEnd && row(tr('Maçı bitir'), onEnd)}
-        {row(tr('Yeniden başlat'), onRestart)}
-        {row(tr('Yeni oyun'), onNew)}
-        {row(tr('Ayarlar'), onSettings)}
-        {row(tr('Ana menü'), onHome)}
+        {row(tr('Continue'), onResume, true)}
+        {onEnd && row(tr('End match'), onEnd)}
+        {row(tr('Restart'), onRestart)}
+        {row(tr('New game'), onNew)}
+        {row(tr('Settings'), onSettings)}
+        {row(tr('Main menu'), onHome)}
       </div>
     </SheetFrame>
   );
@@ -183,40 +183,40 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
   const maxBots = maxNeutrals(size);
   const botCount = Math.min(picked ?? defaultNeutrals(players, size), maxBots);
   return (
-    <SheetFrame label={tr('Yeni maç')} onClose={onClose}>
+    <SheetFrame label={tr('New match')} onClose={onClose}>
       <div className="sheet-head">
-        <div className="sheet-title">{tr('Yeni maç')}</div>
-        <button type="button" className="round-btn" aria-label={tr('Kapat')} onClick={onClose}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
+        <div className="sheet-title">{tr('New match')}</div>
+        <button type="button" className="round-btn" aria-label={tr('Close')} onClick={onClose}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
       </div>
-      <div className="field-label">{tr('OYUNCU SAYISI')}</div>
-      <div className="seg" role="radiogroup" aria-label={tr('Oyuncu sayısı')}>
+      <div className="field-label">{tr('PLAYERS')}</div>
+      <div className="seg" role="radiogroup" aria-label={tr('Number of players')}>
         {[1, 2, 3, 4].map(n => (
           <button key={n} type="button" role="radio" aria-checked={players === n} className={players === n ? 'is-on' : ''} onClick={() => setPlayers(n)}>
-            <b>{n === 1 ? tr('Tek') : n}</b><span>{n === 1 ? tr("İkiz'le") : `${SIZE_BY_STARS[n]}×${SIZE_BY_STARS[n]}`}</span>
+            <b>{n === 1 ? tr('Solo') : n}</b><span>{n === 1 ? tr('with Twin') : `${SIZE_BY_STARS[n]}×${SIZE_BY_STARS[n]}`}</span>
           </button>
         ))}
       </div>
       {(
         <>
-          <div className="field-label">{tr('TAHTA')}</div>
-          <div className="seg" role="radiogroup" aria-label={tr('Tahta boyutu')}>
+          <div className="field-label">{tr('BOARD')}</div>
+          <div className="seg" role="radiogroup" aria-label={tr('Board size')}>
             {BOARD_SIZES.map(n => (
               <button key={n} type="button" role="radio" aria-checked={size === n} disabled={n < minSize} className={size === n ? 'is-on' : ''} onClick={() => setBoardSize(n)}>
                 <b>{n}×{n}</b>
               </button>
             ))}
           </div>
-          <div className="field-label">{tr('ARENA BOTU: {n}', { n: botCount })}</div>
+          <div className="field-label">{tr('ARENA BOTS: {n}', { n: botCount })}</div>
           <div className="bots-row">
-            <input type="range" min={2} max={maxBots} value={botCount} aria-label={tr('Arena botu sayısı')} onChange={e => setBots(Number(e.target.value))} />
-            <button type="button" className="btn btn-ghost bots-max" onClick={() => setBots(maxBots)}>{tr('Maks {n}', { n: maxBots })}</button>
+            <input type="range" min={2} max={maxBots} value={botCount} aria-label={tr('Number of arena bots')} onChange={e => setBots(Number(e.target.value))} />
+            <button type="button" className="btn btn-ghost bots-max" onClick={() => setBots(maxBots)}>{tr('Max {n}', { n: maxBots })}</button>
           </div>
         </>
       )}
       {players > 1 && (
         <>
-          <div className="field-label">{tr('RAKİP ZEKÂSI')}</div>
-          <div className="seg" role="radiogroup" aria-label={tr('Rakip zekâsı')}>
+          <div className="field-label">{tr('RIVAL INTELLIGENCE')}</div>
+          <div className="seg" role="radiogroup" aria-label={tr('Rival intelligence')}>
             {levelLabels().map(([v, t]) => (
               <button key={v} type="button" role="radio" aria-checked={aiLevel === v} className={aiLevel === v ? 'is-on' : ''} onClick={() => setAiLevel(v)}>
                 <b>{t}</b>
@@ -225,37 +225,37 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
           </div>
         </>
       )}
-      <div className="field-label">{tr('ARENA BOTU ZEKÂSI')}</div>
-      <div className="seg" role="radiogroup" aria-label={tr('Arena botu zekâsı')}>
+      <div className="field-label">{tr('ARENA BOT INTELLIGENCE')}</div>
+      <div className="seg" role="radiogroup" aria-label={tr('Arena bot intelligence')}>
         {levelLabels().map(([v, t]) => (
           <button key={v} type="button" role="radio" aria-checked={level === v} className={level === v ? 'is-on' : ''} onClick={() => setLevel(v)}>
             <b>{t}</b>
           </button>
         ))}
       </div>
-      <div className="field-label">{tr('SEÇENEKLER')}</div>
+      <div className="field-label">{tr('OPTIONS')}</div>
       <div className="opts">
-        {players > 1 && <Opt label={tr('Rakip kişilikleri')} sub={tr('Yapay zekâ rakipler avcı, temkinli ya da fırsatçı oynar.')} on={personas} onChange={setPersonas} />}
-        {players === 4 && <Opt label={tr("Takımlı (2'ye 2)")} sub={tr('Karşılıklı köşeler takım olur; takım arkadaşını alamazsın.')} on={teams} onChange={setTeams} />}
-        <Opt label={tr('Engel kareleri')} sub={tr('Tahtaya birbirine değmeyen kapalı kareler koyar.')} on={obstacles} onChange={setObstacles} />
+        {players > 1 && <Opt label={tr('Rival personalities')} sub={tr('AI rivals play as a hunter, a cautious one or an opportunist.')} on={personas} onChange={setPersonas} />}
+        {players === 4 && <Opt label={tr('Teams (2 vs 2)')} sub={tr("Opposite corners form a team; you can't take your teammate.")} on={teams} onChange={setTeams} />}
+        <Opt label={tr('Obstacle squares')} sub={tr('Places blocked squares on the board that never touch each other.')} on={obstacles} onChange={setObstacles} />
       </div>
       <div className="menu-note">
         {players === 1
-          ? tr('Sen, aynan İkiz ve {bots} arena botu · tahta {size}×{size}. Bütün botları temizle.', { bots: botCount, size })
-          : tr('Sen ve {ai} yapay zekâ oyuncu · tahta {size}×{size} · {bots} arena botu.', { ai: players - 1, size, bots: botCount })}
-        {level === 'kolay' ? tr(' İlk sen oynarsın.') : level === 'zor' ? tr(' Botların hedefi gizli.') : ''}
+          ? tr('You, your mirror Twin and {bots} arena bots · {size}×{size} board. Clear out every bot.', { bots: botCount, size })
+          : tr('You and {ai} AI {ai:player|players} · {size}×{size} board · {bots} arena bots.', { ai: players - 1, size, bots: botCount })}
+        {level === 'kolay' ? tr(' You go first.') : level === 'zor' ? tr(" The bots' targets are hidden.") : ''}
       </div>
       {(onRules || onEnd) && (
         <div className="btn-row" style={{ marginBottom: 8 }}>
-          {onRules && <button type="button" className="btn btn-ghost" onClick={onRules}>{tr('Nasıl oynanır?')}</button>}
-          {onEnd && <button type="button" className="btn btn-ghost" onClick={onEnd}>{tr('Maçı bitir')}</button>}
+          {onRules && <button type="button" className="btn btn-ghost" onClick={onRules}>{tr('How to play')}</button>}
+          {onEnd && <button type="button" className="btn btn-ghost" onClick={onEnd}>{tr('End match')}</button>}
         </div>
       )}
       <div className="btn-row">
         {onHome
-          ? <button type="button" className="btn btn-ghost" onClick={onHome}>{tr('Ana menü')}</button>
-          : <button type="button" className="btn btn-ghost" onClick={onClose}>{tr('Kapat')}</button>}
-        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, aiLevel, boardSize: size, bots: botCount, daily: null, puzzle: null, personas: players > 1 && personas, obstacles, teams: players === 4 && teams })}>{tr('Başlat')}</button>
+          ? <button type="button" className="btn btn-ghost" onClick={onHome}>{tr('Main menu')}</button>
+          : <button type="button" className="btn btn-ghost" onClick={onClose}>{tr('Close')}</button>}
+        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, aiLevel, boardSize: size, bots: botCount, daily: null, puzzle: null, personas: players > 1 && personas, obstacles, teams: players === 4 && teams })}>{tr('Start')}</button>
       </div>
     </SheetFrame>
   );
@@ -264,15 +264,15 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
 // Çok oyunculu maçta menü: odadan çıkış.
 export function LeaveSheet({ onLeave, onClose }: { onLeave: () => void; onClose: () => void }) {
   return (
-    <SheetFrame label={tr('Maçtan çık')} onClose={onClose}>
+    <SheetFrame label={tr('Leave match')} onClose={onClose}>
       <div className="sheet-head">
-        <div className="sheet-title">{tr('Maçtan çık?')}</div>
-        <button type="button" className="round-btn" aria-label={tr('Kapat')} onClick={onClose}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
+        <div className="sheet-title">{tr('Leave the match?')}</div>
+        <button type="button" className="round-btn" aria-label={tr('Close')} onClick={onClose}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
       </div>
-      <p className="menu-note">{tr('Çıkarsan yerine yapay zekâ oynar. Odayı sen kurduysan maç herkes için biter.')}</p>
+      <p className="menu-note">{tr('If you leave, an AI takes your place. If you created the room, the match ends for everyone.')}</p>
       <div className="btn-row">
-        <button type="button" className="btn btn-ghost" onClick={onClose}>{tr('Vazgeç')}</button>
-        <button type="button" className="btn btn-main" style={{ background: 'var(--danger)' }} onClick={onLeave}>{tr('Maçtan çık')}</button>
+        <button type="button" className="btn btn-ghost" onClick={onClose}>{tr('Cancel')}</button>
+        <button type="button" className="btn btn-main" style={{ background: 'var(--danger)' }} onClick={onLeave}>{tr('Leave match')}</button>
       </div>
     </SheetFrame>
   );
@@ -305,8 +305,8 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
     <div className="res-unlock">
       {newSkin && <PieceGlyph kind="star" seat={ME} size={44} diamond={false} className="res-unlock-pv"><SkinFx id={newSkin.id} /></PieceGlyph>}
       <div>
-        <b>{tr('Yeni ödül açıldı: {name}', { name: fresh.map(r => r.name).join(', ') })}</b>
-        <span>{tr('Ayarlar → Taş efekti ve Tahta teması')}</span>
+        <b>{tr('New reward unlocked: {name}', { name: fresh.map(r => r.name).join(', ') })}</b>
+        <span>{tr('Settings → Piece effect and Board theme')}</span>
       </div>
     </div>
   );
@@ -314,15 +314,15 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
   const order = ranking(st);
   const lasted = (i: number) => (st.seats[i].out ? st.seats[i].outRound ?? st.round : st.round);
   const pending = st.decided && !st.over;
-  const title = won ? tr('Kazandın!') : st.solo ? tr('Alındın') : winnerLine(st, order[0]);
+  const title = won ? tr('You won!') : st.solo ? tr('You were taken') : winnerLine(st, order[0]);
   // Kaybedince: seni kim, hangi turda, hangi yönle aldı.
   const myStar = starOf(st, ME);
   const fatal = !st.puzzle && myStar && !myStar.alive ? ctl.view.events.find(e => e.victimId === myStar.id) : undefined;
   const killer = fatal?.attackerId ? pieceById(st, fatal.attackerId) : null;
   const why = fatal
     ? killer
-      ? tr('{name} seni {how} aldı · tur {n}', { name: subjectOf(st, killer), how: modeLower(fatal.round % 2 === 1 ? 'DUZ' : 'CAPRAZ'), n: fatal.round })
-      : tr('Halkada kaldın · tur {n}', { n: fatal.round })
+      ? tr('{name} took you ({how}) · round {n}', { name: subjectOf(st, killer), how: modeLower(fatal.round % 2 === 1 ? 'DUZ' : 'CAPRAZ'), n: fatal.round })
+      : tr('You were caught in the ring · round {n}', { n: fatal.round })
     : '';
   if (st.puzzle && onPuzzle) {
     const id = ctl.setup.puzzle ?? 1;
@@ -332,40 +332,40 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
     const at = PUZZLES.findIndex(p => p.id === id);
     const next = PUZZLES[at + 1], prev = PUZZLES[at - 1];
     return (
-      <SheetFrame label={tr('Bulmaca')} onClose={onClose}>
+      <SheetFrame label={tr('Puzzle')} onClose={onClose}>
         <div className="res-head">
-          <div className="res-daily">{def?.tutorial ? tr('Eğitim {n}', { n: no }) : tr('Bulmaca {n}', { n: no })}{def ? ` · ${puzzleTitle(def.title)}` : ''}</div>
-          <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{won ? tr('Çözüldü!') : tr('Çözülemedi')}</div>
-          {won && <Trophy fx={stars === 3 ? 'flame' : 'crystal'} label={stars === 3 ? tr('Kusursuz!') : tr('İyi iş!')} />}
-          <div className="puzzle-stars res-stars" aria-label={tr('{n} yıldız', { n: stars })}>{[0, 1, 2].map(i => i < stars ? <span key={i} className="star-on" style={{ animationDelay: `${300 + i * 260}ms` }}>★</span> : <span key={i}>☆</span>)}</div>
-          <div className="res-sub">{tr('{a}/{b} hamle kullandın', { a: st.puzzle.used, b: st.puzzle.limit })}</div>
+          <div className="res-daily">{def?.tutorial ? tr('Tutorial {n}', { n: no }) : tr('Puzzle {n}', { n: no })}{def ? ` · ${puzzleTitle(def.title)}` : ''}</div>
+          <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{won ? tr('Solved!') : tr('Not solved')}</div>
+          {won && <Trophy fx={stars === 3 ? 'flame' : 'crystal'} label={stars === 3 ? tr('Flawless!') : tr('Well done!')} />}
+          <div className="puzzle-stars res-stars" aria-label={tr('{n} {n:star|stars}', { n: stars })}>{[0, 1, 2].map(i => i < stars ? <span key={i} className="star-on" style={{ animationDelay: `${300 + i * 260}ms` }}>★</span> : <span key={i}>☆</span>)}</div>
+          <div className="res-sub">{tr('You used {a}/{b} moves', { a: st.puzzle.used, b: st.puzzle.limit })}</div>
         </div>
         {unlocked}
         <div className="btn-row">
-          <button type="button" className="btn btn-ghost" onClick={() => onPuzzle(null)}>{tr('Bulmacalar')}</button>
-          <button type="button" className="btn btn-ghost" onClick={() => ctl.restart()}>{tr('Tekrar dene')}</button>
+          <button type="button" className="btn btn-ghost" onClick={() => onPuzzle(null)}>{tr('Puzzles')}</button>
+          <button type="button" className="btn btn-ghost" onClick={() => ctl.restart()}>{tr('Try again')}</button>
         </div>
         <div className="btn-row">
-          {prev && <button type="button" className="btn btn-ghost" onClick={() => onPuzzle(prev.id)}>{tr('Önceki')}</button>}
-          {next && <button type="button" className={`btn ${won ? 'btn-main' : 'btn-ghost'}`} onClick={() => onPuzzle(next.id)}>{tr('Sonraki')}</button>}
+          {prev && <button type="button" className="btn btn-ghost" onClick={() => onPuzzle(prev.id)}>{tr('Previous')}</button>}
+          {next && <button type="button" className={`btn ${won ? 'btn-main' : 'btn-ghost'}`} onClick={() => onPuzzle(next.id)}>{tr('Next')}</button>}
         </div>
       </SheetFrame>
     );
   }
   return (
-    <SheetFrame label={tr('Maç sonucu')} onClose={onClose}>
+    <SheetFrame label={tr('Match result')} onClose={onClose}>
       <div className="res-head">
-        {daily && <div className="res-daily">{tr('Günlük {date}', { date: daily })}</div>}
+        {daily && <div className="res-daily">{tr('Daily {date}', { date: daily })}</div>}
         {won && !pending && <Trophy fx={daily ? 'bolt' : 'gold'} />}
         <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{title}</div>
-        <div className="res-sub">{pending ? tr('Rakip yıldız kalmadı. Botlarla savaşa devam edebilirsin') : st.solo ? (won ? tr('Arenada bot kalmadı') : tr('Bir dahaki sefere')) : tr('{n}. oldun', { n: order.indexOf(ME) + 1 })} · {time}</div>
+        <div className="res-sub">{pending ? tr('No rival stars left. You can keep fighting the bots') : st.solo ? (won ? tr('No bots left in the arena') : tr('Better luck next time')) : tr('You finished #{n}', { n: order.indexOf(ME) + 1 })} · {time}</div>
       </div>
       {why && <div className="res-why">{why}</div>}
       {unlocked}
       <div className="res-stats">
-        <div><b>{me.score}</b><span>{tr('Skor')}</span></div>
-        <div><b>{me.takes}</b><span>{tr('Alma')}</span></div>
-        <div><b>{lasted(ME)}</b><span>{tr('Tur ayakta')}</span></div>
+        <div><b>{me.score}</b><span>{tr('Score')}</span></div>
+        <div><b>{me.takes}</b><span>{tr('Takes')}</span></div>
+        <div><b>{lasted(ME)}</b><span>{tr('Rounds alive')}</span></div>
       </div>
       {!st.solo && (
         <ol className="rank-list">
@@ -375,8 +375,8 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
               <li key={seat} className={`rank-row${seat === ME ? ' is-me' : ''}`}>
                 <span className="rank-no">{i + 1}.</span>
                 <PieceGlyph kind="star" seat={seat} size={20} diamond={false} grey={!p.alive} />
-                <span className="rank-name" style={{ color: PLAYER_COLORS[seat] }}>{seat === ME ? tr('Sen') : seatName(st, seat)}</span>
-                <span className="rank-meta">{tr('{n} alma', { n: s.takes })} · {tr('{n} tur', { n: lasted(seat) })}{s.bonus ? ` · +${s.bonus}` : ''}</span>
+                <span className="rank-name" style={{ color: PLAYER_COLORS[seat] }}>{seat === ME ? tr('You') : seatName(st, seat)}</span>
+                <span className="rank-meta">{tr('{n} {n:take|takes}', { n: s.takes })} · {tr('{n} {n:round|rounds}', { n: lasted(seat) })}{s.bonus ? ` · +${s.bonus}` : ''}</span>
                 <span className="rank-score">{s.score}</span>
               </li>
             );
@@ -386,27 +386,27 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
       <div className="btn-row">
         {pending ? (
           <>
-            <button type="button" className="btn btn-ghost" onClick={() => ctl.endNow()}>{tr('Bitir')}</button>
-            <button type="button" className="btn btn-main" onClick={() => ctl.resume()}>{tr('Devam et')}</button>
+            <button type="button" className="btn btn-ghost" onClick={() => ctl.endNow()}>{tr('Finish')}</button>
+            <button type="button" className="btn btn-main" onClick={() => ctl.resume()}>{tr('Continue')}</button>
           </>
         ) : (
-          <button type="button" className="btn btn-ghost" onClick={onClose}>{tr('Tahtaya bak')}</button>
+          <button type="button" className="btn btn-ghost" onClick={onClose}>{tr('View board')}</button>
         )}
         {!pending && (
           <button type="button" className="btn btn-ghost" onClick={async () => { const r = await shareResult({ st, time, daily }); setShared(r !== 'shared'); }}>
-            {shared ? tr('Kopyalandı') : tr('Paylaş')}
+            {shared ? tr('Copied') : tr('Share')}
           </button>
         )}
-        {!pending && onAgain && <button type="button" className="btn btn-main" onClick={onAgain}>{daily ? tr('Tekrar dene') : againLabel}</button>}
+        {!pending && onAgain && <button type="button" className="btn btn-main" onClick={onAgain}>{daily ? tr('Try again') : againLabel}</button>}
       </div>
       {!pending && fatal && ctl.replaySpec() && (
         <button type="button" className="link-btn res-link" onClick={() => { location.hash = `#/izle/${replayCode(ctl.replaySpec()!)}~${Math.max(0, fatal.at - 6)}`; }}>
-          {tr('Son hamleleri izle')}
+          {tr('Watch the last moves')}
         </button>
       )}
       {!pending && ctl.replaySpec() && (
         <button type="button" className="link-btn res-link" onClick={async () => { await shareReplay(ctl); setLinked(true); }}>
-          {linked ? tr('Bağlantı kopyalandı') : tr('Maçın tekrarını paylaş')}
+          {linked ? tr('Link copied') : tr('Share the match replay')}
         </button>
       )}
     </SheetFrame>

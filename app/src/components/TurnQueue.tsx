@@ -32,8 +32,8 @@ export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: V
     x += i === 0 ? slot + 6 : slot;
   });
 
-  const caption = st.over ? tr('MAÇ BİTTİ') : mine ? tr('SENİN SIRAN') : meNext ? tr('SIRADA') : tr('ŞİMDİ');
-  const name = st.over || !head ? '' : mine ? tr('Hamleni seç') : labelOf(st, head);
+  const caption = st.over ? tr('MATCH OVER') : mine ? tr('YOUR TURN') : meNext ? tr('UP NEXT') : tr('NOW');
+  const name = st.over || !head ? '' : mine ? tr('Your move') : labelOf(st, head);
   const nameColor = head && !isBot(head) ? colorOf(head) : undefined;
 
   return (
@@ -41,7 +41,7 @@ export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: V
       className={`queue${mine ? ' is-mine' : ''}`}
       style={{ height: compact ? 34 : 40, '--me': myColor, '--me-soft': alpha(myColor, 0.14) } as CSSProperties}
       role="status"
-      aria-label={st.over ? tr('Maç bitti') : `${caption}: ${head ? labelOf(st, head) : ''}`}
+      aria-label={st.over ? tr('Match finished') : `${caption}: ${head ? labelOf(st, head) : ''}`}
     >
       <div className="queue-now">
         <span className="queue-caption">{caption}</span>
@@ -51,7 +51,7 @@ export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: V
         {placed.map(p => {
           const style: CSSProperties = { transform: `translateX(${p.x}px)`, width: slot };
           if (!p.id) {
-            return <div key={p.key} className="queue-item queue-round" style={style}>{tr('T{n}', { n: p.round })}</div>;
+            return <div key={p.key} className="queue-item queue-round" style={style}>{tr('R{n}', { n: p.round })}</div>;
           }
           const piece = pieceById(st, p.id)!;
           return (

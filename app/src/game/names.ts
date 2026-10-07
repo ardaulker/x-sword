@@ -14,7 +14,7 @@ const tr_ = () => getLang() === 'tr';
 // Maç başlarken controller doldurur: tek cihazda senin adın, çok oyunculuda lobideki adlar. "İkiz" yalnız aynanın adıdır.
 let seatNames: (string | null)[] = [];
 export const setSeatNames = (names: (string | null)[]) => { seatNames = names; };
-export const seatName = (_state: GameState, seat: number) => seatNames[seat] || tr('Oyuncu {n}', { n: seat + 1 });
+export const seatName = (_state: GameState, seat: number) => seatNames[seat] || tr('Player {n}', { n: seat + 1 });
 
 // Türkçe belirtme hâli eki, ünlü uyumuyla: Ada'yı, Kılıç 482'yi, Mert'i. Sondaki rakam okunuşuna göre.
 const DIGIT_TAIL = ['ı', 'i', 'yi', 'ü', 'ü', 'i', 'yı', 'yi', 'i', 'u']; // sıfır bir iki üç dört beş altı yedi sekiz dokuz
@@ -33,35 +33,35 @@ const seatAcc = (state: GameState, seat: number) =>
 
 // "X kazandı" satırı: takımlı maçta takım adı, değilse oyuncu adı.
 export const winnerLine = (st: GameState, fallback = 0) =>
-  st.winTeam != null ? tr('Takım {n} kazandı', { n: st.winTeam + 1 }) : tr('{name} kazandı', { name: seatName(st, st.winner ?? fallback) });
+  st.winTeam != null ? tr('Team {n} won', { n: st.winTeam + 1 }) : tr('{name} won', { name: seatName(st, st.winner ?? fallback) });
 
 // Yapay zekâ rakibin kişiliği (kurulumda açıldıysa).
 export const personaName = (p: string | null | undefined) =>
-  p === 'hunter' ? tr('Avcı') : p === 'careful' ? tr('Temkinli') : p === 'opportunist' ? tr('Fırsatçı') : '';
+  p === 'hunter' ? tr('Hunter') : p === 'careful' ? tr('Cautious') : p === 'opportunist' ? tr('Opportunist') : '';
 
-export const botName = (kind: 'red' | 'blue') => kind === 'red' ? tr('Kızıl') : tr('Çelik');
+export const botName = (kind: 'red' | 'blue') => kind === 'red' ? tr('Red') : tr('Steel');
 
 // Kısa etiket: şerit, çip, kayıt satırı.
 export function labelOf(state: GameState, p: Piece) {
-  if (p.kind === 'star') return p.seat === ME ? tr('Sen') : seatName(state, p.seat);
-  if (p.kind === 'twin') return tr('İkiz');
+  if (p.kind === 'star') return p.seat === ME ? tr('You') : seatName(state, p.seat);
+  if (p.kind === 'twin') return tr('Twin');
   return `${botName(p.kind)} #${p.label}`;
 }
 
 // Cümlenin öznesi: "3 numara seni aldı!", "İkiz seni aldı!"
 export function subjectOf(state: GameState, p: Piece) {
-  return p.kind === 'star' ? seatName(state, p.seat) : p.kind === 'twin' ? tr('İkiz') : tr('{n} numara', { n: p.label });
+  return p.kind === 'star' ? seatName(state, p.seat) : p.kind === 'twin' ? tr('Twin') : tr('#{n}', { n: p.label });
 }
 
 // Belirtme hâli: "5 numarayı aldın!", "İkiz'i aldın!"
 export function objectOf(state: GameState, p: Piece) {
   if (p.kind === 'star') return seatAcc(state, p.seat);
-  if (p.kind === 'twin') return tr('İkiz') + (tr_() ? "'i" : '');
-  return tr('{n} numara', { n: p.label }) + (tr_() ? 'yı' : '');
+  if (p.kind === 'twin') return tr('Twin') + (tr_() ? "'i" : '');
+  return tr('#{n}', { n: p.label }) + (tr_() ? 'yı' : '');
 }
 
-export const modeWord = (mode: Mode) => mode === 'DUZ' ? tr('DÜZ') : tr('ÇAPRAZ');
-export const modeLower = (mode: Mode) => mode === 'DUZ' ? tr('düz') : tr('çapraz');
+export const modeWord = (mode: Mode) => mode === 'DUZ' ? tr('STRAIGHT') : tr('DIAGONAL');
+export const modeLower = (mode: Mode) => mode === 'DUZ' ? tr('straight') : tr('diagonally');
 
 export const clockText = (ms: number) => {
   const s = Math.max(0, Math.floor(ms / 1000));

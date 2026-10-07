@@ -82,7 +82,7 @@ export class HostRoom extends Room {
     if (this.view.status === 'playing') { this.rejoin(link); return; }
     const i = this.view.seats.findIndex(s => s.kind === 'empty');
     if (this.view.status !== 'lobby' || i < 0) {
-      link.send({ t: 'closed', reason: tr('Oda dolu.') });
+      link.send({ t: 'closed', reason: tr('The room is full.') });
       setTimeout(() => link.close(), 300);
       return;
     }
@@ -97,7 +97,7 @@ export class HostRoom extends Room {
     link.onMessage(m => {
       const i = m.t === 'hello' && m.token ? this.tokens.indexOf(m.token) : -1;
       if (i < 0 || this.links[i] || this.grace[i] == null || !this.match) {
-        link.send({ t: 'closed', reason: tr('Maç başladı.') });
+        link.send({ t: 'closed', reason: tr('The match has started.') });
         setTimeout(() => link.close(), 300);
         return;
       }
@@ -150,7 +150,7 @@ export class HostRoom extends Room {
 
   clearSeat(i: number) {
     const l = this.links[i];
-    if (l) { this.links[i] = null; l.send({ t: 'closed', reason: tr('Kurucu seni odadan çıkardı.') }); setTimeout(() => l.close(), 300); }
+    if (l) { this.links[i] = null; l.send({ t: 'closed', reason: tr('The host removed you from the room.') }); setTimeout(() => l.close(), 300); }
     this.setSeat(i, EMPTY);
   }
 
@@ -197,7 +197,7 @@ export class HostRoom extends Room {
   close() {
     this.closed = true;
     this.grace.forEach(g => g != null && clearTimeout(g));
-    this.links.forEach(l => { l?.send({ t: 'closed', reason: tr('Kurucu odayı kapattı.') }); l?.close(); });
+    this.links.forEach(l => { l?.send({ t: 'closed', reason: tr('The host closed the room.') }); l?.close(); });
     this.links = Array(MAX_SEATS).fill(null);
     this.endpoint?.close();
     this.ctl.dispose();
@@ -234,7 +234,7 @@ export class GuestRoom extends Room {
   private reconnect() {
     if (this.reconnecting) return;
     this.reconnecting = true;
-    this.ctl.note(tr('Bağlantı koptu · yeniden bağlanılıyor…'));
+    this.ctl.note(tr('Connection lost · reconnecting…'));
     const deadline = Date.now() + GRACE_MS;
     const attempt = () => {
       if (this.closed) return;
@@ -254,7 +254,7 @@ export class GuestRoom extends Room {
     this.reconnecting = false;
     this.closed = true;
     this.ctl.netLost();
-    this.set({ status: 'closed', error: tr('Odayla bağlantı koptu.') });
+    this.set({ status: 'closed', error: tr('Lost connection to the room.') });
   }
 
   private message(m: ToGuest) {
@@ -280,7 +280,7 @@ export class GuestRoom extends Room {
     if (this.view.status === 'playing') { this.reconnect(); return; }
     this.closed = true;
     this.ctl.netLost();
-    this.set({ status: 'closed', error: this.view.error || tr('Odayla bağlantı koptu.') });
+    this.set({ status: 'closed', error: this.view.error || tr('Lost connection to the room.') });
   }
 
   ready(ready: boolean) { this.link?.send({ t: 'ready', ready }); }
