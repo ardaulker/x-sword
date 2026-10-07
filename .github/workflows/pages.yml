@@ -1,6 +1,7 @@
-# main'e her push'ta siteyi GitHub Pages'e yayınlar.
-# Kökteki sayfalar (index.html, arena/, engine/ ...) olduğu gibi gider; app/ derlenip /oyun/ altına konur.
-# Çalışması için: Settings → Pages → Source: "GitHub Actions".
+# Publishes the site to GitHub Pages on every push to main.
+# Root pages (index.html, arena/, engine/ ...) are copied as they are; app/ is built and served under /play/.
+# The old address /oyun/ (before the English rename) redirects to /play/ and keeps the #/ route.
+# Requires: Settings → Pages → Source: "GitHub Actions".
 
 name: Pages
 
@@ -30,20 +31,24 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
 
-      - name: Motor testleri
+      - name: Engine tests
         run: node tests/engine.test.mjs
 
-      - name: Oyunu derle (tip denetimi + Vite)
+      - name: Build the game (type check + Vite)
         working-directory: app
         run: |
           npm ci
           npm run build
 
-      - name: Siteyi topla
+      - name: Assemble the site
         run: |
           mkdir _site
           git ls-files -z | grep -zv -e '^app/' -e '^\.' | xargs -0 cp --parents -t _site
-          cp -r app/dist _site/oyun
+          cp -r app/dist _site/play
+          mkdir -p _site/oyun
+          printf '%s\n' '<!doctype html><meta charset="utf-8"><title>X Sword</title>' \
+            '<meta http-equiv="refresh" content="0; url=../play/">' \
+            '<script>location.replace("../play/" + location.search + location.hash)</script>' > _site/oyun/index.html
 
       - uses: actions/upload-pages-artifact@v5
         with:

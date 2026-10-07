@@ -13,7 +13,7 @@ const { makeGame } = require('./harness');
   const m = g.api.getValidMoves(p, g.api.greenPhase)[0];
   g.api.handleClick(m.r, m.c);
   g.advance(1000);                  // bots 1..3 have moved
-  g.api.initGame();                 // player presses "Yeniden Başlat"
+  g.api.initGame();                 // player presses "Restart"
   const before = g.api.greenPhase;
   g.advance(5000);                  // player has NOT moved in the new game
   console.log('2) Restart mid-round: phase', before, '->', g.api.greenPhase,
@@ -58,10 +58,10 @@ function sim(policy, N) {
     const L = g.logs();
     for (const l of L) {
       if (!l.startsWith('⚔️')) continue;
-      if (l.endsWith('aldın!')) playerKills++; else botKills++;
+      if (l.startsWith('⚔️ You took')) playerKills++; else botKills++;
       if (l.includes('{entity.num}')) brokenLog++;
-      if (l.includes('seni aldı')) {
-        const who = l.includes('İkiz') ? 'ikiz' : 'bot';
+      if (l.endsWith('took you!')) {
+        const who = l.includes('Twin') ? 'twin' : 'bot';
         const dead = g.api.entities.find(e => e.id === 'P');
         // find the killer by position
         const k = g.api.entities.find(e => e.id !== 'P' && e.alive && e.r === dead.r && e.c === dead.c);

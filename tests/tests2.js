@@ -8,7 +8,7 @@ const cls = (g, r, c) => [...g.els.board.children[r * 9 + c]._cls].filter(x => x
   const lit = g.api.getValidMoves(P, g.api.greenPhase).map(m => `${m.type}:${cls(g, m.r, m.c)}`);
   console.log('A) player moves lit at start:', [...new Set(lit)]);
   // inspecting a bot paints its walk cells orange
-  const bot = g.api.entities.find(e => e.type === 'red' && g.api.getValidMoves(e, 'DUZ').some(m => m.type === 'walk'));
+  const bot = g.api.entities.find(e => e.type === 'red' && g.api.getValidMoves(e, 'STRAIGHT').some(m => m.type === 'walk'));
   g.els.board.children[bot.r * 9 + bot.c].listeners.mouseenter();
   const botLit = g.api.getValidMoves(bot, g.api.greenPhase).map(m => `${m.type}:${cls(g, m.r, m.c)}`);
   console.log('   bot inspected:', [...new Set(botLit)]);
@@ -43,7 +43,7 @@ const cls = (g, r, c) => [...g.els.board.children[r * 9 + c]._cls].filter(x => x
       const m = ms.find(x => x.type === 'attack') || ms[Math.floor(Math.random() * ms.length)];
       g.api.handleClick(m.r, m.c); g.advance(10000);
     }
-    g.logs().forEach(l => seen.add(l.replace(/\d+ numara/g, 'N numara')));
+    g.logs().forEach(l => seen.add(l.replace(/#\d+/g, '#N')));
   }
   console.log('C) distinct log lines:\n   ' + [...seen].sort().join('\n   '));
 }

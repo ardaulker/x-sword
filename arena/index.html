@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -14,7 +14,7 @@
     --take: #6a1b1b; --take-glow: #ff0000;
   }
   * { box-sizing: border-box; }
-  /* display: flex verilen kutular da hidden olunca gerçekten gizlensin */
+  /* boxes with display: flex must really hide when hidden */
   [hidden] { display: none !important; }
   body {
     margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
@@ -34,7 +34,7 @@
   .chip { background: #000; border: 1px solid #444; border-radius: 6px; padding: 6px 10px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .chip.mode { border-color: #00ff88; font-size: 1.05em; }
   .bar .short { display: none; }
-  /* Dar telefonda üst çubuk tek satıra sığsın; bu blok yukarıdaki kuralı ezmek için ondan sonra gelir */
+  /* On a narrow phone the top bar fits on one line; this block comes after the rule above to override it */
   @media (max-width: 420px) {
     .bar { gap: 6px; padding-left: 12px; padding-right: 12px; }
     .brand { font-size: 13px; letter-spacing: 1px; }
@@ -102,7 +102,7 @@
   .piece.s2 { background: var(--s2); } .piece.s3 { background: var(--s3); }
   .piece.star { box-shadow: 0 0 10px rgba(255,255,255,.5); }
   .piece.bot { outline: 2px dashed rgba(255,255,255,.9); outline-offset: 1px; }
-  /* Kılıçlar alma yönünü gösterir: "+" düz, "×" çapraz */
+  /* Swords show the taking direction: "+" straight, "×" diagonal */
   .swords { position: absolute; inset: 0; z-index: 1; }
   .swords i {
     position: absolute; width: 180%; height: calc(var(--cellsz) * .07); top: 50%; left: -40%;
@@ -135,39 +135,39 @@
 <body>
 <header class="bar">
   <a class="brand" href="../">X SWORD</a>
-  <span class="chip" id="roundChip" hidden>Tur 1</span>
-  <span class="chip mode" id="modeChip" hidden>DÜZ +</span>
+  <span class="chip" id="roundChip" hidden>Round 1</span>
+  <span class="chip mode" id="modeChip" hidden>STRAIGHT +</span>
   <span class="chip" id="clock" hidden>⏱ 00:00</span>
-  <button id="rulesBtn" aria-label="Kurallar"><span class="long">Kurallar</span><span class="short">?</span></button>
+  <button id="rulesBtn" aria-label="Rules"><span class="long">Rules</span><span class="short">?</span></button>
 </header>
 
 <main>
   <section id="setup" class="panel">
-    <h2>Yeni maç</h2>
-    <div class="row">Oyuncu sayısı:
+    <h2>New match</h2>
+    <div class="row">Players:
       <div class="seg" id="countBtns">
         <button data-n="2">2</button><button data-n="3">3</button><button data-n="4">4</button>
       </div>
     </div>
     <div id="seatRows"></div>
-    <div class="row" style="margin-top:12px">Arena botları:
+    <div class="row" style="margin-top:12px">Arena bots:
       <select id="neutralLevel">
-        <option value="kolay">Kolay</option><option value="normal">Normal</option><option value="zor">Zor</option>
+        <option value="easy">Easy</option><option value="normal">Normal</option><option value="hard">Hard</option>
       </select>
     </div>
     <p class="note" id="setupInfo"></p>
-    <p class="note">Bu deneme sürümünde insanlar aynı telefonda sırayla oynar. Çevrimiçi oda bir sonraki adım.</p>
-    <button class="primary" id="startBtn">Başlat</button>
+    <p class="note">In this test bench humans take turns on the same phone. Online rooms live in the game itself.</p>
+    <button class="primary" id="startBtn">Start</button>
   </section>
 
   <section id="game" hidden>
     <div class="banner" id="banner"></div>
     <div class="seats" id="seats"></div>
     <div class="board-wrap"><div class="board" id="board"></div></div>
-    <div class="preview" id="preview" hidden><span id="previewText"></span><button class="primary" id="confirmBtn">Onayla</button></div>
+    <div class="preview" id="preview" hidden><span id="previewText"></span><button class="primary" id="confirmBtn">Confirm</button></div>
     <div class="controls">
-      <button id="fastBtn">Bot turunu hızlandır</button>
-      <button id="newBtn">Ayarlar / yeni maç</button>
+      <button id="fastBtn">Speed up the bot turn</button>
+      <button id="newBtn">Settings / new match</button>
     </div>
     <div class="log" id="log"></div>
   </section>
@@ -178,28 +178,28 @@
     <h2 id="overTitle"></h2>
     <ol id="overList"></ol>
     <p class="note" id="overMeta"></p>
-    <div class="controls"><button class="primary" id="againBtn">Tekrar oyna</button><button id="setupBtn">Ayarlar</button></div>
+    <div class="controls"><button class="primary" id="againBtn">Play again</button><button id="setupBtn">Settings</button></div>
   </div>
 </div>
 
 <div class="overlay" id="rulesOverlay" hidden>
   <div class="modal">
-    <h2>Kurallar</h2>
+    <h2>Rules</h2>
     <ul>
-      <li><b>Amaç ve puan:</b> Maç, tek yıldız kalınca biter. Kazananı skor belirler: oyuncu almak 50, İkiz'i almak 30, bot almak 10 puan; ayakta kalan yıldız +30 bonus alır. Sıralama: skor, sonra alma sayısı, sonra hayatta kalma süresi. Saklanmak tek başına kazandırmaz.</li>
-      <li><b>Yıldızlar:</b> 2–4 oyuncu, herkesin bir yıldızı var. Boş koltuğa yapay zekâ oyuncu oturur; kenarı kesik çizgilidir. Her maçta yıldızlar rastgele köşelerden, botlar rastgele dizilişle başlar.</li>
-      <li><b>Tahta:</b> 2 kişide 9×9, 3 kişide 11×11, 4 kişide 13×13.</li>
-      <li><b>Mod:</b> Her tur ya DÜZ ya ÇAPRAZ, her tur değişir. Yıldızlar o yönde gider ve o yönde alır.</li>
-      <li><b>Kırmızı bot:</b> düz yürür, çapraz alır. <b>Mavi bot:</b> çapraz yürür, düz alır.</li>
-      <li><b>Hamle:</b> Herkes tek kare gider. Almak, hedefin karesine geçmektir. Herkes herkesi alabilir.</li>
-      <li><b>Sıra:</b> Maç başında bir kez karılır ve bütün maç aynı kalır. Yıldızlar ve botlar bu tek sırada oynar; numara, o turda ayakta kalanlar arasındaki yerdir ve her tur baştan verilir (sıra değişmez). Alınan taşın sırası atlanır.</li>
-      <li><b>Bonuslar:</b> Herkes bir çift adımla başlar. Bonuslar şartla kazanılır: 20 puan çift adım, 40 puan çift hamle, 60 puan ikisinden biri; 50 puan ayna (tahtadaki herhangi bir taşla yer değiştir); ilk daralmayı atlatınca zırh (bir kez alınmazsın); ikinci daralmayı atlatınca çift hamle; tek oyunculuda İkiz bir taş alınca da ayna ve çift puan. Arenada bonuslar yalnız kazanılır; kullanmak oyunda.</li>
-      <li><b>Arena daralır:</b> Her 6 turda bir, turun sonunda dış halka çöker. Bir tur önce halka uyarılır; çökecek tur boyunca çizgili görünür. Orada kalan taş düşer.</li>
-      <li><b>Renkler:</b> <span class="legend" style="background:#2d5a2d;box-shadow:inset 0 0 4px #0f0"></span> yeşil senin yolların, <span class="legend" style="background:#5c3a10;box-shadow:inset 0 0 4px #f90"></span> turuncu dokunduğun taşın yolları, <span class="legend" style="background:#6a1b1b;box-shadow:inset 0 0 4px #f00"></span> kırmızı alma noktaları.</li>
-      <li><b>Önizleme:</b> Bir kareye dokun. O karede seni alabilecek taşlar kırmızı çerçeveyle yanar. Onayla'ya ya da aynı kareye tekrar dokun.</li>
-      <li><b>Botlar:</b> Kolay — alabiliyorsa alır, yoksa en yakın yıldıza yürür. Normal — alınacağı kareye gitmez, çöken halkada kalmaz, en çabuk ulaşacağı yıldıza yönelir. Zor — buna ek olarak hedefinin kaçış karelerini kapatır.</li>
+      <li><b>Goal and points:</b> The match ends when one star is left. The score decides the winner: taking a player is 50, the Twin 30, a bot 10 points; the star left standing gets a +30 bonus. Ranking: score, then number of takes, then survival time. Hiding alone doesn't win.</li>
+      <li><b>Stars:</b> 2–4 players, each with one star. An AI player takes an empty seat; its edge is dashed. Every match the stars start from random corners and the bots in a random layout.</li>
+      <li><b>Board:</b> 9×9 for 2 players, 11×11 for 3, 13×13 for 4.</li>
+      <li><b>Mode:</b> Every round is either STRAIGHT or DIAGONAL and it flips every round. Stars move and take in that direction.</li>
+      <li><b>Red bot:</b> walks straight, takes diagonally. <b>Blue bot:</b> walks diagonally, takes straight.</li>
+      <li><b>Move:</b> Everyone moves one square. Taking means moving onto the target's square. Anyone can take anyone.</li>
+      <li><b>Order:</b> Shuffled once at the start and kept all match. Stars and bots play in this one queue; a piece's number is its place among that round's survivors and is reassigned every round (the order doesn't change). A taken piece's turn is skipped.</li>
+      <li><b>Bonuses:</b> Everyone starts with one double step. Bonuses are earned by conditions: 20 points double step, 40 points double move, 60 points one of the two; 50 points mirror (swap places with any piece on the board); surviving the first shrink gives armor (you can't be taken once); surviving the second gives a double move; in single player a take by the Twin also gives a mirror and double points. In the arena bonuses are only earned; using them is in the game.</li>
+      <li><b>The arena shrinks:</b> Every 6 rounds the outer ring collapses at the end of the round. The ring is flagged one round before and striped during the collapse round. Pieces left on it fall.</li>
+      <li><b>Colors:</b> <span class="legend" style="background:#2d5a2d;box-shadow:inset 0 0 4px #0f0"></span> green your paths, <span class="legend" style="background:#5c3a10;box-shadow:inset 0 0 4px #f90"></span> orange the tapped piece's paths, <span class="legend" style="background:#6a1b1b;box-shadow:inset 0 0 4px #f00"></span> red squares where a take happens.</li>
+      <li><b>Preview:</b> Tap a square. Pieces that could take you there light up with a red frame. Tap Confirm or the same square again.</li>
+      <li><b>Bots:</b> Easy — takes if it can, otherwise walks to the nearest star. Normal — never steps where it would be taken, never stays on a collapsing ring, heads for the star it can reach fastest. Hard — on top of that, closes its target's escape squares.</li>
     </ul>
-    <button class="primary" id="rulesClose">Anladım</button>
+    <button class="primary" id="rulesClose">Got it</button>
   </div>
 </div>
 
@@ -211,7 +211,9 @@ import {
 import { chooseMove } from '../engine/bots.js';
 
 const $ = id => document.getElementById(id);
-const LEVELS = [['kolay', 'Kolay'], ['normal', 'Normal'], ['zor', 'Zor']];
+const LEVELS = [['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']];
+// Setups saved before the English rename used Turkish level names.
+const OLD_LEVEL = { kolay: 'easy', zor: 'hard' };
 const LEVEL_NAME = Object.fromEntries(LEVELS);
 
 let setup = loadSetup();
@@ -221,17 +223,21 @@ const clock = { start: 0, iv: null };
 function loadSetup() {
   try {
     const s = JSON.parse(localStorage.getItem('xsword-setup'));
-    if (s && Array.isArray(s.seats) && s.seats.length === 4) return s;
+    if (s && Array.isArray(s.seats) && s.seats.length === 4) {
+      s.seats.forEach(x => { x.level = OLD_LEVEL[x.level] ?? x.level; });
+      s.neutralLevel = OLD_LEVEL[s.neutralLevel] ?? s.neutralLevel;
+      return s;
+    }
   } catch {}
   return {
     count: 2,
-    seats: [{ kind: 'human', level: 'zor' }, { kind: 'bot', level: 'zor' }, { kind: 'bot', level: 'zor' }, { kind: 'bot', level: 'zor' }],
+    seats: [{ kind: 'human', level: 'hard' }, { kind: 'bot', level: 'hard' }, { kind: 'bot', level: 'hard' }, { kind: 'bot', level: 'hard' }],
     neutralLevel: 'normal',
   };
 }
 function saveSetup() { try { localStorage.setItem('xsword-setup', JSON.stringify(setup)); } catch {} }
 
-// ------------------------------------------------------------ kurulum
+// ------------------------------------------------------------ setup
 
 function renderSetup() {
   const n = setup.count;
@@ -242,7 +248,7 @@ function renderSetup() {
     const row = document.createElement('div');
     row.className = 'seat-row';
     row.innerHTML = `<span class="dot s${i}"></span><b>${SEAT_NAMES[i]}</b>
-      <div class="seg"><button data-k="human" class="${s.kind === 'human' ? 'on' : ''}">İnsan</button><button data-k="bot" class="${s.kind === 'bot' ? 'on' : ''}">Yapay zekâ</button></div>
+      <div class="seg"><button data-k="human" class="${s.kind === 'human' ? 'on' : ''}">Human</button><button data-k="bot" class="${s.kind === 'bot' ? 'on' : ''}">AI</button></div>
       <select ${s.kind === 'bot' ? '' : 'hidden'}>${LEVELS.map(([v, t]) => `<option value="${v}" ${s.level === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
     row.querySelectorAll('.seg button').forEach(b => { b.onclick = () => { s.kind = b.dataset.k; saveSetup(); renderSetup(); }; });
     row.querySelector('select').onchange = e => { s.level = e.target.value; saveSetup(); };
@@ -250,13 +256,13 @@ function renderSetup() {
   }
   $('neutralLevel').value = setup.neutralLevel;
   const size = SIZE_BY_STARS[n];
-  $('setupInfo').textContent = `Tahta ${size}×${size} · ${NEUTRALS_BY_STARS[n]} arena botu · arena her 6 turda bir daralır.`;
+  $('setupInfo').textContent = `Board ${size}×${size} · ${NEUTRALS_BY_STARS[n]} arena bots · the arena shrinks every 6 rounds.`;
 }
 
 $('countBtns').querySelectorAll('button').forEach(b => { b.onclick = () => { setup.count = +b.dataset.n; saveSetup(); renderSetup(); }; });
 $('neutralLevel').onchange = e => { setup.neutralLevel = e.target.value; saveSetup(); };
 
-// ------------------------------------------------------------ oyun döngüsü
+// ------------------------------------------------------------ game loop
 
 function startGame() {
   clearTimeout(timer);
@@ -339,7 +345,7 @@ function confirmMove() {
   advance();
 }
 
-// ------------------------------------------------------------ çizim
+// ------------------------------------------------------------ drawing
 
 function buildBoard() {
   const b = $('board');
@@ -359,7 +365,7 @@ function buildBoard() {
 
 function pieceEl(p) {
   const el = document.createElement('div');
-  const diamond = p.kind === 'blue' || (p.kind === 'star' && state.mode === 'CAPRAZ');
+  const diamond = p.kind === 'blue' || (p.kind === 'star' && state.mode === 'DIAGONAL');
   el.className = `piece ${p.kind} ${diamond ? 'diamond' : 'square'}`
     + (p.kind === 'star' ? ` s${p.seat}${state.seats[p.seat].kind === 'bot' ? ' bot' : ''}` : '');
   el.innerHTML = `<div class="swords"><i></i><i></i></div><span>${p.kind === 'star' ? '★' : p.label}</span>`;
@@ -381,12 +387,12 @@ function render() {
   if (ui?.type === 'preview' && !human) ui = null;
 
   if (ui?.type === 'inspect') {
-    // Dokunulan taşın yolları turuncu, alabilecekleri kırmızı
+    // The tapped piece's paths in orange, its takes in red
     const p = pieceById(state, ui.id);
     for (const m of legalMoves(state, p)) at(m.r, m.c).classList.add(m.type === 'take' ? 'take' : 'walk-other');
     at(p.r, p.c).classList.add('focus');
   } else if (human) {
-    // Sıra sendeyse yolların kendiliğinden yeşil, alabileceklerin kırmızı
+    // On your turn your paths are green by default and your takes red
     for (const m of legalMoves(state, human, state.mode)) at(m.r, m.c).classList.add(m.type === 'take' ? 'take' : 'walk-mine');
     if (ui?.type === 'preview') {
       at(ui.move.r, ui.move.c).classList.add('chosen');
@@ -394,8 +400,8 @@ function render() {
     }
   }
 
-  $('roundChip').textContent = `Tur ${state.round}`;
-  $('modeChip').textContent = `${modeLabel(state.mode)} ${state.mode === 'DUZ' ? '+' : '×'}`;
+  $('roundChip').textContent = `Round ${state.round}`;
+  $('modeChip').textContent = `${modeLabel(state.mode)} ${state.mode === 'STRAIGHT' ? '+' : '×'}`;
   renderBanner(human, warn);
   renderSeats();
   renderPreview(human);
@@ -405,13 +411,13 @@ function render() {
 function renderBanner(human, warn) {
   const a = state.over ? null : currentActor(state);
   let text;
-  if (state.over) text = 'Oyun bitti.';
-  else if (human) text = `Sıra sende — ${state.seats[human.seat].name}. Yeşil ya da kırmızı bir kareye dokun, sonra onayla.`;
-  else if (a.kind === 'star') text = `${state.seats[a.seat].name} (yapay zekâ) düşünüyor…`;
-  else text = 'Arena botları oynuyor…';
+  if (state.over) text = 'Game over.';
+  else if (human) text = `Your turn — ${state.seats[human.seat].name}. Tap a green or red square, then confirm.`;
+  else if (a.kind === 'star') text = `${state.seats[a.seat].name} (AI) is thinking…`;
+  else text = 'Arena bots are moving…';
   const next = nextCollapseRound(state);
-  if (!state.over && warn) text += ' ⚠️ Bu tur sonunda çizgili halka çöküyor!';
-  else if (!state.over && next) text += ` Arena ${next}. tur sonunda daralacak.`;
+  if (!state.over && warn) text += ' ⚠️ The striped ring collapses at the end of this round!';
+  else if (!state.over && next) text += ` The arena shrinks at the end of round ${next}.`;
   const b = $('banner');
   b.textContent = text;
   b.style.borderLeftColor = a?.kind === 'star' ? `var(--s${a.seat})` : '#9aa3c7';
@@ -422,7 +428,7 @@ function renderSeats() {
   const a = state.over ? null : currentActor(state);
   $('seats').innerHTML = state.seats.map(s => `
     <div class="seat ${s.out ? 'out' : ''} ${a?.kind === 'star' && a.seat === s.index ? 'now' : ''}">
-      <span class="dot s${s.index}"></span>${s.name}${s.kind === 'bot' ? ` · YZ ${LEVEL_NAME[s.level]}` : ''} · ${s.score} puan · ${s.takes} alma
+      <span class="dot s${s.index}"></span>${s.name}${s.kind === 'bot' ? ` · AI ${LEVEL_NAME[s.level]}` : ''} · ${s.score} points · ${s.takes} takes
     </div>`).join('');
 }
 
@@ -431,17 +437,17 @@ function renderPreview(human) {
   if (!human || ui?.type !== 'preview') { box.hidden = true; return; }
   box.hidden = false;
   let t = '';
-  if (ui.move.type === 'take') t += `${nameOf(state, pieceById(state, ui.move.targetId))} alınacak. `;
-  if (ui.doomed) t += 'Bu kare tur sonunda çöküyor; burada kalırsan düşersin.';
-  else if (ui.attackers.length) t += `Burada alınabilirsin: ${ui.attackers.map(x => nameOf(state, x)).join(', ')}.`;
-  else t += 'Bu karede seni şu an kimse alamaz.';
+  if (ui.move.type === 'take') t += `Takes ${nameOf(state, pieceById(state, ui.move.targetId))}. `;
+  if (ui.doomed) t += 'This square collapses at the end of the round; stay here and you fall.';
+  else if (ui.attackers.length) t += `You can be taken here by: ${ui.attackers.map(x => nameOf(state, x)).join(', ')}.`;
+  else t += 'Nobody can take you on this square right now.';
   $('previewText').textContent = t;
   box.classList.toggle('danger', ui.doomed || ui.attackers.length > 0);
 }
 
 function renderLog() {
   $('log').innerHTML = state.log.slice(-60).reverse().map(l => {
-    const cls = l.text.startsWith('⚔️') ? 'take' : l.text.startsWith('—') ? 'round' : /🏆|Berabere|🌀/.test(l.text) ? 'big' : '';
+    const cls = l.text.startsWith('⚔️') ? 'take' : l.text.startsWith('—') ? 'round' : /🏆|Draw|🌀/.test(l.text) ? 'big' : '';
     return `<div class="${cls}">${l.text}</div>`;
   }).join('');
 }
@@ -453,12 +459,12 @@ function finish() {
   clearInterval(clock.iv);
   tickClock();
   render();
-  $('overTitle').textContent = state.winner == null ? 'Berabere!' : `🏆 ${state.seats[state.winner].name} kazandı!`;
+  $('overTitle').textContent = state.winner == null ? 'Draw!' : `🏆 ${state.seats[state.winner].name} won!`;
   $('overList').innerHTML = ranking(state).map(i => {
     const s = state.seats[i];
-    return `<li><span class="dot s${i}"></span>${s.name}${s.kind === 'bot' ? ' (yapay zekâ)' : ''} — ${s.score} puan · ${s.takes} alma</li>`;
+    return `<li><span class="dot s${i}"></span>${s.name}${s.kind === 'bot' ? ' (AI)' : ''} — ${s.score} points · ${s.takes} takes</li>`;
   }).join('');
-  $('overMeta').textContent = `${state.round}. turda bitti · maç süresi ${fmt(Date.now() - clock.start)}`;
+  $('overMeta').textContent = `Ended in round ${state.round} · match time ${fmt(Date.now() - clock.start)}`;
   $('overOverlay').hidden = false;
 }
 

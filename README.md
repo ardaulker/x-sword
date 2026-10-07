@@ -1,59 +1,49 @@
 # X Sword
 
-Sıra tabanlı bir arena oyunu. 9×9 sekizgen karelik bir tahtada 17 bota karşı hayatta kalırsın.
+A turn-based arena game on an octagon-square board. Every round the direction flips: STRAIGHT, then DIAGONAL.
+You take pieces like in chess and try to outscore everyone while the arena shrinks.
 
-İlk sürümü Arda'nın kuzeni yaptı; reponun ilk commit'i o sürümün kendisi. Oyunu artık Arda geliştiriyor.
+The first version was made by Arda's cousin; the repo's first commit is that version. Arda develops the game now.
 
-## Oynamak
+## Play
 
-Canlı: **https://ardaulker.github.io/x-sword/** — `main`'e her push GitHub Pages'te yayına girer (`.github/workflows/pages.yml`).
+- **Game:** https://ardaulker.github.io/x-sword/play/ — the `app/` folder (React + TypeScript + Vite), built on the
+  rules engine in `engine/`. Single player (you + your mirror Twin + arena bots), 2–4 stars against AI,
+  multiplayer over phone-to-phone connections (PeerJS), puzzles, a tutorial and a daily challenge.
+  The old address `/oyun/` redirects here.
+- **Arena (engine test bench):** https://ardaulker.github.io/x-sword/arena/
+- **The cousin's first demo:** https://ardaulker.github.io/x-sword/ (`index.html`, open it in a browser; no setup).
 
-Bilgisayarda: `index.html` dosyasını tarayıcıda aç. Kurulum yok, sunucu yok.
+Every push to `main` runs the engine tests, builds the game and publishes the whole site to GitHub Pages
+(`.github/workflows/pages.yml`).
 
-## Arena (yeni kural motoru)
-
-**https://ardaulker.github.io/x-sword/arena/** — 2–4 koltuk (insan ya da bot), oyuncu sayısıyla büyüyen tahta,
-daralan arena, hamle önizlemesi ve üç zorlukta bot. İnsanlar şimdilik aynı telefonda sırayla oynar.
-
-- `engine/rules.js`: kurallar. Ekrana dokunmaz; ileride çevrimiçi sunucu da bunu kullanacak.
-- `engine/bots.js`: Kolay / Normal / Zor botlar.
-
-## Oyun (yeni arayüz, yapım aşamasında)
-
-**https://ardaulker.github.io/x-sword/oyun/** — `app/` klasörü, `design/` klasöründeki tasarıma göre kurulan oyun: React + TypeScript + Vite.
-Kural motoru olarak `engine/` kullanılır. Şimdilik mobil oyun ekranı var: tek oyunculu mod (sen + aynan İkiz + arena botları) ya da 2–4 yıldızla yapay zekâya karşı.
-`main`'e her push'ta GitHub Actions motor testlerini koşar, oyunu derler ve bütün siteyi Pages'e yayınlar.
-
-Çok oyunculu: ana menüden "Çok oyunculu" → "Oda kur". 5 karakterlik kodu ya da davet linkini paylaş; arkadaşların kodla katılır, "Hazırım" der, kurucu başlatır. Bağlantı telefondan telefona kurulur (PeerJS), hesap gerekmez. Odayı kuran telefon maçı yürütür; o çıkarsa maç biter, misafir çıkarsa yerine yapay zekâ oynar.
+## Develop
 
 ```
 npm --prefix app install
 npm --prefix app run dev     # http://localhost:5173
-npm --prefix app run build   # tip denetimi + app/dist
+npm --prefix app run build   # type check + app/dist + CSS and translation checks
 ```
 
-## Test
+Multiplayer: main menu → "Multiplayer" → "Create room". Share the 5-character code or the invite link; friends join
+with the code, tap "Ready" and the host starts. The host's phone runs the match; if a guest leaves, an AI takes over.
 
-`tests/` oyunu Node'da sahte bir DOM ile binlerce kez otomatik oynatır:
+## Tests
 
 ```
-node tests/engine.test.mjs  # yeni motor: kurallar, botların risk almaması, bot gücü
-node tests/tests.js         # eski demo: 2.000 rastgele + 2.000 dikkatli oyun
-node tests/tests2.js        # eski demo: renkli yollar, ölen botların atlanması, kayıt metinleri
+node tests/engine.test.mjs  # rules engine: rules, bots never taking needless risks, bot strength
+node tests/tests.js         # the cousin's demo: 2,000 random + 2,000 careful games in a fake DOM
+node tests/tests2.js        # the cousin's demo: colored paths, skipping dead bots, log texts
 ```
 
-## Kurallar
+## Rules in short
 
-- Sen yeşil yıldızsın. Her tur mod değişir: DÜZ ya da ÇAPRAZ. O yöne gidersin, o yönde alırsın.
-- Kırmızı bot düz yürür, çapraz alır. Mavi bot çapraz yürür, düz alır.
-- Tek oyunculu modda İkiz senin aynandır: senden hemen sonra, senin yönünde oynar. İkiz ve bütün botlar gidince kazanırsın.
-- Her maçta rastgele bir köşeden, rastgele bir bot dizilişiyle başlarsın.
-- Hamle sırası maç başında bir kez karılır, bütün maç aynı kalır; botun numarası sıradaki yeridir. Kolayda ilk sen oynarsın.
-- Herkes herkesi alabilir. Almak puan kazandırır: oyuncu 50, İkiz 30, bot 10; ayakta kalan +30. Kazananı skor belirler.
-- Yeşil kareler senin yolların. Bir bota dokununca turuncu kareler onun yollarını gösterir. Kırmızı kareler alınabilecek taşlardır.
+- Each round the mode flips between STRAIGHT and DIAGONAL. Stars move and take in that direction.
+- Red bots walk straight and take diagonally. Blue bots walk diagonally and take straight.
+- In single player the Twin is your mirror: it moves right after you, in your direction. You win when every bot is gone.
+- The move order is shuffled once per match; a piece's number is its place among the survivors this round.
+- Anyone can take anyone. Points: player 50, Twin 30, bot 10; the last star standing gets +30. The score decides the winner.
+- Every 6 rounds the outer ring collapses.
 
-## Sırada ne var
-
-- Çok oyunculu: 2–4 kişi, tahta oyuncu sayısıyla büyür.
-- Boş koltuklara bir sonraki hamleyi hesaplayan zeki botlar.
-- Tasarım: [docs/tasarim-prompt.md](docs/tasarim-prompt.md)
+The full rules are in the game ("How to play") and in `CLAUDE.md`. Player-facing text is written in English and
+translated into Turkish, German, French, Spanish, Italian and Portuguese (`app/src/i18n/`).
