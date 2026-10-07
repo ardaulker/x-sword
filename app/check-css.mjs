@@ -1,5 +1,5 @@
-// Derlemeden sonra çalışır: kaynak CSS'lerde { ve } sayısı tutmuyorsa, ya da derlenen CSS
-// kaynaktaki kural sayısından belirgin azsa hata verir. Vite bozuk CSS'e sessiz kalır.
+// Runs after the build: fails if the { and } counts don't match in the source CSS, or if the built CSS
+// has noticeably fewer rules than the source. Vite stays silent about broken CSS.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -11,10 +11,10 @@ for (const f of files) {
   const s = strip(readFileSync(f, 'utf8'));
   const o = (s.match(/{/g) ?? []).length, c = (s.match(/}/g) ?? []).length;
   rules += o;
-  if (o !== c) { console.error(`✗ ${f}: ${o} "{" ama ${c} "}"`); bad++; }
+  if (o !== c) { console.error(`✗ ${f}: ${o} "{" but ${c} "}"`); bad++; }
 }
 const built = walk('dist/assets').filter(f => f.endsWith('.css')).map(f => strip(readFileSync(f, 'utf8'))).join('');
 const out = (built.match(/{/g) ?? []).length;
-if (out < rules * 0.6) { console.error(`✗ derlenen CSS'te ${out} blok var, kaynakta ${rules}: bir kısmı atılmış`); bad++; }
+if (out < rules * 0.6) { console.error(`✗ the built CSS has ${out} blocks, the source ${rules}: some were dropped`); bad++; }
 if (bad) process.exit(1);
-console.log(`CSS tamam: ${files.length} dosya, ${rules} blok, çıktıda ${out}.`);
+console.log(`CSS OK: ${files.length} files, ${rules} blocks, ${out} in the output.`);

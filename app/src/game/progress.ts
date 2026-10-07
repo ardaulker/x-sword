@@ -1,8 +1,8 @@
-// İlerleme anlık görüntüsü: istatistikler, bulmaca yıldızları, günlük meydan okuma ve görülen ödüller.
-// Üç yerde kullanılır: yedek kodu (bir cihazdan ötekine elle taşıma), telefon uygulamasında platform bulut kaydı
-// (Game Center / Play Games kayıtlı oyun, game/platform.ts) ve ileride bir X Sword sunucusu.
-// İki görüntü birleştirilirken hiçbir ilerleme kaybolmaz: sayaçlarda büyük olan, yıldızlarda en iyisi,
-// günlerde birleşim alınır. Aynı görüntüyü iki kez birleştirmek sonucu değiştirmez.
+// Progress snapshot: statistics, puzzle stars, the daily challenge and rewards already announced.
+// Used in three places: the backup code (moving progress between devices by hand), the platform cloud save in the phone app
+// (Game Center / Play Games saved games, game/platform.ts) and, later, an X Sword server.
+// Merging two snapshots never loses progress: counters take the larger value, stars the best,
+// days the union. Merging the same snapshot twice doesn't change the result.
 
 import { EMPTY_STATS } from './stats';
 import type { Stats } from './stats';
@@ -10,11 +10,11 @@ import type { DailyResult } from './daily';
 
 export interface Progress {
   v: 1;
-  at: number;              // görüntünün alındığı an
+  at: number;              // when the snapshot was taken
   stats: Stats;
   daily: DailyResult | null;
-  days: string[];          // günlük meydan okuma oynanan günler (seri)
-  seen: string[];          // haber verilmiş ödüller
+  days: string[];          // days the daily challenge was played (streak)
+  seen: string[];          // rewards already announced
 }
 
 const KEYS = { stats: 'xsword-stats', daily: 'xsword-daily', days: 'xsword-daily-days', seen: 'xsword-rewards-seen' } as const;
@@ -22,7 +22,7 @@ const KEYS = { stats: 'xsword-stats', daily: 'xsword-daily', days: 'xsword-daily
 const read = <T>(key: string, fallback: T): T => {
   try { const v = JSON.parse(localStorage.getItem(key) ?? 'null'); return v ?? fallback; } catch { return fallback; }
 };
-const write = (key: string, v: unknown) => { try { localStorage.setItem(key, JSON.stringify(v)); } catch { /* gizli sekme */ } };
+const write = (key: string, v: unknown) => { try { localStorage.setItem(key, JSON.stringify(v)); } catch { /* private tab */ } };
 
 export function readProgress(): Progress {
   return {
@@ -70,7 +70,7 @@ export function mergeProgress(a: Progress, b: Progress): Progress {
   };
 }
 
-// ------------------------------------------------------------ yedek kodu
+// ------------------------------------------------------------ backup code
 
 const b64 = (s: string) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64 = (s: string) => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
@@ -92,7 +92,7 @@ export function parseProgress(text: string): Progress | null {
   } catch { return null; }
 }
 
-// Koddan gelen ilerlemeyi bu cihazdakiyle birleştirir; hiçbir şey silinmez.
+// Merges the progress from a code with this device's progress; nothing is deleted.
 export function importProgress(text: string): boolean {
   const p = parseProgress(text);
   if (!p) return false;

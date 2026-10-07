@@ -1,4 +1,4 @@
-/* Genel zemin, butonlar ve alttan açılan kartlar. Renk ve ölçüler design/tokens/tokens.css'ten. */
+/* Global background, buttons and bottom sheets. Colors and sizes come from design/tokens/tokens.css. */
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -23,7 +23,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
 
-/* ------------------------------------------------------------ taş */
+/* ------------------------------------------------------------ piece */
 
 .pg { position: relative; flex: none; }
 .pg-shape {
@@ -33,7 +33,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
 .pg-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .pg-grey .pg-shape, .pg-grey .pg-svg { filter: grayscale(1); opacity: .7; }
 
-/* ------------------------------------------------------------ butonlar */
+/* ------------------------------------------------------------ buttons */
 
 .btn {
   height: 52px; border-radius: var(--r-md); border: 0; padding: 0 12px;
@@ -50,7 +50,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
   display: flex; align-items: center; justify-content: center; flex: none;
 }
 
-/* ------------------------------------------------------------ alttan açılan kart */
+/* ------------------------------------------------------------ bottom sheet */
 
 .sheet-scrim {
   position: absolute; inset: 0; z-index: 20; background: rgba(5, 8, 20, .64);
@@ -73,7 +73,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
 @keyframes scrim-in { from { background: rgba(5, 8, 20, 0); } }
 @keyframes sheet-in { from { transform: translateY(40px); opacity: 0; } }
 
-/* Taş bilgisi */
+/* Piece info */
 .info-head { display: flex; align-items: center; gap: 14px; }
 .info-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .info-title { font-size: 20px; font-weight: 700; }
@@ -106,7 +106,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
   background: rgba(255, 59, 92, .14); color: var(--danger-text); font-size: 14px; font-weight: 700;
 }
 
-/* Savaş kaydı */
+/* Battle log */
 .sheet:has(.log-list) { gap: 6px; padding: 10px 16px 16px; }
 .log-list { display: flex; flex-direction: column; gap: 6px; }
 .log-head { padding: 10px 2px 2px; font: 700 12px var(--font-display); letter-spacing: .14em; color: var(--text-2); }
@@ -120,7 +120,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
 .log-ring { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; color: var(--hazard); flex: none; }
 .log-empty { padding: 18px 2px; color: var(--text-2); font-size: 14px; }
 
-/* Menü */
+/* Menu */
 .field-label { font-size: 12px; font-weight: 700; letter-spacing: .14em; color: var(--text-2); margin-bottom: -6px; }
 .seg { display: flex; gap: 6px; }
 .seg button {
@@ -133,7 +133,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
 .seg button.is-on span { color: var(--ink); }
 .menu-note { font-size: 13px; color: var(--text-2); line-height: 1.4; }
 
-/* Maç sonucu */
+/* Match result */
 .res-head { text-align: center; display: flex; flex-direction: column; gap: 4px; }
 .res-title { font: 800 34px/1.1 var(--font-display); animation: res-pop calc(500ms * var(--speed-factor)) var(--ease-spring); }
 @keyframes res-pop { from { transform: scale(.6); opacity: 0; } }
@@ -159,10 +159,10 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
 
 .res-daily { font: 700 12px var(--font-display); letter-spacing: .14em; color: var(--text-3); text-transform: uppercase; margin-bottom: 4px; }
 
-/* Geniş ekranda kartlar telefon genişliğinde kalır. */
+/* On wide screens sheets keep phone width. */
 .sheet { width: 100%; max-width: 480px; align-self: center; }
 
-/* Kurulum seçenekleri ve duraklatma menüsü */
+/* Setup options and pause menu */
 .opts { display: flex; flex-direction: column; gap: 6px; }
 .opt-row {
   display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; text-align: left; color: inherit;

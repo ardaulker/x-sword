@@ -1,11 +1,11 @@
 import { attackersOf } from '../../../engine/rules.js';
 import type { GameState, Piece } from '../../../engine/rules.js';
 
-// Şu an senin kareni alabilecek taşlar. Kendi İkiz'in sayılmaz: o senin yönünde gider, seni hiç alamaz.
+// Pieces that can take your square right now. Your own Twin doesn't count: it moves your direction and can never take you.
 export const attackersOfMe = (st: GameState, me: Piece) =>
   attackersOf(st, me.r, me.c, [me.id], me).filter(p => !(p.kind === 'twin' && p.mirrors === me.id));
 
-// Tehlike haritası: gelecek turda, kendi hamlenden önce bir taşın seni alabileceği bütün kareler ("r,c").
+// Danger map: every square ("r,c") where a piece could take you next round, before your own move.
 export function heatMap(st: GameState, me: Piece) {
   const twin = st.pieces.find(p => p.kind === 'twin' && p.mirrors === me.id);
   const except = twin ? [me.id, twin.id] : [me.id];

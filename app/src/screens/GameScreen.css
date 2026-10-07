@@ -1,4 +1,4 @@
-/* Mobil oyun ekranı (handoff 5.1). Yukarıdan aşağı: başlık · mod · şerit · tahta · panel. Aralar 6px. */
+/* Mobile game screen (handoff 5.1). Top to bottom: header · mode · strip · board · panel. 6px gaps. */
 
 .game {
   position: relative; overflow: hidden;
@@ -9,7 +9,7 @@
 }
 .game.is-compact { gap: 5px; padding-bottom: calc(env(safe-area-inset-bottom) + 6px); }
 
-/* ------------------------------------------------------------ başlık */
+/* ------------------------------------------------------------ header */
 
 .topbar { height: 44px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; }
 .icon-btn {
@@ -43,7 +43,7 @@
   .ring-short { display: inline; }
 }
 
-/* Mod göstergesi */
+/* Mode indicator */
 .mode-box { display: flex; align-items: center; flex: none; }
 .mode-straight { background: var(--ice); color: var(--ink); }
 .mode-flip { animation: mode-flip calc(500ms * var(--speed-factor)) var(--ease-mode); }
@@ -65,7 +65,7 @@
 }
 .mode-box-next-mode { display: flex; align-items: center; gap: 5px; font-family: var(--font-display); font-size: 13px; }
 
-/* Kısa ekran: başlık + mod tek satır */
+/* Short screen: header + mode on one row */
 .compact-bar { height: 48px; margin: 0 6px; flex: none; display: flex; align-items: center; gap: 4px; }
 .mode-box-compact { flex: 1; min-width: 0; height: 44px; border-radius: 14px; gap: 10px; padding: 0 12px; }
 .mode-box-compact .mode-box-label { font-size: 22px; }
@@ -76,7 +76,7 @@
 .mode-diagonal .compact-info .is-warn { color: var(--hazard-text); }
 .mode-straight .compact-info .is-warn { color: #B4501A; }
 
-/* ------------------------------------------------------------ oyuncu şeridi */
+/* ------------------------------------------------------------ player strip */
 
 .strip { display: flex; gap: 6px; padding: 0 12px; flex: none; }
 .strip-item {
@@ -99,11 +99,11 @@
 @keyframes score-float { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-18px); opacity: 0; } }
 .strip-sub { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
 
-/* ------------------------------------------------------------ tahta alanı */
+/* ------------------------------------------------------------ board area */
 
 .stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
 .board-area { position: relative; flex: 1; min-height: 0; display: flex; justify-content: center; align-items: flex-start; }
-/* Yakınlaştırılmış tahta: kendi içinde kayar. */
+/* Zoomed board: scrolls inside its own box. */
 .board-scroll { position: absolute; inset: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; }
 .board-scroll::-webkit-scrollbar { display: none; }
 .zoom-btn {
@@ -121,7 +121,7 @@
 }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, -8px); } }
 
-/* ------------------------------------------------------------ eylem paneli */
+/* ------------------------------------------------------------ action panel */
 
 .panel {
   margin: 0 10px; flex: none; background: var(--surface-1); border: 1px solid var(--line);
@@ -130,7 +130,7 @@
 .panel-stack { display: flex; flex-direction: column; gap: 10px; }
 .panel { position: relative; z-index: 2; }
 
-/* Maç sonu sıralaması: skor → alma → hayatta kalma */
+/* End-of-match ranking: score → takes → survival */
 .rank-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .rank-row { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px; border-radius: 10px; background: var(--surface-2); }
 .rank-row.is-me { box-shadow: inset 0 0 0 1.5px var(--line-2); }
@@ -184,7 +184,7 @@
 .game.is-compact .panel-stack { gap: 8px; }
 .game.is-compact .btn { height: 48px; }
 
-/* ------------------------------------------------------------ sıra göstergesi */
+/* ------------------------------------------------------------ turn queue */
 
 .queue {
   margin: 0 12px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 6px 0 12px;
@@ -215,7 +215,7 @@
 }
 .queue-item.is-head .queue-no { background: var(--ice); color: var(--ink); }
 
-/* Dokunulan taşın tek satırlık bilgisi (büyük kartın yerine) */
+/* One-line info for the tapped piece (instead of a big card) */
 .info-chip {
   position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 8; max-width: calc(100% - 16px);
   display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 12px 0 8px; border-radius: 18px;
@@ -228,7 +228,7 @@
 .info-chip-meta { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; }
 .info-chip-target { display: flex; align-items: center; gap: 3px; font-weight: 700; flex: none; color: var(--text-2); }
 
-/* Sen alındığında: kırmızı kenar parlaması, tahta kısa bir an griye döner. */
+/* When you are taken: a red edge flash and the board turns grey for a moment. */
 .hit-flash {
   position: absolute; inset: 0; z-index: 30; pointer-events: none;
   box-shadow: inset 0 0 0 4px var(--danger), inset 0 0 90px rgba(255, 59, 92, .55);
@@ -238,7 +238,7 @@
 .game:has(.hit-flash) .board-frame { animation: hit-grey calc(900ms * var(--speed-factor)) ease-out; }
 @keyframes hit-grey { 0%, 40% { filter: saturate(.2) brightness(.8); } 100% { filter: none; } }
 
-/* Bonus çubuğu */
+/* Bonus bar */
 .bonus-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .bonus {
   position: relative; height: 40px; border-radius: 12px; border: 1.5px solid var(--line-2); background: var(--surface-2);
@@ -255,17 +255,17 @@
 .coach-step { font: 700 13px var(--font-display); color: var(--text-3); }
 .coach-list { margin: 4px 0 16px; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.4; color: var(--text-1); }
 
-/* Dik tablet: sütun biraz genişler, tahta büyür. */
+/* Portrait tablet: the column widens a little and the board grows. */
 @media (min-width: 600px) and (orientation: portrait) { .game { max-width: 680px; } }
 
-/* Yan çevrilmiş telefon: tahta solda tam yükseklikte, bilgi ve panel sağ sütunda (GameScreen.tsx → landscape). */
+/* Phone turned sideways: the board at full height on the left, info and panel in the right column (GameScreen.tsx → landscape). */
 .game.is-landscape { max-width: none; flex-direction: row; align-items: stretch; gap: 10px; padding: calc(env(safe-area-inset-top) + 4px) calc(env(safe-area-inset-right) + 10px) 6px calc(env(safe-area-inset-left) + 10px); }
 .game.is-landscape > .stage { flex: 1 1 0; min-width: 0; }
 .land-side { flex: none; width: min(46%, 380px); display: flex; flex-direction: column; gap: 4px; min-height: 0; overflow-y: auto; scrollbar-width: none; }
 .land-side > * { flex: none; }
 .land-side .panel { margin: 0; }
 
-/* Geniş ekran (masaüstü, yatay tablet): tahta solda, oyun bilgisi sağ sütunda. */
+/* Wide screen (desktop, landscape tablet): the board on the left, game info in the right column. */
 @media (min-width: 900px) and (min-height: 520px) {
   .game {
     max-width: 1160px; display: grid; gap: 8px 20px; align-content: start; padding-inline: 20px;

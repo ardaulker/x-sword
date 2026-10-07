@@ -1,4 +1,4 @@
-/* Ana menü (tasarım: design/reference/Main.dc.html). Ad: X Sword. */
+/* Main menu (design: design/reference/Main.dc.html). Name: X Sword. */
 
 .menu {
   position: relative; overflow: hidden; display: flex; flex-direction: column;
@@ -59,7 +59,7 @@
 .menu-daily .menu-play-text b { font-size: 15px; }
 .menu-daily .menu-play-text span { font-size: 12px; opacity: .75; }
 
-/* Logo: ortadaki X, 2 sn'lik döngüde 1 sn'de sağa (artı olur), 1 sn'de sola (x olur) döner. */
+/* Logo: the middle X turns right in 1 s (becomes a plus) and left in 1 s (back to an x), a 2 s loop. */
 .logo-x { transform-box: view-box; transform-origin: 100px 100px; animation: logo-swing 2s ease-in-out infinite; }
 @keyframes logo-swing {
   0%, 12% { transform: rotate(0deg); }
@@ -68,7 +68,7 @@
 }
 @media (prefers-reduced-motion: reduce) { .logo-x { animation: none; } }
 
-/* Sağ üstte profil: rozet + ad. */
+/* Profile at the top right: badge + name. */
 .menu-profile {
   position: absolute; z-index: 2; top: calc(env(safe-area-inset-top) + 10px); right: 14px; max-width: 60%;
   display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px 0 5px; border-radius: 20px;

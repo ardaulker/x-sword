@@ -1,5 +1,5 @@
-// Bulmaca adları ve ipuçları çevrilsin diye burada düz tr() çağrısı olarak durur (çıkarıcı yalnız düz yazıyı görür).
-// tools/puzzle-maps.mjs'e yeni bulmaca eklenince buraya da ekle.
+// Puzzle titles and hints live here as plain tr() calls so they get translated (the extractor only sees plain text).
+// When you add a puzzle to tools/puzzle-maps.mjs, add it here too.
 import { tr } from '../i18n';
 import type { PuzzleDef } from './puzzles';
 
@@ -58,7 +58,7 @@ const hints = (): Record<string, string> => ({
 export const puzzleTitle = (t: string) => titles()[t] ?? t;
 export const puzzleHint = (h: string) => hints()[h] ?? h;
 
-// Listede ve sonuç kartında görünen sıra: eğitim ve bulmacalar ayrı sayılır.
+// The number shown in the list and on the result card: tutorials and puzzles are counted separately.
 export function puzzleNo(list: PuzzleDef[], def: PuzzleDef) {
   return list.filter(p => p.tutorial === def.tutorial).findIndex(p => p.id === def.id) + 1;
 }

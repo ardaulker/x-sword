@@ -1,4 +1,4 @@
-// Taşların, karelerin ve ikonların çizim verisi. Ölçüler design/CLAUDE_CODE_HANDOFF.md bölüm 3'ten.
+// Drawing data for pieces, squares and icons. Sizes come from design/CLAUDE_CODE_HANDOFF.md section 3.
 
 import type { Mode, Piece } from '../../../engine/rules.js';
 
@@ -14,14 +14,14 @@ export const HAZARD_TXT = '#FFB27F';
 export const PLAYER_COLORS = ['#3BFF8F', '#FFC53D', '#FF5CC0', '#B392FF'];
 export const BOT_COLORS = { red: '#D3765B', blue: '#6F98DA' } as const;
 
-// İkiz yalnız tek oyunculu modda var ve hep 1. oyuncunun aynası: onun koltuğunu kullanır.
+// The Twin exists only in single-player mode and always mirrors player 1: it uses that seat.
 export const seatOf = (p: Piece) => (p.kind === 'star' ? p.seat : 0);
 export const isBot = (p: Piece) => p.kind === 'red' || p.kind === 'blue';
 
 export const colorOf = (p: Piece) =>
   p.kind === 'star' || p.kind === 'twin' ? PLAYER_COLORS[seatOf(p)] : BOT_COLORS[p.kind];
 
-// Şekil yürüme yönünü gösterir: kare düz, elmas çapraz yürür. Yıldız ve İkiz modla döner.
+// The shape shows the walking direction: a square walks straight, a diamond diagonally. Stars and the Twin turn with the mode.
 export const diamondOf = (p: Pick<Piece, 'kind'>, mode: Mode) =>
   p.kind === 'blue' || ((p.kind === 'star' || p.kind === 'twin') && mode === 'DIAGONAL');
 
@@ -43,7 +43,7 @@ export interface Glyph {
   width: number;
 }
 
-// Oyuncu amblemleri: daire, üçgen, çift çizgi, halka.
+// Player emblems: dot, triangle, double bar, ring.
 export const EMBLEMS: Glyph[] = [
   { d: 'M50 36 A14 14 0 1 1 49.99 36 Z', fill: INK, stroke: 'none', width: 0 },
   { d: 'M50 33 L66 62 L34 62 Z', fill: INK, stroke: INK, width: 3 },
@@ -54,17 +54,17 @@ export const EMBLEMS: Glyph[] = [
 export function glyphOf(p: Pick<Piece, 'kind'> & { seat?: number }): Glyph {
   if (p.kind === 'star') return EMBLEMS[p.seat ?? 0];
   if (p.kind === 'twin') {
-    // Karanlık İkiz: aynı amblem, renkler ters (koyu taş, oyuncu renginde amblem).
+    // Dark Twin: the same emblem with colors reversed (dark piece, emblem in the player's color).
     const e = EMBLEMS[p.seat ?? 0], col = PLAYER_COLORS[p.seat ?? 0];
     return { ...e, fill: e.fill === INK ? col : e.fill, stroke: e.stroke === INK ? col : e.stroke };
   }
   return { d: p.kind === 'red' ? CROSS : PLUS, fill: 'none', stroke: INK, width: 10 };
 }
 
-// Kare köşe kesiği tahta boyuna göre.
+// Square corner chamfer by board size.
 export const chamferOf = (n: number) => (n <= 9 ? 26 : n <= 11 ? 22 : 18);
 
-// Kesik köşeli kare çerçevesi, kenardan i birim içeride.
+// Chamfered square outline, i units in from the edge.
 export function octPath(k: number, i: number) {
   const a = k + i * 0.4, b = 100 - a, e = i, f = 100 - i;
   return `M${a} ${e} L${b} ${e} L${f} ${a} L${f} ${b} L${b} ${f} L${a} ${f} L${e} ${b} L${e} ${a} Z`;
@@ -73,7 +73,7 @@ export function octPath(k: number, i: number) {
 export const octClip = (k: number) =>
   `polygon(${k}% 0,${100 - k}% 0,100% ${k}%,100% ${100 - k}%,${100 - k}% 100%,${k}% 100%,0 ${100 - k}%,0 ${k}%)`;
 
-// Botun kenarındaki hedef üçgeni: kovaladığı yıldızın yönünde, 8 yöne yuvarlanmış.
+// The target triangle on a bot's edge: pointing toward the star it chases, rounded to 8 directions.
 export function notchPath(from: { r: number; c: number }, to: { r: number; c: number }) {
   let a = Math.atan2(to.r - from.r, to.c - from.c);
   a = Math.round(a / (Math.PI / 4)) * (Math.PI / 4);
@@ -82,12 +82,12 @@ export function notchPath(from: { r: number; c: number }, to: { r: number; c: nu
   return `M${f(tx)} ${f(ty)} L${f(bx - sn * 13)} ${f(by + cs * 13)} L${f(bx + sn * 13)} ${f(by - cs * 13)} Z`;
 }
 
-// Hücre içi işaretler (viewBox 0 0 100 100)
+// In-cell marks (viewBox 0 0 100 100)
 export const MARK_SQUARE = 'M41 41 H59 V59 H41 Z';
 export const MARK_DIAMOND = 'M50 37 L63 50 L50 63 L37 50 Z';
 export const MARK_AIM = 'M50 2 V18 M50 82 V98 M2 50 H18 M82 50 H98';
 
-// Arayüz ikonları (viewBox 0 0 24 24)
+// UI icons (viewBox 0 0 24 24)
 export const ICON = {
   menu: 'M4 7h16M4 12h16M4 17h10',
   sword: 'M20 4 L9.5 14.5 M20 4 V9 M20 4 H15 M6 13 L11 18 M4 20 L8.2 15.8',

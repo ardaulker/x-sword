@@ -1,7 +1,7 @@
-// Oyuncu profili: görünen ad, renk, kalıcı kimlik ve bağlı hesap.
-// Web'de cihazda saklanan misafir profildir. Telefon uygulamasında (Capacitor kabuğu) iOS'ta Game Center,
-// Android'de Google Play Games ile kendiliğinden bağlanır (game/platform.ts); kimlik o zaman hesaba bağlanır.
-// Profil sunucuya gitmez; çok oyunculuda yalnız ad ve renk rakiplere gönderilir.
+// Player profile: display name, color, a permanent id and the linked account.
+// On the web it is a guest profile kept on the device. In the phone app (Capacitor shell) it links automatically
+// to Game Center on iOS and Google Play Games on Android (game/platform.ts); the identity is then tied to that account.
+// The profile never goes to a server; in multiplayer only the name and color are sent to opponents.
 
 import { useSyncExternalStore } from 'react';
 import { tr } from '../i18n';
@@ -10,11 +10,11 @@ export type Provider = 'guest' | 'gamecenter' | 'playgames';
 
 export interface Profile {
   v: 1;
-  id: string;                 // bu cihazdaki kalıcı kimlik (rastgele)
-  name: string;               // görünen ad (en çok NAME_MAX karakter)
-  color: number;              // AVATAR_COLORS içindeki sıra
-  provider: Provider;         // misafir ya da bağlı platform hesabı
-  providerId: string | null;  // platformun oyuncu kimliği (Game Center gamePlayerID / Play Games playerId)
+  id: string;                 // permanent id on this device (random)
+  name: string;               // display name (at most NAME_MAX characters)
+  color: number;              // index into AVATAR_COLORS
+  provider: Provider;         // guest or a linked platform account
+  providerId: string | null;  // the platform's player id (Game Center gamePlayerID / Play Games playerId)
   providerName: string | null;
   createdAt: number;
 }
@@ -28,7 +28,7 @@ const newId = () => {
   try { return crypto.randomUUID(); } catch { return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`; }
 };
 
-// Ad temizliği: yerel ve rakipten gelen adlar için aynı kural (boşluklar sıkışır, denetim karakterleri gider).
+// Name cleanup: the same rule for local names and names from opponents (spaces collapse, control characters go).
 export function cleanName(raw: unknown): string {
   if (typeof raw !== 'string') return '';
   // eslint-disable-next-line no-control-regex
@@ -41,7 +41,7 @@ function load(): Profile {
   try {
     const p = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Profile | null;
     if (p && p.v === 1 && p.id && cleanName(p.name)) return { ...p, name: cleanName(p.name), color: Math.abs(p.color | 0) % AVATAR_COLORS.length };
-  } catch { /* bozuk kayıt: yenisi */ }
+  } catch { /* broken save: make a new one */ }
   const fresh: Profile = {
     v: 1, id: newId(), name: defaultName(), color: Math.floor(Math.random() * AVATAR_COLORS.length),
     provider: 'guest', providerId: null, providerName: null, createdAt: Date.now(),
@@ -51,7 +51,7 @@ function load(): Profile {
 }
 
 function save(p: Profile) {
-  try { localStorage.setItem(KEY, JSON.stringify(p)); } catch { /* gizli sekme */ }
+  try { localStorage.setItem(KEY, JSON.stringify(p)); } catch { /* private tab */ }
 }
 
 let current: Profile | null = null;
@@ -73,7 +73,7 @@ export function updateProfile(patch: Partial<Omit<Profile, 'v' | 'id' | 'created
 const subscribe = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
 export const useProfile = () => useSyncExternalStore(subscribe, getProfile);
 
-// Rakibe giden kısa kart: yalnız ad ve renk (kimlik ve hesap bilgisi gitmez).
+// The short card sent to opponents: name and color only (no id, no account details).
 export interface PublicProfile { name: string; color: number }
 export const publicProfile = (): PublicProfile => ({ name: getProfile().name, color: getProfile().color });
 export function readPublic(raw: unknown): PublicProfile | null {

@@ -1,12 +1,12 @@
-// Geri bildirim: titreşim + ses. Her olayın kısa bir titreşimi ve sentezlenmiş bir sesi var (dosya yok).
-// iOS Safari titreşimi desteklemez; orada sessizce atlanır. Ses ilk dokunuşta açılır (tarayıcı kuralı).
+// Feedback: vibration + sound. Every event has a short vibration and a synthesized sound (no audio files).
+// iOS Safari doesn't support vibration; it is silently skipped there. Sound starts on the first tap (a browser rule).
 
 import { settings } from './settings';
 
-// Her olayın kendine ait bir ritmi var; gözü kapalı bile ayırt edilir:
-// seçim kısa tık · onay biraz uzun · alma (kısa-kısa-uzun) · yıldız alma (iki kat güçlü) ·
-// alınma ya da elenme (uzun-kısa-uzun-kısa-çok uzun) · daralma (gümbürtü) · zırh (hafif vuruş, uzun uğultu) ·
-// bonus kazanma (yükselen üçlü) · bonus kullanma (çift tık) · mod değişimi (iki dalga) · maç sonu galibiyet / yenilgi.
+// Every event has its own rhythm, recognizable even with eyes closed:
+// select a short tick · confirm a bit longer · take (short-short-long) · taking a star (twice as strong) ·
+// being taken or knocked out (long-short-long-short-very long) · shrink (rumble) · armor (light hit, long hum) ·
+// earning a bonus (rising triplet) · using a bonus (double tick) · mode change (two waves) · end of match win / loss.
 export const BUZZ = {
   select: 8,
   confirm: 18,
@@ -29,11 +29,11 @@ export function buzz(pattern: number | readonly number[]) {
   try {
     navigator.vibrate?.(pattern as number | number[]);
   } catch {
-    // Bazı tarayıcılar kullanıcı dokunmadan titreşime izin vermez.
+    // Some browsers don't allow vibration before the user has touched the page.
   }
 }
 
-// ------------------------------------------------------------ ses
+// ------------------------------------------------------------ sound
 
 type Note = [freq: number, at: number, dur: number, type?: OscillatorType, gain?: number];
 
@@ -67,7 +67,7 @@ const audio = () => {
   return ctx;
 };
 
-// İlk dokunuşta sesi aç (iOS ve Chrome kullanıcı etkileşimi ister).
+// Unlock audio on the first tap (iOS and Chrome require a user gesture).
 if (typeof window !== 'undefined') window.addEventListener('pointerdown', () => audio(), { once: true });
 
 export function sound(name: SoundName) {
@@ -88,15 +88,15 @@ export function sound(name: SoundName) {
   }
 }
 
-// Bir olay: ses + titreşim birlikte.
+// One event: sound + vibration together.
 export function feel(name: SoundName, pattern?: number | readonly number[]) {
   sound(name);
   if (pattern != null) buzz(pattern);
 }
 
-// ------------------------------------------------------------ gerilim müziği
-// Arena daralacak turda çalar, halka çökünce ya da maç bitince susar: alçak bir uğultu,
-// ağırlaşan bir kalp atışı ve arada tiz, uyumsuz bir çınlama. Hepsi sentezlenir.
+// ------------------------------------------------------------ tension music
+// Plays in a round where the arena will shrink and stops when the ring collapses or the match ends: a low hum,
+// a heavy heartbeat and now and then a high, dissonant ring. All synthesized.
 
 let tension: { master: GainNode; stops: (() => void)[]; timer: number } | null = null;
 
@@ -110,7 +110,7 @@ export function startTension() {
   master.connect(ac.destination);
   const stops: (() => void)[] = [];
 
-  // Uğultu: iki hafif ayrık testere dişi, alçak geçiren süzgeçten.
+  // Hum: two slightly detuned sawtooth waves through a low-pass filter.
   const lp = ac.createBiquadFilter();
   lp.type = 'lowpass'; lp.frequency.value = 180;
   const hum = ac.createGain(); hum.gain.value = 0.07;
@@ -119,12 +119,12 @@ export function startTension() {
     const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f;
     o.connect(lp); o.start(); stops.push(() => o.stop());
   }
-  // Süzgeç yavaşça açılıp kapanır.
+  // The filter slowly opens and closes.
   const lfo = ac.createOscillator(), lfoG = ac.createGain();
   lfo.frequency.value = 0.18; lfoG.gain.value = 70;
   lfo.connect(lfoG).connect(lp.frequency); lfo.start(); stops.push(() => lfo.stop());
 
-  // Kalp atışı ve çınlama, ileri zamanlanır.
+  // Heartbeat and ring, scheduled ahead.
   let beat = 0, next = ac.currentTime + 0.1;
   const BEAT = 0.55;
   const tick = () => {
@@ -141,7 +141,7 @@ export function startTension() {
       thump(next, 0.3);
       thump(next + 0.17, 0.18);
       if (beat % 4 === 3) {
-        for (const f of [466, 659]) { // tritonlu çınlama
+        for (const f of [466, 659]) { // a tritone ring
           const o = ac.createOscillator(), g = ac.createGain();
           o.type = 'triangle'; o.frequency.value = f;
           g.gain.setValueAtTime(0.0001, next + 0.3);
@@ -170,7 +170,7 @@ export function stopTension() {
     master.gain.setValueAtTime(master.gain.value, ac.currentTime);
     master.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.3);
   } catch { /* yoksay */ }
-  setTimeout(() => { stops.forEach(s => { try { s(); } catch { /* durmuş */ } }); master.disconnect(); }, 400);
+  setTimeout(() => { stops.forEach(s => { try { s(); } catch { /* already stopped */ } }); master.disconnect(); }, 400);
 }
 
 if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => { if (document.hidden) stopTension(); });

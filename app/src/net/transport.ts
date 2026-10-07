@@ -1,5 +1,5 @@
-// Bağlantı katmanı. Oyunun geri kalanı yalnız bu arayüzü bilir; bugün telefondan telefona (PeerJS),
-// ileride X Sword'e ait bir sunucu olursa yalnız bu dosyanın yerine yenisi yazılır.
+// Connection layer. The rest of the game only knows this interface; today it is phone to phone (PeerJS),
+// and if X Sword gets its own server later, only this file is replaced.
 
 import type { DataConnection, PeerError } from 'peerjs';
 import { newCode } from './protocol';
@@ -24,12 +24,12 @@ export interface Transport {
   join(code: string): Promise<Link<ToGuest, ToHost>>;
 }
 
-// ------------------------------------------------------------ PeerJS: telefondan telefona
-// Telefonlar birbirini PeerJS'in ücretsiz eşleştirme sunucusuyla bulur; oyun verisi doğrudan akar.
+// ------------------------------------------------------------ PeerJS: phone to phone
+// Phones find each other through PeerJS's free matchmaking server; game data flows directly.
 
 const PREFIX = 'xsword-';
 
-// PeerJS yalnız çok oyunculuda yüklenir; tek oyunculu açılış hafif kalır.
+// PeerJS is loaded only for multiplayer, so single-player startup stays light.
 const loadPeer = () => import('peerjs').then(m => m.default);
 
 function linkOf<In, Out>(conn: DataConnection, onDone: () => void): Link<In, Out> {
@@ -66,7 +66,7 @@ export const peerTransport: Transport = {
       const peer = new Peer(PREFIX + code, { debug: 0 });
       let opened = false;
       peer.on('open', () => opened = true);
-      // Eşleştirme sunucusuyla bağ koparsa yeniden bağlan: kurulmuş bağlantılar zaten doğrudan akar.
+      // Reconnect if the link to the matchmaking server drops: established connections already flow directly.
       peer.on('disconnected', () => { if (!peer.destroyed) peer.reconnect(); });
       peer.on('open', () => resolve({
         code,
@@ -74,7 +74,7 @@ export const peerTransport: Transport = {
         close: () => peer.destroy(),
       }));
       peer.on('error', err => {
-        if (opened) return; // açıldıktan sonraki hatalar odayı kapatmaz
+        if (opened) return; // errors after opening don't close the room
         peer.destroy();
         if (err.type === 'unavailable-id' && left > 0) attempt(left - 1);
         else reject(new Error(describe(err)));
@@ -92,7 +92,7 @@ export const peerTransport: Transport = {
     });
     let linked = false;
     peer.on('error', err => {
-      if (linked) return; // bağlandıktan sonra kopma, bağlantının kendi kapanışıyla bildirilir
+      if (linked) return; // a drop after connecting is reported by the connection's own close event
       clearTimeout(timer); peer.destroy(); reject(new Error(describe(err)));
     });
   })),

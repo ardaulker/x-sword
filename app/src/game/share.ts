@@ -1,4 +1,4 @@
-// Maç sonu paylaşım kartı: tuvale çizilir, PNG olarak paylaşılır (olmazsa indirilir).
+// End-of-match share card: drawn on a canvas and shared as a PNG (downloaded when sharing isn't available).
 
 import { isWinner } from '../../../engine/rules.js';
 import type { GameState } from '../../../engine/rules.js';
@@ -30,7 +30,7 @@ async function draw(info: ShareInfo): Promise<HTMLCanvasElement> {
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
   const g = c.getContext('2d')!;
-  try { await document.fonts.ready; } catch { /* yazı tipi yoksa varsayılan */ }
+  try { await document.fonts.ready; } catch { /* default font if it isn't loaded */ }
   const font = (w: number, px: number) => `${w} ${px}px Oxanium, Barlow, system-ui, sans-serif`;
 
   const bg = g.createRadialGradient(W / 2, 0, 40, W / 2, 0, H);
@@ -72,7 +72,7 @@ async function draw(info: ShareInfo): Promise<HTMLCanvasElement> {
   return c;
 }
 
-// Maç tekrarı bağlantısı: paylaşım penceresi ya da panoya kopyalama.
+// Replay link: the share sheet or a copy to the clipboard.
 export async function shareReplay(ctl: GameController) {
   const spec = ctl.replaySpec();
   if (!spec) return;
@@ -80,10 +80,10 @@ export async function shareReplay(ctl: GameController) {
   try {
     if (navigator.share) { await navigator.share({ title: 'X Sword', text: tr('Watch this match'), url }); return; }
     await navigator.clipboard.writeText(url);
-  } catch { /* vazgeçti */ }
+  } catch { /* cancelled */ }
 }
 
-// Tarayıcı dosya paylaşımını destekliyorsa paylaşır, yoksa PNG'yi indirir.
+// Shares the file if the browser supports file sharing, otherwise downloads the PNG.
 export async function shareResult(info: ShareInfo): Promise<'shared' | 'downloaded' | 'copied'> {
   const canvas = await draw(info);
   const blob: Blob | null = await new Promise(res => canvas.toBlob(res, 'image/png'));
@@ -91,7 +91,7 @@ export async function shareResult(info: ShareInfo): Promise<'shared' | 'download
   if (blob) {
     const file = new File([blob], 'x-sword.png', { type: 'image/png' });
     if (navigator.canShare?.({ files: [file] })) {
-      try { await navigator.share({ files: [file], text }); return 'shared'; } catch { /* vazgeçti: indirmeye düşme */ return 'shared'; }
+      try { await navigator.share({ files: [file], text }); return 'shared'; } catch { /* cancelled: don't fall back to a download */ return 'shared'; }
     }
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = 'x-sword.png'; a.click();

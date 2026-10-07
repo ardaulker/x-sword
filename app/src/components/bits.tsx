@@ -23,7 +23,7 @@ export function RingIcon({ size = 14 }: { size?: number }) {
   );
 }
 
-// Maç saati: maç başlar başlamaz 00:00'dan sayar, maç bitince durur.
+// Match clock: counts from 00:00 as soon as the match starts and stops when it ends.
 export function useMatchTime(start: number, end: number | null) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {

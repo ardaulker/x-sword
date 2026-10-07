@@ -9,7 +9,7 @@ import { ProfileAvatar } from './ProfileScreen';
 import './MainMenu.css';
 import { tr } from '../i18n';
 
-// Arka plandaki sekizgen kareler: ortada belirgin, kenarlara doğru söner.
+// Octagon squares in the background: strong in the middle, fading toward the edges.
 const DECO = Array.from({ length: 63 }, (_, i) => {
   const r = Math.floor(i / 9), c = i % 9;
   return Math.max(0.06, 0.55 - Math.hypot(r - 3, c - 4) * 0.11);
@@ -21,7 +21,7 @@ export function XSwordLogo({ size }: { size: number }) {
       <rect x="44" y="44" width="112" height="112" rx="6" fill="#0B1026" stroke="#E9F0FF" strokeWidth="7" />
       <polygon points="100,21 179,100 100,179 21,100" fill="none" stroke="#3BFF8F" strokeWidth="7" strokeLinejoin="round" />
       <polygon points="86,66 114,66 134,86 134,114 114,134 86,134 66,114 66,86" fill="#3BFF8F" />
-      {/* Ortadaki işaret saniyede bir sağa ve sola döner: x iken artıya, artıyken x'e. */}
+      {/* The middle mark turns right and left once a second: from x to plus and back. */}
       <path className="logo-x" d="M84 84 L116 116 M116 84 L84 116" stroke="#0B1026" strokeWidth="8" strokeLinecap="round" />
     </svg>
   );
@@ -35,9 +35,9 @@ export function MainMenu({ setup, onStart, onResume, resumeInfo, onTutorial, onP
   const best = loadDaily();
   const streak = dailyStreak();
   const stats = loadStats();
-  // Yeni oyuncuya eğitim önerilir: üç mini bulmaca, yaklaşık bir dakika.
+  // New players are offered the tutorial: three mini puzzles, about one minute.
   const suggestTutorial = !!onTutorial && !stats.puzzleStars[201] && stats.matches < 3 && !onResume;
-  const demoted = !!onResume || suggestTutorial; // büyük yeşil düğme tek olsun
+  const demoted = !!onResume || suggestTutorial; // keep a single big green button
   return (
     <div className="menu">
       <div className="menu-deco" aria-hidden="true">

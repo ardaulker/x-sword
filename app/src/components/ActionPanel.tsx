@@ -36,7 +36,7 @@ function Chips({ st, pieces, danger }: { st: GameState; pieces: Piece[]; danger?
   );
 }
 
-// Başkaları oynarken: sıra sana kaç hamle sonra geliyor?
+// While others move: how many moves until your turn?
 function untilMe(st: GameState, me: Piece) {
   if (!me.alive || st.over) return '';
   let n = 0;
@@ -62,7 +62,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
   const timerColor = lastSeconds ? DANGER : TXT;
   const time = useMatchTime(view.clockStart, view.clockEnd);
 
-  // ---------------------------------------------------------- oyun sonu
+  // ---------------------------------------------------------- game over
   if (view.phase === 'over') {
     const won = isWinner(st, ME);
     const mine = st.seats[ME];
@@ -112,7 +112,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
     );
   }
 
-  // ---------------------------------------------------------- elendin
+  // ---------------------------------------------------------- you are out
   if (!me.alive && !view.watching) {
     const mine = st.seats[ME];
     return (
@@ -135,7 +135,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
     );
   }
 
-  // ---------------------------------------------------------- önizleme
+  // ---------------------------------------------------------- preview
   if (view.phase === 'preview' && view.sel) {
     const sel = view.sel;
     const victim = sel.type === 'take' && sel.targetId ? pieceById(st, sel.targetId) : null;
@@ -169,7 +169,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
     );
   }
 
-  // ---------------------------------------------------------- seni alabilecekler
+  // ---------------------------------------------------------- pieces that can take you
   if (view.phase === 'mine' && view.showThreats) {
     const th = attackersOfMe(st, me);
     return (
@@ -191,7 +191,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
     );
   }
 
-  // ---------------------------------------------------------- bot turu
+  // ---------------------------------------------------------- bot turn
   if (view.phase === 'bot') {
     const { done, total, currentId } = view.bots;
     const cur = currentId ? pieceById(st, currentId) : null;
@@ -228,7 +228,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
     );
   }
 
-  // ---------------------------------------------------------- genel
+  // ---------------------------------------------------------- general
   const actor = currentActor(st);
   let who: Piece | null | undefined = null;
   let title = '', sub = '', hint = '', hintColor = TXT2, border: string | undefined, glow: string | undefined;
@@ -237,7 +237,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
   if (view.phase === 'mine') {
     who = me; timer = t; title = tr('Your turn'); sub = tr('Tap one of the lit squares');
     const threats = attackersOfMe(st, me).length;
-    // Bulmacanın kendi ipucu tehdit uyarısından önce gelir: eğitim ipuçları hep okunsun, tehlike zaten çizgili karelerde görünür.
+    // A puzzle's own hint comes before the threat warning: tutorial hints must always be read; danger already shows as striped squares.
     if (st.puzzle) hint = puzzleHint(PUZZLES.find(p => p.id === ctl.setup.puzzle)?.hint ?? '');
     else if (threats) { hint = tr('{n} {n:piece|pieces} can take you right now. Striped squares are dangerous.', { n: threats }); hintColor = DANGER_TXT; }
     else hint = tr('Tap a piece: its paths and who it is chasing show on the board.');
@@ -270,7 +270,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
     hint = tr("During the bots' turn, tap the board to speed up.");
   }
 
-  if (st.puzzle) timer = null; // bulmacada süre yok
+  if (st.puzzle) timer = null; // no timer in puzzles
   const total = ctl.setup.moveSeconds;
   return (
     <section className="panel" aria-label={title} style={{ borderColor: border, boxShadow: glow }}>
@@ -330,10 +330,10 @@ const BONUS_ICONS: Record<BonusKind, string> = {
   swap: 'M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19',
 };
 
-// Düğmede kısa ad: "Çift adım" ile "Çift hamle" dar ekranda aynı görünüyordu.
+// Short names on the buttons: "Double step" and "Double move" looked the same on narrow screens.
 const shortBonus = (k: BonusKind) => (k === 'step' ? tr('Step ×2') : k === 'double' ? tr('Move ×2') : tr(BONUS_NAMES[k]));
 
-// Sırandayken elindeki bonuslar. Zırh kendiliğinden çalışır; diğerine dokun, kareler ona göre yanar.
+// Bonuses you hold on your turn. Armor works by itself; tap another one and the squares light up for it.
 function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
   const b = ctl.state.seats[ME].bonuses;
   if (!Object.values(b).some(n => n > 0)) return null;

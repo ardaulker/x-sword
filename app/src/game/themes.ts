@@ -1,28 +1,29 @@
-// Tahta temaları: kareler, boşluk ve çerçevenin renkleri. İlki hep açık; öbürleri oynadıkça açılır.
-// Yalnız tahta zemini değişir; oyuncu, tehlike ve halka renkleri (tasarımın anlam taşıyan renkleri) olduğu gibi kalır.
+// Board themes: colors of the squares, the void and the frame. The first is always unlocked; the others unlock as you play.
+// Only the board background changes; player, danger and ring colors (the design's meaningful colors) stay as they are.
 
 import { tr } from '../i18n';
 import { loadStats } from './stats';
 import type { Stats } from './stats';
+import { legacyTheme } from './legacy';
 
 export type Need = { kind: 'stars' | 'wins' | 'daily' | 'matches'; n: number };
 
 export interface Theme {
   id: string;
   name: () => string;
-  kare: string;
-  kare2: string;
-  bosluk: string;
-  cerceve: string;
+  square: string;
+  square2: string;
+  voidColor: string;
+  frameColor: string;
   need: null | Need;
 }
 
 export const THEMES: Theme[] = [
-  { id: 'night', name: () => tr('Night'), kare: '#1A2452', kare2: '#1D2858', bosluk: '#070B1E', cerceve: '#0D1431', need: null },
-  { id: 'emerald', name: () => tr('Emerald'), kare: '#15362F', kare2: '#193D35', bosluk: '#06130F', cerceve: '#0B1F1A', need: { kind: 'stars', n: 6 } },
-  { id: 'ember', name: () => tr('Ember'), kare: '#3A2220', kare2: '#432723', bosluk: '#180A09', cerceve: '#261311', need: { kind: 'wins', n: 5 } },
-  { id: 'ice', name: () => tr('Ice'), kare: '#1F3B54', kare2: '#244560', bosluk: '#07131E', cerceve: '#0F2133', need: { kind: 'daily', n: 3 } },
-  { id: 'violet', name: () => tr('Violet'), kare: '#2C2352', kare2: '#322959', bosluk: '#0D0A21', cerceve: '#171234', need: { kind: 'matches', n: 25 } },
+  { id: 'night', name: () => tr('Night'), square: '#1A2452', square2: '#1D2858', voidColor: '#070B1E', frameColor: '#0D1431', need: null },
+  { id: 'emerald', name: () => tr('Emerald'), square: '#15362F', square2: '#193D35', voidColor: '#06130F', frameColor: '#0B1F1A', need: { kind: 'stars', n: 6 } },
+  { id: 'ember', name: () => tr('Ember'), square: '#3A2220', square2: '#432723', voidColor: '#180A09', frameColor: '#261311', need: { kind: 'wins', n: 5 } },
+  { id: 'ice', name: () => tr('Ice'), square: '#1F3B54', square2: '#244560', voidColor: '#07131E', frameColor: '#0F2133', need: { kind: 'daily', n: 3 } },
+  { id: 'violet', name: () => tr('Violet'), square: '#2C2352', square2: '#322959', voidColor: '#0D0A21', frameColor: '#171234', need: { kind: 'matches', n: 25 } },
 ];
 
 const progress = (s: Stats, kind: Need['kind']) =>
@@ -44,7 +45,7 @@ export function needText(t: { need: null | Need }) {
 
 export const needProgress = (t: { need: null | Need }, s: Stats = loadStats()) => (t.need ? Math.min(progress(s, t.need.kind), t.need.n) : 0);
 
-// Taş efektleri (yalnız senin yıldızında görünür, animasyonludur). Başarıyla açılır.
+// Piece effects (shown only on your star, animated). Unlocked by achievements.
 export interface Skin { id: string; name: () => string; need: null | Need }
 export const SKINS: Skin[] = [
   { id: 'none', name: () => tr('None'), need: null },
@@ -55,9 +56,9 @@ export const SKINS: Skin[] = [
 ];
 export const skinById = (id: string) => SKINS.find(s => s.id === id) ?? SKINS[0];
 
-// Açılmış ama oyuncuya henüz haber verilmemiş temalar ve efektler.
+// Themes and effects that are unlocked but not yet announced to the player.
 const SEEN = 'xsword-rewards-seen';
-const seenIds = (): string[] => { try { const d = JSON.parse(localStorage.getItem(SEEN) ?? 'null'); return Array.isArray(d) ? d : ['night', 'none']; } catch { return ['night', 'none']; } };
+const seenIds = (): string[] => { try { const d = JSON.parse(localStorage.getItem(SEEN) ?? 'null'); return Array.isArray(d) ? d.map(legacyTheme) : ['night', 'none']; } catch { return ['night', 'none']; } };
 export interface Reward { kind: 'theme' | 'skin'; id: string; name: string }
 const all = (): Reward[] => [
   ...THEMES.filter(t => isUnlocked(t)).map(t => ({ kind: 'theme' as const, id: t.id, name: t.name() })),
@@ -65,5 +66,5 @@ const all = (): Reward[] => [
 ];
 export const freshRewards = (): Reward[] => { const seen = seenIds(); return all().filter(r => !seen.includes(r.id)); };
 export function markRewardsSeen() {
-  try { localStorage.setItem(SEEN, JSON.stringify([...new Set([...seenIds(), ...all().map(r => r.id)])])); } catch { /* gizli sekme */ }
+  try { localStorage.setItem(SEEN, JSON.stringify([...new Set([...seenIds(), ...all().map(r => r.id)])])); } catch { /* private tab */ }
 }

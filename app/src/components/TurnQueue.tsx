@@ -7,7 +7,7 @@ import { orderNo, previous, upcoming } from '../game/order';
 import { PieceGlyph } from './PieceGlyph';
 import { tr } from '../i18n';
 
-// Üstteki sıra göstergesi: solda şu an oynayan, sağda sıradakiler. Sıra geçince şerit sola kayar.
+// The turn queue on top: the piece moving now on the left, the next ones on the right. The strip slides left as turns pass.
 export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: View; compact: boolean }) {
   const st = ctl.state;
   const glyph = compact ? 18 : 22, slot = glyph + 8;
@@ -18,7 +18,7 @@ export function TurnQueue({ ctl, view, compact }: { ctl: GameController; view: V
   const mine = meNext && (view.phase === 'mine' || view.phase === 'preview');
   const myColor = PLAYER_COLORS[ME];
 
-  // Yerleşim: her taş bir yuva; tur değişince araya "TUR n" ayracı girer.
+  // Layout: each piece is a slot; a "ROUND n" divider goes in where the round changes.
   const placed: { key: string; x: number; id?: string; round: number; head?: boolean; gone?: boolean }[] = [];
   let x = 5, lastRound = items[0]?.round ?? st.round;
   if (prev) placed.push({ key: `${prev.round}:${prev.id}`, x: -slot, id: prev.id, round: prev.round, gone: true });

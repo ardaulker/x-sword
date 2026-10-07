@@ -1,5 +1,5 @@
-// Maçın akışı: sıra kimde, süre, bot turu, mod değişimi, bildirimler.
-// Kuralı motor (engine/) bilir; burası yalnız onun fonksiyonlarını çağırır ve ekrana ne olduğunu söyler.
+// Match flow: whose turn it is, the timer, the bot turn, mode changes, notifications.
+// The engine (engine/) knows the rules; this file only calls its functions and tells the screen what happened.
 
 import {
   BONUS_NAMES, POINTS, isWinner, TWIN_TAKE_MULT, collapseDue, createGame, createPuzzle, endMatch, play, currentActor, legalMoves, pieceById, starOf,
@@ -21,8 +21,8 @@ import { syncCloud } from './platform';
 import type { MatchStart } from '../net/protocol';
 import { tr } from '../i18n';
 
-// Çok oyunculu maçta bu cihazın rolü. Kurucu maçı yürütür ve her hamleyi yayınlar;
-// misafir kendi hamlesini kurucuya gönderir, bütün hamleleri kurucudan alıp uygular.
+// This device's role in a multiplayer match. The host runs the match and broadcasts every move;
+// a guest sends its own move to the host and applies every move it receives from the host.
 export interface NetRole {
   role: 'host' | 'guest';
   broadcast?: (n: number, move: Move | null) => void;
@@ -30,45 +30,45 @@ export interface NetRole {
 }
 
 export type Phase =
-  | 'ready'     // maç başlıyor
-  | 'mine'       // sıra sende
-  | 'preview'  // bir kare seçtin, onay bekleniyor
-  | 'rival'     // başka bir yıldız (yapay zekâ oyuncu) oynuyor
-  | 'bot'       // arena botları oynuyor
-  | 'wait'     // bir hamle oynandı, sıradaki adım geliyor
-  | 'mode'       // mod değişiyor
+  | 'ready'     // the match is starting
+  | 'mine'       // your turn
+  | 'preview'  // you picked a square, waiting for confirmation
+  | 'rival'     // another star (an AI player) is moving
+  | 'bot'       // arena bots are moving
+  | 'wait'     // a move was played, the next step is coming
+  | 'mode'       // the mode is changing
   | 'over';
 
 export interface Setup {
   players: number;
-  level: Level;        // arena botlarının zekâsı
-  aiLevel: Level;      // yapay zekâ rakiplerin (2–4 oyunculu) zekâsı
+  level: Level;        // arena bot intelligence
+  aiLevel: Level;      // AI rival intelligence (2–4 players)
   moveSeconds: number;
-  /** Yalnız tek oyunculuda: tahta kenarı ve arena botu sayısı. */
+  /** Board side and arena bot count. */
   boardSize: number;
   bots: number;
-  /** Günlük meydan okuma: tarih yazısı (YYYY-AA-GG). Doluysa tahta, bot ve zorluk sabittir. */
+  /** Daily challenge: the date text (YYYY-MM-DD). When set, board, bots and difficulty are fixed. */
   daily?: string | null;
-  /** Bulmaca numarası; doluysa maç o bulmacadır. */
+  /** Puzzle id; when set, the match is that puzzle. */
   puzzle?: number | null;
-  /** Seçenekler (varsayılan kapalı): rakip kişilikleri, engel kareleri, takımlı (yalnız 4 oyuncu). */
+  /** Options (off by default): rival personalities, obstacle squares, teams (4 players only). */
   personas?: boolean;
   obstacles?: boolean;
   teams?: boolean;
 }
-// players 1: tek oyunculu mod (sen + aynan İkiz + botlar). 2–4: yapay zekâ oyunculara karşı.
+// players 1: single-player mode (you + your mirror Twin + bots). 2–4: against AI players.
 export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', aiLevel: 'normal', moveSeconds: 20, boardSize: 9, bots: 14 };
 
 export interface Spot { r: number; c: number }
 export interface Trail { key: number; from: Spot; to: Spot; color: string }
 export interface Burst { key: number; r: number; c: number; color: string; big?: boolean }
 export interface Float { key: number; r: number; c: number; text: string; color: string; big?: boolean }
-// Bu turda oynanan son hamleler: tahtada soluk kesik çizgi olarak kalır.
+// The last moves played this round: they stay on the board as faint dashed lines.
 export interface LastMove { id: string; round: number; from: Spot; to: Spot; color: string }
 export interface Toast { key: number; text: string; icon: 'sword' | 'clock' | 'info' | 'ring' }
 export interface Banner { key: number; title: string; sub: string; color: string; pieceId: string | null }
-// attackerId null: taş çöken halkada düştü.
-export interface TakeEvent { key: number; round: number; attackerId: string | null; victimId: string; at: number } // at: o ana kadar oynanan hamle sayısı (tekrarda o ana gitmek için)
+// attackerId null: the piece fell with a collapsing ring.
+export interface TakeEvent { key: number; round: number; attackerId: string | null; victimId: string; at: number } // at: number of moves played up to that moment (to jump there in a replay)
 export type Sheet = { type: 'log' } | { type: 'menu' } | { type: 'results' } | { type: 'coach'; step: number } | null;
 
 export interface View {
@@ -85,15 +85,15 @@ export interface View {
   modeOverlay: boolean;
   sheet: Sheet;
   inspect: string | null;
-  bonus: BonusKind | null; // sırandayken seçtiğin bonus: gidilebilir kareler ona göre // dokunulan taş: yolları ve hedefi tahtada görünür, büyük kart açılmaz
+  bonus: BonusKind | null; // the bonus you picked on your turn: reachable squares follow it
   bots: { done: number; total: number; currentId: string | null };
   events: TakeEvent[];
   clockStart: number;
   clockEnd: number | null;
   watching: boolean;
   shake: number;
-  fall: { key: number; ring: number } | null; // az önce çöken halka (animasyon için)
-  hit: number; // sen alındığında ya da düştüğünde artar: ekran kırmızı parlar
+  fall: { key: number; ring: number } | null; // the ring that just collapsed (for the animation)
+  hit: number; // grows when you are taken or fall: the screen flashes red
   version: number;
 }
 
@@ -118,21 +118,21 @@ export class GameController {
   private bannerUntil = 0;
   private fast = false;
   private decisionShown = false;
-  autoMap = false; // ilk maçlarda tehlike haritası kendiliğinden açık
+  autoMap = false; // the danger map is on by itself in the first matches
   private bonusShown = false;
   private seq = 0;
   private net: NetRole | null = null;
-  private moves: (Move | null)[] = []; // maçın bütün hamleleri, sırayla
-  private waitingSeat: number | null = null; // kurucu: hamlesi beklenen uzak oyuncu
-  private away = new Set<number>(); // kurucu: bağlantısı kopmuş, dönmesi beklenen koltuklar
+  private moves: (Move | null)[] = []; // every move of the match, in order
+  private waitingSeat: number | null = null; // host: the remote player whose move we are waiting for
+  private away = new Set<number>(); // host: disconnected seats that may still come back
   private paused = false;
   private pausedAt = 0;
-  private deferred: (() => void)[] = []; // duraklatılmışken ateşlenen zamanlayıcılar, devam edince çalışır
-  private parked = false;   // ana menüye dönüldü, maç duraklatılıp saklanıyor
-  private restored = false; // maç cihazdaki kayıttan geldi: devam edince sıradaki adım başlatılmalı
-  private opts: Opts | null = null; // bu maçı kuran createGame seçenekleri (kayıt ve tekrar için)
+  private deferred: (() => void)[] = []; // timers that fired while paused; they run on resume
+  private parked = false;   // back on the main menu: the match is paused and kept
+  private restored = false; // the match came from the device save: the next step must start on resume
+  private opts: Opts | null = null; // the createGame options that built this match (for saves and replays)
   private statsDone = false;
-  private undoPoints: number[] = []; // her hamle sırasının başındaki hamle sayısı (geri al için)
+  private undoPoints: number[] = []; // move count at the start of each of my turns (for undo)
   private undosLeft = 3;
   replay: { opts: Opts; moves: (Move | null)[]; i: number } | null = null;
 
@@ -149,10 +149,10 @@ export class GameController {
 
   getSnapshot = () => this.view;
 
-  // ------------------------------------------------------------ maç
+  // ------------------------------------------------------------ match
 
   start() {
-    // İlk üç yerel maçta kısa bir ipucu kartı; "Anladım" deyince maç başlar.
+    // A short tip card in the first three local matches; the match starts when it is dismissed.
     const step = this.net || !settings.tips || this.setup.puzzle != null ? null : coachStep();
     this.autoMap = step != null && step < 2;
     if (step != null) { this.later(500, () => this.emit({ sheet: { type: 'coach', step } })); return; }
@@ -177,12 +177,12 @@ export class GameController {
     this.start();
   }
 
-  // Aynı tahtayla baştan başla (günlük, bulmaca ve normal maçta da aynı yerleşim).
+  // Start over on the same board (same layout for daily, puzzle and normal matches).
   restart() {
     this.newGame(this.setup, this.opts ?? undefined);
   }
 
-  // ------------------------------------------------------------ duraklatma, saklama, sürdürme
+  // ------------------------------------------------------------ pause, save, resume
 
   pause() {
     if (this.net || this.paused || this.replay || this.state.over) return;
@@ -204,7 +204,7 @@ export class GameController {
     if (!this.halted && collapseDue(this.state)) startTension();
   }
 
-  // Oyun ekranından çıkılırken: yarım kalan yerel maç saklanır, yoksa temizlenir.
+  // When leaving the game screen: an unfinished local match is kept, otherwise it is cleaned up.
   leave() {
     if (!this.net && !this.replay && !this.state.over && !this.parked) {
       this.pause();
@@ -215,14 +215,14 @@ export class GameController {
     }
   }
 
-  // Maç tekrarı bağlantısı için kayıt (yalnız yerel maç).
+  // Record for a replay link (local matches only).
   replaySpec(): ReplaySpec | null {
     return !this.net && this.opts ? { opts: this.opts, moves: encodeMoves(this.moves) } : null;
   }
 
   get canResume() { return !this.net && this.parked && !this.state.over; }
 
-  // Ana menüde "Devam et" için kısa özet.
+  // Short summary for "Continue" on the main menu.
   get resumeInfo() { return { round: this.state.round, score: this.state.seats[ME]?.score ?? 0 }; }
 
   unpark() {
@@ -233,7 +233,7 @@ export class GameController {
     if (this.restored) { this.restored = false; this.later(300, () => this.advance()); }
   }
 
-  // Saklanan maçı bırak (yeni maç başlıyor).
+  // Drop the kept match (a new match is starting).
   discardParked() {
     if (!this.parked) return;
     this.dispose();
@@ -245,7 +245,7 @@ export class GameController {
     writeSave({ v: 1, opts: this.opts, setup: this.setup, moves: encodeMoves(this.moves), elapsed: (this.view.clockEnd ?? Date.now()) - this.view.clockStart });
   }
 
-  // Uygulama yeniden açılınca yarım kalan maç saklı durur; ana menüde "Devam et" çıkar.
+  // When the app reopens, an unfinished match is kept; "Continue" shows on the main menu.
   private restoreFromStorage() {
     const s = readSave();
     if (!s) return false;
@@ -267,7 +267,7 @@ export class GameController {
     }
   }
 
-  // ------------------------------------------------------------ maç tekrarı
+  // ------------------------------------------------------------ replay
 
   loadReplay(spec: ReplaySpec) {
     setSeatNames([]);
@@ -288,13 +288,13 @@ export class GameController {
     let done = 0;
     try {
       for (; done < n; done++) play(this.state, r.moves[done]);
-    } catch { /* bozuk kayıt: gelinen yere kadar */ }
+    } catch { /* broken record: play up to where it breaks */ }
     r.i = done;
     this.view = { ...this.freshView(), phase: 'over', clockEnd: Date.now(), version: this.view.version + 1 };
     this.listeners.forEach(fn => fn());
   }
 
-  // Çok oyunculu maç: herkes aynı başlangıçla aynı tahtayı kurar. Sonradan katılan misafir eski hamleleri sessizce oynar.
+  // Multiplayer match: everyone builds the same board from the same start. A guest who joins late replays the earlier moves silently.
   startMatch(match: MatchStart, me: number, net: NetRole, replay: (Move | null)[] = []) {
     if (this.parked) clearSave();
     this.replay = null;
@@ -326,7 +326,7 @@ export class GameController {
     this.restored = false;
   }
 
-  // Maç bitti ya da kazanan belli oldu ve sonuç kartı henüz gösterilmedi: oyun akışı durur.
+  // The match is over, or the winner is decided and the result card hasn't been shown yet: the flow stops.
   private get halted() {
     return this.state.over || (this.state.decided && !this.decisionShown);
   }
@@ -344,7 +344,7 @@ export class GameController {
     if (s.daily) return { seats: [{ kind: 'human' }], neutralLevel: 'normal', seed: seedOf(s.daily), size: DAILY.boardSize, neutrals: DAILY.bots };
     const seats = Array.from({ length: s.players }, (_, i) =>
       i === ME ? { kind: 'human' } : { kind: 'bot', level: s.aiLevel });
-    // Kolayda ilk sen oynarsın; normal ve zorda sıradaki yerin de rastgele.
+    // On Easy you move first; on Normal and Hard your place in the order is random too.
     return {
       seats, neutralLevel: s.level, seed: Math.floor(Math.random() * 2 ** 31), firstSeat: s.level === 'easy' ? ME : null, keepGoing: true,
       size: s.boardSize, neutrals: s.bots,
@@ -366,7 +366,7 @@ export class GameController {
   }
 
   private reset(match?: MatchStart, preset?: { opts: Opts; moves: (Move | null)[] }) {
-    // Koltuk adları: çok oyunculuda lobideki profil adları, tek cihazda senin adın (yapay zekâ "Oyuncu N" kalır).
+    // Seat names: profile names from the lobby in multiplayer, your name on one device (AI players stay "Player N").
     setSeatNames(match ? match.names ?? [] : [getProfile().name]);
     if (match) {
       this.opts = null;
@@ -398,13 +398,13 @@ export class GameController {
     return this.starBotTurn(a);
   }
 
-  // ------------------------------------------------------------ çok oyunculu: kurucu
+  // ------------------------------------------------------------ multiplayer: host
 
-  // Uzak oyuncunun hamlesi beklenir; süre biterse kurucu onun yerine güvenli bir hamle yapar.
+  // Wait for the remote player's move; when time runs out the host makes a safe move for them.
   private remoteTurn(a: Piece) {
     this.waitingSeat = a.kind === 'star' ? a.seat : null;
     this.emit({ phase: 'rival', timer: this.setup.moveSeconds });
-    // Bağlantısı kopan oyuncuyu bekletmeyiz: onun yerine güvenli hamle oynanır, dönerse kaldığı yerden devam eder.
+    // We don't wait for a disconnected player: a safe move is played for them, and they continue if they come back.
     if (a.kind === 'star' && this.away.has(a.seat)) { this.later(500, () => this.awayMove()); return; }
     this.startTicker();
   }
@@ -415,7 +415,7 @@ export class GameController {
     this.commitRemote(chooseMove(this.state, a, 'normal'));
   }
 
-  // Bir misafirin bağlantısı koptu; kısa bir süre geri dönebilir.
+  // A guest disconnected; they can come back for a short while.
   awaySeat(seat: number) {
     if (!this.state.seats[seat] || this.state.seats[seat].kind === 'bot') return;
     this.away.add(seat);
@@ -430,10 +430,10 @@ export class GameController {
     this.emit();
   }
 
-  // Dönen misafire gönderilecek maç geçmişi.
+  // Match history to send to a returning guest.
   movesSoFar() { return [...this.moves]; }
 
-  // Bağlantı durumu bildirimi (misafir ekranı).
+  // Connection status notice (guest screen).
   note(text: string) { this.toast(text, 'info'); }
 
   receiveMove(seat: number, move: Move | null) {
@@ -442,7 +442,7 @@ export class GameController {
     if (this.waitingSeat !== seat || !a || a.kind !== 'star' || a.seat !== seat) return;
     const moves = legalMoves(st, a, st.mode, move?.bonus ?? null);
     const legal = move ? moves.find(m => m.r === move.r && m.c === move.c && (m.bonus ?? null) === (move.bonus ?? null)) : null;
-    if (move ? !legal : moves.length) return; // geçersiz hamle ya da hamlesi varken pas: yok sayılır
+    if (move ? !legal : moves.length) return; // an illegal move, or a pass while moves exist: ignored
     this.commitRemote(legal ?? null);
   }
 
@@ -454,7 +454,7 @@ export class GameController {
     if (o) this.continueAfter(o, 450);
   }
 
-  // Bağlantısı kopan oyuncunun yerine yapay zekâ geçer.
+  // An AI takes over the disconnected player's seat.
   dropSeat(seat: number) {
     const s = this.state.seats[seat];
     this.away.delete(seat);
@@ -470,9 +470,9 @@ export class GameController {
     }
   }
 
-  // ------------------------------------------------------------ çok oyunculu: misafir
+  // ------------------------------------------------------------ multiplayer: guest
 
-  // Misafir hiçbir şeye kendi karar vermez: sırası gelen taşa göre ekranı hazırlar ve kurucunun hamlesini bekler.
+  // A guest decides nothing by itself: it prepares the screen for whoever moves next and waits for the host's move.
   private guestAdvance() {
     const st = this.state;
     if (st.over) return this.finish();
@@ -498,7 +498,7 @@ export class GameController {
     if (!o) return;
     if (this.state.over) return this.finish();
     if (o.roundEnded) {
-      // Kurucu da mod kartını aynı süre gösterip bekler; sıradaki hamle ondan sonra gelir.
+      // The host also shows the mode card for the same time and waits; the next move comes after it.
       this.emit({ phase: 'mode', modeOverlay: true });
       this.later(1300, () => { this.emit({ modeOverlay: false }); this.guestAdvance(); });
       return;
@@ -515,7 +515,7 @@ export class GameController {
   private finish() {
     this.stopTicker();
     stopTension();
-    // Kazanan belli ama botlar var: sonuç kartı "Devam et / Bitir" sorar, saat durmaz.
+    // The winner is decided but bots remain: the result card asks "Continue / End", the clock keeps running.
     const pending = this.state.decided && !this.state.over;
     if (pending) this.decisionShown = true;
     if (this.state.over && !this.statsDone && !this.replay) this.recordResult();
@@ -533,12 +533,12 @@ export class GameController {
     this.emit({
       phase: 'over', clockEnd: pending ? null : this.view.clockEnd ?? Date.now(), sel: null, showThreats: false, modeOverlay: false,
     });
-    // Son hamleyi ve bantları gördükten sonra sonuç kartı açılır.
+    // The result card opens after the last move and the banners have been seen.
     this.later(1600, () => { if (this.view.phase === 'over' && !this.view.sheet) this.emit({ sheet: { type: 'results' } }); });
     feel(isWinner(this.state, ME) ? 'win' : 'lose', isWinner(this.state, ME) ? BUZZ.win : BUZZ.lose);
   }
 
-  // Maç bitince: istatistik, bulmaca yıldızı, yarım kalan kaydın silinmesi.
+  // When the match ends: statistics, puzzle stars, deleting the unfinished save.
   private recordResult() {
     this.statsDone = true;
     const s = this.state, won = isWinner(s, ME);
@@ -553,24 +553,24 @@ export class GameController {
       won, score: s.seats[ME].score, takes: s.seats[ME].takes, rounds: s.round,
       ms: Date.now() - this.view.clockStart, daily: !!this.setup.daily,
     });
-    void syncCloud(); // telefon uygulamasında platform bulut kaydına; web'de bir şey yapmaz
+    void syncCloud(); // to the platform cloud save in the phone app; does nothing on the web
   }
 
-  // Kazanan belliyken botlarla savaşa devam et.
+  // Keep fighting the bots after the winner is decided.
   resume() {
     if (!this.state.decided || this.state.over) return;
     this.emit({ sheet: null, phase: 'wait' });
     this.advance();
   }
 
-  // Kazanan belliyken maçı bitir.
+  // End the match after the winner is decided.
   endNow() {
     endMatch(this.state);
     this.emit({ sheet: null });
     this.finish();
   }
 
-  // ------------------------------------------------------------ senin sıran
+  // ------------------------------------------------------------ your turn
 
   private myTurn() {
     if (this.undoPoints[this.undoPoints.length - 1] !== this.moves.length) this.undoPoints.push(this.moves.length);
@@ -589,11 +589,11 @@ export class GameController {
     return this.view.phase === 'mine' || this.view.phase === 'preview';
   }
 
-  // Bir kare seç. Seçili kareye ikinci kez dokunmak onaylar.
+  // Pick a square. Tapping the selected square again confirms.
   select(move: Move) {
     if (!this.isMyMove()) return;
     this.view = { ...this.view, inspect: null };
-    // Önizlemesiz oyna: dokunduğun kare hemen oynanır.
+    // Play without preview: the tapped square is played right away.
     if (settings.quick && this.view.phase === 'mine') { feel('move', BUZZ.confirm); return this.commitMine(move); }
     const sel = this.view.sel;
     if (this.view.phase === 'preview' && sel && sel.r === move.r && sel.c === move.c) return this.confirm();
@@ -608,14 +608,14 @@ export class GameController {
     this.commitMine(sel);
   }
 
-  // Bonusu seç ya da bırak. Zırh seçilmez, kendiliğinden çalışır.
+  // Pick or drop a bonus. Armor can't be picked; it works by itself.
   selectBonus(kind: BonusKind) {
     if (!this.isMyMove() || kind === 'armor' || !this.state.seats[ME].bonuses[kind]) return;
     feel('select', BUZZ.select);
     this.emit({ phase: 'mine', sel: null, showThreats: false, bonus: this.view.bonus === kind ? null : kind });
   }
 
-  // Geri al: kolay modda (maçta 3 kez) ve bulmacada (sınırsız). Maç, kayıtlı hamlelerden bir önceki sıranın başına kurulur.
+  // Undo: on Easy (3 times per match) and in puzzles (unlimited). The match is rebuilt from the recorded moves at the start of your previous turn.
   get undoAvailable() {
     if (this.net || this.replay || this.setup.daily) return false;
     if (this.state.puzzle) return true;
@@ -670,10 +670,10 @@ export class GameController {
     }
     const o = this.apply(move);
     this.emit({ phase: 'wait', sel: null, showThreats: false, bonus: null });
-    if (o) this.continueAfter(o, move?.type === 'take' ? 750 : 500); // aldığında kısa bir bekleyiş: an hissedilsin
+    if (o) this.continueAfter(o, move?.type === 'take' ? 750 : 500); // a short pause after you take: let the moment land
   }
 
-  // ------------------------------------------------------------ yapay zekâ oyuncular, İkiz ve botlar
+  // ------------------------------------------------------------ AI players, the Twin and bots
 
   private starBotTurn(a: Piece) {
     this.emit({ phase: 'rival', timer: this.setup.moveSeconds });
@@ -686,7 +686,7 @@ export class GameController {
     });
   }
 
-  // İkiz senden hemen sonra, senin yönünde oynar; kısa bir arayla, ayrı bir bölüm açmadan.
+  // The Twin moves right after you, in your direction; after a short gap, without a separate phase.
   private twinTurn(a: Piece) {
     this.emit({ phase: 'wait' });
     this.later(260, () => {
@@ -703,7 +703,7 @@ export class GameController {
     this.botTimer = this.later(250, () => this.botStep());
   }
 
-  // Sıra karışık: bu bölüm, sıradaki yıldıza ya da İkiz'e kadar art arda oynayacak botlardır.
+  // The order is mixed: this run is the bots that move back to back until the next star or the Twin.
   private botRun() {
     const st = this.state, run: string[] = [];
     for (const id of st.order.slice(st.turn)) {
@@ -715,7 +715,7 @@ export class GameController {
     return run;
   }
 
-  // Bir bot oynar; hızlandırıldıysa kalanların hepsi aynı anda.
+  // One bot moves; when sped up, all the rest at once.
   private botStep() {
     this.botTimer = null;
     const st = this.state;
@@ -753,13 +753,13 @@ export class GameController {
     }
   }
 
-  // ------------------------------------------------------------ hamle ve sonuçları
+  // ------------------------------------------------------------ a move and its results
 
   private continueAfter(o: Outcome, pause: number) {
     if (this.halted) {
       this.later(pause, () => this.finish());
     } else if (o.roundEnded) {
-      // Mod kartı, tur sonundaki bantlar (halka çöktü, elendin) okunduktan sonra gelir.
+      // The mode card comes after the end-of-round banners (ring collapsed, you are out) have been read.
       this.later(pause + this.bannerBacklog(), () => this.modeChange());
     } else {
       this.later(pause, () => this.advance());
@@ -770,7 +770,7 @@ export class GameController {
     feel('mode', BUZZ.mode);
     this.emit({ phase: 'mode', modeOverlay: true });
     this.later(settings.fastBots ? 800 : 1300, () => {
-      // Çökecek turun başında açık uyarı: bu tur sonunda dış halkada kalan elenir.
+      // A clear warning at the start of a collapse round: whoever stays on the outer ring at the end of it is out.
       if (collapseDue(this.state)) {
         this.toast(tr('The outer ring collapses at the end of this round!'), 'ring');
         feel('collapse', BUZZ.collapse);
@@ -781,8 +781,8 @@ export class GameController {
     });
   }
 
-  // Sıradaki taşın hamlesini motora oynatır, ekranda iz, patlama, bildirim ve kayıt üretir.
-  // Yayını (emit) çağıran yapar.
+  // Plays the current piece's move in the engine and produces trails, bursts, notices and log entries.
+  // The caller does the emit.
   private apply(move: Move | null): Outcome | null {
     const st = this.state;
     const actor = currentActor(st);
@@ -796,7 +796,7 @@ export class GameController {
 
     play(st, move);
 
-    // Bonus: kullanma, zırhla kurtulma, kazanma.
+    // Bonus: using one, being saved by armor, earning one.
     if (move?.bonus && actor.kind === 'star' && actor.seat === ME) { this.toast(`${tr(BONUS_NAMES[move.bonus])}!`, 'info'); feel('bonusUse', BUZZ.bonusUse); }
     if (victim?.alive && victim.kind === 'star') {
       this.toast(victim.seat === ME ? tr('Your armor saved you!') : tr('{name} survived thanks to armor', { name: labelOf(st, victim) }), 'info');
@@ -827,7 +827,7 @@ export class GameController {
       if (!mine) sound('take');
       this.view = { ...this.view, shake: this.view.shake + 1 };
       const me = victim.kind === 'star' && victim.seat === ME;
-      // Yalnız yıldızlar puan toplar: alınan taşın değeri tahtada uçar, skor tablosu anında güncellenir.
+      // Only stars collect points: the taken piece's value floats over the board and the scoreboard updates at once.
       if (actor.kind === 'star') this.float(move.r, move.c, `+${POINTS[victim.kind]}`, colorOf(actor), mine);
       if (actor.kind === 'twin' && st.seats[ME].score > scoreBefore) {
         const pts = POINTS[victim.kind] * TWIN_TAKE_MULT;
@@ -871,7 +871,7 @@ export class GameController {
     return { roundEnded: st.round !== round, collapsed };
   }
 
-  // ------------------------------------------------------------ geçici görseller
+  // ------------------------------------------------------------ short-lived visuals
 
   private trail(from: Spot, to: Spot, color: string) {
     const key = this.key();
@@ -897,7 +897,7 @@ export class GameController {
     this.later(1800, () => { if (this.view.toast?.key === key) this.emit({ toast: null }); });
   }
 
-  // Bantlar üst üste binmez; sırayla, her biri BANNER_MS görünür.
+  // Banners never overlap; they show one after another, BANNER_MS each.
   private banner(title: string, sub: string, color: string, pieceId: string | null) {
     this.banners.push({ title, sub, color, pieceId });
     if (!this.view.banner) this.nextBanner();
@@ -919,9 +919,9 @@ export class GameController {
     return now + this.banners.length * BANNER_MS;
   }
 
-  // ------------------------------------------------------------ kartlar
+  // ------------------------------------------------------------ sheets
 
-  // Aynı taşa ikinci dokunuş kapatır.
+  // A second tap on the same piece closes it.
   inspectPiece(id: string) {
     feel('select', BUZZ.select);
     this.emit({ inspect: this.view.inspect === id ? null : id });
@@ -938,18 +938,18 @@ export class GameController {
   }
   watch() { this.emit({ watching: true }); }
 
-  // ------------------------------------------------------------ zamanlayıcılar
+  // ------------------------------------------------------------ timers
 
   private startTicker() {
     this.stopTicker();
-    if (this.state.puzzle) return; // bulmacada süre yok
+    if (this.state.puzzle) return; // no timer in puzzles
     this.ticker = window.setInterval(() => {
       const t = this.view.timer - 1;
       if (this.isMyMove()) {
         if (t <= 0) {
           this.stopTicker();
           this.emit({ timer: 0 });
-          if (this.net?.role !== 'guest') this.autoMove(); // misafirde süreyi kurucu yönetir
+          if (this.net?.role !== 'guest') this.autoMove(); // on a guest, the host manages the timer
           return;
         }
         if (t <= 5) feel('tick', BUZZ.lastSeconds);

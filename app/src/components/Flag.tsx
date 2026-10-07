@@ -1,4 +1,4 @@
-// Dil bayrakları: basitleştirilmiş SVG, her sistemde aynı görünür (emoji bayraklar Windows'ta harf olur).
+// Language flags: simplified SVGs that look the same everywhere (emoji flags turn into letters on Windows).
 import type { ReactElement } from 'react';
 import type { Lang } from '../i18n';
 

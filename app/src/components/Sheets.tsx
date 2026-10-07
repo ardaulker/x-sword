@@ -16,7 +16,7 @@ import { PUZZLES } from '../game/puzzles';
 import { puzzleNo, puzzleTitle } from '../game/puzzleText';
 import { tr } from '../i18n';
 
-// Alttan açılan kart; arka plan kararır, dışına dokununca kapanır.
+// A bottom sheet; the background dims and tapping outside closes it.
 function SheetFrame({ label, onClose, children }: { label: string; onClose: () => void; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -39,7 +39,7 @@ const Mini = ({ st, p, size, grey }: { st: GameState; p: Piece; size: number; gr
   <PieceGlyph kind={p.kind} seat={seatOf(p)} size={size} diamond={diamondOf(p, st.mode)} grey={grey} />
 );
 
-// ------------------------------------------------------------ savaş kaydı
+// ------------------------------------------------------------ battle log
 
 export function LogSheet({ ctl, events }: { ctl: GameController; events: TakeEvent[] }) {
   const st = ctl.state;
@@ -79,7 +79,7 @@ export function LogSheet({ ctl, events }: { ctl: GameController; events: TakeEve
   );
 }
 
-// ------------------------------------------------------------ ipucu (ilk üç maç)
+// ------------------------------------------------------------ tips (first three matches)
 
 export function CoachSheet({ step, onDone }: { step: number; onDone: () => void }) {
   const tips: [string, string[]][] = [
@@ -126,7 +126,7 @@ export function CoachSheet({ step, onDone }: { step: number; onDone: () => void 
   );
 }
 
-// ------------------------------------------------------------ menü (ana menü gelene kadar)
+// ------------------------------------------------------------ menus
 
 const levelLabels = (): [Level, string][] => [['easy', tr('Easy')], ['normal', tr('Normal')], ['hard', tr('Hard')]];
 
@@ -139,7 +139,7 @@ export function Opt({ label, sub, on, onChange }: { label: string; sub: string; 
   );
 }
 
-// Duraklatma menüsü: yerel maçta menü düğmesine basınca açılır; oyun bu sırada durur.
+// Pause menu: opens from the menu button in a local match; the game is paused meanwhile.
 export function PauseSheet({ onResume, onNew, onRestart, onSettings, onHome, onEnd }: {
   onResume: () => void; onNew: () => void; onRestart: () => void; onSettings: () => void; onHome: () => void; onEnd?: () => void;
 }) {
@@ -164,7 +164,7 @@ export function PauseSheet({ onResume, onNew, onRestart, onSettings, onHome, onE
   );
 }
 
-// Maç ayarı: ana menüden "Oyuna başla" ile ve oyun içindeki menü düğmesiyle açılır.
+// Match setup: opens from "Play" on the main menu and from the in-game menu button.
 export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: {
   setup: Setup; onStart: (s: Setup) => void; onClose: () => void; onHome?: () => void; onRules?: () => void; onEnd?: () => void;
 }) {
@@ -175,7 +175,7 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
   const [obstacles, setObstacles] = useState(!!setup.obstacles);
   const [teams, setTeams] = useState(!!setup.teams);
   const [pickedSize, setBoardSize] = useState(setup.boardSize);
-  // Bot sayısına dokunulmadıysa (null) tahtaya ve oyuncu sayısına göre varsayılan kalabalık kullanılır.
+  // If the bot count was left untouched (null), the default crowd for the board and player count is used.
   const [picked, setBots] = useState<number | null>(
     setup.bots === defaultNeutrals(setup.players, Math.max(setup.boardSize, SIZE_BY_STARS[setup.players])) ? null : setup.bots);
   const minSize = SIZE_BY_STARS[players];
@@ -261,7 +261,7 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
   );
 }
 
-// Çok oyunculu maçta menü: odadan çıkış.
+// Menu in a multiplayer match: leave the room.
 export function LeaveSheet({ onLeave, onClose }: { onLeave: () => void; onClose: () => void }) {
   return (
     <SheetFrame label={tr('Leave match')} onClose={onClose}>
@@ -278,7 +278,7 @@ export function LeaveSheet({ onLeave, onClose }: { onLeave: () => void; onClose:
   );
 }
 
-// Ödül: animasyonlu efektli yıldız. Bulmaca 3 yıldız alevli, 2 yıldız kristal, maç galibiyeti altın, günlük şimşek.
+// Reward: a star with an animated effect. Puzzle 3 stars flame, 2 stars crystal, a match win gold, the daily lightning.
 function Trophy({ fx, label }: { fx: string; label?: string }) {
   return (
     <div className="res-trophy" aria-hidden="true">
@@ -288,10 +288,10 @@ function Trophy({ fx, label }: { fx: string; label?: string }) {
   );
 }
 
-// Maç sonu özeti: başlık, senin istatistiklerin, sıralama.
+// End-of-match summary: title, your stats, the ranking.
 export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle }: {
   ctl: GameController; time: string; onAgain?: () => void; againLabel: string; onClose: () => void;
-  onPuzzle?: (id: number | null) => void; // bulmaca bitti: sonraki bulmaca (id) ya da liste (null)
+  onPuzzle?: (id: number | null) => void; // puzzle over: the next puzzle (id) or the list (null)
 }) {
   const st = ctl.state;
   const me = st.seats[ME];
@@ -315,7 +315,7 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
   const lasted = (i: number) => (st.seats[i].out ? st.seats[i].outRound ?? st.round : st.round);
   const pending = st.decided && !st.over;
   const title = won ? tr('You won!') : st.solo ? tr('You were taken') : winnerLine(st, order[0]);
-  // Kaybedince: seni kim, hangi turda, hangi yönle aldı.
+  // On a loss: who took you, in which round, in which direction.
   const myStar = starOf(st, ME);
   const fatal = !st.puzzle && myStar && !myStar.alive ? ctl.view.events.find(e => e.victimId === myStar.id) : undefined;
   const killer = fatal?.attackerId ? pieceById(st, fatal.attackerId) : null;
@@ -400,7 +400,7 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
         {!pending && onAgain && <button type="button" className="btn btn-main" onClick={onAgain}>{daily ? tr('Try again') : againLabel}</button>}
       </div>
       {!pending && fatal && ctl.replaySpec() && (
-        <button type="button" className="link-btn res-link" onClick={() => { location.hash = `#/izle/${replayCode(ctl.replaySpec()!)}~${Math.max(0, fatal.at - 6)}`; }}>
+        <button type="button" className="link-btn res-link" onClick={() => { location.hash = `#/replay/${replayCode(ctl.replaySpec()!)}~${Math.max(0, fatal.at - 6)}`; }}>
           {tr('Watch the last moves')}
         </button>
       )}

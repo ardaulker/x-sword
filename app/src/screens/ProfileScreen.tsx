@@ -8,7 +8,7 @@ import { loadStats } from '../game/stats';
 import { tr } from '../i18n';
 import './RulesScreen.css';
 
-// Yuvarlak profil rozeti: adın baş harfi, profil renginde.
+// Round profile badge: the name's initial in the profile color.
 export function ProfileAvatar({ profile, size }: { profile: Pick<Profile, 'name' | 'color'>; size: number }) {
   const initial = (profile.name.trim()[0] ?? '?').toLocaleUpperCase('tr');
   return (
@@ -30,7 +30,7 @@ export function ProfileScreen({ onBack, onStats }: { onBack: () => void; onStats
   const native = platform() !== 'web';
 
   const copy = async () => {
-    try { await navigator.clipboard.writeText(progressCode()); setCopied(true); setTimeout(() => setCopied(false), 1600); } catch { /* izin yok */ }
+    try { await navigator.clipboard.writeText(progressCode()); setCopied(true); setTimeout(() => setCopied(false), 1600); } catch { /* no permission */ }
   };
   const load = () => {
     const ok = importProgress(paste);

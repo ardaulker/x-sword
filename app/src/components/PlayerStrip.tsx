@@ -6,7 +6,7 @@ import { ME, personaName, seatName } from '../game/names';
 import { PieceGlyph } from './PieceGlyph';
 import { tr } from '../i18n';
 
-// Skor: artınca sayı zıplar, üstünde "+N" süzülür.
+// Score: the number bounces when it grows and a "+N" floats above it.
 function Score({ value, size, color }: { value: number; size: number; color: string }) {
   const prev = useRef(value);
   const [pop, setPop] = useState<{ key: number; diff: number } | null>(null);
@@ -22,11 +22,11 @@ function Score({ value, size, color }: { value: number; size: number; color: str
   );
 }
 
-// Skor tablosu: amblemli taş, ad, alma sayısı ve canlı skor. Sırası olanın kenarı kendi renginde yanar.
+// Scoreboard: emblem piece, name, take count and live score. The edge of whoever is moving lights up in their color.
 export function PlayerStrip({ ctl, view, compact }: { ctl: GameController; view: View; compact: boolean }) {
   const st = ctl.state;
   const four = st.seats.length >= 4;
-  const narrow = st.seats.length >= 3 || st.solo; // dar kutuda skor adın altına iner
+  const narrow = st.seats.length >= 3 || st.solo; // in a narrow box the score drops below the name
   const actor = view.phase === 'over' ? null : currentActor(st);
   const timed = view.phase === 'mine' || view.phase === 'preview' || view.phase === 'rival';
   return (
@@ -63,7 +63,7 @@ export function PlayerStrip({ ctl, view, compact }: { ctl: GameController; view:
   );
 }
 
-// Tek oyunculu modda şeritte İkiz ve kalan rakip sayısı da durur: kazanmak için hepsi gitmeli.
+// In single-player mode the strip also shows the Twin and the number of rivals left: they must all be gone to win.
 function SoloItems({ ctl, compact }: { ctl: GameController; compact: boolean }) {
   const st = ctl.state;
   const twin = st.pieces.find(p => p.kind === 'twin');

@@ -18,10 +18,10 @@ import { Icon } from '../components/bits';
 import './GameScreen.css';
 import { tr } from '../i18n';
 
-// Kısa ekranda (iPhone SE ya da tarayıcı çubukları açıkken) başlık ve mod tek satıra iner.
+// On a short screen (iPhone SE, or with browser bars showing) the header and mode fold into one row.
 const COMPACT_BELOW = 740;
-// Panel en uzun hâlinde (önizleme + tehdit çipleri) bu kadar yer ister. Tahta bu payı hep bırakır;
-// böylece panel değişince tahta ne büyür ne kayar. Ortalama ise panelin olağan boyuna göre yapılır.
+// The panel needs this much room at its tallest (preview + threat chips). The board always leaves it,
+// so the board neither grows nor shifts when the panel changes. Centering uses the panel's usual height.
 const PANEL_ROOM = { full: 196, compact: 182 };
 const PANEL_USUAL = { full: 128, compact: 104 };
 const GAP = 6;
@@ -39,7 +39,7 @@ function announce(ctl: GameController, view: View) {
   return '';
 }
 
-// Çok oyunculu maçta: menü odadan çıkarır; kurucu maç sonunda herkesi lobiye döndürebilir.
+// In a multiplayer match: the menu leaves the room; the host can send everyone back to the lobby after the match.
 export interface NetActions {
   onLeave: () => void;
   onRematch?: () => void;
@@ -68,11 +68,11 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
   }, []);
 
   const compact = rootH > 0 && rootH < COMPACT_BELOW;
-  // Telefon yan çevrilince (kısa ve geniş ekran): tahta solda tam yükseklikte, bilgi ve panel sağda.
+  // Phone turned sideways (short and wide screen): the board fills the height on the left, info and panel on the right.
   const landscape = rootH > 0 && rootH < 520 && rootW > rootH * 1.2;
   const st = ctl.state;
   const n = st.size;
-  // Arena daraldıkça çöken halkalar çizilmez, kalan alan büyür. Halka düşme animasyonu bitince geçilir.
+  // As the arena shrinks, collapsed rings are not drawn and the remaining area grows. It switches after the ring's fall animation.
   const [shown, setShown] = useState(st.ring);
   useEffect(() => {
     if (st.ring <= shown) { if (st.ring < shown) setShown(st.ring); return; }
@@ -85,13 +85,13 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
   const usual = landscape ? 0 : compact ? PANEL_USUAL.compact : PANEL_USUAL.full;
   const availW = stage.w - 12, availH = stage.h - room - (landscape ? 0 : GAP);
   const fitK = (a: number, k: number, g: number, pad: number) => Math.floor((a - 2 * BOARD_PAD - 2 * pad - g * (k - 1)) / k);
-  // Tam tahtanın karesi taban; daralınca kare büyür ama ölçülü: en çok 1,7 kat ve 64 px (taban zaten büyükse o kalır).
+  // The full board's square size is the base; after a shrink squares grow, but in moderation: at most 1.7× and 64 px (a bigger base stays).
   const base = Math.max(14, Math.min(fitK(availW, n, boardGap(n), 0), fitK(availH, n, boardGap(n), 0)));
   const cell = Math.max(14, Math.min(fitK(availW, vis, gap, rings), fitK(availH, vis, gap, rings), Math.round(base * 1.7), Math.max(base, 64)));
   const outer = boardOuter(vis, cell) + 2 * rings;
   const boardTop = Math.max(0, Math.min(availH - outer, Math.floor((stage.h - usual - (landscape ? 0 : GAP) - outer) / 2)));
 
-  // Büyük tahtada (13×13 ve üstü) yakınlaştır: kareler en az 34 px olur, tahta kaydırılır ve senin taşına ortalanır.
+  // Zoom on big boards (13×13 and up): squares become at least 34 px, the board scrolls and centers on your piece.
   const [zoom, setZoom] = useState(false);
   const canZoom = vis >= 13 && !st.puzzle;
   const zoomed = canZoom && zoom;
@@ -111,7 +111,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
 
   const sheet = view.sheet;
   const [rulesOpen, setRulesOpen] = useState(false);
-  const [sub, setSub] = useState<null | 'yeni' | 'ayar'>(null);
+  const [sub, setSub] = useState<null | 'new' | 'settings'>(null);
   const matchTime = useMatchTime(view.clockStart, view.clockEnd);
   const goPuzzle = (id: number) => onNewGame({ ...ctl.setup, puzzle: id });
   const bars = (
@@ -163,11 +163,11 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
           onPuzzle={id => (id == null ? onPuzzles?.() : onNewGame({ ...ctl.setup, puzzle: id }))}
         />
       )}
-      {sheet?.type === 'menu' && !net && (sub === 'yeni'
+      {sheet?.type === 'menu' && !net && (sub === 'new'
         ? <SetupSheet setup={ctl.setup} onStart={s => { setSub(null); onNewGame(s); }} onClose={() => setSub(null)} />
-        : <PauseSheet onResume={() => ctl.closeSheet()} onNew={() => setSub('yeni')} onRestart={() => ctl.restart()} onSettings={() => setSub('ayar')}
+        : <PauseSheet onResume={() => ctl.closeSheet()} onNew={() => setSub('new')} onRestart={() => ctl.restart()} onSettings={() => setSub('settings')}
           onHome={onHome} onEnd={ctl.state.decided && !ctl.state.over ? () => ctl.endNow() : undefined} />)}
-      {sheet?.type === 'menu' && !net && sub === 'ayar' && (
+      {sheet?.type === 'menu' && !net && sub === 'settings' && (
         <div className="rules-overlay"><SettingsScreen inGame onBack={() => setSub(null)} onRules={() => setRulesOpen(true)} /></div>
       )}
       {rulesOpen && <div className="rules-overlay"><RulesScreen onBack={() => setRulesOpen(false)} /></div>}

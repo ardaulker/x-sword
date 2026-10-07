@@ -14,18 +14,20 @@ import { StatsScreen } from './screens/StatsScreen';
 import { PuzzleScreen } from './screens/PuzzleScreen';
 import { ReplayScreen } from './screens/ReplayScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
+import { legacyLevel } from './game/legacy';
 
 const SETUP_KEY = 'xsword-app-setup';
 
 function loadSetup(): Setup {
   try {
     const s = JSON.parse(localStorage.getItem(SETUP_KEY) ?? 'null');
+    if (s) { s.level = legacyLevel(s.level ?? ''); if (s.aiLevel) s.aiLevel = legacyLevel(s.aiLevel); }
     if (s && [1, 2, 3, 4].includes(s.players) && ['easy', 'normal', 'hard'].includes(s.level)) {
-      // Eski sürümden kalan kayıtta tahta/bot sayısı oyuncu sayısına göre seçilmemişti: varsayılana dön.
+      // A save from an old version had no per-player-count board/bot choice: fall back to the defaults.
       return s.aiLevel ? { ...DEFAULT_SETUP, ...s } : { ...DEFAULT_SETUP, players: s.players, level: s.level };
     }
   } catch {
-    // Kayıt yoksa ya da bozuksa varsayılanla başla.
+    // No save, or a broken one: start with the defaults.
   }
   return DEFAULT_SETUP;
 }
@@ -34,20 +36,27 @@ function saveSetup(s: Setup) {
   try {
     localStorage.setItem(SETUP_KEY, JSON.stringify(s));
   } catch {
-    // Gizli sekmede kayıt tutulamayabilir; oyun yine çalışır.
+    // A private tab may not keep saves; the game still works.
   }
 }
 
-// Ekranlar adres çubuğundaki #/ ile seçilir; telefonun geri tuşu bir önceki ekrana döndürür.
-// #/katil/KOD davet linkidir: açınca o odaya katılır.
+// Screens are chosen by the #/ in the address bar; the phone's back button returns to the previous screen.
+// #/join/CODE is an invite link: opening it joins that room. #/replay/CODE opens a replay.
+// Links shared before the English rename use the old Turkish paths; they still work (LEGACY).
 type Screen = 'menu' | 'play' | 'rules' | 'settings' | 'multiplayer' | 'room' | 'match' | 'join' | 'stats' | 'puzzles' | 'replay' | 'profile';
 const SCREENS: Screen[] = ['play', 'rules', 'settings', 'multiplayer', 'room', 'match', 'stats', 'puzzles', 'profile'];
-function readScreen(): Screen {
-  const h = location.hash.replace(/^#\//, '');
-  if (h.startsWith('katil/')) return 'join';
-  if (h.startsWith('izle/')) return 'replay';
-  return SCREENS.find(s => s === h) ?? 'menu';
+const LEGACY: Record<string, Screen> = {
+  oyun: 'play', kurallar: 'rules', ayarlar: 'settings', cok: 'multiplayer', oda: 'room', mac: 'match',
+  istatistik: 'stats', bulmaca: 'puzzles', profil: 'profile', katil: 'join', izle: 'replay',
+};
+// The route and its argument (invite or replay code): "join/ABCDE" → ['join', 'ABCDE'].
+function readRoute(): [Screen, string] {
+  const [head, ...rest] = location.hash.replace(/^#\//, '').split('/');
+  const s = (LEGACY[head] ?? head) as Screen;
+  if (s === 'join' || s === 'replay') return [s, rest.join('/')];
+  return [SCREENS.includes(s) ? s : 'menu', ''];
 }
+const readScreen = () => readRoute()[0];
 const go = (s: Screen, replace = false) => {
   const hash = s === 'menu' ? '#/' : `#/${s}`;
   if (replace) { history.replaceState(null, '', hash); window.dispatchEvent(new HashChangeEvent('hashchange')); }
@@ -70,15 +79,15 @@ export function App() {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
-  // Tek cihazda oyun: ekrana girince maç başlar (saklanan varsa sürer), çıkınca duraklatılıp saklanır.
+  // Single-device game: entering the screen starts the match (or resumes a kept one); leaving pauses and keeps it.
   useEffect(() => {
     if (screen !== 'play') return;
     if (ctl.canResume) ctl.unpark(); else ctl.newGame(ctl.setup);
-    return () => { ctl.leave(); setTick(n => n + 1); }; // menüde "Devam et" görünsün
+    return () => { ctl.leave(); setTick(n => n + 1); }; // so "Continue" shows on the menu
   }, [ctl, screen]);
 
-  // Oda ekranlarından (lobi, maç) başka bir ekrana geçince oda kapanır. Yalnız ekran değişince bakılır:
-  // oda, adres değişmeden hemen önce kurulur.
+  // Leaving the room screens (lobby, match) for another screen closes the room. Only screen changes are checked:
+  // the room is created right before the address changes.
   const roomRef = useRef(room);
   roomRef.current = room;
   const joined = useRef('');
@@ -89,8 +98,8 @@ export function App() {
     joined.current = '';
   }, [screen]);
 
-  // Davet linki: odaya katıl ve lobiye geç. Kod ekran çizilirken okunur; katılma bir kez olur.
-  const joinCode = screen === 'join' ? location.hash.replace(/^#\/katil\//, '').toUpperCase() : '';
+  // Invite link: join the room and go to the lobby. The code is read while rendering; joining happens once.
+  const joinCode = screen === 'join' ? readRoute()[1].toUpperCase() : '';
   useEffect(() => {
     if (!joinCode || joined.current === joinCode) return;
     joined.current = joinCode;
@@ -98,7 +107,7 @@ export function App() {
     else go('multiplayer', true);
   }, [ctl, joinCode]);
 
-  // Odasız lobi ya da maç adresi açılırsa geri gönder; maç başlayınca ya da lobiye dönülünce ekran izler.
+  // A lobby or match address without a room goes back; the screen follows when the match starts or returns to the lobby.
   useEffect(() => {
     if (!room) {
       if (screen === 'room') go('multiplayer', true);
@@ -123,7 +132,7 @@ export function App() {
   if (screen === 'puzzles') {
     return <PuzzleScreen onBack={() => go('menu')} onPick={id => start({ ...ctl.setup, players: 1, daily: null, puzzle: id })} />;
   }
-  if (screen === 'replay') return <ReplayScreen code={location.hash.replace(/^#\/izle\//, '')} onBack={() => go('menu')} />;
+  if (screen === 'replay') return <ReplayScreen code={readRoute()[1]} onBack={() => go('menu')} />;
   if (screen === 'rules') return <RulesScreen onBack={() => go('menu')} />;
   if (screen === 'settings') return <SettingsScreen onBack={() => go('menu')} onRules={() => go('rules')} />;
   if (screen === 'match' && room) {

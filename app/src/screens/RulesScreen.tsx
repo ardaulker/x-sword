@@ -10,8 +10,8 @@ import './RulesScreen.css';
 const ORTH = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 const DIAG = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
 
-// 3×3 küçük tahta: ortada taş, yürüdüğü kareler nokta, alabildiği kareler nişan.
-// hop: ortadaki taş bu aralıkta (satır, sütun) yürür ya da alır, sonra yerine döner; prey: hop karesinde duran ve alınınca silinen taş.
+// Small 3×3 board: the piece in the middle, dots on squares it walks to, crosshairs on squares it takes.
+// hop: the middle piece walks or takes by this offset (row, col) and returns; prey: a piece on the hop square that vanishes when taken.
 function Mini({ piece, diamond, walk, take, hop, prey }: { piece: PieceLook; diamond: boolean; walk: number[][]; take: number[][]; hop?: number[]; prey?: PieceLook }) {
   const cells: ReactNode[] = [];
   for (let r = -1; r <= 1; r++) {

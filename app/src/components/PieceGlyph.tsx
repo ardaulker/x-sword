@@ -8,7 +8,7 @@ export interface PieceLook {
 
 interface Props extends PieceLook {
   size: number;
-  // Yıldız modun yönünde döner: DÜZ kare, ÇAPRAZ elmas. Kızıl hep kare, Çelik hep elmas.
+  // A star turns with the mode: a square in STRAIGHT, a diamond in DIAGONAL. Red is always a square, blue always a diamond.
   diamond: boolean;
   grey?: boolean;
   className?: string;
@@ -17,7 +17,7 @@ interface Props extends PieceLook {
   children?: ReactNode;
 }
 
-// Taşın şekli ve iç işareti. Tahtada da, şeritte, çipte ve kayıtta da aynı çizim kullanılır.
+// The piece's shape and inner mark. The same drawing is used on the board, the strip, chips and the log.
 export function PieceGlyph({ kind, seat = 0, size, diamond, grey, className, style, svgExtra, children }: Props) {
   const ring = Math.max(1.5, size * 0.06).toFixed(1);
   const star = kind === 'star' || kind === 'twin';

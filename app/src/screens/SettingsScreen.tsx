@@ -28,7 +28,7 @@ function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: 
   );
 }
 
-// Kilitli bir stilin büyük önizlemesi: neye benzediği, nasıl açıldığı ve ilerleme.
+// Big preview of a locked style: what it looks like, how it unlocks and the progress.
 function PeekCard({ title, need, stats, children, onClose }: { title: string; need: null | Need; stats: ReturnType<typeof loadStats>; children: ReactNode; onClose: () => void }) {
   const have = need ? needProgress({ need }, stats) : 0;
   return (
@@ -45,12 +45,12 @@ function PeekCard({ title, need, stats, children, onClose }: { title: string; ne
   );
 }
 
-// inGame: maç sürerken açıldı; oyunu değiştiren ayarlar gizlenir (yalnız ses, titreşim ve dil kalır).
+// inGame: opened during a match; settings that change the game are hidden (only sound, vibration and language remain).
 export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: () => void; onRules?: () => void; inGame?: boolean }) {
   const lang = useLang();
   const [s, setS] = useState(settings);
   const stats = loadStats();
-  // Kilitli bir stile dokunmak onu seçmez, büyük önizlemesini açar: neyi elde edeceğini görür.
+  // Tapping a locked style doesn't select it; it opens the big preview so players see what they would get.
   const [peek, setPeek] = useState<{ kind: 'skin' | 'theme'; id: string } | null>(null);
   const update = (patch: Partial<Settings>) => { const next = { ...s, ...patch }; setS(next); saveSettings(next); };
   return (
@@ -157,7 +157,7 @@ export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: ()
                 <button key={t.id} type="button" role="radio" aria-checked={s.theme === t.id}
                   className={`theme-chip${s.theme === t.id ? ' is-on' : ''}${open ? '' : ' is-locked'}${peek?.id === t.id && peek.kind === 'theme' ? ' is-peek' : ''}`}
                   onClick={() => { if (open) { update({ theme: t.id }); setPeek(null); } else setPeek({ kind: 'theme', id: t.id }); }}>
-                  <span className="theme-sw" aria-hidden="true" style={{ background: `linear-gradient(135deg, ${t.kare} 50%, ${t.kare2} 50%)`, boxShadow: `inset 0 0 0 5px ${t.cerceve}` }}>
+                  <span className="theme-sw" aria-hidden="true" style={{ background: `linear-gradient(135deg, ${t.square} 50%, ${t.square2} 50%)`, boxShadow: `inset 0 0 0 5px ${t.frameColor}` }}>
                     {!open && <Icon d="M7 11 V8 A5 5 0 0 1 17 8 V11 M6 11 H18 V20 H6 Z" size={16} stroke={2.2} />}
                   </span>
                   <b>{t.name()}</b>
@@ -170,8 +170,8 @@ export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: ()
             const t = THEMES.find(x => x.id === peek.id)!;
             return (
               <PeekCard title={t.name()} need={t.need} stats={stats} onClose={() => setPeek(null)}>
-                <div className="peek-board" style={{ background: t.cerceve }}>
-                  {Array.from({ length: 28 }, (_, i) => <i key={i} style={{ background: (Math.floor(i / 7) + i) % 2 ? t.kare2 : t.kare }} />)}
+                <div className="peek-board" style={{ background: t.frameColor }}>
+                  {Array.from({ length: 28 }, (_, i) => <i key={i} style={{ background: (Math.floor(i / 7) + i) % 2 ? t.square2 : t.square }} />)}
                   <span className="peek-star"><PieceGlyph kind="star" seat={0} size={22} diamond={false} /></span>
                 </div>
               </PeekCard>

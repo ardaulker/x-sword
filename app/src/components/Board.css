@@ -1,4 +1,4 @@
-/* Tahta: ızgara → çizgiler → efektler → taşlar → mod kartı / bant. */
+/* Board: grid → lines → effects → pieces → mode card / banner. */
 
 .board-frame {
   position: relative; flex: none; border-radius: 16px; box-sizing: border-box;
@@ -13,10 +13,10 @@
 .cell { position: relative; clip-path: var(--clip); }
 .cell svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-/* Bir tur sonra çökecek halka: ince turuncu kenar. */
+/* A ring that collapses next round: thin orange edge. */
 .cell-soon { box-shadow: inset 0 0 0 2px rgba(255, 138, 61, .45); }
 
-/* Halka çöküşü: kareler sırayla parlar, içe göçer, karanlık boşluk olarak döner. */
+/* Ring collapse: squares flash in sequence, cave in, and return as dark void. */
 .cell-fall { animation: cell-fall calc(420ms * var(--speed-factor)) ease-in backwards; }
 @keyframes cell-fall {
   0% { transform: scale(1); background: var(--pat-hazard); filter: brightness(1.8); }
@@ -24,13 +24,13 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* Çökecek halka: şerit dışa akar. */
+/* Collapsing ring: the stripes flow outward. */
 .cell-flow { animation: hazard-flow calc(1200ms * var(--speed-factor)) linear infinite; }
 @keyframes hazard-flow { to { background-position: 11.31px 0; } }
 
 .board-layer { position: absolute; pointer-events: none; }
 
-/* Çöken halkanın izi: yavaşça titreşen kor ışıltısı; göz yormasın diye düşük genlik, 3 sn civarı. */
+/* Trace of a collapsed ring: a slowly flickering ember glow; low amplitude, about 3 s, so it doesn't tire the eyes. */
 .ring-trace {
   position: absolute; border: 3px solid; pointer-events: none; box-sizing: border-box;
   animation: ember-glow 3.2s ease-in-out infinite;
@@ -70,7 +70,7 @@
 }
 @keyframes ghost-in { from { opacity: 0; } }
 
-/* Senin aldığın taş: daha büyük patlama ve puan. */
+/* A piece you took: a bigger burst and score. */
 .board-burst.is-big { animation: burst-big calc(520ms * var(--speed-factor)) ease-out forwards; }
 @keyframes burst-big {
   0% { transform: scale(.5); opacity: 1; filter: brightness(2); }
@@ -79,7 +79,7 @@
 }
 .board-float.is-big { font-size: 28px; text-shadow: 0 0 10px currentColor, 0 0 3px #0B1026; animation-duration: calc(1500ms * var(--speed-factor)); z-index: 6; }
 
-/* Alınan taşın puanı: kareden yukarı süzülür. */
+/* The taken piece's points float up from the square. */
 .board-float {
   position: absolute; z-index: 5; transform: translate(-50%, 0); pointer-events: none;
   font: 800 16px var(--font-display); text-shadow: 0 0 6px rgba(11, 16, 38, .9), 0 0 2px #0B1026; white-space: nowrap;
@@ -92,7 +92,7 @@
   100% { transform: translate(-50%, -34px) scale(1); opacity: 0; }
 }
 
-/* Hale: sıra sende · tehdit · çökecek halkada · oynayan bot · seçili */
+/* Halo: your turn · threat · on the collapsing ring · bot moving · selected */
 .halo { position: absolute; inset: -6%; border-radius: 50%; box-sizing: border-box; pointer-events: none; }
 .halo-turn { border: 2px solid; opacity: .9; }
 .halo-ring { border: 2px dashed var(--hazard); }
@@ -103,7 +103,7 @@
 .halo-current { border: 2px solid #FFFFFF; }
 .halo-pinned { border: 2.5px solid #FFFFFF; box-shadow: 0 0 0 4px rgba(255, 255, 255, .2); }
 
-/* Sıra numarası: hep görünür. Şu an oynayan buz renginde, sıradaki 3 taş açık, diğerleri sönük. */
+/* Turn number: always visible. The piece moving now in ice, the next 3 light, the rest dim. */
 .pip {
   position: absolute; left: -4px; top: -4px; z-index: 1; min-width: 13px; height: 13px; padding: 0 2px;
   border-radius: 7px; font: 700 8.5px/13px var(--font-display); text-align: center;
@@ -123,7 +123,7 @@
   box-shadow: 0 0 0 2px var(--ink);
 }
 
-/* Mod değişimi */
+/* Mode change */
 .mode-ov {
   position: absolute; inset: 0; z-index: 6; border-radius: 16px; overflow: hidden; pointer-events: none;
   display: flex; align-items: flex-start; justify-content: center; padding-top: 10px;
@@ -159,11 +159,11 @@
 @media (prefers-reduced-motion: reduce) {
   .cell-flow, .cell-fall, .mode-ov-band, .mode-ov-pill, .mode-flip, .halo-me, .board-burst.is-big { animation: none; }
 } 
-/* ---------------------------------------------------------- taş efektleri (SkinFx) */
+/* ---------------------------------------------------------- piece effects (SkinFx) */
 .fx { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
 .fx svg { position: absolute; overflow: visible; }
 
-/* Alev: taşın üstünden yükselen üç dil ve kıvılcımlar. */
+/* Flame: three tongues rising from the top of the piece, plus embers. */
 .fx-flame svg { left: -18%; top: -78%; width: 136%; height: 118%; filter: drop-shadow(0 0 5px rgba(255, 120, 20, .85)); }
 .fl { transform-box: fill-box; transform-origin: 50% 100%; animation: fl-flick 0.9s ease-in-out infinite; }
 .fl-b { animation-duration: 0.7s; animation-delay: -0.3s; }
@@ -179,7 +179,7 @@
 .fx-ember.e3 { left: 42%; top: -8%; animation-delay: -1s; }
 @keyframes ember { 0% { transform: translateY(0) scale(1); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(-120%) scale(.2); opacity: 0; } }
 
-/* Şimşek: dönen kesik halka ve çakan yıldırımlar. */
+/* Lightning: a spinning dashed ring and flashing bolts. */
 .fx-bolt svg { inset: -10%; width: 120%; height: 120%; filter: drop-shadow(0 0 4px #4CC9FF); }
 .fx-bolt .ring { transform-box: fill-box; transform-origin: center; animation: fx-spin 5s linear infinite; }
 .fx-bolt .bolt { opacity: 0; animation: bolt-zap 1.8s steps(1) infinite; }
@@ -188,13 +188,13 @@
 @keyframes bolt-zap { 0%, 9% { opacity: 1; } 12%, 40% { opacity: 0; } 46%, 52% { opacity: 1; } 56%, 100% { opacity: 0; } }
 @keyframes fx-spin { to { transform: rotate(360deg); } }
 
-/* Kristal: etrafında dönen buz kıymıkları ve soğuk ışıma. */
+/* Crystal: ice shards orbiting the piece and a cold glow. */
 .fx-crystal .glow { position: absolute; inset: -14%; border-radius: 50%; background: radial-gradient(circle, rgba(130, 220, 255, .38), transparent 68%); animation: glow-pulse 2.2s ease-in-out infinite; }
 .fx-crystal .orbit { position: absolute; inset: 0; animation: fx-spin 4.5s linear infinite; }
 .fx-crystal .shard { position: absolute; left: 38%; top: 38%; width: 24%; height: 24%; background: linear-gradient(135deg, #FFFFFF, #7FD8FF); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); box-shadow: 0 0 6px #7FD8FF; transform-origin: 50% 50%; }
 @keyframes glow-pulse { 0%, 100% { opacity: .55; transform: scale(.95); } 50% { opacity: 1; transform: scale(1.08); } }
 
-/* Altın: sıcak ışıma ve yanıp sönen parıltılar. */
+/* Gold: a warm glow and twinkling sparkles. */
 .fx-gold .halo-gold { position: absolute; inset: -16%; border-radius: 50%; background: radial-gradient(circle, rgba(255, 214, 90, .55), transparent 66%); animation: glow-pulse 1.8s ease-in-out infinite; }
 .fx-gold .spark { width: 30%; height: 30%; filter: drop-shadow(0 0 4px #FFC93C); animation: twinkle 1.6s ease-in-out infinite; }
 .fx-gold .sp0 { left: -14%; top: -12%; }

@@ -13,9 +13,9 @@ import { tr } from '../i18n';
 const levels = (): [Level, string][] => [['easy', tr('Easy')], ['normal', tr('Normal')], ['hard', tr('Hard')]];
 
 export const inviteLink = (code: string) =>
-  `${location.origin}${location.pathname}#/katil/${code}`;
+  `${location.origin}${location.pathname}#/join/${code}`;
 
-// ------------------------------------------------------------ giriş: oda kur ya da koda katıl
+// ------------------------------------------------------------ entry: create a room or join by code
 
 export function MultiplayerEntry({ onHost, onJoin, onBack, error }: {
   onHost: () => void; onJoin: (code: string) => void; onBack: () => void; error: string;
@@ -48,7 +48,7 @@ export function MultiplayerEntry({ onHost, onJoin, onBack, error }: {
   );
 }
 
-// ------------------------------------------------------------ lobi
+// ------------------------------------------------------------ lobby
 
 export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave: () => void; onStart: () => void }) {
   const v = useSyncExternalStore(room.subscribe, room.getSnapshot);
@@ -65,7 +65,7 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
   const link = v.code ? inviteLink(v.code) : '';
 
   const copy = async () => {
-    try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* izin yoksa sessiz */ }
+    try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* silent without permission */ }
   };
   const share = () => {
     const text = tr('Join me in X Sword! Room code: {code}', { code: v.code });
@@ -116,7 +116,7 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
         <div className="seats">
           {v.seats.map((s, i) => {
             const filled = s.kind !== 'empty';
-            // Boş koltuklar maçta atlanır: numara ve renk maçtaki sıraya göre.
+            // Empty seats are skipped in the match: number and color follow the match order.
             const n = v.seats.slice(0, i).filter(x => x.kind !== 'empty').length;
             const tag = s.kind === 'host' ? tr('Host') : s.kind === 'bot' ? tr('AI') : tr('Player');
             return (

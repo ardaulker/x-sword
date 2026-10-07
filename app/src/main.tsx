@@ -7,7 +7,7 @@ import { applySettings } from './game/settings';
 import { bootPlatform } from './game/platform';
 
 applySettings();
-void bootPlatform(); // telefon uygulamasında Game Center / Play Games girişi; web'de bir şey yapmaz
+void bootPlatform(); // Game Center / Play Games sign-in in the phone app; does nothing on the web
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

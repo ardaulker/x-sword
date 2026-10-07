@@ -1,5 +1,5 @@
-// Taş efektleri: yıldızın çevresinde dönen animasyonlu süs. Yalnız görsel; kural ya da hamle değişmez.
-// Taşın içine (PieceGlyph çocuğu olarak) konur; boyutunu taşın kutusundan alır.
+// Piece effects: an animated decoration around the star. Purely visual; no rule or move changes.
+// Placed inside the piece (as a PieceGlyph child); it takes its size from the piece's box.
 
 export function SkinFx({ id }: { id: string }) {
   if (id === 'flame') {

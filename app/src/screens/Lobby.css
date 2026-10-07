@@ -1,4 +1,4 @@
-/* Çok oyunculu giriş ve lobi (tasarım: design/reference/Lobi.dc.html). */
+/* Multiplayer entry and lobby (design: design/reference/Lobby.dc.html). */
 
 .lobby {
   position: relative; display: flex; flex-direction: column;

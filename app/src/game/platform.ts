@@ -1,10 +1,10 @@
-// Telefon uygulaması köprüsü. Oyun bugün web'de çalışır; iOS ve Android uygulaması Capacitor kabuğuyla gelecek.
-// O kabukta bizim yazacağımız küçük bir yerel eklenti ("XSwordGames") şunları sağlar:
-//   iOS     → Game Center ile sessiz giriş + Game Center kayıtlı oyun (iCloud)
-//   Android → Google Play Games Services v2 ile sessiz giriş + Play Games kayıtlı oyun
-// Web'de eklenti yoktur: bütün fonksiyonlar sessizce hiçbir şey yapmaz ve misafir profil kullanılır.
-// Eklentinin sözleşmesi aşağıdaki NativeGames arayüzüdür; yerel taraf yazılınca bu dosya değişmez.
-// Ayrıntı ve kurulum adımları: docs/profil-altyapisi.md
+// Phone app bridge. Today the game runs on the web; the iOS and Android apps will come as a Capacitor shell.
+// In that shell a small native plugin we will write ("XSwordGames") provides:
+//   iOS     → silent sign-in with Game Center + Game Center saved games (iCloud)
+//   Android → silent sign-in with Google Play Games Services v2 + Play Games saved games
+// On the web there is no plugin: every function quietly does nothing and the guest profile is used.
+// The plugin contract is the NativeGames interface below; this file won't change once the native side is written.
+// Details and setup steps: docs/profile-infrastructure.md
 
 import { getProfile, updateProfile, cleanName } from './profile';
 import type { Provider } from './profile';
@@ -13,8 +13,8 @@ import { mergeProgress, parseProgress, progressCode, readProgress, writeProgress
 export interface NativePlayer { provider: Exclude<Provider, 'guest'>; playerId: string; displayName: string }
 
 interface NativeGames {
-  signIn(): Promise<NativePlayer>;                        // sessiz giriş; gerekirse sistem penceresini açar
-  loadSnapshot(): Promise<{ data: string | null }>;       // platform bulut kaydındaki ilerleme (progressCode biçimi)
+  signIn(): Promise<NativePlayer>;                        // silent sign-in; opens the system sheet if needed
+  loadSnapshot(): Promise<{ data: string | null }>;       // progress in the platform cloud save (progressCode format)
   saveSnapshot(opts: { data: string }): Promise<void>;
 }
 
@@ -32,7 +32,7 @@ export const platform = (): 'ios' | 'android' | 'web' => {
   return p === 'ios' || p === 'android' ? p : 'web';
 };
 
-// Uygulama açılınca: platform hesabıyla bağlan, buluttaki ilerlemeyle birleştir. Web'de hiçbir şey yapmaz.
+// On app start: connect the platform account and merge with the progress in the cloud. Does nothing on the web.
 export async function bootPlatform() {
   const g = games();
   if (!g) return;
@@ -40,16 +40,16 @@ export async function bootPlatform() {
     const player = await g.signIn();
     const p = getProfile();
     const name = cleanName(player.displayName);
-    // Adını hiç değiştirmemiş oyuncuya platformdaki adı öner (değiştirdiyse onunki kalır).
+    // Give a player who never changed their name the platform name (a changed name is kept).
     const keepName = p.provider !== 'guest' || !/^\S+ \d{3}$/.test(p.name);
     updateProfile({ provider: player.provider, providerId: player.playerId, providerName: name || null, ...(keepName || !name ? {} : { name }) });
     await syncCloud();
   } catch {
-    // Giriş reddedildi ya da ağ yok: misafir profil ve cihazdaki ilerleme kullanılır.
+    // Sign-in refused or no network: the guest profile and the on-device progress are used.
   }
 }
 
-// Buluttaki ilerlemeyi cihazdakiyle birleştirir ve sonucu ikisine de yazar. Maç sonunda da çağrılır.
+// Merges the cloud progress with the on-device progress and writes the result to both. Also called at the end of a match.
 export async function syncCloud() {
   const g = games();
   if (!g || getProfile().provider === 'guest') return;
@@ -59,5 +59,5 @@ export async function syncCloud() {
     const merged = remote ? mergeProgress(readProgress(), remote) : readProgress();
     writeProgress(merged);
     await g.saveSnapshot({ data: progressCode(merged) });
-  } catch { /* sonra yeniden denenir */ }
+  } catch { /* retried later */ }
 }

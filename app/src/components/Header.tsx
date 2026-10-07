@@ -7,7 +7,7 @@ import { Icon, MatchClock, RingIcon, useMatchTime } from './bits';
 import { ModeIcon } from './ModeOverlay';
 import { tr } from '../i18n';
 
-// Halka çipi. Üst çubukta maç saati de olduğu için yazı kısa tutulur; dar ekranda ve izlerken daha da kısalır.
+// Ring chip. The text is kept short because the top bar also has the match clock; it gets shorter on narrow screens and while watching.
 function ringInfo(st: GameState) {
   if (st.puzzle) {
     const text = tr('Move {a}/{b}', { a: Math.min(st.puzzle.used + 1, st.puzzle.limit), b: st.puzzle.limit });
@@ -44,7 +44,7 @@ function MenuButton({ ctl, size }: { ctl: GameController; size: number }) {
   );
 }
 
-// Üst çubuk (390): menü · TUR n + halka çipi + maç saati · savaş kaydı
+// Top bar (390): menu · ROUND n + ring chip + match clock · battle log
 export function TopBar({ ctl, view }: { ctl: GameController; view: View }) {
   const st = ctl.state;
   const ring = ringInfo(st);
@@ -70,7 +70,7 @@ export function TopBar({ ctl, view }: { ctl: GameController; view: View }) {
 
 const modeSub = (mode: Mode) => (mode === 'STRAIGHT' ? tr('Stars move straight and take straight') : tr('Stars move diagonally and take diagonally'));
 
-// Mod göstergesi: oyunun en önemli bilgisi. DÜZ buz zemin, ÇAPRAZ gece zemin + çapraz desen.
+// Mode indicator: the most important information in the game. STRAIGHT on ice, DIAGONAL on night with a diagonal pattern.
 export function ModeIndicator({ mode, showSub }: { mode: Mode; showSub: boolean }) {
   const next: Mode = mode === 'STRAIGHT' ? 'DIAGONAL' : 'STRAIGHT';
   return (
@@ -93,7 +93,7 @@ export function ModeIndicator({ mode, showSub }: { mode: Mode; showSub: boolean 
   );
 }
 
-// Kısa ekran (SE): başlık ve mod tek satırda.
+// Short screen (SE): header and mode on one row.
 export function CompactBar({ ctl, view }: { ctl: GameController; view: View }) {
   const st = ctl.state;
   const ring = ringInfo(st);

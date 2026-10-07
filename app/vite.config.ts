@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Kural motoru reponun kökündeki engine/ klasöründe; dev sunucusu oraya da erişebilmeli.
+// The rules engine lives in engine/ at the repo root; the dev server must be able to reach it too.
 export default defineConfig({
   plugins: [react()],
   base: './',

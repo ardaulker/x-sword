@@ -1,5 +1,5 @@
-// Oda (lobi) mantığı. HostRoom odayı kurar ve maçı yürütür; GuestRoom koda bağlanır ve maçı izleyip oynar.
-// Ekran ikisini de subscribe/getSnapshot ile okur.
+// Room (lobby) logic. HostRoom creates the room and runs the match; GuestRoom joins by code and follows and plays the match.
+// The screen reads both through subscribe/getSnapshot.
 
 import { SIZE_BY_STARS, defaultNeutrals, maxNeutrals } from '../../../engine/rules.js';
 import type { Level } from '../../../engine/rules.js';
@@ -15,17 +15,17 @@ export type RoomStatus = 'connecting' | 'lobby' | 'playing' | 'error' | 'closed'
 export interface RoomView {
   status: RoomStatus;
   code: string;
-  you: number; // lobi koltuğu
+  you: number; // lobby seat
   seats: LobbySeat[];
   level: Level;
-  size: number;           // seçilen tahta (en az, dolu koltuk sayısının varsayılanı kadar olur)
-  bots: number | null;    // null: tahtaya göre varsayılan
-  opts: LobbyOpts;        // kişilik, engel, takım (varsayılan kapalı)
+  size: number;           // chosen board (at least the default for the number of filled seats)
+  bots: number | null;    // null: the default for the board
+  opts: LobbyOpts;        // personalities, obstacles, teams (off by default)
   error: string;
   version: number;
 }
 
-// Lobide geçerli tahta: seçilen, ama dolu koltuk sayısının varsayılanından küçük olamaz.
+// The board in effect in the lobby: the chosen one, but never smaller than the default for the filled seats.
 export const lobbySize = (v: Pick<RoomView, 'size' | 'seats'>) =>
   Math.max(v.size, SIZE_BY_STARS[Math.min(4, Math.max(2, v.seats.filter(s => s.kind !== 'empty').length))]);
 
@@ -55,15 +55,15 @@ abstract class Room {
   abstract close(): void;
 }
 
-// ------------------------------------------------------------ kurucu
+// ------------------------------------------------------------ host
 
 export class HostRoom extends Room {
   readonly role = 'host';
   private endpoint: HostEndpoint | null = null;
   private links: (Link<ToHost, ToGuest> | null)[] = Array(MAX_SEATS).fill(null);
   private match: MatchStart | null = null;
-  private engineSeat: number[] = []; // lobi koltuğu → maçtaki koltuk
-  private tokens: string[] = []; // misafirin gizli kimliği: bağlantı kopunca geri dönebilmesi için
+  private engineSeat: number[] = []; // lobby seat → match seat
+  private tokens: string[] = []; // the guest's secret id, so they can come back after a disconnect
   private grace: (number | null)[] = Array(MAX_SEATS).fill(null);
   private closed = false;
 
@@ -92,7 +92,7 @@ export class HostRoom extends Room {
     link.onClose(() => this.leave(i, link));
   }
 
-  // Maç sürerken yalnız kopan bir misafir, gizli kimliğiyle geri dönebilir.
+  // During a match only a guest who dropped out can come back, using their secret id.
   private rejoin(link: Link<ToHost, ToGuest>) {
     link.onMessage(m => {
       const i = m.t === 'hello' && m.token ? this.tokens.indexOf(m.token) : -1;
@@ -114,7 +114,7 @@ export class HostRoom extends Room {
   private message(i: number, m: ToHost) {
     if (m.t === 'hello') {
       if (m.token) this.tokens[i] = m.token;
-      // Misafirin profil adı ve rengi (temizlenmiş). Lobiye herkese yayınlanır.
+      // The guest's profile name and color (cleaned). Broadcast to everyone in the lobby.
       const pub = readPublic(m.profile);
       if (pub && this.view.status === 'lobby') this.setSeat(i, { ...this.view.seats[i], ...pub });
       else this.broadcastLobby();
@@ -129,7 +129,7 @@ export class HostRoom extends Room {
     this.links[i] = null;
     if (this.view.status !== 'playing') { this.setSeat(i, EMPTY); return; }
     if (bye) { this.ctl.dropSeat(this.engineSeat[i]); return; }
-    // Kopma: 15 sn içinde dönmezse yerine yapay zekâ geçer.
+    // Disconnect: if they don't return within 15 s, an AI takes their seat.
     this.ctl.awaySeat(this.engineSeat[i]);
     this.grace[i] = window.setTimeout(() => { this.grace[i] = null; this.ctl.dropSeat(this.engineSeat[i]); }, GRACE_MS);
   }
@@ -187,7 +187,7 @@ export class HostRoom extends Room {
     this.set({ status: 'playing' });
   }
 
-  // Maç bitince herkes lobiye döner; misafirler yeniden "Hazırım" der.
+  // After the match everyone goes back to the lobby; guests say "Ready" again.
   backToLobby() {
     const seats = this.view.seats.map(s => (s.kind === 'guest' ? { ...s, ready: false } : s));
     this.set({ status: 'lobby', seats });
@@ -205,7 +205,7 @@ export class HostRoom extends Room {
   }
 }
 
-// ------------------------------------------------------------ misafir
+// ------------------------------------------------------------ guest
 
 export class GuestRoom extends Room {
   readonly role = 'guest';
@@ -230,7 +230,7 @@ export class GuestRoom extends Room {
     link.send({ t: 'hello', token: this.token, profile: publicProfile() });
   }
 
-  // Maç sürerken bağlantı koparsa 15 sn boyunca aynı odaya yeniden bağlanmaya çalışır.
+  // If the connection drops during a match, it keeps trying to rejoin the same room for 15 s.
   private reconnect() {
     if (this.reconnecting) return;
     this.reconnecting = true;

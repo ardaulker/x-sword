@@ -1,5 +1,5 @@
-// Hamle sırası: maç başında bir kez karılır, bütün maç aynı kalır (engine/rules.js → matchOrder).
-// Taşın üstündeki numara, bu turda ayakta kalanlar arasındaki yeridir; her tur baştan verilir.
+// Move order: shuffled once at the start, the same all match (engine/rules.js → matchOrder).
+// The number on a piece is its place among this round's survivors; it is reassigned every round.
 
 import { pieceById } from '../../../engine/rules.js';
 import type { GameState } from '../../../engine/rules.js';
@@ -13,7 +13,7 @@ export function orderNo(st: GameState, id: string, round = st.round) {
 
 const alive = (st: GameState, id: string) => !!pieceById(st, id)?.alive;
 
-// Şu an oynayan: bot bölümünde az önce oynayan bot (beyaz haleli olan), yoksa sırası gelen taş.
+// Moving now: during the bot phase the bot that just moved (the one with the white halo), otherwise the piece whose turn it is.
 export function nowIndex(st: GameState, view: View) {
   if (view.phase === 'bot' && view.bots.currentId && st.order.indexOf(view.bots.currentId) === st.turn - 1) return st.turn - 1;
   let i = st.turn;
@@ -26,7 +26,7 @@ export interface QueueItem {
   round: number;
 }
 
-// Şu an oynayandan başlayarak sıradakiler; tur biterse sonraki turun sırasıyla devam eder.
+// The upcoming pieces starting with the one moving now; at the end of the round it continues with the next round's order.
 export function upcoming(st: GameState, view: View, count: number): QueueItem[] {
   const out: QueueItem[] = [];
   if (st.over) return out;
@@ -44,7 +44,7 @@ export function upcoming(st: GameState, view: View, count: number): QueueItem[] 
   return out;
 }
 
-// Az önce oynayan: sıra göstergesinde sola kayarak çıkar.
+// The one that just moved: slides out to the left of the turn queue.
 export function previous(st: GameState, view: View): QueueItem | null {
   const i = nowIndex(st, view) - 1;
   return i >= 0 ? { id: st.order[i], round: st.round } : null;

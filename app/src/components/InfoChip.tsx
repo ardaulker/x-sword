@@ -9,7 +9,7 @@ import { Icon } from './bits';
 import { PieceGlyph } from './PieceGlyph';
 import { tr } from '../i18n';
 
-// İki küçük simge: yürüyüş yönü (buz) ve alma yönü (kırmızı). + düz, × çapraz.
+// Two small icons: walking direction (ice) and taking direction (red). + straight, × diagonal.
 function WalkTake({ walkStraight, takeStraight }: { walkStraight: boolean; takeStraight: boolean }) {
   const icon = (straight: boolean, color: string) => (
     <svg width="14" height="14" viewBox="0 0 100 100" aria-hidden="true" style={{ verticalAlign: '-2px' }}>
@@ -25,8 +25,8 @@ function WalkTake({ walkStraight, takeStraight }: { walkStraight: boolean; takeS
   );
 }
 
-// Dokunulan taş için tek satır: kim, sırası, nasıl yürür ve alır, kimi kovalıyor.
-// Büyük kart yok; yollar ve hedef çizgisi zaten tahtada.
+// One line for the tapped piece: who it is, its turn, how it walks and takes, whom it chases.
+// No big card; the paths and the target line are already on the board.
 export function InfoChip({ ctl, id }: { ctl: GameController; id: string }) {
   const st = ctl.state;
   const p = pieceById(st, id);

@@ -8,9 +8,9 @@ import { parseReplay } from '../game/record';
 import { tr } from '../i18n';
 import './RulesScreen.css';
 
-// Maç tekrarı: tohum + hamle listesinden maçı baştan oynatır. Tahtaya dokunmak bir şey yapmaz.
+// Replay: plays the match again from the seed + move list. Tapping the board does nothing.
 export function ReplayScreen({ code, onBack }: { code: string; onBack: () => void }) {
-  const [raw, at] = code.split('~'); // KOD~N: N. hamleden aç
+  const [raw, at] = code.split('~'); // CODE~N: open at move N
   const spec = parseReplay(raw);
   const [ctl] = useState(() => {
     const c = new GameController();

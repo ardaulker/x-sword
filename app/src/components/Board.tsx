@@ -24,12 +24,12 @@ import { tr } from '../i18n';
 export const BOARD_PAD = 6;
 export const boardGap = (n: number) => (n <= 9 ? 3 : 2);
 export const boardOuter = (n: number, cell: number) => n * cell + (n - 1) * boardGap(n) + 2 * BOARD_PAD;
-// Çöken her halka için çerçevenin dışına bir iz çizgisi (3 px boşluk + 3 px çizgi).
+// One trace line outside the frame for each collapsed ring (3 px gap + 3 px line).
 export const RING_W = 6;
-// En yeni çöküş en içte ve en parlak; eskileri dışa doğru söner (kor rengi).
+// The newest collapse is innermost and brightest; older ones fade outward (ember colors).
 const RING_COLORS = ['#FF8A3D', '#D9733A', '#B35F37', '#8C4B33', '#6E3D2E', '#57322A', '#45291F'];
 
-// Klavye: DÜZ turda ok tuşları / WASD, ÇAPRAZ turda Q E Z C / numpad 7 9 1 3.
+// Keyboard: arrow keys / WASD in STRAIGHT rounds, Q E Z C / numpad 7 9 1 3 in DIAGONAL rounds.
 const KEY_DIRS: Record<string, [number, number]> = {
   ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1],
   w: [-1, 0], s: [1, 0], a: [0, -1], d: [0, 1],
@@ -47,7 +47,7 @@ interface Props {
   ctl: GameController;
   view: View;
   cell: number;
-  /** Gösterilmeyen dış halka sayısı: çöken halkalar çizilmez, tahta içe doğru büyür. */
+  /** Number of outer rings not drawn: collapsed rings are left out and the board grows inward. */
   offset?: number;
 }
 
@@ -61,7 +61,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
   const moves = myTurn ? legalMoves(st, me, st.mode, view.bonus).filter(m => !view.bonus || m.bonus) : [];
   const sel = myTurn && view.phase === 'preview' ? view.sel : null;
   const warn = collapseDue(st);
-  // Bir tur önce: çökecek halka ince turuncu kenarla uyarılır.
+  // One round before: the ring about to collapse gets a thin orange edge.
   const soon = !warn && nextCollapseRound(st) === st.round + 1;
   const mid = (n - 1) / 2;
   const fallDelay = (r: number, c: number) =>
@@ -69,7 +69,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
   const k = chamferOf(n);
   const oct = octPath(k, 6);
 
-  // Tehlike haritası: ayarda ya da ilk iki maçta kendiliğinden açık.
+  // Danger map: on from settings, or by itself in the first two matches.
   const heat = (settings.dangerMap || ctl.autoMap) && me.alive && !st.over ? heatMap(st, me) : null;
   const reach = new Map<string, Reach>();
   for (const m of moves) {
@@ -77,7 +77,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     reach.set(`${m.r},${m.c}`, { move: m, attackers: t.attackers.length, doomed: t.doomed });
   }
 
-  // Tek oyunculuda seçili hamleden sonra İkiz'in nereye gideceği (aynan senin yönünü oynar).
+  // In single player: where the Twin will go after the selected move (your mirror plays your direction).
   const twinGhost = useMemo(() => {
     if (!sel || !st.solo) return null;
     try {
@@ -91,7 +91,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sel?.r, sel?.c, sel?.bonus, view.version]);
 
-  // ---------------------------------------------------------- çizgiler
+  // ---------------------------------------------------------- lines
   const center = (p: Spot) => ({ x: (p.c - o) * step + cell / 2, y: (p.r - o) * step + cell / 2 });
   const lines: { key: string; style: CSSProperties; trail?: boolean }[] = [];
   const seg = (key: string, a: Spot, b: Spot, kind: 'trail' | 'dash' | 'dot', color: string) => {
@@ -127,7 +127,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     }
   }
   for (const t of view.trails) seg(`tr${t.key}`, t.from, t.to, 'trail', t.color);
-  // Bu turda oynayanların son hamlesi: nereden geldikleri soluk kesik çizgide kalır.
+  // Last move of everyone who moved this round: where they came from stays as a faint dashed line.
   for (const l of view.lastMoves) {
     const p = pieceById(st, l.id);
     if (l.round !== st.round || !p?.alive || p.r !== l.to.r || p.c !== l.to.c) continue;
@@ -135,8 +135,8 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
   }
   if (twinGhost) seg('twin', twinGhost.from, twinGhost.to, 'dot', alpha(myColor, 0.6));
 
-  // Dokunulan taş: yolları ve alabilecekleri tahtada, botun hedefi çizgiyle. Zor modda hedef gizli.
-  const showTargets = ctl.setup.level !== 'hard' && settings.targets && !st.puzzle; // bulmacada botlar kovalamaz
+  // Tapped piece: its paths and takes show on the board, a bot's target as a line. Hidden on Hard.
+  const showTargets = ctl.setup.level !== 'hard' && settings.targets && !st.puzzle; // bots don't chase in puzzles
   const inspected = view.inspect ? pieceById(st, view.inspect) : null;
   const inspectMoves = new Map<string, Move>();
   if (inspected?.alive && inspected.id !== me.id) {
@@ -145,9 +145,9 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     if (t) seg('target', inspected, t, 'dash', PLAYER_COLORS[t.seat]);
   }
 
-  // ---------------------------------------------------------- taşlar
+  // ---------------------------------------------------------- pieces
   const myThreats = myTurn ? attackersOfMe(st, me).length : 0;
-  // Her taşın üstünde sıra numarası: şu an oynayan parlak, sıradaki 3 taş yarı parlak.
+  // Turn number on every piece: the one moving now is bright, the next 3 half bright.
   const queue = upcoming(st, view, 4);
   const pipState = new Map(queue.map((q, i) => [q.id, i === 0 ? 'now' : 'next']));
   const pinned = view.inspect;
@@ -159,11 +159,11 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     if (threatIds.has(p.id)) return 'threat';
     if (warn && ringOf(st, p.r, p.c) === st.ring) return 'ring';
     if (p.id === me.id && myTurn) return 'turn';
-    if (p.id === me.id) return 'me'; // kalabalıkta kendi taşın hep seçilsin
+    if (p.id === me.id) return 'me'; // your own piece always stands out in a crowd
     return null;
   };
 
-  // ---------------------------------------------------------- sarsıntı
+  // ---------------------------------------------------------- shake
   const frameRef = useRef<HTMLDivElement>(null);
   const lastShake = useRef(view.shake);
   useEffect(() => {
@@ -177,9 +177,9 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     );
   }, [view.shake]);
 
-  // ---------------------------------------------------------- arena büyümesi
-  // Halka çökünce tahta yalnız kalan alanı çizer ve büyür. Yeni (büyük) tahta, eski ekrandaki boyundan başlayıp
-  // yumuşakça yerine oturur (FLIP); böylece sıçrama olmaz.
+  // ---------------------------------------------------------- arena growth
+  // When a ring collapses the board draws only the remaining area and grows. The new (bigger) board starts at its
+  // old on-screen size and eases into place (FLIP), so nothing jumps.
   const lastFit = useRef({ o, step });
   useLayoutEffect(() => {
     const prev = lastFit.current;
@@ -192,7 +192,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     );
   }, [o, step]);
 
-  // ---------------------------------------------------------- dokunma
+  // ---------------------------------------------------------- touch
   const press = useRef<{ x: number; y: number; timer: number; fired: boolean; moved: boolean } | null>(null);
 
   const toPoint = (e: PointerEvent) => {
@@ -213,7 +213,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     const hit = st.pieces.find(p => p.alive && p.id !== me.id && distTo(pt, p) < cell * 0.45);
     if (hit && !moves.some(m => m.targetId === hit.id)) return ctl.inspectPiece(hit.id);
     if (!myTurn) return ctl.closeInspect();
-    // Geniş dokunma: merkezi 1,6 adım içinde kalan en yakın gidilebilir kare.
+    // Forgiving taps: the nearest reachable square whose center is within 1.6 steps.
     let best: Move | null = null, bd = Infinity;
     for (const m of moves) {
       const d = distTo(pt, m);
@@ -267,7 +267,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     if (m) ctl.select(m);
   };
 
-  // ---------------------------------------------------------- çizim
+  // ---------------------------------------------------------- drawing
   const reach18 = alpha(myColor, 0.18);
   const rows = [];
   for (let r = o; r < n - o; r++) {
@@ -288,14 +288,14 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
       if (hole) background = 'transparent';
       else if (gone) { background = 'var(--void)'; frame = { stroke: '#2B3670', width: 4, dash: '6 7' }; }
       else if (wall) {
-        // Engel: eski çapraz çizgili desen, daha yüksek karşıtlık ve kalın açık çerçeveyle. Girilmez, çift adımla üstünden atlanamaz.
+        // Obstacle: the diagonal stripe pattern with higher contrast and a thick light frame. Can't be entered or jumped with a double step.
         background = 'repeating-linear-gradient(45deg, #42509A 0 5px, #0E1430 5px 10px)';
         frame = { stroke: '#9AA8EC', width: 8 };
       }
       else if (doomedRing) background = 'var(--pat-hazard)';
-      if (heat?.has(`${r},${c}`) && !gone && !doomedRing && !wall) background = `radial-gradient(circle at 50% 50%, rgba(255,59,92,.55) 0 6%, transparent 7%), linear-gradient(rgba(255,59,92,.07), rgba(255,59,92,.07)), ${background}`; // soluk nokta: kareler ikinci bir zemin rengi gibi okunmasın
+      if (heat?.has(`${r},${c}`) && !gone && !doomedRing && !wall) background = `radial-gradient(circle at 50% 50%, rgba(255,59,92,.55) 0 6%, transparent 7%), linear-gradient(rgba(255,59,92,.07), rgba(255,59,92,.07)), ${background}`; // a faint dot, so the squares don't read as a second background color
       if (im) {
-        // Başka bir taşın yolu: buz renginde kesik çerçeve; alabileceği taş nişanla, o taş sensen kırmızı.
+        // Another piece's path: an ice-colored dashed frame; a piece it can take gets a crosshair, red if that piece is you.
         frame = { stroke: 'rgba(233,240,255,.6)', width: 5, dash: '5 6' };
         mark = im.type === 'take'
           ? { d: MARK_AIM, fill: 'none', stroke: im.targetId === me.id ? DANGER : '#E9F0FF', width: 8 }
@@ -353,7 +353,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     margin: o * RING_W,
     cursor: myTurn ? 'pointer' : 'default',
   };
-  // Şekilli bulmaca haritası: çerçeve yok, tahta yalnız kendi karelerinden oluşur.
+  // Shaped puzzle map: no frame, the board is only its own squares.
   if (st.holes) { frameStyle.background = 'transparent'; frameStyle.boxShadow = 'none'; }
 
   return (
@@ -379,7 +379,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
         {rows}
       </div>
 
-      {/* Çöken halkaların izi: çerçevenin dışında, için için yanan kor çizgileri (en yeni en içte). */}
+      {/* Traces of collapsed rings: smoldering ember lines outside the frame (newest innermost). */}
       {!st.holes && Array.from({ length: o }, (_, i) => {
         const color = RING_COLORS[Math.min(i, RING_COLORS.length - 1)];
         const d = (i + 1) * RING_W;

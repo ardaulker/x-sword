@@ -4,7 +4,7 @@ import type { Banner } from '../game/controller';
 import { diamondOf, seatOf } from '../game/look';
 import { PieceGlyph } from './PieceGlyph';
 
-// Tahtanın ortasında kısa duyuru: "Oyuncu 2 elendi", "Dış halka çöktü".
+// A short announcement in the middle of the board: "Player 2 is out", "The outer ring collapsed".
 export function CenterBanner({ banner, state }: { banner: Banner; state: GameState }) {
   const p = banner.pieceId ? pieceById(state, banner.pieceId) : null;
   return (
