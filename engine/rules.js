@@ -231,7 +231,8 @@ function balancedKinds(state, cells, starts) {
 // Bulmaca: elle kurulmuş küçük pozisyon. Amaç, en çok `limit` hamlede bütün arena botlarını almak.
 // map: satır dizisi. '.' zemin, '#' engel, '-' harita dışı (boşluk), 'S' sen, 'K' Kızıl bot, 'C' Çelik bot.
 // Harita kare olmak zorunda değil; kısa kenar iki yandan boşlukla doldurulur. Eski biçim (me + bots) de çalışır.
-export function createPuzzle({ map = null, me = null, bots = [], limit, mode = 'DUZ', size = 9, bonuses = null }) {
+// shrink: { start, every } verilirse bulmacada da arena daralır (ör. 2. turun sonunda dış halka çöker).
+export function createPuzzle({ map = null, me = null, bots = [], limit, mode = 'DUZ', size = 9, bonuses = null, shrink = null }) {
   let holes = null, walls = null;
   if (map) {
     const h = map.length, w = Math.max(...map.map(row => row.length));
@@ -264,6 +265,7 @@ export function createPuzzle({ map = null, me = null, bots = [], limit, mode = '
   st.matchOrder = st.pieces.map(p => p.id);
   st.order = roundOrder(st);
   st.puzzle = { limit, used: 0 };
+  if (shrink) { st.shrinkStart = shrink.start; st.shrinkEvery = shrink.every; }
   st.log = [];
   return st;
 }

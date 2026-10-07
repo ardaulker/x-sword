@@ -3,6 +3,9 @@
 // bots: üreticinin koyacağı bot sayısı. par: hedef en az hamle. bonuses: başta verilen bonuslar.
 // needBonus: bonus olmadan par+1 hamlede çözülmemeli (bonus şart). botCols: en az bir bot bu sütunlarda olur.
 // Yeni harita eklerken CLAUDE.md'deki "Bulmaca haritaları" listesine bak; aynı fikri tekrar etme.
+// near: botlar sana en çok bu kadar (Chebyshev) uzak konur.
+// trap: ilk hamlede en az bir "tuzak" olmalı (oynayınca hemen alınırsın).
+// shrink: { start, every } bulmacada da arena daralır.
 // tutorial: true olanlar Eğitim bölümüne girer (1. ve 2. sabit haritadır: fixed). İlk açılışta menüde önerilir.
 export const MAPS = [
   {
@@ -151,6 +154,125 @@ export const MAPS = [
       '....##...',
       '.#.....#.',
       '-...#...-',
+    ],
+  },
+  // ---------------------------------------------------------- ikinci set (daha zor): 111–120
+  {
+    id: 111, title: 'L', hint: 'Dört bot, dar bir köşe. Açgözlü alma seni tuzağa çeker.', mode: 'DUZ', bots: 4, par: 6, trap: true,
+    map: [
+      '....-----',
+      '....-----',
+      '....-----',
+      '.........',
+      '.........',
+    ],
+  },
+  {
+    id: 112, title: 'U', hint: 'İki kol, tek dip. Hangi koldan başladığın her şeyi değiştirir.', mode: 'CAPRAZ', bots: 4, par: 6, trap: true,
+    map: [
+      '...---...',
+      '...---...',
+      '...---...',
+      '.........',
+      '.........',
+    ],
+  },
+  {
+    id: 113, title: 'Zırh', hint: 'Zırh seni bir kez korur. Bazen bilerek tehlikeye girmek gerekir.', mode: 'DUZ', bots: 3, par: 4, bonuses: { armor: 1 }, needBonus: true,
+    map: [
+      '.......',
+      '.#...#.',
+      '.......',
+      '.......',
+      '.......',
+      '.#...#.',
+      '.......',
+    ],
+  },
+  {
+    id: 114, title: 'İkili', hint: 'Çift adım ve ayna birlikte. İkisini de doğru anda kullan.', mode: 'CAPRAZ', bots: 3, par: 5, near: 4, bonuses: { step: 1, swap: 1 }, needBonus: true,
+    map: [
+      '........',
+      '.##..##.',
+      '........',
+      '........',
+      '.##..##.',
+      '........',
+    ],
+  },
+  {
+    id: 115, title: 'Çöküş', hint: 'Arena 2. turun sonunda daralır. Turuncu halkada kalırsan elenirsin.', mode: 'DUZ', bots: 3, par: 5, shrink: { start: 2, every: 2 }, trap: true,
+    map: [
+      '.......',
+      '.......',
+      '.......',
+      '.......',
+      '.......',
+      '.......',
+      '...S...',
+    ],
+  },
+  {
+    id: 116, title: 'Kelebek', hint: 'İki kanat, dar bir bel. Ayna seni öbür kanada taşıyabilir.', mode: 'CAPRAZ', bots: 3, par: 4, near: 4, bonuses: { swap: 1 }, needBonus: true,
+    map: [
+      '..-----..',
+      '...---...',
+      '....-....',
+      '.........',
+      '....-....',
+      '...---...',
+      '..-----..',
+    ],
+  },
+  {
+    id: 117, title: 'Avlu', hint: 'Ortası kapalı bir avlu. Duvarın hangi yanından dolaşacağını hesapla.', mode: 'DUZ', bots: 3, par: 6, trap: true, near: 4,
+    map: [
+      '.........',
+      '.........',
+      '..##.##..',
+      '..#...#..',
+      '.........',
+      '..#...#..',
+      '..##.##..',
+      '.........',
+      '.........',
+    ],
+  },
+  {
+    id: 118, title: 'Zikzak', hint: 'Çapraz duvar düz turda yolunu keser. Karşıya ne zaman geçeceğini seç.', mode: 'DUZ', bots: 3, par: 6, trap: true, near: 4,
+    map: [
+      '#.......',
+      '.#......',
+      '..#.....',
+      '...#....',
+      '....#...',
+      '.....#..',
+      '......#.',
+      '.......#',
+    ],
+  },
+  {
+    id: 119, title: 'Kum saati', hint: 'Bel tek kare. Çift hamleyi geçitte harca.', mode: 'CAPRAZ', bots: 4, par: 5, bonuses: { double: 1 }, needBonus: true,
+    map: [
+      '.......',
+      '-.....-',
+      '--...--',
+      '---.---',
+      '--...--',
+      '-.....-',
+      '.......',
+    ],
+  },
+  {
+    id: 120, title: 'Final', hint: 'Dört bot, iki bonus. Her hamle sayılır.', mode: 'DUZ', bots: 4, par: 6, near: 3, bonuses: { step: 1, double: 1 }, trap: true,
+    map: [
+      '...#...',
+      '.#...#.',
+      '...#...',
+      '#.....#',
+      '...#...',
+      '.#...#.',
+      '...#...',
     ],
   },
 ];

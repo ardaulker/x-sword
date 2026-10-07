@@ -336,7 +336,7 @@ export class GameController {
     const s = this.setup;
     if (s.puzzle != null) {
       const def = PUZZLES.find(p => p.id === s.puzzle) ?? PUZZLES[0];
-      return { puzzle: { map: def.map, limit: def.par + 1, mode: def.mode, bonuses: def.bonuses } };
+      return { puzzle: { map: def.map, limit: def.par + 1, mode: def.mode, bonuses: def.bonuses, shrink: def.shrink ?? null } };
     }
     if (s.daily) return { seats: [{ kind: 'human' }], neutralLevel: 'normal', seed: seedOf(s.daily), size: DAILY.boardSize, neutrals: DAILY.bots };
     const seats = Array.from({ length: s.players }, (_, i) =>

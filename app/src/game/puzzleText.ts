@@ -17,6 +17,16 @@ const titles = (): Record<string, string> => ({
   'Elmas': tr('Elmas'),
   'Kale': tr('Kale'),
   'Labirent': tr('Labirent'),
+  'L': tr('L'),
+  'U': tr('U'),
+  'Zırh': tr('Zırh'),
+  'İkili': tr('İkili'),
+  'Çöküş': tr('Çöküş'),
+  'Kelebek': tr('Kelebek'),
+  'Avlu': tr('Avlu'),
+  'Zikzak': tr('Zikzak'),
+  'Kum saati': tr('Kum saati'),
+  'Final': tr('Final'),
 });
 
 const hints = (): Record<string, string> => ({
@@ -33,6 +43,16 @@ const hints = (): Record<string, string> => ({
   'Çift hamle: iki hamle art arda, botlar arada oynamaz.': tr('Çift hamle: iki hamle art arda, botlar arada oynamaz.'),
   'Duvarların kapısı dar. Hangi kapıdan gireceğini hesapla.': tr('Duvarların kapısı dar. Hangi kapıdan gireceğini hesapla.'),
   'Dar yollar ve bir çift adım. Sırayı iyi kur.': tr('Dar yollar ve bir çift adım. Sırayı iyi kur.'),
+  'Dört bot, dar bir köşe. Açgözlü alma seni tuzağa çeker.': tr('Dört bot, dar bir köşe. Açgözlü alma seni tuzağa çeker.'),
+  'İki kol, tek dip. Hangi koldan başladığın her şeyi değiştirir.': tr('İki kol, tek dip. Hangi koldan başladığın her şeyi değiştirir.'),
+  'Zırh seni bir kez korur. Bazen bilerek tehlikeye girmek gerekir.': tr('Zırh seni bir kez korur. Bazen bilerek tehlikeye girmek gerekir.'),
+  'Çift adım ve ayna birlikte. İkisini de doğru anda kullan.': tr('Çift adım ve ayna birlikte. İkisini de doğru anda kullan.'),
+  'Arena 2. turun sonunda daralır. Turuncu halkada kalırsan elenirsin.': tr('Arena 2. turun sonunda daralır. Turuncu halkada kalırsan elenirsin.'),
+  'İki kanat, dar bir bel. Ayna seni öbür kanada taşıyabilir.': tr('İki kanat, dar bir bel. Ayna seni öbür kanada taşıyabilir.'),
+  'Ortası kapalı bir avlu. Duvarın hangi yanından dolaşacağını hesapla.': tr('Ortası kapalı bir avlu. Duvarın hangi yanından dolaşacağını hesapla.'),
+  'Çapraz duvar düz turda yolunu keser. Karşıya ne zaman geçeceğini seç.': tr('Çapraz duvar düz turda yolunu keser. Karşıya ne zaman geçeceğini seç.'),
+  'Bel tek kare. Çift hamleyi geçitte harca.': tr('Bel tek kare. Çift hamleyi geçitte harca.'),
+  'Dört bot, iki bonus. Her hamle sayılır.': tr('Dört bot, iki bonus. Her hamle sayılır.'),
 });
 
 export const puzzleTitle = (t: string) => titles()[t] ?? t;

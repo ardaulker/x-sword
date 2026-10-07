@@ -32,10 +32,10 @@ export const PUZZLES = [
     ]
   },
   {
+    "tutorial": true,
     "id": 203,
     "title": "Tehlike",
     "hint": "Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. İki taşı da al; önce çizgisiz kareyi seç.",
-    "tutorial": true,
     "mode": "DUZ",
     "bonuses": null,
     "par": 2,
@@ -232,6 +232,200 @@ export const PUZZLES = [
       "....##...",
       ".#K....#.",
       "-...#...-"
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 111,
+    "title": "L",
+    "hint": "Dört bot, dar bir köşe. Açgözlü alma seni tuzağa çeker.",
+    "mode": "DUZ",
+    "bonuses": null,
+    "par": 6,
+    "map": [
+      "....-----",
+      "....-----",
+      ".K..-----",
+      "C...C....",
+      "..S.K...."
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 112,
+    "title": "U",
+    "hint": "İki kol, tek dip. Hangi koldan başladığın her şeyi değiştirir.",
+    "mode": "CAPRAZ",
+    "bonuses": null,
+    "par": 6,
+    "map": [
+      "...---...",
+      "KK.---...",
+      "...---...",
+      "C..S.....",
+      ".K......."
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 113,
+    "title": "Zırh",
+    "hint": "Zırh seni bir kez korur. Bazen bilerek tehlikeye girmek gerekir.",
+    "mode": "DUZ",
+    "bonuses": {
+      "armor": 1
+    },
+    "par": 4,
+    "map": [
+      ".......",
+      "K#..S#.",
+      "..K....",
+      "..K....",
+      ".......",
+      ".#...#.",
+      "......."
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 114,
+    "title": "İkili",
+    "hint": "Çift adım ve ayna birlikte. İkisini de doğru anda kullan.",
+    "mode": "CAPRAZ",
+    "bonuses": {
+      "step": 1,
+      "swap": 1
+    },
+    "par": 5,
+    "map": [
+      "...K....",
+      ".##K.##.",
+      "........",
+      ".....S..",
+      ".##..##.",
+      "...K...."
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 115,
+    "title": "Çöküş",
+    "hint": "Arena 2. turun sonunda daralır. Turuncu halkada kalırsan elenirsin.",
+    "mode": "DUZ",
+    "bonuses": null,
+    "shrink": {
+      "start": 2,
+      "every": 2
+    },
+    "par": 5,
+    "map": [
+      ".......",
+      ".......",
+      "...K...",
+      ".......",
+      "...C...",
+      ".C.....",
+      "...S..."
+    ]
+  },
+  {
+    "id": 116,
+    "title": "Kelebek",
+    "hint": "İki kanat, dar bir bel. Ayna seni öbür kanada taşıyabilir.",
+    "tutorial": false,
+    "mode": "CAPRAZ",
+    "bonuses": {
+      "swap": 1
+    },
+    "par": 4,
+    "map": [
+      "..-----..",
+      "...---...",
+      "....-....",
+      "......KK.",
+      "....-...C",
+      "...---...",
+      "..-----.S"
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 117,
+    "title": "Avlu",
+    "hint": "Ortası kapalı bir avlu. Duvarın hangi yanından dolaşacağını hesapla.",
+    "mode": "DUZ",
+    "bonuses": null,
+    "par": 6,
+    "map": [
+      ".........",
+      ".........",
+      "..##.##..",
+      "..#...#..",
+      ".........",
+      "..#...#..",
+      "..##.##.S",
+      "......C..",
+      "......K.C"
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 118,
+    "title": "Zikzak",
+    "hint": "Çapraz duvar düz turda yolunu keser. Karşıya ne zaman geçeceğini seç.",
+    "mode": "DUZ",
+    "bonuses": null,
+    "par": 6,
+    "map": [
+      "#.......",
+      ".#......",
+      "..#.....",
+      "...#....",
+      "....#...",
+      "..C..#..",
+      "....C.#.",
+      ".S.C...#"
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 119,
+    "title": "Kum saati",
+    "hint": "Bel tek kare. Çift hamleyi geçitte harca.",
+    "mode": "CAPRAZ",
+    "bonuses": {
+      "double": 1
+    },
+    "par": 5,
+    "map": [
+      ".......",
+      "-..C.C-",
+      "--..C--",
+      "---K---",
+      "--...--",
+      "-.S...-",
+      "......."
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 120,
+    "title": "Final",
+    "hint": "Dört bot, iki bonus. Her hamle sayılır.",
+    "mode": "DUZ",
+    "bonuses": {
+      "step": 1,
+      "double": 1
+    },
+    "par": 6,
+    "map": [
+      "...#...",
+      ".#...#.",
+      "..C#...",
+      "#C....#",
+      "...#.C.",
+      ".#S.K#.",
+      "...#..."
     ]
   }
 ];

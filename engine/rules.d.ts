@@ -135,7 +135,7 @@ export function nameOf(state: GameState, p: Piece): string;
 export function endMatch(state: GameState): GameState;
 export function isWinner(state: GameState, seat: number): boolean;
 export function friendly(state: GameState, a: Piece, b: Piece): boolean;
-export function createPuzzle(def: { map?: string[]; me?: [number, number]; bots?: { kind: 'red' | 'blue'; r: number; c: number }[]; limit: number; mode?: Mode; size?: number; bonuses?: Partial<Record<BonusKind, number>> | null }): GameState;
+export function createPuzzle(def: { map?: string[]; me?: [number, number]; bots?: { kind: 'red' | 'blue'; r: number; c: number }[]; limit: number; mode?: Mode; size?: number; bonuses?: Partial<Record<BonusKind, number>> | null; shrink?: { start: number; every: number } | null }): GameState;
 export function createGame(options: GameOptions): GameState;
 export function roundOrder(state: GameState): string[];
 export function currentActor(state: GameState): Piece | null;

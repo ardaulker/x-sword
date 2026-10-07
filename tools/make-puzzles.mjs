@@ -55,6 +55,18 @@ function firstChoices(st, depth) {
   return n;
 }
 
+// İlk hamlede kaç tuzak var: oynayınca sıra sana dönmeden alınıyorsun.
+function traps(st) {
+  let n = 0;
+  for (const m of myMoves(st)) {
+    const c = structuredClone(st);
+    play(c, m);
+    if (currentActor(c)?.id !== 's0' || c.over) afterMine(c);
+    if (!c.pieces.find(p => p.id === 's0').alive) n++;
+  }
+  return n;
+}
+
 // Haritaya sen ve botları koy; sabit taşlar haritada kalır.
 function place(def) {
   const grid = def.map.map(row => [...row]);
@@ -69,7 +81,7 @@ function place(def) {
     for (let k = 0; k < 30; k++) {
       const j = pick(floor.length), [r, c] = floor[j];
       const d = Math.max(Math.abs(r - me[0]), Math.abs(c - me[1]));
-      if (d < 2) continue;
+      if (d < 2 || (def.near && d > def.near)) continue; // near: botlar sana en çok bu kadar uzak
       floor.splice(j, 1);
       grid[r][c] = rnd() < 0.5 ? 'K' : 'C';
       break;
@@ -81,13 +93,13 @@ function place(def) {
 }
 
 const only = process.argv[2] ? Number(process.argv[2]) : null;
-const META = def => ({ id: def.id, title: def.title, hint: def.hint, tutorial: !!def.tutorial, mode: def.mode, bonuses: def.bonuses ?? null });
+const META = def => ({ id: def.id, title: def.title, hint: def.hint, tutorial: !!def.tutorial, mode: def.mode, bonuses: def.bonuses ?? null, ...(def.shrink ? { shrink: def.shrink } : {}) });
 const out = [];
 for (const def of MAPS) {
   if (only && def.id !== only) { const old = OLD.find(p => p.id === def.id); if (old) out.push({ tutorial: false, ...old }); continue; }
   if (def.fixed) {
     // Sabit harita: yalnız çözücüyle doğrula (tam par hamlede çözülmeli).
-    const st = createPuzzle({ map: def.map, limit: 99, mode: def.mode, bonuses: def.bonuses });
+    const st = createPuzzle({ map: def.map, limit: 99, mode: def.mode, bonuses: def.bonuses, shrink: def.shrink });
     let par = 0;
     for (let d = 1; d <= 6; d++) if (wins(st, d, true)) { par = d; break; }
     console.log(`${def.id} ${def.title}: sabit harita, çözüm ${par} hamle (beklenen ${def.par})`);
@@ -103,23 +115,24 @@ for (const def of MAPS) {
     tried++;
     const map = place(def);
     if (!map) continue;
-    const st = createPuzzle({ map, limit: 99, mode: def.mode, bonuses: def.bonuses });
+    const st = createPuzzle({ map, limit: 99, mode: def.mode, bonuses: def.bonuses, shrink: def.shrink });
     if (bots(st) < def.bots) { no('az bot'); continue; }
     let par = 0;
     for (let d = def.bots; d <= def.par; d++) if (wins(st, d, false)) { par = d; break; }
     if (!par) { no('çözümsüz'); continue; }
-    if (par < def.par - 1) { no('kısa'); continue; } // hedeften çok kısa
+    if (par < (def.id > 110 ? def.par : def.par - 1)) { no('kısa'); continue; } // hedeften kısa (ikinci sette tam par istenir)
     const n = firstChoices(st, par);
     if (!n) { no('botları sen almıyorsun'); continue; }
+    if (def.trap && !traps(st)) { no('tuzak yok'); continue; }
     if (def.needBonus) {
-      const bare = createPuzzle({ map, limit: 99, mode: def.mode });
+      const bare = createPuzzle({ map, limit: 99, mode: def.mode, shrink: def.shrink });
       if (wins(bare, par + 1, false)) { no('bonussuz da çözülüyor'); continue; }
     }
     if (!best || n < best.n || (n === best.n && par > best.par)) best = { map, n, par };
     if (n === 1 && par === def.par) break;
   }
   if (!best) { console.log(`${def.id} ${def.title}: bulunamadı (${tried} deneme)`, why); continue; }
-  console.log(`${def.id} ${def.title}: ${best.par} hamle, ilk hamlede ${best.n} doğru seçenek (${tried} deneme)`);
+  console.log(`${def.id} ${def.title}: ${best.par} hamle, ilk hamlede ${best.n} doğru seçenek, ${traps(createPuzzle({ map: best.map, limit: 99, mode: def.mode, bonuses: def.bonuses, shrink: def.shrink }))} tuzak (${tried} deneme)`);
   console.log(best.map.map(r => '   ' + r).join('\n'));
   out.push({ ...META(def), par: best.par, map: best.map });
 }
@@ -136,6 +149,7 @@ export interface PuzzleDef {
   mode: Mode;
   par: number;
   bonuses: Partial<Record<BonusKind, number>> | null;
+  shrink?: { start: number; every: number };
   map: string[];
 }
 
