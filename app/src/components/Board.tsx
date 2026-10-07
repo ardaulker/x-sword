@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import {
   collapseDue, currentActor, legalMoves, nextCollapseRound, nextMode, pieceAt, pieceById, play, ringOf, threatsFor, twinMove,
@@ -24,6 +24,10 @@ import { tr } from '../i18n';
 export const BOARD_PAD = 6;
 export const boardGap = (n: number) => (n <= 9 ? 3 : 2);
 export const boardOuter = (n: number, cell: number) => n * cell + (n - 1) * boardGap(n) + 2 * BOARD_PAD;
+// Çöken her halka için çerçevenin dışına bir iz çizgisi (3 px boşluk + 3 px çizgi).
+export const RING_W = 6;
+// En yeni çöküş en içte ve en parlak; eskileri dışa doğru söner (kor rengi).
+const RING_COLORS = ['#FF8A3D', '#D9733A', '#B35F37', '#8C4B33', '#6E3D2E', '#57322A', '#45291F'];
 
 // Klavye: DÜZ turda ok tuşları / WASD, ÇAPRAZ turda Q E Z C / numpad 7 9 1 3.
 const KEY_DIRS: Record<string, [number, number]> = {
@@ -43,12 +47,14 @@ interface Props {
   ctl: GameController;
   view: View;
   cell: number;
+  /** Gösterilmeyen dış halka sayısı: çöken halkalar çizilmez, tahta içe doğru büyür. */
+  offset?: number;
 }
 
-export function Board({ ctl, view, cell }: Props) {
+export function Board({ ctl, view, cell, offset = 0 }: Props) {
   const st = ctl.state;
-  const n = st.size, gap = boardGap(n), fp = BOARD_PAD, step = cell + gap;
-  const inner = n * cell + (n - 1) * gap;
+  const n = st.size, o = offset, vis = n - 2 * o, gap = boardGap(vis), fp = BOARD_PAD, step = cell + gap;
+  const inner = vis * cell + (vis - 1) * gap;
   const me = ctl.myStar();
   const myColor = PLAYER_COLORS[me.seat];
   const myTurn = me.alive && (view.phase === 'sen' || view.phase === 'onizleme');
@@ -86,7 +92,7 @@ export function Board({ ctl, view, cell }: Props) {
   }, [sel?.r, sel?.c, sel?.bonus, view.version]);
 
   // ---------------------------------------------------------- çizgiler
-  const center = (p: Spot) => ({ x: p.c * step + cell / 2, y: p.r * step + cell / 2 });
+  const center = (p: Spot) => ({ x: (p.c - o) * step + cell / 2, y: (p.r - o) * step + cell / 2 });
   const lines: { key: string; style: CSSProperties; trail?: boolean }[] = [];
   const seg = (key: string, a: Spot, b: Spot, kind: 'trail' | 'dash' | 'dot', color: string) => {
     const p = center(a), q = center(b);
@@ -171,6 +177,21 @@ export function Board({ ctl, view, cell }: Props) {
     );
   }, [view.shake]);
 
+  // ---------------------------------------------------------- arena büyümesi
+  // Halka çökünce tahta yalnız kalan alanı çizer ve büyür. Yeni (büyük) tahta, eski ekrandaki boyundan başlayıp
+  // yumuşakça yerine oturur (FLIP); böylece sıçrama olmaz.
+  const lastFit = useRef({ o, step });
+  useLayoutEffect(() => {
+    const prev = lastFit.current;
+    lastFit.current = { o, step };
+    if (o <= prev.o || prev.step === step) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    frameRef.current?.animate(
+      [{ transform: `scale(${prev.step / step})`, opacity: 0.85 }, { transform: 'none', opacity: 1 }],
+      { duration: 800, easing: 'cubic-bezier(.2,.8,.2,1)' },
+    );
+  }, [o, step]);
+
   // ---------------------------------------------------------- dokunma
   const press = useRef<{ x: number; y: number; timer: number; fired: boolean; moved: boolean } | null>(null);
 
@@ -249,9 +270,9 @@ export function Board({ ctl, view, cell }: Props) {
   // ---------------------------------------------------------- çizim
   const reach18 = alpha(myColor, 0.18);
   const rows = [];
-  for (let r = 0; r < n; r++) {
+  for (let r = o; r < n - o; r++) {
     const cells = [];
-    for (let c = 0; c < n; c++) {
+    for (let c = o; c < n - o; c++) {
       const ring = ringOf(st, r, c);
       const gone = ring < st.ring;
       const doomedRing = !gone && warn && ring === st.ring;
@@ -321,7 +342,13 @@ export function Board({ ctl, view, cell }: Props) {
   const frameStyle: CSSProperties = {
     width: inner + 2 * fp, height: inner + 2 * fp, padding: fp,
     background: st.mode === 'DUZ' ? 'var(--tex-duz)' : 'var(--tex-capraz)',
-    boxShadow: `inset 0 0 0 ${warn ? `2px ${HAZARD}` : '1.5px rgba(233,240,255,.22)'}, 0 18px 40px rgba(0,0,0,.35)`,
+    boxShadow: [
+      `inset 0 0 0 ${warn ? `2px ${HAZARD}` : '1.5px rgba(233,240,255,.22)'}`,
+      // Çöken halkaların izi: içten dışa, her biri boşluk + renkli çizgi.
+      ...Array.from({ length: o }, (_, i) => [`0 0 0 ${i * RING_W + 3}px #0B1026`, `0 0 0 ${(i + 1) * RING_W}px ${RING_COLORS[Math.min(i, RING_COLORS.length - 1)]}`]).flat(),
+      '0 18px 40px rgba(0,0,0,.35)',
+    ].join(', '),
+    margin: o * RING_W,
     cursor: myTurn ? 'pointer' : 'default',
   };
   // Şekilli bulmaca haritası: çerçeve yok, tahta yalnız kendi karelerinden oluşur.
@@ -345,7 +372,7 @@ export function Board({ ctl, view, cell }: Props) {
     >
       <div
         className="board-grid"
-        style={{ gridTemplateColumns: `repeat(${n}, ${cell}px)`, gap, '--clip': octClip(k) } as CSSProperties}
+        style={{ gridTemplateColumns: `repeat(${vis}, ${cell}px)`, gap, '--clip': octClip(k) } as CSSProperties}
       >
         {rows}
       </div>
@@ -354,7 +381,7 @@ export function Board({ ctl, view, cell }: Props) {
         {lines.map(l => <div key={l.key} className={`board-line${l.trail ? ' board-trail' : ''}`} style={l.style} />)}
 
         {view.bursts.map(b => (
-          <div key={b.key} className={`board-burst${b.big ? ' is-big' : ''}`} style={{ left: b.c * step + cell / 2 - cell, top: b.r * step + cell / 2 - cell, width: cell * 2, height: cell * 2 }}>
+          <div key={b.key} className={`board-burst${b.big ? ' is-big' : ''}`} style={{ left: (b.c - o) * step + cell / 2 - cell, top: (b.r - o) * step + cell / 2 - cell, width: cell * 2, height: cell * 2 }}>
             <svg viewBox="0 0 100 100">
               <path d="M50 0 L57 37 L85 15 L63 43 L100 50 L63 57 L85 85 L57 63 L50 100 L43 63 L15 85 L37 57 L0 50 L37 43 L15 15 L43 37 Z" fill="#FFF6C9" fillOpacity="0.9" stroke={b.color} strokeWidth="2.5" strokeLinejoin="round" />
               <circle cx="50" cy="50" r="44" fill="none" stroke={b.color} strokeWidth="3" strokeDasharray="5 6" />
@@ -363,7 +390,7 @@ export function Board({ ctl, view, cell }: Props) {
         ))}
 
         {view.floats.map(f => (
-          <div key={f.key} className={`board-float${f.big ? ' is-big' : ''}`} style={{ left: f.c * step + cell / 2, top: f.r * step, color: f.color }}>{f.text}</div>
+          <div key={f.key} className={`board-float${f.big ? ' is-big' : ''}`} style={{ left: (f.c - o) * step + cell / 2, top: (f.r - o) * step, color: f.color }}>{f.text}</div>
         ))}
 
         {st.pieces.map(p => {
@@ -380,7 +407,7 @@ export function Board({ ctl, view, cell }: Props) {
               diamond={diamondOf(p, st.mode)}
               className={`board-piece ${isBot(p) ? 'is-bot' : 'is-star'}`}
               style={{
-                transform: `translate(${p.c * step}px, ${p.r * step}px) scale(${p.alive ? 1 : 0.4})`,
+                transform: `translate(${(p.c - o) * step}px, ${(p.r - o) * step}px) scale(${p.alive ? 1 : 0.4})`,
                 opacity: p.alive ? 1 : 0,
               }}
               svgExtra={target && <path d={notchPath(p, target)} fill={PLAYER_COLORS[target.seat]} stroke="#0B1026" strokeWidth="4" strokeLinejoin="round" />}
@@ -397,14 +424,14 @@ export function Board({ ctl, view, cell }: Props) {
         {twinGhost && (
           <PieceGlyph
             kind="twin" seat={me.seat} size={cell} diamond={twinGhost.diamond} className="board-piece twin-ghost"
-            style={{ transform: `translate(${twinGhost.to.c * step}px, ${twinGhost.to.r * step}px)` }}
+            style={{ transform: `translate(${(twinGhost.to.c - o) * step}px, ${(twinGhost.to.r - o) * step}px)` }}
           />
         )}
 
         {sel && (
           <div
             className="board-ghost"
-            style={{ width: cell, height: cell, transform: `translate(${sel.c * step}px, ${sel.r * step}px)` }}
+            style={{ width: cell, height: cell, transform: `translate(${(sel.c - o) * step}px, ${(sel.r - o) * step}px)` }}
           >
             <div
               className="pg-shape"

@@ -4,7 +4,8 @@ import type { GameController, Setup, View } from '../game/controller';
 import { ICON } from '../game/look';
 import { labelOf, modeWord } from '../game/names';
 import { ActionPanel } from '../components/ActionPanel';
-import { BOARD_PAD, Board, boardGap, boardOuter } from '../components/Board';
+import { BOARD_PAD, Board, RING_W, boardGap, boardOuter } from '../components/Board';
+import { SPEED, settings } from '../game/settings';
 import { CompactBar, ModeIndicator, TopBar } from '../components/Header';
 import { PlayerStrip } from '../components/PlayerStrip';
 import { TurnQueue } from '../components/TurnQueue';
@@ -70,18 +71,29 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
   // Telefon yan çevrilince (kısa ve geniş ekran): tahta solda tam yükseklikte, bilgi ve panel sağda.
   const landscape = rootH > 0 && rootH < 520 && rootW > rootH * 1.2;
   const st = ctl.state;
-  const n = st.size, gap = boardGap(n);
+  const n = st.size;
+  // Arena daraldıkça çöken halkalar çizilmez, kalan alan büyür. Halka düşme animasyonu bitince geçilir.
+  const [shown, setShown] = useState(st.ring);
+  useEffect(() => {
+    if (st.ring <= shown) { if (st.ring < shown) setShown(st.ring); return; }
+    if (!(view.fall && view.fall.ring === st.ring - 1)) { setShown(st.ring); return; }
+    const id = window.setTimeout(() => setShown(st.ring), 950 * SPEED[settings.speed]);
+    return () => clearTimeout(id);
+  }, [st.ring]); // eslint-disable-line react-hooks/exhaustive-deps
+  const vis = n - 2 * shown, gap = boardGap(vis), rings = shown * RING_W;
   const room = landscape ? 0 : compact ? PANEL_ROOM.compact : PANEL_ROOM.full;
   const usual = landscape ? 0 : compact ? PANEL_USUAL.compact : PANEL_USUAL.full;
   const availW = stage.w - 12, availH = stage.h - room - (landscape ? 0 : GAP);
-  const fit = (a: number) => Math.floor((a - 2 * BOARD_PAD - gap * (n - 1)) / n);
-  const cell = Math.max(14, Math.min(fit(availW), fit(availH)));
-  const outer = boardOuter(n, cell);
+  const fitK = (a: number, k: number, g: number, pad: number) => Math.floor((a - 2 * BOARD_PAD - 2 * pad - g * (k - 1)) / k);
+  // Tam tahtanın karesi taban; daralınca kare büyür ama ölçülü: en çok 1,7 kat ve 64 px (taban zaten büyükse o kalır).
+  const base = Math.max(14, Math.min(fitK(availW, n, boardGap(n), 0), fitK(availH, n, boardGap(n), 0)));
+  const cell = Math.max(14, Math.min(fitK(availW, vis, gap, rings), fitK(availH, vis, gap, rings), Math.round(base * 1.7), Math.max(base, 64)));
+  const outer = boardOuter(vis, cell) + 2 * rings;
   const boardTop = Math.max(0, Math.min(availH - outer, Math.floor((stage.h - usual - (landscape ? 0 : GAP) - outer) / 2)));
 
   // Büyük tahtada (13×13 ve üstü) yakınlaştır: kareler en az 34 px olur, tahta kaydırılır ve senin taşına ortalanır.
   const [zoom, setZoom] = useState(false);
-  const canZoom = n >= 13 && !st.puzzle;
+  const canZoom = vis >= 13 && !st.puzzle;
   const zoomed = canZoom && zoom;
   const cellZ = zoomed ? Math.max(cell, 34) : cell;
   const areaRef = useRef<HTMLDivElement>(null);
@@ -89,13 +101,13 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
   useEffect(() => {
     const a = areaRef.current;
     if (!a || !zoomed) return;
-    const me = ctl.myStar(), g = boardGap(n);
+    const me = ctl.myStar(), g = gap;
     a.scrollTo({
-      left: BOARD_PAD + me.c * (cellZ + g) + cellZ / 2 - a.clientWidth / 2,
-      top: BOARD_PAD + me.r * (cellZ + g) + cellZ / 2 - a.clientHeight / 2,
+      left: rings + BOARD_PAD + (me.c - shown) * (cellZ + g) + cellZ / 2 - a.clientWidth / 2,
+      top: rings + BOARD_PAD + (me.r - shown) * (cellZ + g) + cellZ / 2 - a.clientHeight / 2,
       behavior: 'smooth',
     });
-  }, [zoomed, cellZ, myTurnNow, ctl, n]);
+  }, [zoomed, cellZ, myTurnNow, ctl, gap, shown, rings]);
 
   const sheet = view.sheet;
   const [rulesOpen, setRulesOpen] = useState(false);
@@ -118,8 +130,8 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
     <div key="stage" ref={stageRef} className="stage">
       <div className="board-area" style={{ paddingTop: zoomed ? 0 : boardTop }}>
         {stage.w > 0 && (zoomed
-          ? <div ref={areaRef} className="board-scroll"><Board ctl={ctl} view={view} cell={cellZ} /></div>
-          : <Board ctl={ctl} view={view} cell={cell} />)}
+          ? <div ref={areaRef} className="board-scroll"><Board ctl={ctl} view={view} cell={cellZ} offset={shown} /></div>
+          : <Board ctl={ctl} view={view} cell={cell} offset={shown} />)}
         {canZoom && (
           <button type="button" className="zoom-btn" aria-pressed={zoomed} aria-label={zoomed ? tr('Uzaklaştır') : tr('Yakınlaştır')} onClick={() => setZoom(z => !z)}>
             <Icon d={zoomed ? 'M10 4 A6 6 0 1 0 10.01 4 Z M15 15 L20 20 M7.5 10 H12.5' : 'M10 4 A6 6 0 1 0 10.01 4 Z M15 15 L20 20 M7.5 10 H12.5 M10 7.5 V12.5'} size={20} stroke={2.2} />
