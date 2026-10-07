@@ -101,6 +101,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
   const [rulesOpen, setRulesOpen] = useState(false);
   const [sub, setSub] = useState<null | 'yeni' | 'ayar'>(null);
   const matchTime = useMatchTime(view.clockStart, view.clockEnd);
+  const goPuzzle = (id: number) => onNewGame({ ...ctl.setup, puzzle: id });
   const bars = (
     <>
       {compact ? <CompactBar ctl={ctl} view={view} /> : (
@@ -132,13 +133,13 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
           </div>
         )}
       </div>
-      {!landscape && <ActionPanel ctl={ctl} view={view} net={net} />}
+      {!landscape && <ActionPanel ctl={ctl} view={view} net={net} onPuzzle={goPuzzle} />}
     </div>
   );
   return (
     <div ref={rootRef} className={`game${compact ? ' is-compact' : ''}${landscape ? ' is-landscape' : ''}`}>
       {landscape
-        ? [stageEl, <div key="side" className="land-side">{bars}<ActionPanel ctl={ctl} view={view} net={net} /></div>]
+        ? [stageEl, <div key="side" className="land-side">{bars}<ActionPanel ctl={ctl} view={view} net={net} onPuzzle={goPuzzle} /></div>]
         : [<Fragment key="bars">{bars}</Fragment>, stageEl]}
 
       {sheet?.type === 'ipucu' && <CoachSheet step={sheet.step} onDone={() => ctl.closeCoach()} />}

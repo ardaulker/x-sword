@@ -54,7 +54,7 @@ function Who({ st, p }: { st: GameState; p: Piece | null | undefined }) {
   return <PieceGlyph kind={p.kind} seat={seatOf(p)} size={34} diamond={diamondOf(p, st.mode)} />;
 }
 
-export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: View; net?: NetActions }) {
+export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController; view: View; net?: NetActions; onPuzzle?: (id: number) => void }) {
   const st = ctl.state;
   const me = ctl.myStar();
   const myColor = PLAYER_COLORS[me.seat];
@@ -293,11 +293,29 @@ export function ActionPanel({ ctl, view, net }: { ctl: GameController; view: Vie
         )}
         <div className="panel-hint" style={{ color: hintColor }}>{hint}</div>
         {view.phase === 'sen' && <BonusBar ctl={ctl} view={view} />}
-        {view.phase === 'sen' && ctl.undoAvailable && (
-          <button type="button" className="btn btn-ghost btn-undo" disabled={!ctl.canUndo} onClick={() => ctl.undo()}>
-            <Icon d="M9 14 L4 9 L9 4 M4 9 H15 A5 5 0 0 1 15 19 H8" size={16} stroke={2.2} />
-            {ctl.undosRemaining == null ? tr('Geri al') : tr('Geri al ({n})', { n: ctl.undosRemaining })}
-          </button>
+        {view.phase === 'sen' && (ctl.undoAvailable || (st.puzzle && onPuzzle)) && (
+          <div className="mini-row">
+            {ctl.undoAvailable && (
+              <button type="button" className="btn btn-ghost btn-undo" disabled={!ctl.canUndo} onClick={() => ctl.undo()}>
+                <Icon d="M9 14 L4 9 L9 4 M4 9 H15 A5 5 0 0 1 15 19 H8" size={16} stroke={2.2} />
+                {ctl.undosRemaining == null ? tr('Geri al') : tr('Geri al ({n})', { n: ctl.undosRemaining })}
+              </button>
+            )}
+            {st.puzzle && onPuzzle && (() => {
+              const i = PUZZLES.findIndex(p => p.id === ctl.setup.puzzle);
+              const prev = PUZZLES[i - 1], next = PUZZLES[i + 1];
+              return (
+                <>
+                  <button type="button" className="btn btn-ghost btn-undo btn-nav" disabled={!prev} aria-label={tr('Önceki bulmaca')} onClick={() => prev && onPuzzle(prev.id)}>
+                    <Icon d="M15 5 L8 12 L15 19" size={16} stroke={2.4} />{tr('Önceki')}
+                  </button>
+                  <button type="button" className="btn btn-ghost btn-undo btn-nav" disabled={!next} aria-label={tr('Sonraki bulmaca')} onClick={() => next && onPuzzle(next.id)}>
+                    {tr('Sonraki')}<Icon d="M9 5 L16 12 L9 19" size={16} stroke={2.4} />
+                  </button>
+                </>
+              );
+            })()}
+          </div>
         )}
       </div>
     </section>

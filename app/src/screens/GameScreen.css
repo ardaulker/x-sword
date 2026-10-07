@@ -53,6 +53,9 @@
 .game > .mode-box.has-sub { height: 56px; }
 .btn-undo { height: 34px; font-size: 13px; gap: 6px; align-self: flex-start; padding: 0 12px; }
 .btn-undo:disabled { opacity: .4; }
+.mini-row { display: flex; gap: 6px; flex-wrap: nowrap; }
+.btn-nav { flex: 1; justify-content: center; gap: 2px; padding: 0 8px; }
+.mini-row .btn-undo:first-child:not(.btn-nav) { flex: none; }
 .mode-box-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .mode-box-label { font: 800 var(--fs-mod)/1 var(--font-display); letter-spacing: .08em; }
 .mode-box-sub { font-size: 11.5px; font-weight: 600; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

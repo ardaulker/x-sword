@@ -467,5 +467,8 @@ const dict: Record<string, string> = {
   'Eğitim': 'Entraînement',
   'Tahta teması': 'Thème du plateau',
   'Oynadıkça yeni temalar açılır.': 'De nouveaux thèmes se débloquent en jouant.',
+  'Önceki': 'Précédent',
+  'Önceki bulmaca': 'Casse-tête précédent',
+  'Sonraki bulmaca': 'Casse-tête suivant',
 };
 export default dict;

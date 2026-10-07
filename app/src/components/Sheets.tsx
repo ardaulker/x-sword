@@ -309,7 +309,8 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
     const def = PUZZLES.find(p => p.id === id);
     const stars = won && def ? (st.puzzle.used <= def.par ? 3 : 2) : 0;
     const no = def ? puzzleNo(PUZZLES, def) : 1;
-    const next = PUZZLES[PUZZLES.findIndex(p => p.id === id) + 1];
+    const at = PUZZLES.findIndex(p => p.id === id);
+    const next = PUZZLES[at + 1], prev = PUZZLES[at - 1];
     return (
       <SheetFrame label={tr('Bulmaca')} onClose={onClose}>
         <div className="res-head">
@@ -322,7 +323,10 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
         <div className="btn-row">
           <button type="button" className="btn btn-ghost" onClick={() => onPuzzle(null)}>{tr('Bulmacalar')}</button>
           <button type="button" className="btn btn-ghost" onClick={() => ctl.restart()}>{tr('Tekrar dene')}</button>
-          {won && next && <button type="button" className="btn btn-main" onClick={() => onPuzzle(next.id)}>{tr('Sonraki')}</button>}
+        </div>
+        <div className="btn-row">
+          {prev && <button type="button" className="btn btn-ghost" onClick={() => onPuzzle(prev.id)}>{tr('Önceki')}</button>}
+          {next && <button type="button" className={`btn ${won ? 'btn-main' : 'btn-ghost'}`} onClick={() => onPuzzle(next.id)}>{tr('Sonraki')}</button>}
         </div>
       </SheetFrame>
     );

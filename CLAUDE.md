@@ -207,3 +207,4 @@ S...C....
 - **Yan çevrilmiş telefon** (`GameScreen.tsx → landscape`: yükseklik <520 ve genişlik > 1,2×yükseklik): tahta solda tam yükseklikte, üst bilgiler ve panel sağ sütunda (`land-side`). Dik tablette sütun 680 px.
 - Kurallar ekranında "Taşlar" ve "Almak" örnekleri hareket eder (`Mini` → `hop`, `prey`).
 - Titreşim desenleri `BUZZ` içinde ayrı ritimlerle (alma, yıldız alma, alınma, daralma, zırh, bonus, galibiyet/yenilgi).
+- **Bulmaca gezintisi**: bulmaca sırasında panelde "Geri al · Önceki · Sonraki", sonuç kartında "Önceki" ve "Sonraki" (kazanmadan da geçilir; kazanınca Sonraki vurgulu). Sıra `PUZZLES` dizisi sırasıdır (eğitimler önce, sonra bulmacalar).
