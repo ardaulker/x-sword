@@ -62,7 +62,7 @@ Aşağıdaki kuralların çalışan hâli burada: https://ardaulker.github.io/x-
 - Bot zekâsı kodda çözülecek. Senden istenen iki şey var: zorluk seçimi, bir de botun kimi hedeflediğini okunur gösteren bir işaret. Bu işaret ayarlardan kapatılabilsin.
 
 ## Bonuslar
-- Herkes maça bir çift adımla başlar. Bonuslar şartla kazanılır: 20 puan çift adım, 40 puan çift hamle, 60 puan ikisinden biri; 50 puan ayna (tahtadaki herhangi bir taşla yer değiştir); ilk daralmayı atlatınca zırh; ikinci daralmayı atlatınca çift hamle; tek oyunculuda İkiz bir taş alınca ayrıca ayna bonusu ve çift puan. Kurulumda isteğe bağlı: takımlı (2'ye 2, 4 oyuncu), engel kareleri, rakip kişilikleri (avcı, temkinli, fırsatçı). Bulmaca modunda sınırlı hamlede bütün botlar alınır. Tek oyunculuda bütün botlar gidince kazanılır; 2–4 oyunculuda kazanan belli olunca botlarla savaşa devam edilebilir.
+- Herkes maça bir çift adımla başlar. Bonuslar şartla kazanılır: 20 puan çift adım, 40 puan çift hamle, 60 puan ikisinden biri; 50 puan ayna (tahtadaki herhangi bir taşla yer değiştir); ilk daralmayı atlatınca zırh; ikinci daralmayı atlatınca çift hamle; tek oyunculuda İkiz bir taş alınca ayrıca ayna bonusu ve çift puan. Kurulumda isteğe bağlı: takımlı (2'ye 2, 4 oyuncu), engel kareleri (girilmez, çift adımla üstünden atlanamaz), rakip kişilikleri (avcı, temkinli, fırsatçı). Bulmaca modunda sınırlı hamlede bütün botlar alınır. Tek oyunculuda bütün botlar gidince kazanılır; 2–4 oyunculuda kazanan belli olunca botlarla savaşa devam edilebilir.
 - Zırh: bir kez alınmaktan korur, kendiliğinden çalışır. Çift adım: iki kare git. Çift hamle: hemen bir hamle daha. Ayna: 3 kare içindeki bir taşla yer değiştir.
 
 ## Bitiş

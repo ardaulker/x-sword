@@ -287,7 +287,12 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
       const wall = !gone && !hole && !!st.blocked?.has(r * n + c);
       if (hole) background = 'transparent';
       else if (gone) { background = 'var(--bosluk)'; frame = { stroke: '#2B3670', width: 4, dash: '6 7' }; }
-      else if (wall) { background = 'repeating-linear-gradient(45deg, #2A3570 0 5px, #121936 5px 10px)'; frame = { stroke: '#5566B8', width: 6 }; }
+      else if (wall) {
+        // Engel: yükseltilmiş taş blok. Girilmez ve çift adımla üstünden atlanamaz; bu yüzden tahtada en belirgin kare.
+        background = 'linear-gradient(155deg, #B4BCDB 0%, #7F89B0 45%, #4E577D 100%)';
+        frame = { stroke: '#DDE3FF', width: 6 };
+        mark = { d: 'M14 38 H86 M14 62 H86 M38 14 V38 M62 38 V62 M38 62 V86', fill: 'none', stroke: 'rgba(20,26,56,.55)', width: 6 };
+      }
       else if (doomedRing) background = 'var(--pat-hazard)';
       if (heat?.has(`${r},${c}`) && !gone && !doomedRing && !wall) background = `radial-gradient(circle at 50% 50%, rgba(255,59,92,.55) 0 6%, transparent 7%), linear-gradient(rgba(255,59,92,.07), rgba(255,59,92,.07)), ${background}`; // soluk nokta: kareler ikinci bir zemin rengi gibi okunmasın
       if (im) {
@@ -344,8 +349,6 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     background: st.mode === 'DUZ' ? 'var(--tex-duz)' : 'var(--tex-capraz)',
     boxShadow: [
       `inset 0 0 0 ${warn ? `2px ${HAZARD}` : '1.5px rgba(233,240,255,.22)'}`,
-      // Çöken halkaların izi: içten dışa, her biri boşluk + renkli çizgi.
-      ...Array.from({ length: o }, (_, i) => [`0 0 0 ${i * RING_W + 3}px #0B1026`, `0 0 0 ${(i + 1) * RING_W}px ${RING_COLORS[Math.min(i, RING_COLORS.length - 1)]}`]).flat(),
       '0 18px 40px rgba(0,0,0,.35)',
     ].join(', '),
     margin: o * RING_W,
@@ -376,6 +379,16 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
       >
         {rows}
       </div>
+
+      {/* Çöken halkaların izi: çerçevenin dışında, için için yanan kor çizgileri (en yeni en içte). */}
+      {!st.holes && Array.from({ length: o }, (_, i) => {
+        const color = RING_COLORS[Math.min(i, RING_COLORS.length - 1)];
+        const d = (i + 1) * RING_W;
+        return (
+          <div key={`ring${i}`} className="ring-trace" aria-hidden="true"
+            style={{ inset: -d, borderRadius: 16 + d, borderColor: color, '--ember': color, animationDelay: `${-i * 0.9}s` } as CSSProperties} />
+        );
+      })}
 
       <div className="board-layer" style={{ left: fp, top: fp, width: inner, height: inner }} aria-hidden="true">
         {lines.map(l => <div key={l.key} className={`board-line${l.trail ? ' board-trail' : ''}`} style={l.style} />)}
