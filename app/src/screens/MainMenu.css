@@ -58,3 +58,12 @@
 .menu-daily { width: 100%; justify-content: flex-start; gap: 12px; text-align: left; }
 .menu-daily .menu-play-text b { font-size: 15px; }
 .menu-daily .menu-play-text span { font-size: 12px; opacity: .75; }
+
+/* Logo: ortadaki X, 2 sn'lik döngüde 1 sn'de sağa (artı olur), 1 sn'de sola (x olur) döner. */
+.logo-x { transform-box: view-box; transform-origin: 100px 100px; animation: logo-swing 2s ease-in-out infinite; }
+@keyframes logo-swing {
+  0%, 12% { transform: rotate(0deg); }
+  38%, 62% { transform: rotate(45deg); }
+  88%, 100% { transform: rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) { .logo-x { animation: none; } }

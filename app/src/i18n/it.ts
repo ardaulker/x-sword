@@ -479,7 +479,7 @@ const dict: Record<string, string> = {
   'Altın': 'Oro',
   'Taş efekti': 'Effetto del pezzo',
   'Senin yıldızında görünür. Başarılarla açılır.': 'Appare sulla tua stella. Si sblocca con i traguardi.',
-  'Demo: bütün ödülleri aç': 'Demo: sblocca tutte le ricompense',
-  'Tüm tahta temalarını ve taş efektlerini denemek için kilitleri kaldırır. Gerçek ilerlemeni etkilemez.': 'Toglie i blocchi per provare ogni tema ed effetto. Non influisce sui tuoi progressi reali.',
+  'Önizleme · kilitli': 'Anteprima · bloccato',
+  'Açmak için: {need}': 'Per sbloccare: {need}',
 };
 export default dict;

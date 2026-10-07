@@ -29,11 +29,7 @@ const progress = (s: Stats, kind: Need['kind']) =>
   kind === 'stars' ? Object.values(s.puzzleStars).reduce((a, b) => a + b, 0)
   : kind === 'wins' ? s.wins : kind === 'daily' ? s.dailyPlayed : s.matches;
 
-// Demo: Ayarlar'daki anahtar her tema ve efekti açar (tasarımı görmek için).
-export const demoUnlock = () => { try { return localStorage.getItem('xsword-demo') === '1'; } catch { return false; } };
-export function setDemoUnlock(on: boolean) { try { localStorage.setItem('xsword-demo', on ? '1' : '0'); } catch { /* gizli sekme */ } }
-
-export const isUnlocked = (t: { need: null | Need }, s: Stats = loadStats(), real = false) => !t.need || (!real && demoUnlock()) || progress(s, t.need.kind) >= t.need.n;
+export const isUnlocked = (t: { need: null | Need }, s: Stats = loadStats()) => !t.need || progress(s, t.need.kind) >= t.need.n;
 
 export const themeById = (id: string) => THEMES.find(t => t.id === id) ?? THEMES[0];
 
@@ -64,10 +60,9 @@ const SEEN = 'xsword-rewards-seen';
 const seenIds = (): string[] => { try { const d = JSON.parse(localStorage.getItem(SEEN) ?? 'null'); return Array.isArray(d) ? d : ['gece', 'none']; } catch { return ['gece', 'none']; } };
 export interface Reward { kind: 'theme' | 'skin'; id: string; name: string }
 const all = (): Reward[] => [
-  ...THEMES.filter(t => isUnlocked(t, undefined, true)).map(t => ({ kind: 'theme' as const, id: t.id, name: t.name() })),
-  ...SKINS.filter(s => isUnlocked(s, undefined, true)).map(s => ({ kind: 'skin' as const, id: s.id, name: s.name() })),
+  ...THEMES.filter(t => isUnlocked(t)).map(t => ({ kind: 'theme' as const, id: t.id, name: t.name() })),
+  ...SKINS.filter(s => isUnlocked(s)).map(s => ({ kind: 'skin' as const, id: s.id, name: s.name() })),
 ];
-// Demo açıkken kimseye "yeni açıldı" denmez.
 export const freshRewards = (): Reward[] => { const seen = seenIds(); return all().filter(r => !seen.includes(r.id)); };
 export function markRewardsSeen() {
   try { localStorage.setItem(SEEN, JSON.stringify([...new Set([...seenIds(), ...all().map(r => r.id)])])); } catch { /* gizli sekme */ }

@@ -479,7 +479,7 @@ const dict: Record<string, string> = {
   'Altın': 'Gold',
   'Taş efekti': 'Piece effect',
   'Senin yıldızında görünür. Başarılarla açılır.': 'Shown on your star. Unlocked by achievements.',
-  'Demo: bütün ödülleri aç': 'Demo: unlock all rewards',
-  'Tüm tahta temalarını ve taş efektlerini denemek için kilitleri kaldırır. Gerçek ilerlemeni etkilemez.': 'Removes the locks so you can try every board theme and piece effect. Doesn\'t affect your real progress.',
+  'Önizleme · kilitli': 'Preview · locked',
+  'Açmak için: {need}': 'To unlock: {need}',
 };
 export default dict;

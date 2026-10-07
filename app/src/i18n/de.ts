@@ -479,7 +479,7 @@ const dict: Record<string, string> = {
   'Altın': 'Gold',
   'Taş efekti': 'Figureneffekt',
   'Senin yıldızında görünür. Başarılarla açılır.': 'Wird an deinem Stern angezeigt. Wird durch Erfolge freigeschaltet.',
-  'Demo: bütün ödülleri aç': 'Demo: alle Belohnungen freischalten',
-  'Tüm tahta temalarını ve taş efektlerini denemek için kilitleri kaldırır. Gerçek ilerlemeni etkilemez.': 'Hebt die Sperren auf, damit du jedes Brettdesign und jeden Figureneffekt ausprobieren kannst. Dein echter Fortschritt bleibt unberührt.',
+  'Önizleme · kilitli': 'Vorschau · gesperrt',
+  'Açmak için: {need}': 'Zum Freischalten: {need}',
 };
 export default dict;

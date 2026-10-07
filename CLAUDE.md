@@ -212,5 +212,7 @@ S...C....
 ## Ödüller ve lobi seçenekleri (8 Ekim 2026)
 - **Taş efektleri** (`components/SkinFx.tsx`, CSS `Board.css` sonu): yalnız senin yıldızında görünen animasyonlu süs. Alev (12 bulmaca yıldızı), Şimşek (10 galibiyet), Kristal (7 günlük meydan okuma), Altın (36 bulmaca yıldızı). Seçim Ayarlar → Taş efekti (`settings.skin`, geçerlisi `activeSkin`). Açılış şartları `game/themes.ts` içinde (`SKINS`, `THEMES`, ortak `Need`).
 - **Sonuç ödülleri**: kazanılan maç kartında altın efektli yıldız, günlükte şimşekli; bulmacada 3 yıldız alevli ("Kusursuz!"), 2 yıldız kristalli ("İyi iş!"); kazanılan yıldızlar sırayla patlayarak çıkar. Yeni tema ya da efekt açılınca kartta önizlemesiyle haber verilir (`freshRewards`).
-- **Demo anahtarı**: Ayarlar → "Demo: bütün ödülleri aç" (`xsword-demo`) bütün tema ve efektlerin kilidini açar; gerçek ilerlemeyi ve "yeni açıldı" bildirimlerini bozmaz. Yayına çıkarken kaldırmak ya da gizlemek Arda'nın kararı.
+- **Demo anahtarı kaldırıldı** (8 Ekim 2026, Arda). Kilitli stile dokununca büyük animasyonlu önizleme kartı açılır (`SettingsScreen.tsx → PeekCard`): ne olduğunu, nasıl açıldığını ve ilerlemeyi gösterir. Arda bu ödülleri ileride satmayı düşünüyor: satış eklenirse `need` yanına bir "satın alındı" kaynağı eklenir ve `isUnlocked` ikisine de bakar; ödeme ve hesap Arda'nın tıklaması.
 - **Çok oyunculu lobi seçenekleri**: kurucu rakip kişilikleri, engel kareleri ve (4 dolu koltukta) takım seçebilir (`RoomView.opts`, `MatchStart.personas/obstacles/teams`). Motor tohumlu olduğu için herkes aynı tahtayı kurar.
+
+- **Logo**: ortadaki X, 2 sn'lik döngüde saniyede bir sağa dönüp artı olur, sonra sola dönüp x olur (`.logo-x`, `MainMenu.css`).

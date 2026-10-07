@@ -19,7 +19,8 @@ export function XSwordLogo({ size }: { size: number }) {
       <rect x="44" y="44" width="112" height="112" rx="6" fill="#0B1026" stroke="#E9F0FF" strokeWidth="7" />
       <polygon points="100,21 179,100 100,179 21,100" fill="none" stroke="#3BFF8F" strokeWidth="7" strokeLinejoin="round" />
       <polygon points="86,66 114,66 134,86 134,114 114,134 86,134 66,114 66,86" fill="#3BFF8F" />
-      <path d="M84 84 L116 116 M116 84 L84 116" stroke="#0B1026" strokeWidth="8" strokeLinecap="round" />
+      {/* Ortadaki işaret saniyede bir sağa ve sola döner: x iken artıya, artıyken x'e. */}
+      <path className="logo-x" d="M84 84 L116 116 M116 84 L84 116" stroke="#0B1026" strokeWidth="8" strokeLinecap="round" />
     </svg>
   );
 }
