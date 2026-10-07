@@ -4,13 +4,15 @@ import { POINTS, isWinner, SIZE_BY_STARS, BOARD_SIZES, defaultNeutrals, maxNeutr
 import type { GameState, Level, Piece } from '../../../engine/rules.js';
 import type { GameController, Setup, TakeEvent } from '../game/controller';
 import { HAZARD_TXT, ICON, TXT, colorOf, diamondOf, seatOf } from '../game/look';
-import { ME, labelOf, seatName, winnerLine } from '../game/names';
+import { ME, labelOf, modeLower, seatName, subjectOf, winnerLine } from '../game/names';
 import { PLAYER_COLORS } from '../game/look';
 import { Icon, RingIcon } from './bits';
 import { PieceGlyph } from './PieceGlyph';
 import { shareReplay, shareResult } from '../game/share';
+import { replayCode } from '../game/record';
+import { freshThemes, markThemesSeen } from '../game/themes';
 import { PUZZLES } from '../game/puzzles';
-import { puzzleTitle } from '../game/puzzleText';
+import { puzzleNo, puzzleTitle } from '../game/puzzleText';
 import { tr } from '../i18n';
 
 // Alttan açılan kart; arka plan kararır, dışına dokununca kapanır.
@@ -285,25 +287,38 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
   const won = isWinner(st, ME);
   const [shared, setShared] = useState(false);
   const [linked, setLinked] = useState(false);
+  const [fresh] = useState(() => freshThemes());
+  useEffect(() => { markThemesSeen(); }, []);
+  const unlocked = fresh.length > 0 && <div className="res-unlock">{tr('Yeni tahta teması açıldı: {name}', { name: fresh.map(t => t.name()).join(', ') })} · {tr('Ayarlar → Tahta teması')}</div>;
   const daily = ctl.setup.daily ?? null;
   const order = ranking(st);
   const lasted = (i: number) => (st.seats[i].out ? st.seats[i].outRound ?? st.round : st.round);
   const pending = st.decided && !st.over;
   const title = won ? tr('Kazandın!') : st.solo ? tr('Alındın') : winnerLine(st, order[0]);
+  // Kaybedince: seni kim, hangi turda, hangi yönle aldı.
+  const myStar = starOf(st, ME);
+  const fatal = !st.puzzle && myStar && !myStar.alive ? ctl.view.events.find(e => e.victimId === myStar.id) : undefined;
+  const killer = fatal?.attackerId ? pieceById(st, fatal.attackerId) : null;
+  const why = fatal
+    ? killer
+      ? tr('{name} seni {how} aldı · tur {n}', { name: subjectOf(st, killer), how: modeLower(fatal.round % 2 === 1 ? 'DUZ' : 'CAPRAZ'), n: fatal.round })
+      : tr('Halkada kaldın · tur {n}', { n: fatal.round })
+    : '';
   if (st.puzzle && onPuzzle) {
     const id = ctl.setup.puzzle ?? 1;
     const def = PUZZLES.find(p => p.id === id);
     const stars = won && def ? (st.puzzle.used <= def.par ? 3 : 2) : 0;
-    const no = PUZZLES.findIndex(p => p.id === id) + 1;
-    const next = PUZZLES[no];
+    const no = def ? puzzleNo(PUZZLES, def) : 1;
+    const next = PUZZLES[PUZZLES.findIndex(p => p.id === id) + 1];
     return (
       <SheetFrame label={tr('Bulmaca')} onClose={onClose}>
         <div className="res-head">
-          <div className="res-daily">{tr('Bulmaca {n}', { n: no })}{def ? ` · ${puzzleTitle(def.title)}` : ''}</div>
+          <div className="res-daily">{def?.tutorial ? tr('Eğitim {n}', { n: no }) : tr('Bulmaca {n}', { n: no })}{def ? ` · ${puzzleTitle(def.title)}` : ''}</div>
           <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{won ? tr('Çözüldü!') : tr('Çözülemedi')}</div>
           <div className="puzzle-stars res-stars" aria-label={tr('{n} yıldız', { n: stars })}>{'★'.repeat(stars)}{'☆'.repeat(3 - stars)}</div>
           <div className="res-sub">{tr('{a}/{b} hamle kullandın', { a: st.puzzle.used, b: st.puzzle.limit })}</div>
         </div>
+        {unlocked}
         <div className="btn-row">
           <button type="button" className="btn btn-ghost" onClick={() => onPuzzle(null)}>{tr('Bulmacalar')}</button>
           <button type="button" className="btn btn-ghost" onClick={() => ctl.restart()}>{tr('Tekrar dene')}</button>
@@ -319,6 +334,8 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
         <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{title}</div>
         <div className="res-sub">{pending ? tr('Rakip yıldız kalmadı. Botlarla savaşa devam edebilirsin') : st.solo ? (won ? tr('Arenada bot kalmadı') : tr('Bir dahaki sefere')) : tr('{n}. oldun', { n: order.indexOf(ME) + 1 })} · {time}</div>
       </div>
+      {why && <div className="res-why">{why}</div>}
+      {unlocked}
       <div className="res-stats">
         <div><b>{me.score}</b><span>{tr('Skor')}</span></div>
         <div><b>{me.takes}</b><span>{tr('Alma')}</span></div>
@@ -356,6 +373,11 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
         )}
         {!pending && onAgain && <button type="button" className="btn btn-main" onClick={onAgain}>{daily ? tr('Tekrar dene') : againLabel}</button>}
       </div>
+      {!pending && fatal && ctl.replaySpec() && (
+        <button type="button" className="link-btn res-link" onClick={() => { location.hash = `#/izle/${replayCode(ctl.replaySpec()!)}~${Math.max(0, fatal.at - 6)}`; }}>
+          {tr('Son hamleleri izle')}
+        </button>
+      )}
       {!pending && ctl.replaySpec() && (
         <button type="button" className="link-btn res-link" onClick={async () => { await shareReplay(ctl); setLinked(true); }}>
           {linked ? tr('Bağlantı kopyalandı') : tr('Maçın tekrarını paylaş')}

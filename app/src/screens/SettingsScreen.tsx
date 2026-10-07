@@ -7,6 +7,8 @@ import type { Settings } from '../game/settings';
 import './RulesScreen.css';
 import { Flag } from '../components/Flag';
 import { LANGS, setLang, tr, useLang } from '../i18n';
+import { THEMES, isUnlocked, needProgress, needText } from '../game/themes';
+import { loadStats } from '../game/stats';
 
 const speeds = (): [Settings['speed'], string, string][] => [
   ['yavas', tr('Yavaş'), tr('Kayma 320 ms · bot turu ~2 sn')],
@@ -27,6 +29,7 @@ function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: 
 export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: () => void; onRules?: () => void; inGame?: boolean }) {
   const lang = useLang();
   const [s, setS] = useState(settings);
+  const stats = loadStats();
   const update = (patch: Partial<Settings>) => { const next = { ...s, ...patch }; setS(next); saveSettings(next); };
   return (
     <div className="rules">
@@ -93,6 +96,24 @@ export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: ()
             onChange={v => update({ colorBlind: v })} />
           <div className="set-swatches" aria-hidden="true">
             {paletteOf(s.colorBlind).map((_, i) => <PieceGlyph key={`${i}${s.colorBlind}`} kind="star" seat={i} size={36} diamond={false} />)}
+          </div>
+        </div>
+        <div className="rule set-col">
+          <div className="rule-text"><h3>{tr('Tahta teması')}</h3><p>{tr('Oynadıkça yeni temalar açılır.')}</p></div>
+          <div className="theme-grid" role="radiogroup" aria-label={tr('Tahta teması')}>
+            {THEMES.map(t => {
+              const open = isUnlocked(t, stats);
+              return (
+                <button key={t.id} type="button" role="radio" aria-checked={s.theme === t.id} disabled={!open}
+                  className={`theme-chip${s.theme === t.id ? ' is-on' : ''}`} onClick={() => update({ theme: t.id })}>
+                  <span className="theme-sw" aria-hidden="true" style={{ background: `linear-gradient(135deg, ${t.kare} 50%, ${t.kare2} 50%)`, boxShadow: `inset 0 0 0 5px ${t.cerceve}` }}>
+                    {!open && <Icon d="M7 11 V8 A5 5 0 0 1 17 8 V11 M6 11 H18 V20 H6 Z" size={16} stroke={2.2} />}
+                  </span>
+                  <b>{t.name()}</b>
+                  {!open && t.need && <small>{needText(t)} ({needProgress(t, stats)}/{t.need.n})</small>}
+                </button>
+              );
+            })}
           </div>
         </div>
           </>

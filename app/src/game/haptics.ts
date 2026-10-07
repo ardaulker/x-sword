@@ -3,17 +3,25 @@
 
 import { settings } from './settings';
 
+// Her olayın kendine ait bir ritmi var; gözü kapalı bile ayırt edilir:
+// seçim kısa tık · onay biraz uzun · alma (kısa-kısa-uzun) · yıldız alma (iki kat güçlü) ·
+// alınma ya da elenme (uzun-kısa-uzun-kısa-çok uzun) · daralma (gümbürtü) · zırh (hafif vuruş, uzun uğultu) ·
+// bonus kazanma (yükselen üçlü) · bonus kullanma (çift tık) · mod değişimi (iki dalga) · maç sonu galibiyet / yenilgi.
 export const BUZZ = {
-  select: 10,
-  confirm: 20,
-  take: [30, 40, 20],
-  takenOrOut: [60, 50, 60],
+  select: 8,
+  confirm: 18,
+  take: [22, 30, 22, 30, 55],
+  takeStar: [30, 25, 30, 25, 30, 25, 90],
+  takenOrOut: [90, 40, 90, 40, 160],
   lastSeconds: 8,
-  collapse: 60,
-  mode: [10, 80, 10],
-  myTurn: 12,
-  bonusGain: [15, 40, 15],
-  bonusUse: 12,
+  collapse: [45, 30, 45, 30, 45, 30, 130],
+  mode: [10, 60, 10, 60, 24],
+  myTurn: 14,
+  bonusGain: [12, 35, 20, 35, 32],
+  bonusUse: [18, 30, 18],
+  armor: [12, 25, 80],
+  win: [40, 40, 40, 40, 40, 40, 140],
+  lose: [140, 60, 100, 60, 60],
 } as const;
 
 export function buzz(pattern: number | readonly number[]) {

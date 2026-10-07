@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { POINTS, SURVIVOR_BONUS } from '../../../engine/rules.js';
 import { Icon } from '../components/bits';
 import { PieceGlyph } from '../components/PieceGlyph';
@@ -11,14 +11,18 @@ const ORTH = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 const DIAG = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
 
 // 3×3 küçük tahta: ortada taş, yürüdüğü kareler nokta, alabildiği kareler nişan.
-function Mini({ piece, diamond, walk, take }: { piece: PieceLook; diamond: boolean; walk: number[][]; take: number[][] }) {
+// hop: ortadaki taş bu aralıkta (satır, sütun) yürür ya da alır, sonra yerine döner; prey: hop karesinde duran ve alınınca silinen taş.
+function Mini({ piece, diamond, walk, take, hop, prey }: { piece: PieceLook; diamond: boolean; walk: number[][]; take: number[][]; hop?: number[]; prey?: PieceLook }) {
   const cells: ReactNode[] = [];
   for (let r = -1; r <= 1; r++) {
     for (let c = -1; c <= 1; c++) {
       const w = walk.some(([a, b]) => a === r && b === c), t = take.some(([a, b]) => a === r && b === c);
       cells.push(
         <div key={`${r},${c}`} className="mini-cell">
-          {r === 0 && c === 0 && <PieceGlyph {...piece} size={30} diamond={diamond} />}
+          {r === 0 && c === 0 && (hop
+            ? <div className="mini-mover" style={{ '--dr': hop[0], '--dc': hop[1] } as CSSProperties}><PieceGlyph {...piece} size={30} diamond={diamond} /></div>
+            : <PieceGlyph {...piece} size={30} diamond={diamond} />)}
+          {prey && hop && r === hop[0] && c === hop[1] && <div className="mini-prey"><PieceGlyph {...prey} size={30} diamond={!diamond} /></div>}
           {w && <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="12" fill={ICE} /></svg>}
           {t && <svg viewBox="0 0 100 100"><path d={take === ORTH ? PLUS : CROSS} stroke={DANGER} strokeWidth="11" strokeLinecap="round" fill="none" /></svg>}
         </div>,
@@ -58,12 +62,12 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
           <p>{rich('**DÜZ** turda yıldızlar düz gider ve düz alır. **ÇAPRAZ** turda çapraz gider ve çapraz alır.')}</p>
           <p>{tr('Şekil yönü söyler: kare düz, elmas çapraz.')}</p>
         </Card>
-        <Card title={tr('Taşlar')} visual={<Mini piece={{ kind: 'red' }} diamond={false} walk={ORTH} take={DIAG} />}>
+        <Card title={tr('Taşlar')} visual={<Mini piece={{ kind: 'red' }} diamond={false} walk={ORTH} take={DIAG} hop={[-1, 0]} />}>
           <p>{rich('**Kızıl bot** (kare, ×): düz yürür, çapraz alır.')}</p>
           <p>{rich('**Çelik bot** (elmas, +): çapraz yürür, düz alır.')}</p>
           <p>{tr('Herkes tek kare gider. Noktalar yürüyüş, nişanlar almadır.')}</p>
         </Card>
-        <Card title={tr('Almak')} visual={<Mini piece={star} diamond={false} walk={[]} take={ORTH} />}>
+        <Card title={tr('Almak')} visual={<Mini piece={star} diamond={false} walk={[]} take={ORTH} hop={[0, 1]} prey={{ kind: 'red' }} />}>
           <p>{tr('Bir taşın karesine geçersen onu alırsın; o taş oyundan çıkar. Herkes herkesi alabilir: oyuncu oyuncuyu, bot oyuncuyu, bot botu.')}</p>
         </Card>
         <Card title={tr('Hamle sırası')} visual={<div className="anim-queue">{[3, 4, 5, 6, 7].map(n => <span key={n}>{n}</span>)}</div>}>

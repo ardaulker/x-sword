@@ -100,6 +100,14 @@
 
 .stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
 .board-area { position: relative; flex: 1; min-height: 0; display: flex; justify-content: center; align-items: flex-start; }
+/* Yakınlaştırılmış tahta: kendi içinde kayar. */
+.board-scroll { position: absolute; inset: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.board-scroll::-webkit-scrollbar { display: none; }
+.zoom-btn {
+  position: absolute; top: 0; right: 0; z-index: 8; width: 40px; height: 40px; border-radius: 20px; border: 1.5px solid var(--cizgi-2);
+  background: rgba(11, 16, 38, .82); color: var(--metin-1); display: flex; align-items: center; justify-content: center;
+}
+.zoom-btn[aria-pressed="true"] { background: var(--ice); color: var(--murekkep); border-color: var(--ice); }
 
 .toast {
   position: absolute; top: 2px; left: 50%; transform: translateX(-50%); z-index: 9;
@@ -243,6 +251,16 @@
 
 .coach-step { font: 700 13px var(--font-display); color: var(--metin-3); }
 .coach-list { margin: 4px 0 16px; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.4; color: var(--metin-1); }
+
+/* Dik tablet: sütun biraz genişler, tahta büyür. */
+@media (min-width: 600px) and (orientation: portrait) { .game { max-width: 680px; } }
+
+/* Yan çevrilmiş telefon: tahta solda tam yükseklikte, bilgi ve panel sağ sütunda (GameScreen.tsx → landscape). */
+.game.is-landscape { max-width: none; flex-direction: row; align-items: stretch; gap: 10px; padding: calc(env(safe-area-inset-top) + 4px) calc(env(safe-area-inset-right) + 10px) 6px calc(env(safe-area-inset-left) + 10px); }
+.game.is-landscape > .stage { flex: 1 1 0; min-width: 0; }
+.land-side { flex: none; width: min(46%, 380px); display: flex; flex-direction: column; gap: 4px; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+.land-side > * { flex: none; }
+.land-side .panel { margin: 0; }
 
 /* Geniş ekran (masaüstü, yatay tablet): tahta solda, oyun bilgisi sağ sütunda. */
 @media (min-width: 900px) and (min-height: 520px) {

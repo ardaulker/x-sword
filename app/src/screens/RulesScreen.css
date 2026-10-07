@@ -25,6 +25,16 @@
 .rules-foot { margin: 8px 4px; font-size: 13px; color: var(--metin-3); }
 
 /* 3×3 küçük tahta */
+.theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.theme-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 6px; border-radius: 12px; text-align: center;
+  border: 1.5px solid var(--cizgi-2); background: var(--yuzey-2); color: var(--metin-1); font: inherit;
+}
+.theme-chip b { font-size: 13px; }
+.theme-chip small { font-size: 10.5px; line-height: 1.25; color: var(--metin-2); }
+.theme-chip:disabled { opacity: .6; }
+.theme-chip.is-on { border-color: var(--ice); background: var(--yuzey-3); }
+.theme-sw { width: 54px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--metin-2); }
 .mini { display: grid; grid-template-columns: repeat(3, 26px); gap: 2px; }
 .mini-cell {
   position: relative; width: 26px; height: 26px; background: var(--kare); display: flex; align-items: center; justify-content: center;
@@ -32,6 +42,20 @@
 }
 .mini-cell svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .mini-cell .pg { position: absolute; left: -2px; top: -2px; }
+/* Animasyonlu örnek: taş yürür ya da alır, sonra yerine döner. */
+.mini-mover { position: absolute; inset: 0; z-index: 2; animation: mini-hop 3.2s ease-in-out infinite; }
+.mini-prey { position: absolute; inset: 0; z-index: 1; animation: mini-prey 3.2s ease-in-out infinite; }
+.mini-prey .pg { position: absolute; left: -2px; top: -2px; }
+@keyframes mini-hop {
+  0%, 25% { transform: none; }
+  40%, 70% { transform: translate(calc(var(--dc) * 28px), calc(var(--dr) * 28px)); }
+  88%, 100% { transform: none; }
+}
+@keyframes mini-prey {
+  0%, 38% { opacity: 1; transform: none; }
+  45%, 80% { opacity: 0; transform: scale(.4); }
+  92%, 100% { opacity: 1; transform: none; }
+}
 
 /* Mod: kare ↔ elmas */
 .anim-morph .pg-shape { animation: morph 2.4s var(--ease-yay) infinite; }
@@ -60,7 +84,7 @@
 .rule-pair { display: flex; gap: 8px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .anim-morph .pg-shape, .anim-queue span, .anim-float { animation: none; }
+  .anim-morph .pg-shape, .anim-queue span, .anim-float, .mini-mover, .mini-prey { animation: none; }
 }
 
 /* Ayarlar */

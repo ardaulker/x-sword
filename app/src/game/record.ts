@@ -63,4 +63,5 @@ export function parseReplay(code: string): ReplaySpec | null {
   } catch { return null; }
 }
 
-export const replayUrl = (spec: ReplaySpec) => `${location.origin}${location.pathname}#/izle/${replayCode(spec)}`;
+/** `#/izle/KOD~N`: tekrar N. hamleden açılır. */
+export const replayUrl = (spec: ReplaySpec, at?: number) => `${location.origin}${location.pathname}#/izle/${replayCode(spec)}${at ? `~${at}` : ''}`;

@@ -146,6 +146,6 @@ export function App() {
     );
   }
   return <MainMenu setup={ctl.setup} onStart={start} onResume={ctl.canResume ? () => go('oyun') : undefined} resumeInfo={ctl.canResume ? ctl.resumeInfo : undefined}
-    onPuzzles={() => go('bulmaca')} onStats={() => go('istatistik')}
+    onPuzzles={() => go('bulmaca')} onStats={() => go('istatistik')} onTutorial={() => start({ ...ctl.setup, players: 1, daily: null, puzzle: 201 })}
     onDaily={() => start({ ...ctl.setup, players: 1, level: 'normal', daily: todayKey(), puzzle: null })} onRules={() => go('kurallar')} onMultiplayer={() => go('cok')} onSettings={() => go('ayarlar')} />;
 }

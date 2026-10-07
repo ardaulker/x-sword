@@ -66,7 +66,7 @@ export interface LastMove { id: string; round: number; from: Spot; to: Spot; col
 export interface Toast { key: number; text: string; icon: 'sword' | 'clock' | 'info' | 'ring' }
 export interface Banner { key: number; title: string; sub: string; color: string; pieceId: string | null }
 // attackerId null: taş çöken halkada düştü.
-export interface TakeEvent { key: number; round: number; attackerId: string | null; victimId: string }
+export interface TakeEvent { key: number; round: number; attackerId: string | null; victimId: string; at: number } // at: o ana kadar oynanan hamle sayısı (tekrarda o ana gitmek için)
 export type Sheet = { type: 'kayit' } | { type: 'menu' } | { type: 'sonuc' } | { type: 'ipucu'; step: number } | null;
 
 export interface View {
@@ -530,7 +530,7 @@ export class GameController {
     });
     // Son hamleyi ve bantları gördükten sonra sonuç kartı açılır.
     this.later(1600, () => { if (this.view.phase === 'bitti' && !this.view.sheet) this.emit({ sheet: { type: 'sonuc' } }); });
-    feel(isWinner(this.state, ME) ? 'win' : 'lose', isWinner(this.state, ME) ? BUZZ.take : BUZZ.takenOrOut);
+    feel(isWinner(this.state, ME) ? 'win' : 'lose', isWinner(this.state, ME) ? BUZZ.win : BUZZ.lose);
   }
 
   // Maç bitince: istatistik, bulmaca yıldızı, yarım kalan kaydın silinmesi.
@@ -794,7 +794,7 @@ export class GameController {
     if (victim?.alive && victim.kind === 'star') {
       this.toast(victim.seat === ME ? tr('Zırhın seni korudu!') : tr('{name} zırhıyla kurtuldu', { name: labelOf(st, victim) }), 'info');
       this.burst(victim.r, victim.c, '#E9F0FF');
-      feel('armor', BUZZ.take);
+      feel('armor', BUZZ.armor);
     }
     for (const k of Object.keys(myBonuses) as BonusKind[]) {
       if (st.seats[ME].bonuses[k] > myBonuses[k]) { this.toast(tr('Bonus kazandın: {name}', { name: tr(BONUS_NAMES[k]) }), 'info'); feel('bonusGain', BUZZ.bonusGain); }
@@ -814,7 +814,7 @@ export class GameController {
     }
 
     if (victim && move && !victim.alive) {
-      events.push({ key: this.key(), round, attackerId: actor.id, victimId: victim.id });
+      events.push({ key: this.key(), round, attackerId: actor.id, victimId: victim.id, at: this.moves.length });
       const mine = actor.kind === 'star' && actor.seat === ME;
       this.burst(move.r, move.c, colorOf(actor), mine);
       if (!mine) sound('take');
@@ -828,7 +828,7 @@ export class GameController {
         this.toast(tr('Aynan {obj} aldı! +{pts} (2×)', { obj: objectOf(st, victim), pts }), 'sword');
         this.later(120, () => sound('points'));
       }
-      if (mine) { this.toast(tr('{obj} aldın! +{pts}', { obj: objectOf(st, victim), pts: POINTS[victim.kind] }), 'sword'); feel('take', BUZZ.take); this.later(120, () => sound('points')); }
+      if (mine) { this.toast(tr('{obj} aldın! +{pts}', { obj: objectOf(st, victim), pts: POINTS[victim.kind] }), 'sword'); feel('take', victim.kind === 'star' ? BUZZ.takeStar : BUZZ.take); this.later(120, () => sound('points')); }
       if (me) {
         this.toast(tr('{name} seni aldı!', { name: subjectOf(st, actor) }), 'sword');
         feel('out', BUZZ.takenOrOut);
@@ -844,7 +844,7 @@ export class GameController {
       stopTension();
       this.view = { ...this.view, fall: { key: this.key(), ring: st.ring - 1 } };
       for (const p of fallen) {
-        events.push({ key: this.key(), round, attackerId: null, victimId: p.id });
+        events.push({ key: this.key(), round, attackerId: null, victimId: p.id, at: this.moves.length });
         this.burst(p.r, p.c, HAZARD);
       }
       const side = st.size - 2 * st.ring;

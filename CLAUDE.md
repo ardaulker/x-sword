@@ -197,3 +197,13 @@ S...C....
 - Başkaları oynarken panel "N hamle sonra sıra sende" der (`ActionPanel.tsx → untilMe`). Bu turda oynayan son 6 taşın geldiği yer soluk kesik çizgide kalır (`View.lastMoves`). Kendi taşın hep yumuşak nabızlı halkayla seçilir (`halo-me`).
 - Senin aldığın taş büyük patlama + büyük puan + 750 ms bekleyiş ile vurgulanır.
 - **Geri al** (`GameController.undo`): yalnız Kolay zorlukta (maçta 3 kez) ve bulmacada (sınırsız); günlük ve çok oyunculuda yok. Maçı kayıtlı hamlelerden bir önceki sıranın başına yeniden kurar (`undoPoints`). Ayarlar'da "Önizlemesiz oyna" (`settings.quick`) ve "Botları hızlı oynat" (`settings.fastBots`) seçenekleri var; ikisi de varsayılan kapalı.
+
+## Arayüz notları 2 (8 Ekim 2026)
+- **Eğitim**: üç mini bulmaca (201 Düz al, 202 Mod değişir, 203 Tehlike). `tools/puzzle-maps.mjs`'te `tutorial: true`; 201 ve 202 `fixed` (elle çizilmiş, üretici yalnız doğrular), 203 aranır. Bulmaca ekranında ayrı "Eğitim" bölümü; yeni oyuncuya (3 maçtan az, eğitimi bitirmemiş) ana menüde yeşil "Eğitim · 1 dakika" düğmesi çıkar. Tek harita üretirken `node tools/make-puzzles.mjs <id>` (hepsini yeniden üretme: tohum sırası kayar). `app/src/game/puzzleText.ts` haritalardan elle üretildi; yeni harita/ipucu eklenince oraya ve sözlüklere de ekle.
+- **Tahta temaları** (`game/themes.ts`): Gece (açık), Zümrüt (6 bulmaca yıldızı), Kor (5 galibiyet), Buz (3 günlük), Mor (25 maç). Yalnız kare, boşluk ve çerçeve rengi değişir (`--kare`, `--kare-2`, `--bosluk`, `--tahta-cerceve`); oyuncu/tehlike/halka renkleri sabit. Ayarlar'da seçilir; açılınca sonuç kartında haber verilir (`freshThemes`).
+- **Günlük seri** (`daily.ts → dailyStreak`): oynanan günler `xsword-daily-days`'te; ana menüde "N gün seri".
+- **Maç sonu "neden"**: kaybedince kartta "9 numara seni düz aldı · tur 3" ya da "Halkada kaldın"; `TakeEvent.at` ile "Son hamleleri izle" tekrarı o ana açar (`#/izle/KOD~N`).
+- **Büyüteç**: 13×13 ve üstünde sağ üstte yakınlaştır düğmesi; kareler ≥34 px, tahta kayar ve taşına ortalanır (`board-scroll`).
+- **Yan çevrilmiş telefon** (`GameScreen.tsx → landscape`: yükseklik <520 ve genişlik > 1,2×yükseklik): tahta solda tam yükseklikte, üst bilgiler ve panel sağ sütunda (`land-side`). Dik tablette sütun 680 px.
+- Kurallar ekranında "Taşlar" ve "Almak" örnekleri hareket eder (`Mini` → `hop`, `prey`).
+- Titreşim desenleri `BUZZ` içinde ayrı ritimlerle (alma, yıldız alma, alınma, daralma, zırh, bonus, galibiyet/yenilgi).

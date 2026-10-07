@@ -138,6 +138,8 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
 .res-title { font: 800 34px/1.1 var(--font-display); animation: res-pop calc(500ms * var(--hiz-carpan)) var(--ease-yay); }
 @keyframes res-pop { from { transform: scale(.6); opacity: 0; } }
 .res-sub { font-size: 14px; color: var(--metin-2); }
+.res-unlock { text-align: center; font-size: 13px; font-weight: 700; color: var(--ice); padding: 8px 10px; border-radius: 12px; background: var(--yuzey-3); }
+.res-why { text-align: center; font-size: 14px; font-weight: 600; color: var(--danger-metin, #FF8FA3); }
 .res-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .res-stats div { display: flex; flex-direction: column; align-items: center; padding: 10px 4px; border-radius: 14px; background: var(--yuzey-2); }
 .res-stats b { font: 800 26px var(--font-display); font-variant-numeric: tabular-nums; }

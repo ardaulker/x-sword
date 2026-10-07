@@ -10,10 +10,11 @@ import './RulesScreen.css';
 
 // Maç tekrarı: tohum + hamle listesinden maçı baştan oynatır. Tahtaya dokunmak bir şey yapmaz.
 export function ReplayScreen({ code, onBack }: { code: string; onBack: () => void }) {
-  const spec = parseReplay(code);
+  const [raw, at] = code.split('~'); // KOD~N: N. hamleden aç
+  const spec = parseReplay(raw);
   const [ctl] = useState(() => {
     const c = new GameController();
-    if (spec) c.loadReplay(spec);
+    if (spec) { c.loadReplay(spec); if (at && +at > 0) c.seek(+at); }
     return c;
   });
   const view = useSyncExternalStore(ctl.subscribe, ctl.getSnapshot);

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { currentActor, isWinner } from '../../../engine/rules.js';
 import type { GameController, Setup, View } from '../game/controller';
 import { ICON } from '../game/look';
@@ -51,12 +51,13 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const [rootH, setRootH] = useState(0);
+  const [rootW, setRootW] = useState(0);
   const [stage, setStage] = useState({ w: 0, h: 0 });
 
   useLayoutEffect(() => {
     const ro = new ResizeObserver(entries => {
       for (const e of entries) {
-        if (e.target === rootRef.current) setRootH(e.contentRect.height);
+        if (e.target === rootRef.current) { setRootH(e.contentRect.height); setRootW(e.contentRect.width); }
         else setStage({ w: e.contentRect.width, h: e.contentRect.height });
       }
     });
@@ -66,22 +67,42 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
   }, []);
 
   const compact = rootH > 0 && rootH < COMPACT_BELOW;
+  // Telefon yan çevrilince (kısa ve geniş ekran): tahta solda tam yükseklikte, bilgi ve panel sağda.
+  const landscape = rootH > 0 && rootH < 520 && rootW > rootH * 1.2;
   const st = ctl.state;
   const n = st.size, gap = boardGap(n);
-  const room = compact ? PANEL_ROOM.compact : PANEL_ROOM.full;
-  const usual = compact ? PANEL_USUAL.compact : PANEL_USUAL.full;
-  const availW = stage.w - 12, availH = stage.h - room - GAP;
+  const room = landscape ? 0 : compact ? PANEL_ROOM.compact : PANEL_ROOM.full;
+  const usual = landscape ? 0 : compact ? PANEL_USUAL.compact : PANEL_USUAL.full;
+  const availW = stage.w - 12, availH = stage.h - room - (landscape ? 0 : GAP);
   const fit = (a: number) => Math.floor((a - 2 * BOARD_PAD - gap * (n - 1)) / n);
   const cell = Math.max(14, Math.min(fit(availW), fit(availH)));
   const outer = boardOuter(n, cell);
-  const boardTop = Math.max(0, Math.min(availH - outer, Math.floor((stage.h - usual - GAP - outer) / 2)));
+  const boardTop = Math.max(0, Math.min(availH - outer, Math.floor((stage.h - usual - (landscape ? 0 : GAP) - outer) / 2)));
+
+  // Büyük tahtada (13×13 ve üstü) yakınlaştır: kareler en az 34 px olur, tahta kaydırılır ve senin taşına ortalanır.
+  const [zoom, setZoom] = useState(false);
+  const canZoom = n >= 13 && !st.puzzle;
+  const zoomed = canZoom && zoom;
+  const cellZ = zoomed ? Math.max(cell, 34) : cell;
+  const areaRef = useRef<HTMLDivElement>(null);
+  const myTurnNow = view.phase === 'sen';
+  useEffect(() => {
+    const a = areaRef.current;
+    if (!a || !zoomed) return;
+    const me = ctl.myStar(), g = boardGap(n);
+    a.scrollTo({
+      left: BOARD_PAD + me.c * (cellZ + g) + cellZ / 2 - a.clientWidth / 2,
+      top: BOARD_PAD + me.r * (cellZ + g) + cellZ / 2 - a.clientHeight / 2,
+      behavior: 'smooth',
+    });
+  }, [zoomed, cellZ, myTurnNow, ctl, n]);
 
   const sheet = view.sheet;
   const [rulesOpen, setRulesOpen] = useState(false);
   const [sub, setSub] = useState<null | 'yeni' | 'ayar'>(null);
   const matchTime = useMatchTime(view.clockStart, view.clockEnd);
-  return (
-    <div ref={rootRef} className={`game${compact ? ' is-compact' : ''}`}>
+  const bars = (
+    <>
       {compact ? <CompactBar ctl={ctl} view={view} /> : (
         <>
           <TopBar ctl={ctl} view={view} />
@@ -90,20 +111,35 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
       )}
       <TurnQueue ctl={ctl} view={view} compact={compact} />
       <PlayerStrip ctl={ctl} view={view} compact={compact} />
-
-      <div ref={stageRef} className="stage">
-        <div className="board-area" style={{ paddingTop: boardTop }}>
-          {stage.w > 0 && <Board ctl={ctl} view={view} cell={cell} />}
-          {view.inspect && <InfoChip ctl={ctl} id={view.inspect} />}
-          {view.toast && (
-            <div key={view.toast.key} className="toast" role="status">
-              <Icon d={view.toast.icon === 'clock' ? ICON.clock : view.toast.icon === 'info' ? ICON.info : view.toast.icon === 'ring' ? ICON.warn : ICON.sword} size={16} stroke={2.2} color="#0B1026" />
-              <span>{view.toast.text}</span>
-            </div>
-          )}
-        </div>
-        <ActionPanel ctl={ctl} view={view} net={net} />
+    </>
+  );
+  const stageEl = (
+    <div key="stage" ref={stageRef} className="stage">
+      <div className="board-area" style={{ paddingTop: zoomed ? 0 : boardTop }}>
+        {stage.w > 0 && (zoomed
+          ? <div ref={areaRef} className="board-scroll"><Board ctl={ctl} view={view} cell={cellZ} /></div>
+          : <Board ctl={ctl} view={view} cell={cell} />)}
+        {canZoom && (
+          <button type="button" className="zoom-btn" aria-pressed={zoomed} aria-label={zoomed ? tr('Uzaklaştır') : tr('Yakınlaştır')} onClick={() => setZoom(z => !z)}>
+            <Icon d={zoomed ? 'M10 4 A6 6 0 1 0 10.01 4 Z M15 15 L20 20 M7.5 10 H12.5' : 'M10 4 A6 6 0 1 0 10.01 4 Z M15 15 L20 20 M7.5 10 H12.5 M10 7.5 V12.5'} size={20} stroke={2.2} />
+          </button>
+        )}
+        {view.inspect && <InfoChip ctl={ctl} id={view.inspect} />}
+        {view.toast && (
+          <div key={view.toast.key} className="toast" role="status">
+            <Icon d={view.toast.icon === 'clock' ? ICON.clock : view.toast.icon === 'info' ? ICON.info : view.toast.icon === 'ring' ? ICON.warn : ICON.sword} size={16} stroke={2.2} color="#0B1026" />
+            <span>{view.toast.text}</span>
+          </div>
+        )}
       </div>
+      {!landscape && <ActionPanel ctl={ctl} view={view} net={net} />}
+    </div>
+  );
+  return (
+    <div ref={rootRef} className={`game${compact ? ' is-compact' : ''}${landscape ? ' is-landscape' : ''}`}>
+      {landscape
+        ? [stageEl, <div key="side" className="land-side">{bars}<ActionPanel ctl={ctl} view={view} net={net} /></div>]
+        : [<Fragment key="bars">{bars}</Fragment>, stageEl]}
 
       {sheet?.type === 'ipucu' && <CoachSheet step={sheet.step} onDone={() => ctl.closeCoach()} />}
       {sheet?.type === 'kayit' && <LogSheet ctl={ctl} events={view.events} />}

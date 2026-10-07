@@ -6,6 +6,7 @@ export interface PuzzleDef {
   id: number;
   title: string;
   hint: string;
+  tutorial: boolean;
   mode: Mode;
   par: number;
   bonuses: Partial<Record<BonusKind, number>> | null;
@@ -14,6 +15,54 @@ export interface PuzzleDef {
 
 export const PUZZLES: PuzzleDef[] = [
   {
+    "tutorial": true,
+    "id": 201,
+    "title": "Düz al",
+    "hint": "DÜZ turdasın: yıldız düz gider ve düz alır. Üstündeki taşa dokun, sonra Onayla.",
+    "mode": "DUZ",
+    "bonuses": null,
+    "par": 1,
+    "map": [
+      ".....",
+      "..K..",
+      "..S..",
+      "....."
+    ]
+  },
+  {
+    "tutorial": true,
+    "id": 202,
+    "title": "Mod değişir",
+    "hint": "Mod her tur değişir. Önce düz yürü, sonraki turda çapraz al.",
+    "mode": "DUZ",
+    "bonuses": null,
+    "par": 2,
+    "map": [
+      ".C...",
+      ".....",
+      "..S..",
+      ".....",
+      "....."
+    ]
+  },
+  {
+    "id": 203,
+    "title": "Tehlike",
+    "hint": "Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. Önce güvenli kareden git.",
+    "tutorial": true,
+    "mode": "DUZ",
+    "bonuses": null,
+    "par": 3,
+    "map": [
+      ".....",
+      ".C...",
+      ".K.S.",
+      ".....",
+      "....."
+    ]
+  },
+  {
+    "tutorial": false,
     "id": 101,
     "title": "Koridor",
     "hint": "Mod her tur değişir: bu tur düz, sonraki tur çapraz.",
@@ -29,6 +78,7 @@ export const PUZZLES: PuzzleDef[] = [
     ]
   },
   {
+    "tutorial": false,
     "id": 102,
     "title": "Haç",
     "hint": "Kollar dar. Hangi botu önce alacağını iyi seç.",
@@ -46,6 +96,7 @@ export const PUZZLES: PuzzleDef[] = [
     ]
   },
   {
+    "tutorial": false,
     "id": 103,
     "title": "Halka",
     "hint": "Ortası boş. Kısa yol hep kenardan.",
@@ -63,6 +114,7 @@ export const PUZZLES: PuzzleDef[] = [
     ]
   },
   {
+    "tutorial": false,
     "id": 104,
     "title": "Sütunlar",
     "hint": "Engel karesine kimse giremez. Sütunun arkası güvenli olabilir.",
@@ -80,6 +132,7 @@ export const PUZZLES: PuzzleDef[] = [
     ]
   },
   {
+    "tutorial": false,
     "id": 105,
     "title": "Merdiven",
     "hint": "Çapraz şerit: düz turda yolun daralır.",
@@ -97,6 +150,7 @@ export const PUZZLES: PuzzleDef[] = [
     ]
   },
   {
+    "tutorial": false,
     "id": 106,
     "title": "Çift adım",
     "hint": "Çift adım iki kare götürür. Doğru anı bekle.",
@@ -114,6 +168,7 @@ export const PUZZLES: PuzzleDef[] = [
     ]
   },
   {
+    "tutorial": false,
     "id": 107,
     "title": "Ayna",
     "hint": "Ayna ile bir botun yerine geç. Bazen yön değiştirmenin tek yolu budur.",
@@ -132,6 +187,7 @@ export const PUZZLES: PuzzleDef[] = [
     ]
   },
   {
+    "tutorial": false,
     "id": 108,
     "title": "Elmas",
     "hint": "Çift hamle: iki hamle art arda, botlar arada oynamaz.",
@@ -151,6 +207,7 @@ export const PUZZLES: PuzzleDef[] = [
     ]
   },
   {
+    "tutorial": false,
     "id": 109,
     "title": "Kale",
     "hint": "Duvarların kapısı dar. Hangi kapıdan gireceğini hesapla.",
@@ -170,6 +227,7 @@ export const PUZZLES: PuzzleDef[] = [
     ]
   },
   {
+    "tutorial": false,
     "id": 110,
     "title": "Labirent",
     "hint": "Dar yollar ve bir çift adım. Sırayı iyi kur.",

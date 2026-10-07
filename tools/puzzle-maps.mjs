@@ -3,7 +3,37 @@
 // bots: üreticinin koyacağı bot sayısı. par: hedef en az hamle. bonuses: başta verilen bonuslar.
 // needBonus: bonus olmadan par+1 hamlede çözülmemeli (bonus şart). botCols: en az bir bot bu sütunlarda olur.
 // Yeni harita eklerken CLAUDE.md'deki "Bulmaca haritaları" listesine bak; aynı fikri tekrar etme.
+// tutorial: true olanlar Eğitim bölümüne girer (1. ve 2. sabit haritadır: fixed). İlk açılışta menüde önerilir.
 export const MAPS = [
+  {
+    id: 201, tutorial: true, fixed: true, title: 'Düz al', hint: 'DÜZ turdasın: yıldız düz gider ve düz alır. Üstündeki taşa dokun, sonra Onayla.', mode: 'DUZ', par: 1,
+    map: [
+      '.....',
+      '..K..',
+      '..S..',
+      '.....',
+    ],
+  },
+  {
+    id: 202, tutorial: true, fixed: true, title: 'Mod değişir', hint: 'Mod her tur değişir. Önce düz yürü, sonraki turda çapraz al.', mode: 'DUZ', par: 2,
+    map: [
+      '.C...',
+      '.....',
+      '..S..',
+      '.....',
+      '.....',
+    ],
+  },
+  {
+    id: 203, tutorial: true, title: 'Tehlike', hint: 'Kırmızı çizgili kare tehlikelidir: orada bir taş seni alır. Önce güvenli kareden git.', mode: 'DUZ', bots: 2, par: 3,
+    map: [
+      '.....',
+      '.....',
+      '.....',
+      '.....',
+      '.....',
+    ],
+  },
   {
     id: 101, title: 'Koridor', hint: 'Mod her tur değişir: bu tur düz, sonraki tur çapraz.', mode: 'DUZ', bots: 2, par: 3,
     map: [

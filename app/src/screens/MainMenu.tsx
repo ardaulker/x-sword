@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { Setup } from '../game/controller';
 import { Icon } from '../components/bits';
-import { loadDaily } from '../game/daily';
+import { dailyStreak, loadDaily } from '../game/daily';
 import { SetupSheet } from '../components/Sheets';
+import { loadStats } from '../game/stats';
 import './MainMenu.css';
 import { tr } from '../i18n';
 
@@ -23,11 +24,16 @@ export function XSwordLogo({ size }: { size: number }) {
   );
 }
 
-export function MainMenu({ setup, onStart, onResume, resumeInfo, onPuzzles, onStats, onDaily, onRules, onMultiplayer, onSettings }: {
-  setup: Setup; onStart: (s: Setup) => void; onResume?: () => void; resumeInfo?: { round: number; score: number }; onPuzzles?: () => void; onStats?: () => void; onDaily?: () => void; onRules?: () => void; onMultiplayer?: () => void; onSettings?: () => void;
+export function MainMenu({ setup, onStart, onResume, resumeInfo, onTutorial, onPuzzles, onStats, onDaily, onRules, onMultiplayer, onSettings }: {
+  setup: Setup; onStart: (s: Setup) => void; onResume?: () => void; resumeInfo?: { round: number; score: number }; onTutorial?: () => void; onPuzzles?: () => void; onStats?: () => void; onDaily?: () => void; onRules?: () => void; onMultiplayer?: () => void; onSettings?: () => void;
 }) {
   const [setupOpen, setSetupOpen] = useState(false);
   const best = loadDaily();
+  const streak = dailyStreak();
+  const stats = loadStats();
+  // Yeni oyuncuya eğitim önerilir: üç mini bulmaca, yaklaşık bir dakika.
+  const suggestTutorial = !!onTutorial && !stats.puzzleStars[201] && stats.matches < 3 && !onResume;
+  const demoted = !!onResume || suggestTutorial; // büyük yeşil düğme tek olsun
   return (
     <div className="menu">
       <div className="menu-deco" aria-hidden="true">
@@ -45,6 +51,15 @@ export function MainMenu({ setup, onStart, onResume, resumeInfo, onPuzzles, onSt
       </div>
 
       <nav className="menu-actions" aria-label={tr('Ana menü')}>
+        {suggestTutorial && (
+          <button type="button" className="menu-play menu-tutorial" onClick={onTutorial}>
+            <Icon d="M12 3 L14.5 9 L21 9.5 L16 14 L17.5 20.5 L12 17 L6.5 20.5 L8 14 L3 9.5 L9.5 9 Z" size={26} fill="#0B1026" />
+            <span className="menu-play-text">
+              <b>{tr('Eğitim · 1 dakika')}</b>
+              <span>{tr('Üç mini bulmacayla kuralları öğren')}</span>
+            </span>
+          </button>
+        )}
         {onResume && (
           <button type="button" className="menu-play" onClick={onResume}>
             <Icon d="M7 4.5 L19 12 L7 19.5 Z" size={26} fill="#0B1026" />
@@ -54,8 +69,8 @@ export function MainMenu({ setup, onStart, onResume, resumeInfo, onPuzzles, onSt
             </span>
           </button>
         )}
-        <button type="button" className={onResume ? 'menu-btn menu-daily' : 'menu-play'} onClick={() => setSetupOpen(true)}>
-          <Icon d="M7 4.5 L19 12 L7 19.5 Z" size={onResume ? 20 : 26} fill={onResume ? 'currentColor' : '#0B1026'} />
+        <button type="button" className={demoted ? 'menu-btn menu-daily' : 'menu-play'} onClick={() => setSetupOpen(true)}>
+          <Icon d="M7 4.5 L19 12 L7 19.5 Z" size={demoted ? 20 : 26} fill={demoted ? 'currentColor' : '#0B1026'} />
           <span className="menu-play-text">
             <b>{tr('Oyuna başla')}</b>
             <span>{tr('Botlara karşı · tek ya da 2–4 oyuncu')}</span>
@@ -64,7 +79,7 @@ export function MainMenu({ setup, onStart, onResume, resumeInfo, onPuzzles, onSt
         {onDaily && (
           <button type="button" className="menu-btn menu-daily" onClick={onDaily}>
             <Icon d="M7 3 V6 M17 3 V6 M4 9 H20 M5 5 H19 A1 1 0 0 1 20 6 V19 A1 1 0 0 1 19 20 H5 A1 1 0 0 1 4 19 V6 A1 1 0 0 1 5 5 Z" size={20} stroke={2.2} />
-            <span className="menu-play-text"><b>{tr('Günlük meydan okuma')}</b><span>{best ? tr('Bugünkü en iyin: {n} puan', { n: best.score }) : tr('Herkes bugün aynı tahtada oynar')}</span></span>
+            <span className="menu-play-text"><b>{tr('Günlük meydan okuma')}</b><span>{best ? tr('Bugünkü en iyin: {n} puan', { n: best.score }) : tr('Herkes bugün aynı tahtada oynar')}{streak.days > 0 && ` · ${tr('{n} gün seri', { n: streak.days })}${streak.playedToday ? ' ✓' : ''}`}</span></span>
           </button>
         )}
         <div className="menu-row">

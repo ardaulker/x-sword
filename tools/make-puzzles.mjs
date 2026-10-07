@@ -81,9 +81,20 @@ function place(def) {
 }
 
 const only = process.argv[2] ? Number(process.argv[2]) : null;
+const META = def => ({ id: def.id, title: def.title, hint: def.hint, tutorial: !!def.tutorial, mode: def.mode, bonuses: def.bonuses ?? null });
 const out = [];
 for (const def of MAPS) {
-  if (only && def.id !== only) { const old = OLD.find(p => p.id === def.id); if (old) out.push(old); continue; }
+  if (only && def.id !== only) { const old = OLD.find(p => p.id === def.id); if (old) out.push({ tutorial: false, ...old }); continue; }
+  if (def.fixed) {
+    // Sabit harita: yalnız çözücüyle doğrula (tam par hamlede çözülmeli).
+    const st = createPuzzle({ map: def.map, limit: 99, mode: def.mode, bonuses: def.bonuses });
+    let par = 0;
+    for (let d = 1; d <= 6; d++) if (wins(st, d, true)) { par = d; break; }
+    console.log(`${def.id} ${def.title}: sabit harita, çözüm ${par} hamle (beklenen ${def.par})`);
+    if (par !== def.par) { console.log('   HATA: par uyuşmuyor'); process.exitCode = 1; continue; }
+    out.push({ ...META(def), par, map: def.map });
+    continue;
+  }
   const t0 = Date.now();
   let best = null, tried = 0;
   const why = {};
@@ -110,7 +121,7 @@ for (const def of MAPS) {
   if (!best) { console.log(`${def.id} ${def.title}: bulunamadı (${tried} deneme)`, why); continue; }
   console.log(`${def.id} ${def.title}: ${best.par} hamle, ilk hamlede ${best.n} doğru seçenek (${tried} deneme)`);
   console.log(best.map.map(r => '   ' + r).join('\n'));
-  out.push({ id: def.id, title: def.title, hint: def.hint, mode: def.mode, par: best.par, bonuses: def.bonuses ?? null, map: best.map });
+  out.push({ ...META(def), par: best.par, map: best.map });
 }
 
 const body = `// Bu dosya tools/make-puzzles.mjs ile üretildi (haritalar tools/puzzle-maps.mjs). Her bulmaca en çok par+1 hamlede çözülür; par'da çözmek 3 yıldız.
@@ -121,6 +132,7 @@ export interface PuzzleDef {
   id: number;
   title: string;
   hint: string;
+  tutorial: boolean;
   mode: Mode;
   par: number;
   bonuses: Partial<Record<BonusKind, number>> | null;
