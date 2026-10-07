@@ -126,7 +126,7 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
                     <div className="seat-top">
                       <PieceGlyph kind="star" seat={n} size={32} diamond={false} />
                       <div className="seat-names">
-                        <b>{i === v.you ? `${tr('Sen')} · ${tr('Oyuncu {n}', { n: n + 1 })}` : tr('Oyuncu {n}', { n: n + 1 })}</b>
+                        <b>{i === v.you ? `${tr('Sen')} · ${s.name ?? tr('Oyuncu {n}', { n: n + 1 })}` : s.name ?? tr('Oyuncu {n}', { n: n + 1 })}</b>
                         <span>{tag}</span>
                       </div>
                     </div>

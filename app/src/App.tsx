@@ -13,6 +13,7 @@ import { SettingsScreen } from './screens/SettingsScreen';
 import { StatsScreen } from './screens/StatsScreen';
 import { PuzzleScreen } from './screens/PuzzleScreen';
 import { ReplayScreen } from './screens/ReplayScreen';
+import { ProfileScreen } from './screens/ProfileScreen';
 
 const SETUP_KEY = 'xsword-app-setup';
 
@@ -39,8 +40,8 @@ function saveSetup(s: Setup) {
 
 // Ekranlar adres çubuğundaki #/ ile seçilir; telefonun geri tuşu bir önceki ekrana döndürür.
 // #/katil/KOD davet linkidir: açınca o odaya katılır.
-type Screen = 'menu' | 'oyun' | 'kurallar' | 'ayarlar' | 'cok' | 'oda' | 'mac' | 'katil' | 'istatistik' | 'bulmaca' | 'izle';
-const SCREENS: Screen[] = ['oyun', 'kurallar', 'ayarlar', 'cok', 'oda', 'mac', 'istatistik', 'bulmaca'];
+type Screen = 'menu' | 'oyun' | 'kurallar' | 'ayarlar' | 'cok' | 'oda' | 'mac' | 'katil' | 'istatistik' | 'bulmaca' | 'izle' | 'profil';
+const SCREENS: Screen[] = ['oyun', 'kurallar', 'ayarlar', 'cok', 'oda', 'mac', 'istatistik', 'bulmaca', 'profil'];
 function readScreen(): Screen {
   const h = location.hash.replace(/^#\//, '');
   if (h.startsWith('katil/')) return 'katil';
@@ -118,6 +119,7 @@ export function App() {
 
   if (screen === 'oyun') return <GameScreen ctl={ctl} onNewGame={start} onHome={() => go('menu')} onPuzzles={() => go('bulmaca')} />;
   if (screen === 'istatistik') return <StatsScreen onBack={() => go('menu')} />;
+  if (screen === 'profil') return <ProfileScreen onBack={() => go('menu')} onStats={() => go('istatistik')} />;
   if (screen === 'bulmaca') {
     return <PuzzleScreen onBack={() => go('menu')} onPick={id => start({ ...ctl.setup, players: 1, daily: null, puzzle: id })} />;
   }
@@ -146,6 +148,6 @@ export function App() {
     );
   }
   return <MainMenu setup={ctl.setup} onStart={start} onResume={ctl.canResume ? () => go('oyun') : undefined} resumeInfo={ctl.canResume ? ctl.resumeInfo : undefined}
-    onPuzzles={() => go('bulmaca')} onStats={() => go('istatistik')} onTutorial={() => start({ ...ctl.setup, players: 1, daily: null, puzzle: 201 })}
+    onPuzzles={() => go('bulmaca')} onStats={() => go('istatistik')} onProfile={() => go('profil')} onTutorial={() => start({ ...ctl.setup, players: 1, daily: null, puzzle: 201 })}
     onDaily={() => start({ ...ctl.setup, players: 1, level: 'normal', daily: todayKey(), puzzle: null })} onRules={() => go('kurallar')} onMultiplayer={() => go('cok')} onSettings={() => go('ayarlar')} />;
 }

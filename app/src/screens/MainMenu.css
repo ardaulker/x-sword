@@ -67,3 +67,11 @@
   88%, 100% { transform: rotate(0deg); }
 }
 @media (prefers-reduced-motion: reduce) { .logo-x { animation: none; } }
+
+/* Sağ üstte profil: rozet + ad. */
+.menu-profile {
+  position: absolute; z-index: 2; top: calc(env(safe-area-inset-top) + 10px); right: 14px; max-width: 60%;
+  display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px 0 5px; border-radius: 20px;
+  border: 1px solid #2B3670; background: rgba(11, 16, 38, .75); color: var(--metin-1); font: 700 14px var(--font-ui);
+}
+.menu-profile span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

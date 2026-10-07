@@ -8,6 +8,7 @@ import { peerTransport } from './transport';
 import type { HostEndpoint, Link, Transport } from './transport';
 import type { LobbyOpts, LobbySeat, MatchStart, ToGuest, ToHost } from './protocol';
 import { tr } from '../i18n';
+import { publicProfile, readPublic } from '../game/profile';
 
 export type RoomStatus = 'connecting' | 'lobby' | 'playing' | 'error' | 'closed';
 
@@ -68,7 +69,7 @@ export class HostRoom extends Room {
 
   constructor(ctl: GameController, level: Level, transport: Transport = peerTransport) {
     super(ctl);
-    this.view = { ...this.view, level, seats: [{ kind: 'host', ready: true }, EMPTY, EMPTY, EMPTY] };
+    this.view = { ...this.view, level, seats: [{ kind: 'host', ready: true, ...publicProfile() }, EMPTY, EMPTY, EMPTY] };
     transport.host().then(ep => {
       if (this.closed) return ep.close();
       this.endpoint = ep;
@@ -111,9 +112,15 @@ export class HostRoom extends Room {
   }
 
   private message(i: number, m: ToHost) {
-    if (m.t === 'hello') { if (m.token) this.tokens[i] = m.token; this.broadcastLobby(); }
+    if (m.t === 'hello') {
+      if (m.token) this.tokens[i] = m.token;
+      // Misafirin profil adı ve rengi (temizlenmiş). Lobiye herkese yayınlanır.
+      const pub = readPublic(m.profile);
+      if (pub && this.view.status === 'lobby') this.setSeat(i, { ...this.view.seats[i], ...pub });
+      else this.broadcastLobby();
+    }
     else if (m.t === 'bye') this.leave(i, this.links[i]!, true);
-    else if (m.t === 'ready' && this.view.status === 'lobby') this.setSeat(i, { kind: 'guest', ready: m.ready });
+    else if (m.t === 'ready' && this.view.status === 'lobby') this.setSeat(i, { ...this.view.seats[i], kind: 'guest', ready: m.ready });
     else if (m.t === 'move' && this.view.status === 'playing') this.ctl.receiveMove(this.engineSeat[i], m.move);
   }
 
@@ -169,6 +176,7 @@ export class HostRoom extends Room {
       seed: Math.floor(Math.random() * 2 ** 31),
       seats: order.map(i => (this.view.seats[i].kind === 'bot' ? { kind: 'bot', level } : { kind: 'human' })),
       level, moveSeconds, size, neutrals,
+      names: order.map(i => (this.view.seats[i].kind === 'bot' ? null : this.view.seats[i].name ?? null)),
       personas: this.view.opts.personas, obstacles: this.view.opts.obstacles, teams: this.view.opts.teams && order.length === 4,
     };
     this.links.forEach((l, i) => l?.send({ t: 'start', match: this.match!, you: this.engineSeat[i] }));
@@ -219,7 +227,7 @@ export class GuestRoom extends Room {
     this.link = link;
     link.onMessage(m => this.message(m));
     link.onClose(() => this.lost());
-    link.send({ t: 'hello', token: this.token });
+    link.send({ t: 'hello', token: this.token, profile: publicProfile() });
   }
 
   // Maç sürerken bağlantı koparsa 15 sn boyunca aynı odaya yeniden bağlanmaya çalışır.

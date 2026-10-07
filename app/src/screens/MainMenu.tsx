@@ -4,6 +4,8 @@ import { Icon } from '../components/bits';
 import { dailyStreak, loadDaily } from '../game/daily';
 import { SetupSheet } from '../components/Sheets';
 import { loadStats } from '../game/stats';
+import { useProfile } from '../game/profile';
+import { ProfileAvatar } from './ProfileScreen';
 import './MainMenu.css';
 import { tr } from '../i18n';
 
@@ -25,10 +27,11 @@ export function XSwordLogo({ size }: { size: number }) {
   );
 }
 
-export function MainMenu({ setup, onStart, onResume, resumeInfo, onTutorial, onPuzzles, onStats, onDaily, onRules, onMultiplayer, onSettings }: {
-  setup: Setup; onStart: (s: Setup) => void; onResume?: () => void; resumeInfo?: { round: number; score: number }; onTutorial?: () => void; onPuzzles?: () => void; onStats?: () => void; onDaily?: () => void; onRules?: () => void; onMultiplayer?: () => void; onSettings?: () => void;
+export function MainMenu({ setup, onStart, onResume, resumeInfo, onTutorial, onProfile, onPuzzles, onStats, onDaily, onRules, onMultiplayer, onSettings }: {
+  setup: Setup; onStart: (s: Setup) => void; onResume?: () => void; resumeInfo?: { round: number; score: number }; onTutorial?: () => void; onProfile?: () => void; onPuzzles?: () => void; onStats?: () => void; onDaily?: () => void; onRules?: () => void; onMultiplayer?: () => void; onSettings?: () => void;
 }) {
   const [setupOpen, setSetupOpen] = useState(false);
+  const profile = useProfile();
   const best = loadDaily();
   const streak = dailyStreak();
   const stats = loadStats();
@@ -40,6 +43,13 @@ export function MainMenu({ setup, onStart, onResume, resumeInfo, onTutorial, onP
       <div className="menu-deco" aria-hidden="true">
         {DECO.map((o, i) => <div key={i} style={{ opacity: o }} />)}
       </div>
+
+      {onProfile && (
+        <button type="button" className="menu-profile" onClick={onProfile} aria-label={tr('Profil: {name}', { name: profile.name })}>
+          <ProfileAvatar profile={profile} size={30} />
+          <span>{profile.name}</span>
+        </button>
+      )}
 
       <div className="menu-hero">
         <XSwordLogo size={150} />

@@ -15,7 +15,9 @@ import type { Opts, ReplaySpec } from './record';
 import { recordMatch, recordPuzzle } from './stats';
 import { SPEED, settings } from './settings';
 import { HAZARD, PLAYER_COLORS, colorOf, isBot } from './look';
-import { ME, clockText, labelOf, objectOf, seatName, setMe, subjectOf } from './names';
+import { ME, clockText, labelOf, objectOf, seatName, setMe, setSeatNames, subjectOf } from './names';
+import { getProfile } from './profile';
+import { syncCloud } from './platform';
 import type { MatchStart } from '../net/protocol';
 import { tr } from '../i18n';
 
@@ -268,6 +270,7 @@ export class GameController {
   // ------------------------------------------------------------ maç tekrarı
 
   loadReplay(spec: ReplaySpec) {
+    setSeatNames([]);
     this.dispose();
     this.net = null;
     setMe(0);
@@ -363,6 +366,8 @@ export class GameController {
   }
 
   private reset(match?: MatchStart, preset?: { opts: Opts; moves: (Move | null)[] }) {
+    // Koltuk adları: çok oyunculuda lobideki profil adları, tek cihazda senin adın (yapay zekâ "Oyuncu N" kalır).
+    setSeatNames(match ? match.names ?? [] : [getProfile().name]);
     if (match) {
       this.opts = null;
       this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals, personas: !!match.personas, obstacles: !!match.obstacles, teams: !!match.teams });
@@ -541,12 +546,14 @@ export class GameController {
     if (s.puzzle) {
       const def = PUZZLES.find(p => p.id === this.setup.puzzle);
       if (won && def) recordPuzzle(def.id, s.puzzle.used <= def.par ? 3 : 2);
+      void syncCloud();
       return;
     }
     recordMatch({
       won, score: s.seats[ME].score, takes: s.seats[ME].takes, rounds: s.round,
       ms: Date.now() - this.view.clockStart, daily: !!this.setup.daily,
     });
+    void syncCloud(); // telefon uygulamasında platform bulut kaydına; web'de bir şey yapmaz
   }
 
   // Kazanan belliyken botlarla savaşa devam et.

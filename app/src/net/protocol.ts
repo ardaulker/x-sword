@@ -2,12 +2,15 @@
 // Motor tohumla çalıştığı için herkes aynı başlangıçla aynı tahtayı kurar, sonra hamleler sırayla akar.
 
 import type { Level, Move } from '../../../engine/rules.js';
+import type { PublicProfile } from '../game/profile';
 
 export type SeatKind = 'host' | 'guest' | 'bot' | 'empty';
 
 export interface LobbySeat {
   kind: SeatKind;
   ready: boolean;
+  name?: string;   // oyuncunun profil adı (yapay zekâda yok)
+  color?: number;  // profil rengi (AVATAR_COLORS sırası)
 }
 
 // Maçın başlangıcı: herkes createGame'i bununla çağırır.
@@ -21,13 +24,14 @@ export interface MatchStart {
   personas?: boolean;  // yapay zekâ rakiplere kişilik
   obstacles?: boolean; // engel kareleri
   teams?: boolean;     // 2'ye 2 (yalnız 4 oyuncu)
+  names?: (string | null)[]; // maçtaki koltuk sırasıyla profil adları (yapay zekâ null)
 }
 
 // Lobide kurucunun seçtiği, varsayılanı kapalı seçenekler.
 export interface LobbyOpts { personas: boolean; obstacles: boolean; teams: boolean }
 
 export type ToHost =
-  | { t: 'hello'; token?: string }
+  | { t: 'hello'; token?: string; profile?: PublicProfile }
   | { t: 'bye' }
   | { t: 'ready'; ready: boolean }
   | { t: 'move'; move: Move | null };

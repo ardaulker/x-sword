@@ -10,11 +10,26 @@ export const setMe = (seat: number) => { ME = seat; };
 const SEAT_ACC = ["'i", "'yi", "'ü", "'ü"]; // 1'i, 2'yi, 3'ü, 4'ü
 const tr_ = () => getLang() === 'tr';
 
-// İnsan da yapay zekâ da "Oyuncu N" diye anılır. "İkiz" yalnız tek oyunculu moddaki aynanın adıdır.
-export const seatName = (_state: GameState, seat: number) => tr('Oyuncu {n}', { n: seat + 1 });
+// Profil adı olan koltuklar (insan oyuncular) o adla anılır; olmayanlar (yapay zekâ) "Oyuncu N".
+// Maç başlarken controller doldurur: tek cihazda senin adın, çok oyunculuda lobideki adlar. "İkiz" yalnız aynanın adıdır.
+let seatNames: (string | null)[] = [];
+export const setSeatNames = (names: (string | null)[]) => { seatNames = names; };
+export const seatName = (_state: GameState, seat: number) => seatNames[seat] || tr('Oyuncu {n}', { n: seat + 1 });
+
+// Türkçe belirtme hâli eki, ünlü uyumuyla: Ada'yı, Kılıç 482'yi, Mert'i. Sondaki rakam okunuşuna göre.
+const DIGIT_TAIL = ['ı', 'i', 'yi', 'ü', 'ü', 'i', 'yı', 'yi', 'i', 'u']; // sıfır bir iki üç dört beş altı yedi sekiz dokuz
+function accusative(name: string) {
+  const last = name.at(-1) ?? '';
+  if (/\d/.test(last)) return `${name}'${DIGIT_TAIL[+last]}`;
+  const vowels = name.toLocaleLowerCase('tr').match(/[aıoueiöü]/g);
+  const v = vowels?.at(-1) ?? 'e';
+  const suf = { a: 'ı', ı: 'ı', o: 'u', u: 'u', e: 'i', i: 'i', ö: 'ü', ü: 'ü' }[v] ?? 'i';
+  return `${name}'${/[aıoueiöüAIOUEİÖÜ]$/.test(last) ? 'y' : ''}${suf}`;
+}
 
 // Türkçede belirtme hâli eki gerekir; öteki dillerde ad olduğu gibi kalır.
-const seatAcc = (state: GameState, seat: number) => seatName(state, seat) + (tr_() ? SEAT_ACC[seat] : '');
+const seatAcc = (state: GameState, seat: number) =>
+  !tr_() ? seatName(state, seat) : seatNames[seat] ? accusative(seatNames[seat]!) : seatName(state, seat) + SEAT_ACC[seat];
 
 // "X kazandı" satırı: takımlı maçta takım adı, değilse oyuncu adı.
 export const winnerLine = (st: GameState, fallback = 0) =>
