@@ -3,8 +3,6 @@
 A turn-based arena game on an octagon-square board. Every round the direction flips: STRAIGHT, then DIAGONAL.
 You take pieces like in chess and try to outscore everyone while the arena shrinks.
 
-The first version was made by Arda's cousin; the repo's first commit is that version. Arda develops the game now.
-
 ## Play
 
 - **Game:** https://ardaulker.github.io/x-sword/play/ — the `app/` folder (React + TypeScript + Vite), built on the
