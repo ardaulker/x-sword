@@ -16,6 +16,9 @@ interface NativeGames {
   signIn(): Promise<NativePlayer>;                        // silent sign-in; opens the system sheet if needed
   loadSnapshot(): Promise<{ data: string | null }>;       // progress in the platform cloud save (progressCode format)
   saveSnapshot(opts: { data: string }): Promise<void>;
+  // Plays a vibration rhythm: alternating vibrate / pause durations in ms (the same format as navigator.vibrate).
+  // iOS has no web vibration, so the phone app does it natively (Core Haptics); Android can use the Vibrator service.
+  haptic?(opts: { pattern: number[] }): Promise<void>;
 }
 
 interface CapacitorGlobal {
@@ -47,6 +50,14 @@ export async function bootPlatform() {
   } catch {
     // Sign-in refused or no network: the guest profile and the on-device progress are used.
   }
+}
+
+// In the phone app: plays the rhythm natively and returns true. On the web (or without the plugin) returns false.
+export function nativeHaptic(pattern: number | readonly number[]): boolean {
+  const g = games();
+  if (!g?.haptic) return false;
+  g.haptic({ pattern: typeof pattern === 'number' ? [pattern] : [...pattern] }).catch(() => {});
+  return true;
 }
 
 // Merges the cloud progress with the on-device progress and writes the result to both. Also called at the end of a match.

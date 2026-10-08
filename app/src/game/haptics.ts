@@ -1,7 +1,8 @@
 // Feedback: vibration + sound. Every event has a short vibration and a synthesized sound (no audio files).
-// iOS Safari doesn't support vibration; it is silently skipped there. Sound starts on the first tap (a browser rule).
+// iOS Safari doesn't support vibration; it is silently skipped there (the phone app plays it natively through the XSwordGames plugin). Sound starts on the first tap (a browser rule).
 
 import { settings } from './settings';
+import { nativeHaptic } from './platform';
 
 // Every event has its own rhythm, recognizable even with eyes closed:
 // select a short tick · confirm a bit longer · take (short-short-long) · taking a star (twice as strong) ·
@@ -26,6 +27,7 @@ export const BUZZ = {
 
 export function buzz(pattern: number | readonly number[]) {
   if (!settings.haptics) return;
+  if (nativeHaptic(pattern)) return;
   try {
     navigator.vibrate?.(pattern as number | number[]);
   } catch {

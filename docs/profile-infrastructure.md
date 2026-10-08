@@ -35,8 +35,11 @@ native side exists:
 signIn(): Promise<{ provider: 'gamecenter' | 'playgames'; playerId: string; displayName: string }>
 loadSnapshot(): Promise<{ data: string | null }>   // progressCode format ("XS1.…")
 saveSnapshot({ data }: { data: string }): Promise<void>
+haptic({ pattern }: { pattern: number[] }): Promise<void>   // optional: vibrate/pause durations in ms
 ```
 
+- **Haptics:** iPhone browsers cannot vibrate, so `game/haptics.ts` hands every rhythm to `haptic()` when the plugin has it.
+  iOS: Core Haptics transient events at the given offsets (`CHHapticEngine`); Android: `VibrationEffect.createWaveform`.
 - **iOS (Swift, GameKit):** sign in with `GKLocalPlayer.local.authenticateHandler`; the id is `gamePlayerID`.
   Saves: `fetchSavedGames` / `saveGameData(_:withName:)` (one save named `xsword-progress`).
 - **Android (Kotlin, Play Games Services v2):** `PlayGamesSdk.initialize`, sign in with `GamesSignInClient`, player id
