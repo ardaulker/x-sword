@@ -1,5 +1,6 @@
 /* X Sword — design tokens */
-@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap');
+/* Fonts: Oxanium 500–800 and Barlow 400–700 (both OFL). The app bundles them (@fontsource, see app/src/main.tsx); the static
+   references in design/reference/ load them from Google Fonts themselves. */
 
 :root {
   /* Background and surfaces */

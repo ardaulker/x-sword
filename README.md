@@ -9,7 +9,7 @@ You take pieces like in chess and try to outscore everyone while the arena shrin
   rules engine in `engine/`. Single player (you + your mirror Twin + arena bots), 2–4 stars against AI,
   multiplayer over phone-to-phone connections (PeerJS), puzzles, a tutorial and a daily challenge.
   The old address `/oyun/` and the root address redirect here.
-- **Arena (engine test bench):** https://ardaulker.github.io/x-sword/arena/
+- **Arena (engine test bench for developers, not indexed):** https://ardaulker.github.io/x-sword/arena/
 - **The first demo** is retired. It is kept in `archive/first-demo/` and is not published.
 
 https://ardaulker.github.io/x-sword/ opens the game.

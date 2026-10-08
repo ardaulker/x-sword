@@ -43,7 +43,7 @@
   replies with `sync` (the whole move list; at most 3 times, then the guest leaves). The hash leaves out the seed and seat
   kinds on purpose (see the comment in `stateHash`).
 - Publishing: a push to `main` runs `.github/workflows/pages.yml`, which runs the engine tests, builds `app/` and
-  publishes the site to GitHub Pages. Root pages (`index.html`, `arena/`, `engine/`) go out as they are; the game is
+  publishes the site to GitHub Pages. Only the root pages `index.html`, `arena/` and `engine/` go out as they are (not `design/`, `docs/`, `tools/`); the game is
   served at https://ardaulker.github.io/x-sword/play/ and https://ardaulker.github.io/x-sword/ redirects there. The old address `/oyun/` (before the English rename) redirects
   to `/play/` and keeps the `#/` route.
 - Translation (`app/src/i18n/`): in `tr('English sentence', {variable})` the key is the English text itself, so English

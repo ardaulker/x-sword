@@ -51,7 +51,8 @@
 .seat-bottom { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
 .seat-ready { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: var(--surface-3); color: var(--text-2); }
 .seat-ready.is-ready { background: rgba(59, 255, 143, .15); color: #3BFF8F; }
-.seat-x { width: 32px; height: 32px; border-radius: 16px; border: 0; background: var(--surface-2); color: var(--text-2); display: flex; align-items: center; justify-content: center; }
+.seat-x { position: relative; width: 32px; height: 32px; border-radius: 16px; border: 0; background: var(--surface-2); color: var(--text-2); display: flex; align-items: center; justify-content: center; }
+.seat-x::after { content: ''; position: absolute; inset: -6px; } /* a 44 px tap area around the 32 px button */
 .seat-empty { font-size: 14px; font-weight: 600; color: var(--text-2); }
 .seat-wait { font-size: 12px; color: var(--text-3); }
 .seat-add { height: 40px; border-radius: 12px; border: 1.5px solid var(--line-2); background: var(--surface-2); color: var(--text-1); font-size: 13px; font-weight: 700; }
