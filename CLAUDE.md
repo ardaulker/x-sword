@@ -473,8 +473,10 @@ S#....#.
   match** (starts at once with the last New game setup, `App.tsx → lastSetup`; a puzzle or daily start does not change it and the
   button shows it as "Last setup: Solo · Normal · 9×9"), Daily challenge + Puzzles side by side, a wide Multiplayer button, and
   Statistics + Settings at the bottom. "How to play" lives in Settings.
-- **Setup sheet extras**: "Bot characters" (the AI rival personalities; disabled in solo) sits under "Obstacle squares", and
-  "Customize character" opens the piece-effect picker (`components/SkinPicker.tsx`, shared with Settings).
+- **Setup sheet** (`Sheets.tsx → SetupSheet`): the X closes it; the bottom row is "Customize character" (opens the piece-effect
+  picker, `components/SkinPicker.tsx`, shared with Settings) + Start. "Obstacle squares" and "Bot characters" (the AI rival
+  personalities) are two tiles side by side. Rival intelligence is always shown but disabled in solo, so the sheet keeps its
+  height when the player count changes; `.sheet-tall` lets it fill 94% so Start stays in view up to 3 players (4 adds the Teams row).
 - **Error screen**: `components/ErrorBoundary.tsx` wraps the app; on a render error it offers "Reload" and "Reload without the
   saved match" (clears `xsword-save`), so a broken save cannot crash the app on every start.
 - The top bar shows "ROUND n" translated; the menu and battle-log buttons have small captions (hidden on short

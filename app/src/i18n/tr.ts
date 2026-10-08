@@ -557,10 +557,10 @@ const dict: Record<string, string> = {
   'Last setup: {summary}': 'Son ayar: {summary}',
   'Best: {n} pts': 'En iyi: {n} puan',
   'Same board for everyone': 'Herkes aynı tahtada',
-  'Needs AI rivals: pick 2–4 players.': 'Yapay zekâ rakip gerekir: 2–4 oyuncu seç.',
   'Customize character': 'Karakteri özelleştir',
   'Pick the effect your star wears. Locked ones open as you play.': 'Yıldızının taşıyacağı efekti seç. Kilitliler oynadıkça açılır.',
   'Done': 'Tamam',
   'Bot characters': 'Bot karakterleri',
+  'Needs 2–4 players': '2–4 oyuncu gerekir',
 };
 export default dict;

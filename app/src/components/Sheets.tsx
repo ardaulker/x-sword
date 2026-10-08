@@ -21,7 +21,7 @@ import { puzzleNo, puzzleTitle } from '../game/puzzleText';
 import { tr } from '../i18n';
 
 // A bottom sheet; the background dims and tapping outside closes it.
-function SheetFrame({ label, onClose, children }: { label: string; onClose: () => void; children: ReactNode }) {
+function SheetFrame({ label, onClose, children, tall = false }: { label: string; onClose: () => void; children: ReactNode; tall?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     ref.current?.focus();
@@ -31,7 +31,7 @@ function SheetFrame({ label, onClose, children }: { label: string; onClose: () =
   }, [onClose]);
   return (
     <div className="sheet-scrim" onClick={onClose}>
-      <div ref={ref} className="sheet" role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} onClick={e => e.stopPropagation()}>
+      <div ref={ref} className={`sheet${tall ? ' sheet-tall' : ''}`} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} onClick={e => e.stopPropagation()}>
         <div className="sheet-handle" aria-hidden="true" />
         {children}
       </div>
@@ -222,10 +222,10 @@ export function CoachSheet({ step, onDone }: { step: number; onDone: () => void 
 
 const levelLabels = (): [Level, string][] => [['easy', tr('Easy')], ['normal', tr('Normal')], ['hard', tr('Hard')]];
 
-export function Opt({ label, sub, on, onChange, disabled = false }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+export function Opt({ label, sub, on, onChange, disabled = false, className = '' }: { label: string; sub?: string; on: boolean; className?: string; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <button type="button" className="opt-row" role="switch" aria-checked={on && !disabled} disabled={disabled} onClick={() => onChange(!on)}>
-      <span className="opt-text"><b>{label}</b><small>{sub}</small></span>
+    <button type="button" className={`opt-row ${className}`} role="switch" aria-checked={on && !disabled} disabled={disabled} onClick={() => onChange(!on)}>
+      <span className="opt-text"><b>{label}</b>{sub && <small>{sub}</small>}</span>
       <span className={`switch${on && !disabled ? ' is-on' : ''}`} aria-hidden="true"><span /></span>
     </button>
   );
@@ -257,8 +257,8 @@ export function PauseSheet({ onResume, onNew, onRestart, onSettings, onHome, onE
 }
 
 // Match setup: opens from "Play" on the main menu and from the in-game menu button.
-export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: {
-  setup: Setup; onStart: (s: Setup) => void; onClose: () => void; onHome?: () => void; onRules?: () => void; onEnd?: () => void;
+export function SetupSheet({ setup, onStart, onClose }: {
+  setup: Setup; onStart: (s: Setup) => void; onClose: () => void;
 }) {
   const [players, setPlayers] = useState(setup.players);
   const [level, setLevel] = useState<Level>(setup.level);
@@ -290,7 +290,7 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
     );
   }
   return (
-    <SheetFrame label={tr('New match')} onClose={onClose}>
+    <SheetFrame label={tr('New match')} onClose={onClose} tall>
       <div className="sheet-head">
         <div className="sheet-title">{tr('New match')}</div>
         <button type="button" className="round-btn" aria-label={tr('Close')} onClick={onClose}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
@@ -320,18 +320,15 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
           </div>
         </>
       )}
-      {players > 1 && (
-        <>
-          <div className="field-label">{tr('RIVAL INTELLIGENCE')}</div>
-          <div className="seg" role="radiogroup" aria-label={tr('Rival intelligence')}>
-            {levelLabels().map(([v, t]) => (
-              <button key={v} type="button" role="radio" aria-checked={aiLevel === v} className={aiLevel === v ? 'is-on' : ''} onClick={() => setAiLevel(v)}>
-                <b>{t}</b>
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+      {/* Always shown so the sheet keeps its height when the player count changes; only usable with AI rivals. */}
+      <div className={`field-label${players === 1 ? ' is-off' : ''}`}>{tr('RIVAL INTELLIGENCE')}</div>
+      <div className="seg" role="radiogroup" aria-label={tr('Rival intelligence')}>
+        {levelLabels().map(([v, t]) => (
+          <button key={v} type="button" role="radio" aria-checked={aiLevel === v} disabled={players === 1} className={aiLevel === v ? 'is-on' : ''} onClick={() => setAiLevel(v)}>
+            <b>{t}</b>
+          </button>
+        ))}
+      </div>
       <div className="field-label">{tr('ARENA BOT INTELLIGENCE')}</div>
       <div className="seg" role="radiogroup" aria-label={tr('Arena bot intelligence')}>
         {levelLabels().map(([v, t]) => (
@@ -343,13 +340,10 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
       <div className="field-label">{tr('OPTIONS')}</div>
       <div className="opts">
         {players === 4 && <Opt label={tr('Teams (2 vs 2)')} sub={tr("Opposite corners form a team; you can't take your teammate.")} on={teams} onChange={setTeams} />}
-        <Opt label={tr('Obstacle squares')} sub={tr('Places blocked squares on the board that never touch each other.')} on={obstacles} onChange={setObstacles} />
-        <Opt label={tr('Bot characters')} sub={players > 1 ? tr('AI rivals play as a hunter, a cautious one or an opportunist.') : tr('Needs AI rivals: pick 2–4 players.')} on={personas} onChange={setPersonas} disabled={players === 1} />
-        <button type="button" className="opt-row char-btn" onClick={() => setCharacter(true)}>
-          <span className="char-pv" aria-hidden="true"><PieceGlyph kind="star" seat={ME} size={34} diamond={false}><SkinFx id={skinById(skin).id} /></PieceGlyph></span>
-          <span className="opt-text"><b>{tr('Customize character')}</b><small>{skinById(skin).name()}</small></span>
-          <Icon d="M9 5 L16 12 L9 19" size={18} stroke={2.4} />
-        </button>
+        <div className="opts-pair">
+          <Opt className="opt-tile" label={tr('Obstacle squares')} on={obstacles} onChange={setObstacles} />
+          <Opt className="opt-tile" label={tr('Bot characters')} sub={players === 1 ? tr('Needs 2–4 players') : undefined} on={personas} onChange={setPersonas} disabled={players === 1} />
+        </div>
       </div>
       <div className="menu-note">
         {players === 1
@@ -357,16 +351,11 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
           : tr('You and {ai} AI {ai:player|players} · {size}×{size} board · {bots} arena bots.', { ai: players - 1, size, bots: botCount })}
         {level === 'easy' ? tr(' You go first.') : level === 'hard' ? tr(" The bots' targets are hidden.") : ''}
       </div>
-      {(onRules || onEnd) && (
-        <div className="btn-row" style={{ marginBottom: 8 }}>
-          {onRules && <button type="button" className="btn btn-ghost" onClick={onRules}>{tr('How to play')}</button>}
-          {onEnd && <button type="button" className="btn btn-ghost" onClick={onEnd}>{tr('End match')}</button>}
-        </div>
-      )}
       <div className="btn-row">
-        {onHome
-          ? <button type="button" className="btn btn-ghost" onClick={onHome}>{tr('Main menu')}</button>
-          : <button type="button" className="btn btn-ghost" onClick={onClose}>{tr('Close')}</button>}
+        <button type="button" className="btn btn-ghost char-open" onClick={() => setCharacter(true)}>
+          <PieceGlyph kind="star" seat={ME} size={26} diamond={false}><SkinFx id={skinById(skin).id} /></PieceGlyph>
+          <span>{tr('Customize character')}</span>
+        </button>
         <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, aiLevel, boardSize: size, bots: botCount, daily: null, puzzle: null, personas: players > 1 && personas, obstacles, teams: players === 4 && teams })}>{tr('Start')}</button>
       </div>
     </SheetFrame>

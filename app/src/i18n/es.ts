@@ -557,10 +557,10 @@ const dict: Record<string, string> = {
   'Last setup: {summary}': 'Último ajuste: {summary}',
   'Best: {n} pts': 'Mejor: {n} pts',
   'Same board for everyone': 'El mismo tablero para todos',
-  'Needs AI rivals: pick 2–4 players.': 'Necesita rivales IA: elige 2–4 jugadores.',
   'Customize character': 'Personalizar personaje',
   'Pick the effect your star wears. Locked ones open as you play.': 'Elige el efecto de tu estrella. Los bloqueados se abren jugando.',
   'Done': 'Listo',
   'Bot characters': 'Personajes de los bots',
+  'Needs 2–4 players': 'Necesita 2–4 jugadores',
 };
 export default dict;
