@@ -12,6 +12,9 @@ import { shareReplay, shareResult } from '../game/share';
 import { replayCode } from '../game/record';
 import { freshRewards, markRewardsSeen } from '../game/themes';
 import { SkinFx } from './SkinFx';
+import { SkinPicker } from './SkinPicker';
+import { saveSettings, settings } from '../game/settings';
+import { skinById } from '../game/themes';
 import { BONUS_ICONS, shortBonus } from './ActionPanel';
 import { PUZZLES } from '../game/puzzles';
 import { puzzleNo, puzzleTitle } from '../game/puzzleText';
@@ -219,11 +222,11 @@ export function CoachSheet({ step, onDone }: { step: number; onDone: () => void 
 
 const levelLabels = (): [Level, string][] => [['easy', tr('Easy')], ['normal', tr('Normal')], ['hard', tr('Hard')]];
 
-export function Opt({ label, sub, on, onChange }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {
+export function Opt({ label, sub, on, onChange, disabled = false }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <button type="button" className="opt-row" role="switch" aria-checked={on} onClick={() => onChange(!on)}>
+    <button type="button" className="opt-row" role="switch" aria-checked={on && !disabled} disabled={disabled} onClick={() => onChange(!on)}>
       <span className="opt-text"><b>{label}</b><small>{sub}</small></span>
-      <span className={`switch${on ? ' is-on' : ''}`} aria-hidden="true"><span /></span>
+      <span className={`switch${on && !disabled ? ' is-on' : ''}`} aria-hidden="true"><span /></span>
     </button>
   );
 }
@@ -263,6 +266,8 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
   const [personas, setPersonas] = useState(!!setup.personas);
   const [obstacles, setObstacles] = useState(!!setup.obstacles);
   const [teams, setTeams] = useState(!!setup.teams);
+  const [skin, setSkin] = useState(settings.skin);
+  const [character, setCharacter] = useState(false); // the "Customize character" page
   const [pickedSize, setBoardSize] = useState(setup.boardSize);
   // If the bot count was left untouched (null), the default crowd for the board and player count is used.
   const [picked, setBots] = useState<number | null>(
@@ -271,6 +276,19 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
   const size = Math.max(pickedSize, minSize);
   const maxBots = maxNeutrals(size);
   const botCount = Math.min(picked ?? defaultNeutrals(players, size), maxBots);
+  if (character) {
+    return (
+      <SheetFrame label={tr('Customize character')} onClose={() => setCharacter(false)}>
+        <div className="sheet-head">
+          <div className="sheet-title">{tr('Customize character')}</div>
+          <button type="button" className="round-btn" aria-label={tr('Close')} onClick={() => setCharacter(false)}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
+        </div>
+        <p className="menu-note">{tr('Pick the effect your star wears. Locked ones open as you play.')}</p>
+        <SkinPicker skin={skin} title={false} onPick={id => { setSkin(id); saveSettings({ ...settings, skin: id }); }} />
+        <button type="button" className="btn btn-main btn-block" onClick={() => setCharacter(false)}>{tr('Done')}</button>
+      </SheetFrame>
+    );
+  }
   return (
     <SheetFrame label={tr('New match')} onClose={onClose}>
       <div className="sheet-head">
@@ -324,9 +342,14 @@ export function SetupSheet({ setup, onStart, onClose, onHome, onRules, onEnd }: 
       </div>
       <div className="field-label">{tr('OPTIONS')}</div>
       <div className="opts">
-        {players > 1 && <Opt label={tr('Rival personalities')} sub={tr('AI rivals play as a hunter, a cautious one or an opportunist.')} on={personas} onChange={setPersonas} />}
         {players === 4 && <Opt label={tr('Teams (2 vs 2)')} sub={tr("Opposite corners form a team; you can't take your teammate.")} on={teams} onChange={setTeams} />}
         <Opt label={tr('Obstacle squares')} sub={tr('Places blocked squares on the board that never touch each other.')} on={obstacles} onChange={setObstacles} />
+        <Opt label={tr('Bot characters')} sub={players > 1 ? tr('AI rivals play as a hunter, a cautious one or an opportunist.') : tr('Needs AI rivals: pick 2–4 players.')} on={personas} onChange={setPersonas} disabled={players === 1} />
+        <button type="button" className="opt-row char-btn" onClick={() => setCharacter(true)}>
+          <span className="char-pv" aria-hidden="true"><PieceGlyph kind="star" seat={ME} size={34} diamond={false}><SkinFx id={skinById(skin).id} /></PieceGlyph></span>
+          <span className="opt-text"><b>{tr('Customize character')}</b><small>{skinById(skin).name()}</small></span>
+          <Icon d="M9 5 L16 12 L9 19" size={18} stroke={2.4} />
+        </button>
       </div>
       <div className="menu-note">
         {players === 1

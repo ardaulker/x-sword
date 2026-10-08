@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import type { ReactNode } from 'react';
 import { Icon } from '../components/bits';
 import { feel } from '../game/haptics';
 import { paletteOf, saveSettings, settings } from '../game/settings';
@@ -8,9 +7,8 @@ import type { Settings } from '../game/settings';
 import './RulesScreen.css';
 import { Flag } from '../components/Flag';
 import { LANGS, setLang, tr, useLang } from '../i18n';
-import { SKINS, THEMES, isUnlocked, needProgress, needText } from '../game/themes';
-import type { Need } from '../game/themes';
-import { SkinFx } from '../components/SkinFx';
+import { THEMES, isUnlocked, needProgress, needText } from '../game/themes';
+import { PeekCard, SkinPicker } from '../components/SkinPicker';
 import { loadStats } from '../game/stats';
 
 const speeds = (): [Settings['speed'], string, string][] => [
@@ -28,30 +26,13 @@ function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: 
   );
 }
 
-// Big preview of a locked style: what it looks like, how it unlocks and the progress.
-function PeekCard({ title, need, stats, children, onClose }: { title: string; need: null | Need; stats: ReturnType<typeof loadStats>; children: ReactNode; onClose: () => void }) {
-  const have = need ? needProgress({ need }, stats) : 0;
-  return (
-    <div className="peek" role="status">
-      <div className="peek-pv">{children}</div>
-      <div className="peek-text">
-        <b>{title}</b>
-        <span>{tr('Preview · locked')}</span>
-        {need && <small>{tr('To unlock: {need}', { need: needText({ need }) })} ({have}/{need.n})</small>}
-        {need && <div className="peek-bar" aria-hidden="true"><i style={{ width: `${Math.round((100 * have) / need.n)}%` }} /></div>}
-      </div>
-      <button type="button" className="round-btn" aria-label={tr('Close')} onClick={onClose}><Icon d="M6 6 L18 18 M18 6 L6 18" size={16} stroke={2.4} /></button>
-    </div>
-  );
-}
-
 // inGame: opened during a match; settings that change the game are hidden (only sound, vibration and language remain).
 export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: () => void; onRules?: () => void; inGame?: boolean }) {
   const lang = useLang();
   const [s, setS] = useState(settings);
   const stats = loadStats();
   // Tapping a locked style doesn't select it; it opens the big preview so players see what they would get.
-  const [peek, setPeek] = useState<{ kind: 'skin' | 'theme'; id: string } | null>(null);
+  const [peek, setPeek] = useState<{ kind: 'theme'; id: string } | null>(null);
   const update = (patch: Partial<Settings>) => { const next = { ...s, ...patch }; setS(next); saveSettings(next); };
   return (
     <div className="rules">
@@ -120,34 +101,7 @@ export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: ()
             {paletteOf(s.colorBlind).map((_, i) => <PieceGlyph key={`${i}${s.colorBlind}`} kind="star" seat={i} size={36} diamond={false} />)}
           </div>
         </div>
-        <div className="rule set-col">
-          <div className="rule-text"><h3>{tr('Piece effect')}</h3><p>{tr('Shown on your star. Unlocked by achievements.')}</p></div>
-          <div className="theme-grid" role="radiogroup" aria-label={tr('Piece effect')}>
-            {SKINS.map(k => {
-              const open = isUnlocked(k, stats);
-              return (
-                <button key={k.id} type="button" role="radio" aria-checked={s.skin === k.id}
-                  className={`theme-chip${s.skin === k.id ? ' is-on' : ''}${open ? '' : ' is-locked'}${peek?.id === k.id && peek.kind === 'skin' ? ' is-peek' : ''}`}
-                  onClick={() => { if (open) { update({ skin: k.id }); setPeek(null); } else setPeek({ kind: 'skin', id: k.id }); }}>
-                  <span className="skin-pv" aria-hidden="true">
-                    <PieceGlyph kind="star" seat={0} size={34} diamond={false}><SkinFx id={k.id} /></PieceGlyph>
-                    {!open && <Icon d="M7 11 V8 A5 5 0 0 1 17 8 V11 M6 11 H18 V20 H6 Z" size={16} stroke={2.2} />}
-                  </span>
-                  <b>{k.name()}</b>
-                  {!open && k.need && <small>{needText(k)} ({needProgress(k, stats)}/{k.need.n})</small>}
-                </button>
-              );
-            })}
-          </div>
-          {peek?.kind === 'skin' && (() => {
-            const k = SKINS.find(x => x.id === peek.id)!;
-            return (
-              <PeekCard title={k.name()} need={k.need} stats={stats} onClose={() => setPeek(null)}>
-                <PieceGlyph kind="star" seat={0} size={76} diamond={false}><SkinFx id={k.id} /></PieceGlyph>
-              </PeekCard>
-            );
-          })()}
-        </div>
+        <SkinPicker skin={s.skin} onPick={skin => update({ skin })} />
         <div className="rule set-col">
           <div className="rule-text"><h3>{tr('Board theme')}</h3><p>{tr('New themes unlock as you play.')}</p></div>
           <div className="theme-grid" role="radiogroup" aria-label={tr('Board theme')}>

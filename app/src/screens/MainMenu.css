@@ -55,6 +55,10 @@
 }
 .menu-btn .menu-soon { position: absolute; top: -8px; right: 8px; }
 
+.menu-tile { height: auto; min-height: 64px; padding: 8px 12px; justify-content: flex-start; gap: 10px; text-align: left; }
+.menu-tile .menu-play-text b { font-size: 15px; }
+.menu-tile .menu-play-text span { font-size: 11.5px; opacity: .75; }
+.menu-wide { width: 100%; }
 .menu-daily { width: 100%; justify-content: flex-start; gap: 12px; text-align: left; }
 .menu-daily .menu-play-text b { font-size: 15px; }
 .menu-daily .menu-play-text span { font-size: 12px; opacity: .75; }

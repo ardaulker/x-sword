@@ -67,6 +67,8 @@ const noRoom = { subscribe: () => () => {}, getSnapshot: () => null };
 
 export function App() {
   const [ctl] = useState(() => new GameController(loadSetup()));
+  // The last "New game" setup: "Quick match" repeats it (a puzzle or daily start changes ctl.setup, but not this).
+  const [lastSetup, setLastSetup] = useState(loadSetup);
   const [screen, setScreen] = useState<Screen>(readScreen);
   const [room, setRoom] = useState<AnyRoom | null>(null);
   const [, setTick] = useState(0);
@@ -119,7 +121,7 @@ export function App() {
   }, [room, roomView?.status, screen]);
 
   const start = (s: Setup) => {
-    if (!s.daily && s.puzzle == null) saveSetup(s);
+    if (!s.daily && s.puzzle == null) { saveSetup(s); setLastSetup(s); }
     if (screen === 'play') ctl.newGame(s);
     else { ctl.discardParked(); ctl.setup = s; go('play'); }
   };
@@ -156,7 +158,7 @@ export function App() {
       />
     );
   }
-  return <MainMenu setup={ctl.setup} onStart={start} onResume={ctl.canResume ? () => go('play') : undefined} resumeInfo={ctl.canResume ? ctl.resumeInfo : undefined}
+  return <MainMenu setup={lastSetup} onStart={start} onResume={ctl.canResume ? () => go('play') : undefined} resumeInfo={ctl.canResume ? ctl.resumeInfo : undefined}
     onPuzzles={() => go('puzzles')} onStats={() => go('stats')} onProfile={() => go('profile')} onTutorial={() => start({ ...ctl.setup, players: 1, daily: null, puzzle: 201 })}
-    onDaily={() => start({ ...ctl.setup, players: 1, level: 'normal', daily: todayKey(), puzzle: null })} onRules={() => go('rules')} onMultiplayer={() => go('multiplayer')} onSettings={() => go('settings')} />;
+    onDaily={() => start({ ...ctl.setup, players: 1, level: 'normal', daily: todayKey(), puzzle: null })} onMultiplayer={() => go('multiplayer')} onSettings={() => go('settings')} />;
 }

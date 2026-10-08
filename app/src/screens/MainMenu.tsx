@@ -34,8 +34,8 @@ function quickSummary(s: Setup) {
   return `${players} · ${level} · ${s.boardSize}×${s.boardSize}`;
 }
 
-export function MainMenu({ setup, onStart, onResume, resumeInfo, onTutorial, onProfile, onPuzzles, onStats, onDaily, onRules, onMultiplayer, onSettings }: {
-  setup: Setup; onStart: (s: Setup) => void; onResume?: () => void; resumeInfo?: { round: number; score: number }; onTutorial?: () => void; onProfile?: () => void; onPuzzles?: () => void; onStats?: () => void; onDaily?: () => void; onRules?: () => void; onMultiplayer?: () => void; onSettings?: () => void;
+export function MainMenu({ setup, onStart, onResume, resumeInfo, onTutorial, onProfile, onPuzzles, onStats, onDaily, onMultiplayer, onSettings }: {
+  setup: Setup; onStart: (s: Setup) => void; onResume?: () => void; resumeInfo?: { round: number; score: number }; onTutorial?: () => void; onProfile?: () => void; onPuzzles?: () => void; onStats?: () => void; onDaily?: () => void; onMultiplayer?: () => void; onSettings?: () => void;
 }) {
   const [setupOpen, setSetupOpen] = useState(false);
   const profile = useProfile();
@@ -87,45 +87,45 @@ export function MainMenu({ setup, onStart, onResume, resumeInfo, onTutorial, onP
             </span>
           </button>
         )}
-        <button type="button" className={demoted ? 'menu-btn menu-daily' : 'menu-play'} onClick={() => onStart({ ...setup, daily: null, puzzle: null })}>
-          <Icon d="M7 4.5 L19 12 L7 19.5 Z" size={demoted ? 20 : 26} fill={demoted ? 'currentColor' : '#0B1026'} />
+        <button type="button" className={demoted ? 'menu-btn menu-daily' : 'menu-play'} onClick={() => setSetupOpen(true)}>
+          <Icon d="M4 4 H20 V20 H4 Z M4 12 H20 M12 4 V20" size={demoted ? 20 : 26} stroke={2.2} color={demoted ? 'currentColor' : '#0B1026'} />
           <span className="menu-play-text">
-            <b>{tr('Quick match')}</b>
-            <span>{quickSummary(setup)}</span>
+            <b>{tr('New game')}</b>
+            <span>{tr('Choose players, board and options')}</span>
           </span>
         </button>
-        {onDaily && (
-          <button type="button" className="menu-btn menu-daily" onClick={onDaily}>
-            <Icon d="M7 3 V6 M17 3 V6 M4 9 H20 M5 5 H19 A1 1 0 0 1 20 6 V19 A1 1 0 0 1 19 20 H5 A1 1 0 0 1 4 19 V6 A1 1 0 0 1 5 5 Z" size={20} stroke={2.2} />
-            <span className="menu-play-text"><b>{tr('Daily challenge')}</b><span>{best ? tr('Your best today: {n} pts', { n: best.score }) : tr('Everyone plays the same board today')}{streak.days > 0 && ` · ${tr('{n} day streak', { n: streak.days })}${streak.playedToday ? ' ✓' : ''}`}</span></span>
-          </button>
-        )}
+        <button type="button" className="menu-btn menu-daily" onClick={() => onStart({ ...setup, daily: null, puzzle: null })}>
+          <Icon d="M7 4.5 L19 12 L7 19.5 Z" size={20} fill="currentColor" />
+          <span className="menu-play-text">
+            <b>{tr('Quick match')}</b>
+            <span>{tr('Last setup: {summary}', { summary: quickSummary(setup) })}</span>
+          </span>
+        </button>
         <div className="menu-row">
-          <button type="button" className="menu-btn" onClick={onPuzzles}>
+          {onDaily && (
+            <button type="button" className="menu-btn menu-tile" onClick={onDaily}>
+              <Icon d="M7 3 V6 M17 3 V6 M4 9 H20 M5 5 H19 A1 1 0 0 1 20 6 V19 A1 1 0 0 1 19 20 H5 A1 1 0 0 1 4 19 V6 A1 1 0 0 1 5 5 Z" size={20} stroke={2.2} />
+              <span className="menu-play-text">
+                <b>{tr('Daily challenge')}</b>
+                <span>{best ? tr('Best: {n} pts', { n: best.score }) : tr('Same board for everyone')}</span>
+                {streak.days > 0 && <span>{tr('{n} day streak', { n: streak.days })}{streak.playedToday ? ' ✓' : ''}</span>}
+              </span>
+            </button>
+          )}
+          <button type="button" className="menu-btn menu-tile" onClick={onPuzzles}>
             <Icon d="M10 3 H14 V6 A2 2 0 1 0 18 6 V3 H21 V9 H18 A2 2 0 1 0 18 13 H21 V21 H3 V13 H6 A2 2 0 1 1 6 9 H3 V3 Z" size={20} stroke={2} />
-            <span>{tr('Puzzles')}</span>
+            <span className="menu-play-text"><b>{tr('Puzzles')}</b></span>
           </button>
-          <button type="button" className="menu-btn" onClick={onStats}>
-            <Icon d="M5 20 V11 M12 20 V4 M19 20 V14" size={20} stroke={2.4} />
+        </div>
+        <button type="button" className="menu-btn menu-wide" disabled={!onMultiplayer} onClick={onMultiplayer}>
+          <Icon d="M9 11 A4 4 0 1 0 9.01 11 Z M2 21 C2 17 5 15 9 15 C11 15 12.5 15.5 13.5 16.3 M19 8 V14 M16 11 H22" size={22} stroke={2.2} />
+          <span>{tr('Multiplayer')}</span>
+          {!onMultiplayer && <span className="menu-soon">{tr('Soon')}</span>}
+        </button>
+        <div className="menu-row">
+          <button type="button" className="menu-link" onClick={onStats}>
+            <Icon d="M5 20 V11 M12 20 V4 M19 20 V14" size={18} stroke={2.4} />
             <span>{tr('Statistics')}</span>
-          </button>
-        </div>
-        <div className="menu-row">
-          <button type="button" className="menu-btn" disabled={!onMultiplayer} onClick={onMultiplayer}>
-            <Icon d="M9 11 A4 4 0 1 0 9.01 11 Z M2 21 C2 17 5 15 9 15 C11 15 12.5 15.5 13.5 16.3 M19 8 V14 M16 11 H22" size={20} stroke={2.2} />
-            <span>{tr('Multiplayer')}</span>
-            {!onMultiplayer && <span className="menu-soon">{tr('Soon')}</span>}
-          </button>
-          <button type="button" className="menu-btn" disabled={!onRules} onClick={onRules}>
-            <Icon d="M12 3 A9 9 0 1 1 11.99 3 Z M9.5 9.5 a2.5 2.5 0 1 1 3.5 2.3 c-.7 .3 -1 .9 -1 1.7 M12 17 v.2" size={20} stroke={2.2} />
-            <span>{tr('How to play')}</span>
-            {!onRules && <span className="menu-soon">{tr('Soon')}</span>}
-          </button>
-        </div>
-        <div className="menu-row">
-          <button type="button" className="menu-link" onClick={() => setSetupOpen(true)}>
-            <Icon d="M4 4 H20 V20 H4 Z M4 12 H20 M12 4 V20" size={18} stroke={2} />
-            <span>{tr('Custom game')}</span>
           </button>
           <button type="button" className="menu-link" disabled={!onSettings} onClick={onSettings}>
             <Icon d="M4 7 H14 M18 7 H20 M4 17 H8 M12 17 H20 M16 5 V9 M10 15 V19" size={18} />

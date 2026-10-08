@@ -109,7 +109,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         <Card title={tr('Options')} visual={<Icon d="M4 7 H14 M18 7 H20 M4 17 H8 M12 17 H20 M16 5 V9 M10 15 V19" size={36} stroke={2} />}>
           <p>{rich("**Teams (2 vs 2):** with 4 players, opposite corners form a team. You can't take your teammate; you win when both stars of the other team are gone.")}</p>
           <p>{rich("**Obstacle squares:** the board has blocked squares that never touch each other; pieces can't enter them or jump over them with a double step.")}</p>
-          <p>{rich('**Rival personalities:** AI rivals play as a hunter, a cautious one or an opportunist.')}</p>
+          <p>{rich('**Bot characters:** AI rivals play as a hunter, a cautious one or an opportunist.')}</p>
         </Card>
         <Card title={tr('Puzzles')} visual={<Icon d="M10 3 H14 V6 A2 2 0 1 0 18 6 V3 H21 V9 H18 A2 2 0 1 0 18 13 H21 V21 H3 V13 H6 A2 2 0 1 1 6 9 H3 V3 Z" size={36} stroke={2} />}>
           <p>{tr("Take every bot within a limited number of moves. Bots don't walk, but they take you if you step into their reach. Solving in fewer moves earns more stars.")}</p>

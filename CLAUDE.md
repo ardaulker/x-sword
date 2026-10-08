@@ -469,9 +469,12 @@ S#....#.
 ```
 
 ## UI notes (UI/UX pass, 7–8 October 2026)
-- **Quick match** (9 October 2026): the big green main-menu button starts a match at once with the last used settings
-  (`ctl.setup`; the defaults for a new player) and shows them as a short summary ("Solo · Normal · 9×9"). "Custom game" (next to
-  Settings) opens the setup sheet.
+- **Main menu order** (Arda, 9 October 2026): Tutorial / Continue when they apply, then **New game** (opens the setup sheet), **Quick
+  match** (starts at once with the last New game setup, `App.tsx → lastSetup`; a puzzle or daily start does not change it and the
+  button shows it as "Last setup: Solo · Normal · 9×9"), Daily challenge + Puzzles side by side, a wide Multiplayer button, and
+  Statistics + Settings at the bottom. "How to play" lives in Settings.
+- **Setup sheet extras**: "Bot characters" (the AI rival personalities; disabled in solo) sits under "Obstacle squares", and
+  "Customize character" opens the piece-effect picker (`components/SkinPicker.tsx`, shared with Settings).
 - **Error screen**: `components/ErrorBoundary.tsx` wraps the app; on a render error it offers "Reload" and "Reload without the
   saved match" (clears `xsword-save`), so a broken save cannot crash the app on every start.
 - The top bar shows "ROUND n" translated; the menu and battle-log buttons have small captions (hidden on short
