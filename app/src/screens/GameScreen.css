@@ -58,7 +58,7 @@
 .mini-row .btn-undo:first-child:not(.btn-nav) { flex: none; }
 .mode-box-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .mode-box-label { font: 800 var(--fs-mode)/1 var(--font-display); letter-spacing: .08em; }
-.mode-box-sub { font-size: 11.5px; font-weight: 600; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.mode-box-sub { font-size: 11.5px; font-weight: 600; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .mode-box-next {
   margin-left: auto; flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
   font-size: 10px; font-weight: 700; letter-spacing: .12em;
@@ -239,16 +239,71 @@
 @keyframes hit-grey { 0%, 40% { filter: saturate(.2) brightness(.8); } 100% { filter: none; } }
 
 /* Bonus bar */
+.bonus-wrap { display: flex; flex-direction: column; gap: 6px; }
+.bonus-head { display: flex; align-items: center; gap: 8px; min-height: 24px; }
+.bonus-label { font: 700 11px var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--text-2); }
+.bonus-next { flex: 1; min-width: 0; text-align: right; font-size: 12px; font-weight: 600; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bonus-info { flex: none; width: 24px; height: 24px; border-radius: 12px; border: 0; background: var(--surface-3); color: var(--text-1); display: flex; align-items: center; justify-content: center; }
 .bonus-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .bonus {
-  position: relative; height: 40px; border-radius: 12px; border: 1.5px solid var(--line-2); background: var(--surface-2);
-  color: var(--text-1); display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 0 4px;
+  position: relative; height: 46px; border-radius: 12px; border: 1.5px solid var(--line-2); background: var(--surface-2);
+  color: var(--text-1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10.5px; font-weight: 700; padding: 0 4px;
 }
-.bonus span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bonus span { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bonus b { position: absolute; top: -6px; right: -4px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--ice); color: var(--ink); font: 800 10px/16px var(--font-display); }
-.bonus:disabled { opacity: .35; }
-.bonus.is-passive { opacity: 1; border-style: dashed; }
+.bonus.is-empty { border-style: dashed; color: var(--text-2); background: transparent; }
+.bonus.is-passive { border-style: dashed; border-color: var(--player-1); }
+.bonus.is-ready { border-color: var(--player-1); animation: bonus-ready 2.2s ease-in-out infinite; }
 .bonus.is-on { background: var(--ice); color: var(--ink); border-color: var(--ice); }
+@keyframes bonus-ready {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--player-1) 55%, transparent); }
+  50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--player-1) 0%, transparent); }
+}
+
+/* What you picked: the bonus, what to do, and the 1/2 · 2/2 counter of a Double move. */
+.bonus-strip {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--ice); color: var(--ink);
+  animation: strip-in calc(var(--t-select) * var(--speed-factor)) ease-out;
+}
+@keyframes strip-in { from { opacity: 0; transform: translateY(-6px); } }
+.bonus-strip-icon { flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--ink); color: var(--ice); display: flex; align-items: center; justify-content: center; }
+.bonus-strip-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.2; }
+.bonus-strip-text b { font: 800 14px var(--font-display); }
+.bonus-strip-text span { font-size: 12.5px; font-weight: 600; }
+.bonus-count { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.bonus-dots { display: flex; gap: 5px; }
+.bonus-dots i { width: 22px; height: 8px; border-radius: 4px; background: rgba(11, 16, 38, .22); }
+.bonus-dots i.is-done { background: var(--ink); }
+.bonus-dots i.is-now { background: var(--player-1); outline: 2px solid var(--ink); outline-offset: -2px; }
+.bonus-count-text { font: 800 12px var(--font-display); letter-spacing: .04em; }
+
+/* Bonus guide (sheet) */
+.sheet:has(.bg-lead) { gap: 10px; }
+.bg-lead { margin: 0; font-size: 14px; line-height: 1.4; color: var(--text-2); }
+.bg-list { display: flex; flex-direction: column; gap: 6px; }
+.bg-card { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--surface-2); border: 1.5px solid transparent; }
+.bg-card.is-have { border-color: var(--player-1); }
+.bg-icon { flex: none; width: 38px; height: 38px; border-radius: 11px; background: var(--surface-deep); color: var(--text-1); display: flex; align-items: center; justify-content: center; }
+.bg-card.is-have .bg-icon { background: var(--player-1); color: var(--ink); }
+.bg-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.bg-text b { font-size: 15px; }
+.bg-text span { font-size: 12px; line-height: 1.3; color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.bg-have { flex: none; font: 800 16px var(--font-display); color: var(--text-3); }
+.bg-card.is-have .bg-have { color: var(--text-1); }
+.bg-head { margin-top: 6px; font: 700 12px var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--text-2); }
+.bg-note { margin: 0; font-size: 13px; line-height: 1.4; color: var(--text-2); }
+.track { position: relative; height: 112px; margin: 4px 34px 0; }
+.track-you { position: absolute; top: 0; transform: translateX(-50%); z-index: 2; transition: left .6s var(--ease-slide); }
+.track-you span { position: relative; display: block; padding: 2px 8px; border-radius: 10px; background: var(--tc); color: var(--ink); font: 800 11px var(--font-display); white-space: nowrap; }
+.track-you span::after { content: ''; position: absolute; left: 50%; bottom: -4px; margin-left: -4px; border: 4px solid transparent; border-top-color: var(--tc); border-bottom: 0; }
+.track-line { position: absolute; left: 0; right: 0; top: 44px; height: 6px; border-radius: 3px; background: var(--surface-3); }
+.track-line > div { height: 100%; border-radius: 3px; background: var(--tc); transition: width .6s var(--ease-slide); }
+.track-node { position: absolute; top: 30px; transform: translateX(-50%); width: 66px; display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; }
+.track-dot { z-index: 1; width: 34px; height: 34px; border-radius: 50%; background: var(--surface-1); border: 2px solid var(--line-2); color: var(--text-2); display: flex; align-items: center; justify-content: center; }
+.track-node.is-done .track-dot { background: var(--tc); border-color: var(--tc); color: var(--ink); }
+.track-start { display: block; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+.track-top { font: 800 11px var(--font-display); color: var(--text-1); }
+.track-name { font-size: 10.5px; font-weight: 600; line-height: 1.15; color: var(--text-2); }
 
 .rules-overlay { position: fixed; inset: 0; z-index: 60; background: var(--bg); }
 

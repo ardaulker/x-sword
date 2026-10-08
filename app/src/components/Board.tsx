@@ -392,6 +392,24 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
       <div className="board-layer" style={{ left: fp, top: fp, width: inner, height: inner }} aria-hidden="true">
         {lines.map(l => <div key={l.key} className={`board-line${l.trail ? ' board-trail' : ''}`} style={l.style} />)}
 
+        {view.slashes.map(s => {
+          const w = cell * 2.6;
+          return (
+            <div key={s.key} className={`board-slash${s.big ? ' is-big' : ''}`}
+              style={{ left: (s.c - o) * step + cell / 2 - w / 2, top: (s.r - o) * step + cell / 2 - w / 2, width: w, height: w, transform: `rotate(${s.angle}deg)`, ['--slash' as string]: s.color }}>
+              <svg viewBox="0 0 120 120">
+                <path className="slash-arc" d="M50 4 Q104 60 50 116" pathLength="1" />
+                <path className="slash-arc slash-arc-inner" d="M58 20 Q90 60 58 100" pathLength="1" />
+                <g className="slash-sword">
+                  <path d="M46 54 L104 60 L46 66 Z" className="slash-blade" />
+                  <path d="M40 48 V72 M40 60 H24" className="slash-hilt" />
+                  <circle cx="21" cy="60" r="3.2" className="slash-pommel" />
+                </g>
+              </svg>
+            </div>
+          );
+        })}
+
         {view.bursts.map(b => (
           <div key={b.key} className={`board-burst${b.big ? ' is-big' : ''}`} style={{ left: (b.c - o) * step + cell / 2 - cell, top: (b.r - o) * step + cell / 2 - cell, width: cell * 2, height: cell * 2 }}>
             <svg viewBox="0 0 100 100">

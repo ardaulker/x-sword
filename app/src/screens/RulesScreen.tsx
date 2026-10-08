@@ -69,6 +69,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         </Card>
         <Card title={tr('Taking')} visual={<Mini piece={star} diamond={false} walk={[]} take={ORTH} hop={[0, 1]} prey={{ kind: 'red' }} />}>
           <p>{tr("Step onto a piece's square and you take it; that piece leaves the game. Anyone can take anyone: player takes player, bot takes player, bot takes bot.")}</p>
+          <p>{tr('Every piece carries a sword mark: + points straight, × points diagonally. A piece takes in the direction its sword points.')}</p>
         </Card>
         <Card title={tr('Move order')} visual={<div className="anim-queue">{[3, 4, 5, 6, 7].map(n => <span key={n}>{n}</span>)}</div>}>
           <p>{tr("The order is shuffled once at the start and stays the same all match. The number on a piece is its place among the players still alive; numbers are re-dealt every round, the order itself never changes. The strip on top shows who's playing and who's next.")}</p>

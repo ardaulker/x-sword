@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { POINTS, isWinner, SIZE_BY_STARS, BOARD_SIZES, defaultNeutrals, maxNeutrals, pieceById, ranking, starOf } from '../../../engine/rules.js';
-import type { GameState, Level, Piece } from '../../../engine/rules.js';
+import { BONUS_NAMES, BONUS_SCORES, SWAP_SCORE, POINTS, isWinner, SIZE_BY_STARS, BOARD_SIZES, defaultNeutrals, maxNeutrals, pieceById, ranking, starOf } from '../../../engine/rules.js';
+import type { BonusKind, GameState, Level, Piece } from '../../../engine/rules.js';
 import type { GameController, Setup, TakeEvent } from '../game/controller';
 import { HAZARD_TXT, ICON, TXT, colorOf, diamondOf, seatOf } from '../game/look';
 import { ME, labelOf, modeLower, seatName, subjectOf, winnerLine } from '../game/names';
@@ -12,6 +12,7 @@ import { shareReplay, shareResult } from '../game/share';
 import { replayCode } from '../game/record';
 import { freshRewards, markRewardsSeen } from '../game/themes';
 import { SkinFx } from './SkinFx';
+import { BONUS_ICONS, shortBonus } from './ActionPanel';
 import { PUZZLES } from '../game/puzzles';
 import { puzzleNo, puzzleTitle } from '../game/puzzleText';
 import { tr } from '../i18n';
@@ -74,6 +75,93 @@ export function LogSheet({ ctl, events }: { ctl: GameController; events: TakeEve
       </div>
       <div className="log-list">
         {rows.length ? rows : <div className="log-empty">{tr('Nobody has been taken yet.')}</div>}
+      </div>
+    </SheetFrame>
+  );
+}
+
+// ------------------------------------------------------------ bonus guide
+
+// A track with milestones: the fill follows `value` piecewise between the milestone values.
+type Milestone = { at: number; kind: BonusKind | 'either' | 'none'; top: string; done?: boolean };
+function Track({ marks, value, color, you }: { marks: Milestone[]; value: number; color: string; you: string }) {
+  const n = marks.length - 1;
+  let f = 0;
+  if (value >= marks[n].at) f = 1;
+  else for (let i = 0; i < n; i++) if (value >= marks[i].at && value < marks[i + 1].at) f = (i + (value - marks[i].at) / (marks[i + 1].at - marks[i].at)) / n;
+  return (
+    <div className="track" style={{ ['--tc' as string]: color }}>
+      <div className="track-you" style={{ left: `${f * 100}%` }}><span>{you}</span></div>
+      <div className="track-line"><div style={{ width: `${f * 100}%` }} /></div>
+      {marks.map((m, i) => {
+        const done = m.done ?? value >= m.at;
+        return (
+          <div key={i} className={`track-node${done ? ' is-done' : ''}`} style={{ left: `${(i / n) * 100}%` }}>
+            <span className="track-dot">
+              {m.kind === 'none' ? <i className="track-start" />
+                : m.kind === 'either'
+                  ? <><Icon d={BONUS_ICONS.step} size={13} stroke={2.2} /><Icon d={BONUS_ICONS.double} size={13} stroke={2} fill="currentColor" /></>
+                  : <Icon d={BONUS_ICONS[m.kind]} size={18} stroke={2} fill={m.kind === 'double' ? 'currentColor' : 'none'} />}
+            </span>
+            <span className="track-top">{m.top}</span>
+            <span className="track-name">{m.kind === 'none' ? '' : m.kind === 'either' ? `${shortBonus('step')} / ${shortBonus('double')}` : shortBonus(m.kind)}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function BonusSheet({ ctl }: { ctl: GameController }) {
+  const st = ctl.state;
+  const close = () => ctl.closeSheet();
+  const seat = st.seats[ME];
+  const color = PLAYER_COLORS[ME];
+  const kinds: BonusKind[] = ['step', 'double', 'swap', 'armor'];
+  const effect: Record<BonusKind, string> = {
+    armor: tr('+1 life: protects you from being taken once. It works by itself; the piece that tried to take you bounces back.'),
+    step: tr('This move you go two squares (the square between must be empty).'),
+    double: tr('After your move you immediately make another.'),
+    swap: tr('Swap places with any piece on the board (a rival star or a bot).'),
+  };
+  const points: Milestone[] = [
+    { at: 0, kind: 'step', top: tr('Start') },
+    { at: BONUS_SCORES[0], kind: 'step', top: tr('{n} pts', { n: BONUS_SCORES[0] }) },
+    { at: BONUS_SCORES[1], kind: 'double', top: tr('{n} pts', { n: BONUS_SCORES[1] }) },
+    { at: SWAP_SCORE, kind: 'swap', top: tr('{n} pts', { n: SWAP_SCORE }) },
+    { at: BONUS_SCORES[2], kind: 'either', top: tr('{n} pts', { n: BONUS_SCORES[2] }) },
+  ];
+  const first = st.shrinkStart, second = st.shrinkStart + st.shrinkEvery;
+  const rounds: Milestone[] = [
+    { at: 1, kind: 'none', top: tr('Round {n}', { n: 1 }), done: true },
+    { at: first, kind: 'armor', top: tr('Round {n}', { n: first }), done: st.ring >= 1 },
+    { at: second, kind: 'double', top: tr('Round {n}', { n: second }), done: st.ring >= 2 },
+  ];
+  return (
+    <SheetFrame label={tr('Bonuses')} onClose={close}>
+      <div className="sheet-head">
+        <div className="sheet-title">{tr('Bonuses')}</div>
+        <button type="button" className="round-btn" aria-label={tr('Close')} onClick={close}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
+      </div>
+      <div className="bg-scroll">
+        <p className="bg-lead">{tr('Earn them by scoring and surviving. On your turn tap one in the panel, then a square.')}</p>
+        <div className="bg-list">
+          {kinds.map(k => (
+            <div key={k} className={`bg-card${seat.bonuses[k] ? ' is-have' : ''}`}>
+              <span className="bg-icon"><Icon d={BONUS_ICONS[k]} size={24} stroke={2} fill={k === 'double' ? 'currentColor' : 'none'} /></span>
+              <span className="bg-text"><b>{tr(BONUS_NAMES[k])}</b><span>{effect[k]}</span></span>
+              <span className="bg-have">×{seat.bonuses[k]}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-head">{tr('Earned with points')}</div>
+        <Track marks={points} value={seat.score} color={color} you={tr('{n} pts', { n: seat.score })} />
+        {st.solo && <p className="bg-note">{tr('In solo mode, a take by your Twin also gives a Switcheroo.')}</p>}
+
+        <div className="bg-head">{tr('Earned by surviving')}</div>
+        <Track marks={rounds} value={st.round} color={color} you={tr('Round {n}', { n: st.round })} />
+        <p className="bg-note">{tr('Stay inside when the outer ring collapses: Armor the first time, a Double move the second time.')}</p>
       </div>
     </SheetFrame>
   );
@@ -321,7 +409,7 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
   const killer = fatal?.attackerId ? pieceById(st, fatal.attackerId) : null;
   const why = fatal
     ? killer
-      ? tr('{name} took you ({how}) · round {n}', { name: subjectOf(st, killer), how: modeLower(fatal.round % 2 === 1 ? 'STRAIGHT' : 'DIAGONAL'), n: fatal.round })
+      ? tr('Struck down by {name} ({how}) · round {n}', { name: subjectOf(st, killer), how: modeLower(fatal.round % 2 === 1 ? 'STRAIGHT' : 'DIAGONAL'), n: fatal.round })
       : tr('You were caught in the ring · round {n}', { n: fatal.round })
     : '';
   if (st.puzzle && onPuzzle) {

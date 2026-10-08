@@ -1,7 +1,7 @@
 import { PUZZLES } from '../game/puzzles';
 import { puzzleHint } from '../game/puzzleText';
 import {
-  BONUS_NAMES, collapseDue, currentActor, isWinner, nextMode, pieceById, ranking, starOf, takeDirs, threatsFor,
+  BONUS_NAMES, BONUS_SCORES, SWAP_SCORE, collapseDue, currentActor, isWinner, nextMode, pieceById, ranking, starOf, takeDirs, threatsFor,
 } from '../../../engine/rules.js';
 import type { BonusKind, GameState, Piece } from '../../../engine/rules.js';
 import type { GameController, View } from '../game/controller';
@@ -149,7 +149,13 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
         <div className="panel-stack">
           <div className="panel-row">
             <div className="panel-title-sm">
-              {sel.bonus ? `${tr(BONUS_NAMES[sel.bonus])} · ` : ''}{sel.type === 'swap' && sel.targetId ? tr('Swap with {name}', { name: labelOf(st, pieceById(st, sel.targetId)!) }) : victim ? tr('Takes {name}', { name: labelOf(st, victim) }) : tr('Move preview')}
+              {[
+                moveTag(st, me, sel.bonus ?? null),
+                sel.bonus ? tr(BONUS_NAMES[sel.bonus]) : '',
+                sel.type === 'swap' && sel.targetId ? tr('Swap with {name}', { name: labelOf(st, pieceById(st, sel.targetId)!) })
+                  : victim ? tr('Takes {name}', { name: labelOf(st, victim) })
+                  : sel.bonus || moveTag(st, me, null) ? '' : tr('Move preview'),
+              ].filter(Boolean).join(' · ')}
             </div>
             {!st.puzzle && <div className="panel-timer-sm" style={{ color: timerColor }}>{tr('{n} s', { n: t })}</div>}
           </div>
@@ -236,6 +242,11 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
 
   if (view.phase === 'mine') {
     who = me; timer = t; title = tr('Your turn'); sub = tr('Tap one of the lit squares');
+    const seq = extraMoves(st, me);
+    if (seq) sub = tr('Move {a} of {b}: tap a lit square', { a: seq + 1, b: seq + 1 });
+    else if (view.bonus === 'double') sub = tr('Move {a} of {b}: tap a lit square', { a: 1, b: 2 });
+    else if (view.bonus === 'step') sub = tr('Tap a square two steps away');
+    else if (view.bonus === 'swap') sub = tr('Tap any piece to swap places');
     const threats = attackersOfMe(st, me).length;
     // A puzzle's own hint comes before the threat warning: tutorial hints must always be read; danger already shows as striped squares.
     if (st.puzzle) hint = puzzleHint(PUZZLES.find(p => p.id === ctl.setup.puzzle)?.hint ?? '');
@@ -270,6 +281,8 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
     hint = tr("During the bots' turn, tap the board to speed up.");
   }
 
+  // While a bonus is picked (or a Double move is half played) its strip takes the place of the hint and the bonus header, so the panel keeps its height.
+  const stripOn = view.phase === 'mine' && (!!view.bonus || extraMoves(st, me) > 0);
   if (st.puzzle) timer = null; // no timer in puzzles
   const total = ctl.setup.moveSeconds;
   return (
@@ -292,7 +305,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
             <div style={{ width: `${Math.max(0, Math.min(100, Math.round((timer / total) * 100)))}%`, background: view.phase === 'mine' && lastSeconds ? DANGER : barColor }} />
           </div>
         )}
-        <div className="panel-hint" style={{ color: hintColor }}>{hint}</div>
+        {!stripOn && <div className="panel-hint" style={{ color: hintColor }}>{hint}</div>}
         {view.phase === 'mine' && <BonusBar ctl={ctl} view={view} />}
         {view.phase === 'mine' && (ctl.undoAvailable || (st.puzzle && onPuzzle)) && (
           <div className="mini-row">
@@ -323,7 +336,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
   );
 }
 
-const BONUS_ICONS: Record<BonusKind, string> = {
+export const BONUS_ICONS: Record<BonusKind, string> = {
   armor: 'M12 3 L20 6 V12 C20 16.5 16.5 20 12 21 C7.5 20 4 16.5 4 12 V6 Z',
   step: 'M4 12 H12 M9 8 L13 12 L9 16 M12 12 H20 M17 8 L21 12 L17 16',
   double: 'M3 5 L12 12 L3 19 Z M12 5 L21 12 L12 19 Z',
@@ -331,23 +344,95 @@ const BONUS_ICONS: Record<BonusKind, string> = {
 };
 
 // Short names on the buttons: "Double step" and "Double move" looked the same on narrow screens.
-const shortBonus = (k: BonusKind) => (k === 'step' ? tr('Step ×2') : k === 'double' ? tr('Move ×2') : tr(BONUS_NAMES[k]));
+export const shortBonus = (k: BonusKind) => (k === 'step' ? tr('Step ×2') : k === 'double' ? tr('Move ×2') : tr(BONUS_NAMES[k]));
 
-// Bonuses you hold on your turn. Armor works by itself; tap another one and the squares light up for it.
-function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
-  const b = ctl.state.seats[ME].bonuses;
-  if (!Object.values(b).some(n => n > 0)) return null;
+// How many moves of a Double move sequence you have already played this turn (0 = none).
+const extraMoves = (st: GameState, me: Piece) => (st.extra && st.extra.id === me.id ? st.extra.n : 0);
+
+// "Move 1/2" in front of a preview title while a Double move is in play.
+function moveTag(st: GameState, me: Piece, bonus: BonusKind | null) {
+  const seq = extraMoves(st, me);
+  if (bonus === 'double') return tr('Move {a}/{b}', { a: seq + 1, b: seq + 2 });
+  if (seq) return tr('Move {a}/{b}', { a: seq + 1, b: seq + 1 });
+  return '';
+}
+
+// The next point bonus you can still earn: [points, name].
+export function nextPointBonus(st: GameState): { pts: number; name: string } | null {
+  const s = st.seats[ME];
+  const tiers = [
+    { pts: BONUS_SCORES[0], name: shortBonus('step'), got: s.scoreTier > 0 },
+    { pts: BONUS_SCORES[1], name: shortBonus('double'), got: s.scoreTier > 1 },
+    { pts: SWAP_SCORE, name: shortBonus('swap'), got: s.swapGiven },
+    { pts: BONUS_SCORES[2], name: `${shortBonus('step')} / ${shortBonus('double')}`, got: s.scoreTier > 2 },
+  ].filter(t => !t.got && t.pts > s.score).sort((a, b) => a.pts - b.pts);
+  return tiers[0] ?? null;
+}
+
+const BONUS_HELP: Record<BonusKind, () => string> = {
+  armor: () => tr('Works by itself'),
+  step: () => tr('Tap a square two steps away'),
+  double: () => tr('You play two moves in a row'),
+  swap: () => tr('Tap any piece to swap places'),
+};
+
+// What you picked (or are in the middle of): the bonus, what to do, and for a Double move the "1/2 · 2/2" counter.
+function BonusStrip({ st, me, view }: { st: GameState; me: Piece; view: View }) {
+  const seq = extraMoves(st, me);
+  const kind = view.bonus ?? (seq ? 'double' : null);
+  if (!kind) return null;
+  const total = view.bonus === 'double' ? seq + 2 : seq + 1;
   return (
-    <div className="bonus-bar" role="group" aria-label={tr('Bonuses')}>
-      {(Object.keys(BONUS_ICONS) as BonusKind[]).map(k => (
-        <button key={k} type="button" disabled={!b[k] || k === 'armor'} aria-pressed={view.bonus === k}
-          className={`bonus${view.bonus === k ? ' is-on' : ''}${k === 'armor' && b[k] ? ' is-passive' : ''}`}
-          onClick={() => ctl.selectBonus(k)} aria-label={`${tr(BONUS_NAMES[k])}: ${b[k]}`}>
-          <Icon d={BONUS_ICONS[k]} size={18} stroke={2} fill={k === 'double' ? 'currentColor' : 'none'} />
-          <span>{shortBonus(k)}</span>
-          {b[k] > 0 && <b>{b[k]}</b>}
+    <div className={`bonus-strip is-${kind}`} role="status">
+      <span className="bonus-strip-icon"><Icon d={BONUS_ICONS[kind]} size={20} stroke={2} fill={kind === 'double' ? 'currentColor' : 'none'} /></span>
+      <span className="bonus-strip-text">
+        <b>{tr(BONUS_NAMES[kind])}</b>
+        <span>{seq && !view.bonus ? tr('Second move: tap a lit square') : BONUS_HELP[kind]()}</span>
+      </span>
+      {total > 1 && (
+        <span className="bonus-count" aria-label={tr('Move {a}/{b}', { a: seq + 1, b: total })}>
+          <span className="bonus-dots" aria-hidden="true">
+            {Array.from({ length: total }, (_, i) => <i key={i} className={i < seq ? 'is-done' : i === seq ? 'is-now' : ''} />)}
+          </span>
+          <span className="bonus-count-text">{tr('Move {a}/{b}', { a: seq + 1, b: total })}</span>
+        </span>
+      )}
+    </div>
+  );
+}
+
+// The bonuses on your turn: always visible so nobody misses them. Armor works by itself; tap another one and the squares light up for it.
+// A bonus you don't hold opens the guide that explains how to earn it.
+function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
+  const st = ctl.state;
+  const b = st.seats[ME].bonuses;
+  const me = ctl.myStar();
+  if (st.puzzle && !Object.values(b).some(n => n > 0) && !extraMoves(st, me)) return null;
+  const next = st.puzzle ? null : nextPointBonus(st);
+  return (
+    <div className="bonus-wrap">
+      <BonusStrip st={st} me={me} view={view} />
+      {!(view.bonus || extraMoves(st, me) > 0) && <div className="bonus-head">
+        <span className="bonus-label">{tr('Bonuses')}</span>
+        {next && <span className="bonus-next">{tr('Next: {name} at {n} pts', { name: next.name, n: next.pts })}</span>}
+        <button type="button" className="bonus-info" aria-label={tr('Bonus guide')} onClick={() => ctl.openBonusGuide()}>
+          <Icon d="M12 3 A9 9 0 1 0 12.01 3 Z M12 11 V16 M12 8 V8.2" size={16} stroke={2.2} />
         </button>
-      ))}
+      </div>}
+      <div className="bonus-bar" role="group" aria-label={tr('Bonuses')}>
+        {(Object.keys(BONUS_ICONS) as BonusKind[]).map(k => {
+          const have = b[k] > 0, usable = have && k !== 'armor';
+          return (
+            <button key={k} type="button" aria-pressed={view.bonus === k}
+              className={`bonus${view.bonus === k ? ' is-on' : ''}${k === 'armor' && have ? ' is-passive' : ''}${usable && view.bonus !== k ? ' is-ready' : ''}${have ? '' : ' is-empty'}`}
+              onClick={() => (usable ? ctl.selectBonus(k) : ctl.openBonusGuide())} aria-label={`${tr(BONUS_NAMES[k])}: ${b[k]}`}>
+              <Icon d={BONUS_ICONS[k]} size={18} stroke={2} fill={k === 'double' ? 'currentColor' : 'none'} />
+              <span>{shortBonus(k)}</span>
+              {have && <b>{b[k]}</b>}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

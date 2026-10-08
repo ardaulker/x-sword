@@ -123,7 +123,7 @@ export function createGame({
       bonuses: startBonuses(), scoreTier: 0, swapGiven: false, persona: null, team: null,
     })),
     pieces: [], order: [], turn: 0, over: false, winner: null, outOrder: [], log: [],
-    solo: n === 1, lastStep: null, matchOrder: [], keepGoing: !!keepGoing, decided: false,
+    solo: n === 1, lastStep: null, extra: null, matchOrder: [], keepGoing: !!keepGoing, decided: false,
     blocked: null, holes: null, teams: teams && n === 4 ? [0, 1, 0, 1] : null, winTeam: null, puzzle: null,
   };
 
@@ -440,13 +440,18 @@ export function play(state, move) {
     } else {
       actor.r = m.r; actor.c = m.c;
     }
-    // Double move: the same star plays once more.
-    if (m.bonus === 'double' && !state.over && actor.alive) { state.lastStep = { id: actor.id, dr: 0, dc: 0 }; return state; }
+    // Double move: the same star plays once more. `extra` counts the moves played in this sequence, so the screen can say "move 2 of 2".
+    if (m.bonus === 'double' && !state.over && actor.alive) {
+      state.extra = { id: actor.id, n: (state.extra?.id === actor.id ? state.extra.n : 0) + 1 };
+      state.lastStep = { id: actor.id, dr: 0, dc: 0 };
+      return state;
+    }
   } else {
     state.lastStep = { id: actor.id, dr: 0, dc: 0 };
     if (actor.kind === 'star') log(state, `${nameOf(state, actor)} had no move, turn passed.`);
   }
   state.turn++;
+  state.extra = null;
   settle(state);
   // Puzzle: out of moves with bots left means the puzzle failed.
   if (state.puzzle && !state.over && state.puzzle.used >= state.puzzle.limit && currentActor(state)?.id === 's0') {

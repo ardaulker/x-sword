@@ -9,7 +9,7 @@ import { SPEED, settings } from '../game/settings';
 import { CompactBar, ModeIndicator, TopBar } from '../components/Header';
 import { PlayerStrip } from '../components/PlayerStrip';
 import { TurnQueue } from '../components/TurnQueue';
-import { CoachSheet, LeaveSheet, LogSheet, PauseSheet, ResultsSheet, SetupSheet } from '../components/Sheets';
+import { BonusSheet, CoachSheet, LeaveSheet, LogSheet, PauseSheet, ResultsSheet, SetupSheet } from '../components/Sheets';
 import { useMatchTime } from '../components/bits';
 import { RulesScreen } from './RulesScreen';
 import { SettingsScreen } from './SettingsScreen';
@@ -156,6 +156,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
 
       {sheet?.type === 'coach' && <CoachSheet step={sheet.step} onDone={() => ctl.closeCoach()} />}
       {sheet?.type === 'log' && <LogSheet ctl={ctl} events={view.events} />}
+      {sheet?.type === 'bonus' && <BonusSheet ctl={ctl} />}
       {sheet?.type === 'results' && (
         <ResultsSheet
           ctl={ctl} time={matchTime} onClose={() => ctl.closeSheet()}

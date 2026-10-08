@@ -62,6 +62,8 @@ export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', aiLevel: 'nor
 export interface Spot { r: number; c: number }
 export interface Trail { key: number; from: Spot; to: Spot; color: string }
 export interface Burst { key: number; r: number; c: number; color: string; big?: boolean }
+// A sword stroke across the taken square. angle: the attack direction in degrees (0 = right, 90 = down).
+export interface Slash { key: number; r: number; c: number; angle: number; color: string; big: boolean }
 export interface Float { key: number; r: number; c: number; text: string; color: string; big?: boolean }
 // The last moves played this round: they stay on the board as faint dashed lines.
 export interface LastMove { id: string; round: number; from: Spot; to: Spot; color: string }
@@ -69,7 +71,7 @@ export interface Toast { key: number; text: string; icon: 'sword' | 'clock' | 'i
 export interface Banner { key: number; title: string; sub: string; color: string; pieceId: string | null }
 // attackerId null: the piece fell with a collapsing ring.
 export interface TakeEvent { key: number; round: number; attackerId: string | null; victimId: string; at: number } // at: number of moves played up to that moment (to jump there in a replay)
-export type Sheet = { type: 'log' } | { type: 'menu' } | { type: 'results' } | { type: 'coach'; step: number } | null;
+export type Sheet = { type: 'log' } | { type: 'bonus' } | { type: 'menu' } | { type: 'results' } | { type: 'coach'; step: number } | null;
 
 export interface View {
   phase: Phase;
@@ -79,6 +81,7 @@ export interface View {
   trails: Trail[];
   lastMoves: LastMove[];
   bursts: Burst[];
+  slashes: Slash[];
   floats: Float[];
   toast: Toast | null;
   banner: Banner | null;
@@ -359,7 +362,7 @@ export class GameController {
   private freshView(): View {
     return {
       phase: 'ready', sel: null, showThreats: false, timer: this.setup.moveSeconds,
-      trails: [], lastMoves: [], bursts: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null, bonus: null,
+      trails: [], lastMoves: [], bursts: [], slashes: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null, bonus: null,
       bots: { done: 0, total: 0, currentId: null }, events: [],
       clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, hit: 0, version: 0,
     };
@@ -797,7 +800,10 @@ export class GameController {
     play(st, move);
 
     // Bonus: using one, being saved by armor, earning one.
-    if (move?.bonus && actor.kind === 'star' && actor.seat === ME) { this.toast(`${tr(BONUS_NAMES[move.bonus])}!`, 'info'); feel('bonusUse', BUZZ.bonusUse); }
+    if (move?.bonus && actor.kind === 'star' && actor.seat === ME) {
+      this.toast(move.bonus === 'double' && st.extra ? tr('Double move! Now play your second move.') : `${tr(BONUS_NAMES[move.bonus])}!`, 'info');
+      feel('bonusUse', BUZZ.bonusUse);
+    }
     if (victim?.alive && victim.kind === 'star') {
       this.toast(victim.seat === ME ? tr('Your armor saved you!') : tr('{name} survived thanks to armor', { name: labelOf(st, victim) }), 'info');
       this.burst(victim.r, victim.c, '#E9F0FF');
@@ -824,6 +830,7 @@ export class GameController {
       events.push({ key: this.key(), round, attackerId: actor.id, victimId: victim.id, at: this.moves.length });
       const mine = actor.kind === 'star' && actor.seat === ME;
       this.burst(move.r, move.c, colorOf(actor), mine);
+      this.slash(from, { r: move.r, c: move.c }, colorOf(actor), mine);
       if (!mine) sound('take');
       this.view = { ...this.view, shake: this.view.shake + 1 };
       const me = victim.kind === 'star' && victim.seat === ME;
@@ -837,7 +844,7 @@ export class GameController {
       }
       if (mine) { this.toast(tr('You took {obj}! +{pts}', { obj: objectOf(st, victim), pts: POINTS[victim.kind] }), 'sword'); feel('take', victim.kind === 'star' ? BUZZ.takeStar : BUZZ.take); this.later(120, () => sound('points')); }
       if (me) {
-        this.toast(tr('{name} took you!', { name: subjectOf(st, actor) }), 'sword');
+        this.toast(tr('{name} swung their sword. You are out!', { name: subjectOf(st, actor) }), 'sword');
         feel('out', BUZZ.takenOrOut);
         this.view = { ...this.view, hit: this.view.hit + 1 };
       }
@@ -885,6 +892,13 @@ export class GameController {
     this.later(big ? 700 : 450, () => this.emit({ bursts: this.view.bursts.filter(b => b.key !== key) }));
   }
 
+  private slash(from: Spot, to: Spot, color: string, big: boolean) {
+    const key = this.key();
+    const angle = Math.round(Math.atan2(Math.sign(to.r - from.r), Math.sign(to.c - from.c)) * 180 / Math.PI);
+    this.view = { ...this.view, slashes: [...this.view.slashes, { key, r: to.r, c: to.c, angle, color, big }] };
+    this.later(big ? 800 : 560, () => this.emit({ slashes: this.view.slashes.filter(s => s.key !== key) }));
+  }
+
   private float(r: number, c: number, text: string, color: string, big = false) {
     const key = this.key();
     this.view = { ...this.view, floats: [...this.view.floats, { key, r, c, text, color, big }] };
@@ -929,10 +943,12 @@ export class GameController {
   closeInspect() { if (this.view.inspect) this.emit({ inspect: null }); }
   openResults() { this.emit({ sheet: { type: 'results' } }); }
   openLog() { this.emit({ sheet: { type: 'log' } }); }
+  // The bonus guide. In a local match the clock stops while you read it.
+  openBonusGuide() { this.pause(); this.emit({ sheet: { type: 'bonus' } }); }
   openMenu() { this.pause(); this.emit({ sheet: { type: 'menu' } }); }
   closeSheet() {
     if (!this.view.sheet) return;
-    const wasMenu = this.view.sheet.type === 'menu';
+    const wasMenu = this.view.sheet.type === 'menu' || this.view.sheet.type === 'bonus';
     this.emit({ sheet: null });
     if (wasMenu) this.unpause();
   }

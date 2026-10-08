@@ -205,6 +205,17 @@ test('double step goes two squares, double move keeps the turn, Switcheroo swaps
   assert.deepEqual([pieceById(st, 'b1').r, pieceById(st, 'b1').c], [1, 2]);
 });
 
+test('a Double move counts its moves in `extra` so the screen can say "move 2 of 2"', () => {
+  const st = position([{ kind: 'red', r: 4, c: 3 }]);
+  st.seats[0].bonuses = { armor: 0, step: 0, double: 1, swap: 0 };
+  assert.equal(st.extra, null);
+  play(st, { r: 1, c: 2, bonus: 'double' });
+  assert.deepEqual(st.extra, { id: 's0', n: 1 });
+  play(st, legalMoves(st, currentActor(st), st.mode)[0]);
+  assert.equal(st.extra, null);
+  assert.notEqual(currentActor(st)?.id, 's0');
+});
+
 test('the arena shrinks: pieces on the outer ring fall and it can no longer be entered', () => {
   const st = createGame({ seats: seats(2), seed: 5, shrinkStart: 1, shrinkEvery: 1 });
   assert.equal(collapseDue(st), true);

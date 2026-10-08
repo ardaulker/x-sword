@@ -452,6 +452,21 @@ R#..S#.
 - **Puzzle navigation**: during a puzzle the panel has "Undo · Previous · Next"; the result card has "Previous" and
   "Next" (allowed without solving; "Next" is highlighted after a win). The order is the `PUZZLES` array (tutorials
   first).
+- **Bonus visibility** (9 October 2026; a friend who tried the game never noticed the bonuses): on your turn the panel
+  always shows the bonus bar (`ActionPanel.tsx → BonusBar`: icon + name buttons, a pulsing ring on usable ones, a
+  dashed look on ones you don't hold; tapping one you don't hold opens the guide) with a header "Next: Double move at
+  40 pts" and an info button. The **bonus guide** (`Sheets.tsx → BonusSheet`, `Sheet` type `bonus`,
+  `GameController.openBonusGuide`; the local clock stops while it is open) lists what each bonus does and shows two
+  tracks: points (Start, 20, 40, 50, 60) and surviving shrinks (round 6 Armor, round 12 Double move), with a marker for
+  your score or round.
+- **Double move counter**: the engine sets `state.extra = { id, n }` while a star plays the extra moves of a Double move
+  (cleared when the turn passes). The panel shows a strip (`BonusStrip`) with the bonus, what to do and a "Move 1/2 ·
+  2/2" counter; previews say "Move 1/2 · Double move". The strip takes the place of the hint and the bonus header so the
+  panel keeps its height (the board reserves `PANEL_ROOM`; keep the normal panel at or below it).
+- **Sword stroke on every take** (`View.slashes`, `Board.tsx`, `.board-slash` in `Board.css`): a blade and a crescent
+  cut across the taken square along the attack direction; bigger for your own takes. The being-taken toast says
+  "{name} swung their sword. You are out!" and the "why I lost" line says "Struck down by {name} (…) · round n"; the
+  rules' Taking card explains the sword mark (+ straight, × diagonal).
 - **Multiplayer lobby options**: the host can turn on personalities, obstacles and (with 4 filled seats) teams
   (`RoomView.opts`, `MatchStart.personas/obstacles/teams`).
 - **Logo**: the middle X turns right into a plus and back left into an x, once a second in a 2 s loop (`.logo-x`,
