@@ -37,7 +37,9 @@ export type ToHost =
   | { t: 'ready'; ready: boolean }
   | { t: 'move'; move: Move | null }
   // The guest's state hash differs from the host's: please send the match from the start again.
-  | { t: 'resync' };
+  | { t: 'resync' }
+  // Ring the bell for the player whose move it is (engine seat `seat`): they hear a bell and feel a buzz.
+  | { t: 'nudge'; seat: number };
 
 export type ToGuest =
   | { t: 'lobby'; code: string; you: number; seats: LobbySeat[]; level: Level; size: number; bots: number | null; opts?: LobbyOpts }
@@ -45,6 +47,7 @@ export type ToGuest =
   // n: which move of the match (starting at 1). h: the host's state hash after the move; a guest that differs asks to resync.
   | { t: 'move'; n: number; move: Move | null; h?: string }
   | { t: 'sync'; match: MatchStart; you: number; moves: (Move | null)[] }
+  | { t: 'nudge'; from: number } // a bell rung by engine seat `from`
   | { t: 'closed'; reason: string };
 
 // Room code: 5 characters, without the confusable 0/O and 1/I.

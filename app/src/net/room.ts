@@ -67,6 +67,7 @@ export class HostRoom extends Room {
   private tokens: string[] = []; // the guest's secret id, so they can come back after a disconnect
   private grace: (number | null)[] = Array(MAX_SEATS).fill(null);
   private closed = false;
+  private nudgeAt: number[] = []; // per lobby seat: when it may ring the bell again
 
   constructor(ctl: GameController, level: Level, transport: Transport = peerTransport) {
     super(ctl);
@@ -123,9 +124,26 @@ export class HostRoom extends Room {
       else this.broadcastLobby();
     }
     else if (m.t === 'bye') this.leave(i, this.links[i]!, true);
+    else if (m.t === 'nudge' && this.view.status === 'playing') this.relayNudge(i, m.seat);
     else if (m.t === 'resync' && this.view.status === 'playing' && this.match) this.links[i]?.send({ t: 'sync', match: this.match, you: this.engineSeat[i], moves: this.ctl.movesSoFar() });
     else if (m.t === 'ready' && this.view.status === 'lobby') this.setSeat(i, { ...this.view.seats[i], kind: 'guest', ready: m.ready });
     else if (m.t === 'move' && this.view.status === 'playing') this.ctl.receiveMove(this.engineSeat[i], m.move);
+  }
+
+  // A bell for the player whose move it is. The host checks the target and the rate (one bell per 6 s per sender).
+  private relayNudge(fromLobby: number, toEngine: number) {
+    if (Date.now() < (this.nudgeAt[fromLobby] ?? 0)) return;
+    const to = this.engineSeat.indexOf(toEngine);
+    if (to < 0 || to === fromLobby || !this.ctl.isTurnOf(toEngine)) return;
+    this.nudgeAt[fromLobby] = Date.now() + 6000;
+    const from = this.engineSeat[fromLobby];
+    if (to === 0) this.ctl.ring(from);
+    else this.links[to]?.send({ t: 'nudge', from });
+  }
+
+  private nudgeFromHost(toEngine: number) {
+    const to = this.engineSeat.indexOf(toEngine);
+    if (to > 0) this.links[to]?.send({ t: 'nudge', from: this.engineSeat[0] });
   }
 
   private refuse(i: number, reason: string) {
@@ -196,6 +214,7 @@ export class HostRoom extends Room {
     this.ctl.startMatch(this.match, 0, {
       role: 'host',
       broadcast: (n, move, h) => this.links.forEach(l => l?.send({ t: 'move', n, move, h })),
+      nudge: seat => this.nudgeFromHost(seat),
     });
     this.set({ status: 'playing' });
   }
@@ -286,9 +305,11 @@ export class GuestRoom extends Room {
       }
       this.resyncing = false;
       if (m.t === 'start') this.resyncs = 0;
-      this.ctl.startMatch(m.match, m.you, { role: 'guest', send: move => this.link?.send({ t: 'move', move }), desync: () => this.desync() },
+      this.ctl.startMatch(m.match, m.you, { role: 'guest', send: move => this.link?.send({ t: 'move', move }), desync: () => this.desync(), nudge: seat => this.link?.send({ t: 'nudge', seat }) },
         m.t === 'sync' ? m.moves : []);
       this.set({ status: 'playing' });
+    } else if (m.t === 'nudge') {
+      this.ctl.ring(m.from);
     } else if (m.t === 'move') {
       this.ctl.receiveNetMove(m.n, m.move, m.h);
     } else if (m.t === 'closed') {

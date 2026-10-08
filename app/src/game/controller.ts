@@ -28,6 +28,7 @@ export interface NetRole {
   broadcast?: (n: number, move: Move | null, hash: string) => void;
   send?: (move: Move | null) => void;
   desync?: () => void; // guest: the state differs from the host's (hash check failed)
+  nudge?: (seat: number) => void; // ring the bell for the player whose move it is
 }
 
 export type Phase =
@@ -98,6 +99,7 @@ export interface View {
   shake: number;
   fall: { key: number; ring: number } | null; // the ring that just collapsed (for the animation)
   hit: number; // grows when you are taken or fall: the screen flashes red
+  countdown: number | null; // 3, 2, 1 before a match starts (null: not counting)
   version: number;
 }
 
@@ -160,13 +162,24 @@ export class GameController {
     const step = this.net || !settings.tips || this.setup.puzzle != null ? null : coachStep();
     this.autoMap = step != null && step < 2;
     if (step != null) { this.later(500, () => this.emit({ sheet: { type: 'coach', step } })); return; }
-    this.later(600, () => this.advance());
+    this.launch(600);
   }
 
   closeCoach() {
     markCoachSeen();
     this.emit({ sheet: null });
-    this.later(300, () => this.advance());
+    this.launch(300);
+  }
+
+  // The first move of a new match: the sword is drawn, 3 · 2 · 1, then the first mode card. Puzzles skip the countdown
+  // (they restart often); so does a guest who rejoins a match in progress (see startMatch).
+  private launch(delay: number) {
+    if (this.setup.puzzle != null) { this.later(delay, () => this.advance()); return; }
+    this.later(delay, () => {
+      feel('unsheath', BUZZ.mode);
+      [3, 2, 1].forEach((n, i) => this.later(550 + i * 900, () => { this.emit({ countdown: n }); feel('count', 12); }));
+      this.later(550 + 3 * 900, () => { this.emit({ countdown: null }); sound('go'); this.advance(); });
+    });
   }
 
   newGame(setup: Setup = this.setup, opts?: Opts) {
@@ -309,7 +322,37 @@ export class GameController {
     this.reset(match);
     for (const m of replay) { play(this.state, m); this.moves.push(m); }
     this.emit();
-    this.later(replay.length ? 0 : 600, () => this.advance());
+    if (replay.length) this.later(0, () => this.advance()); else this.launch(300);
+  }
+
+  // ------------------------------------------------------------ the bell (multiplayer)
+
+  /** Is it this human seat's move right now? (the host checks a bell before passing it on) */
+  isTurnOf(seat: number) {
+    const a = currentActor(this.state);
+    return !!a && a.kind === 'star' && a.seat === seat && this.state.seats[seat].kind === 'human';
+  }
+
+  /** The bell button shows while another human is on the move. */
+  get canNudge() {
+    const a = currentActor(this.state);
+    return !!this.net && !this.state.over && !!a && a.kind === 'star' && a.seat !== ME && this.isTurnOf(a.seat) && !this.away.has(a.seat);
+  }
+
+  nudge() {
+    const a = currentActor(this.state);
+    if (!this.canNudge || !a || a.kind !== 'star') return;
+    this.net?.nudge?.(a.seat);
+    this.toast(tr('Bell rung for {name}', { name: seatName(this.state, a.seat) }), 'info');
+    this.emit();
+  }
+
+  /** Someone rang the bell for me: a bell sound, a strong buzz and a notice. */
+  ring(fromSeat: number) {
+    if (!this.isTurnOf(ME)) return;
+    feel('bell', [90, 70, 90, 70, 160]);
+    this.toast(tr('{name} is waiting for you!', { name: seatName(this.state, fromSeat) }), 'clock');
+    this.emit();
   }
 
   get isGuest() { return this.net?.role === 'guest'; }
@@ -365,7 +408,7 @@ export class GameController {
       phase: 'ready', sel: null, showThreats: false, timer: this.setup.moveSeconds,
       trails: [], lastMoves: [], bursts: [], slashes: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null, bonus: null,
       bots: { done: 0, total: 0, currentId: null }, events: [],
-      clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, hit: 0, version: 0,
+      clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, hit: 0, countdown: null, version: 0,
     };
   }
 

@@ -346,3 +346,17 @@
 /* Long texts wrap instead of being cut; the icon keeps its size. */
 .toast > svg { flex: none; }
 .toast > span { min-width: 0; }
+
+/* Countdown before a match (3 · 2 · 1): a big number that pops in over the board. */
+.countdown { position: absolute; inset: 0; z-index: 18; display: flex; align-items: center; justify-content: center; background: rgba(5, 8, 20, .5); pointer-events: auto; }
+.countdown span {
+  font: 800 150px/1 var(--font-display); color: var(--ice); text-shadow: 0 0 40px rgba(59, 255, 143, .45);
+  animation: count-pop calc(900ms * var(--speed-factor, 1)) cubic-bezier(.2, .8, .2, 1) both;
+}
+@keyframes count-pop { 0% { transform: scale(2.2); opacity: 0; } 25% { transform: scale(1); opacity: 1; } 80% { opacity: 1; } 100% { transform: scale(.85); opacity: 0; } }
+
+/* The bell: ring it for a player who is taking long. */
+.bell-btn { flex: none; width: 44px; height: 44px; border-radius: 22px; border: 1.5px solid var(--line-2); background: var(--surface-2); color: var(--text-1); display: flex; align-items: center; justify-content: center; }
+.bell-btn.is-rung { opacity: .45; }
+.bell-btn:not(:disabled):active { transform: rotate(-12deg); }
+@media (prefers-reduced-motion: reduce) { .countdown span { animation: none; } }

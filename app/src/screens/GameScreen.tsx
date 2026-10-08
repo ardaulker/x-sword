@@ -28,6 +28,7 @@ const GAP = 6;
 
 function announce(ctl: GameController, view: View) {
   const st = ctl.state;
+  if (view.countdown != null) return tr('Match starts in {n}', { n: view.countdown });
   if (view.phase === 'over') return isWinner(st, 0) ? tr('You won!') : tr('Match over.');
   if (view.phase === 'mine') return tr('Your turn.');
   if (view.phase === 'bot') return tr('Bots are playing.');
@@ -174,6 +175,9 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
       {rulesOpen && <div className="rules-overlay"><RulesScreen onBack={() => setRulesOpen(false)} /></div>}
       {sheet?.type === 'menu' && net && <LeaveSheet onLeave={net.onLeave} onClose={() => ctl.closeSheet()} />}
 
+      {view.countdown != null && (
+        <div className="countdown" aria-hidden="true"><span key={view.countdown}>{view.countdown}</span></div>
+      )}
       {view.hit > 0 && <div key={view.hit} className="hit-flash" aria-hidden="true" />}
       <div className="sr-only" aria-live="polite">{announce(ctl, view)}</div>
     </div>

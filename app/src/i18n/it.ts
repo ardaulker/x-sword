@@ -562,5 +562,9 @@ const dict: Record<string, string> = {
   'Done': 'Fatto',
   'Bot characters': 'Personaggi dei bot',
   'Needs 2–4 players': 'Servono 2–4 giocatori',
+  'Ring the bell for {name}': 'Suona la campana per {name}',
+  'Bell rung for {name}': 'Campana suonata per {name}',
+  '{name} is waiting for you!': '{name} ti sta aspettando!',
+  'Match starts in {n}': 'La partita inizia tra {n}',
 };
 export default dict;

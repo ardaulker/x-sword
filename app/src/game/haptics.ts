@@ -59,6 +59,11 @@ const SOUNDS: Record<string, Note[]> = {
   // The sword strokes are built from noise (see playSlash); the note lists stay empty.
   slash: [],
   slashBig: [],
+  // Match start: the sword leaves its scabbard (playUnsheath), a tick for 3, 2, 1 and a rising pair for the start.
+  unsheath: [],
+  bell: [],
+  count: [[330, 0, 0.14, 'triangle', 0.12], [165, 0, 0.18, 'sine', 0.14]],
+  go: [[523, 0, 0.1, 'triangle', 0.12], [784, 0.08, 0.1, 'triangle', 0.12], [1047, 0.16, 0.28, 'triangle', 0.12]],
   win: [[523, 0, 0.12, 'triangle', 0.12], [659, 0.12, 0.12, 'triangle', 0.12], [784, 0.24, 0.12, 'triangle', 0.12], [1047, 0.36, 0.35, 'triangle', 0.12]],
   lose: [[330, 0, 0.2, 'sine', 0.1], [262, 0.2, 0.2, 'sine', 0.1], [196, 0.4, 0.45, 'sine', 0.1]],
   tick: [[1000, 0, 0.03, 'square', 0.04]],
@@ -110,12 +115,66 @@ function playSlash(ac: AudioContext, t0: number, big: boolean) {
   }
 }
 
+// A sword drawn from its scabbard: a rough scrape of noise that rises in pitch (metal on metal, with a fast flutter),
+// then a bright ring as the blade comes free.
+function playUnsheath(ac: AudioContext, t0: number) {
+  const dur = 0.85;
+  const len = Math.floor(ac.sampleRate * dur);
+  const buf = ac.createBuffer(1, len, ac.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  const bp = ac.createBiquadFilter();
+  bp.type = 'bandpass'; bp.Q.value = 4;
+  bp.frequency.setValueAtTime(1500, t0);
+  bp.frequency.exponentialRampToValueAtTime(5200, t0 + dur);
+  const g = ac.createGain();
+  const peak = 0.22 * settings.volume;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(peak, t0 + 0.12);
+  g.gain.setValueAtTime(peak, t0 + dur - 0.12);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  // The flutter: the scrape's loudness wobbles 28 times a second.
+  const lfo = ac.createOscillator(), lfoG = ac.createGain();
+  lfo.frequency.value = 28; lfoG.gain.value = peak * 0.45;
+  lfo.connect(lfoG).connect(g.gain);
+  src.connect(bp).connect(g).connect(ac.destination);
+  src.start(t0); src.stop(t0 + dur); lfo.start(t0); lfo.stop(t0 + dur);
+  for (const [f, gain] of [[2400, 0.07], [3600, 0.05], [5100, 0.03]] as const) {
+    const o = ac.createOscillator(), og = ac.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    og.gain.setValueAtTime(0.0001, t0 + dur - 0.08);
+    og.gain.exponentialRampToValueAtTime(gain * settings.volume, t0 + dur - 0.06);
+    og.gain.exponentialRampToValueAtTime(0.0001, t0 + dur + 0.9);
+    o.connect(og).connect(ac.destination);
+    o.start(t0 + dur - 0.08); o.stop(t0 + dur + 1);
+  }
+}
+
+// A bell struck twice: a bright strike with inharmonic partials that ring out.
+function playBell(ac: AudioContext, t0: number) {
+  for (const at of [0, 0.42]) {
+    for (const [mult, gain, ring] of [[1, 0.2, 1.3], [2.76, 0.1, 0.9], [5.4, 0.06, 0.55], [8.93, 0.03, 0.3]] as const) {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.value = 880 * mult;
+      g.gain.setValueAtTime(0.0001, t0 + at);
+      g.gain.exponentialRampToValueAtTime(gain * settings.volume, t0 + at + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + ring);
+      o.connect(g).connect(ac.destination);
+      o.start(t0 + at); o.stop(t0 + at + ring + 0.05);
+    }
+  }
+}
+
 export function sound(name: SoundName) {
   if (!settings.sound || settings.volume <= 0) return;
   const ac = audio();
   if (!ac || ac.state !== 'running') return;
   const t0 = ac.currentTime;
   if (name === 'slash' || name === 'slashBig') playSlash(ac, t0, name === 'slashBig');
+  if (name === 'unsheath') playUnsheath(ac, t0);
+  if (name === 'bell') playBell(ac, t0);
   for (const [freq, at, dur, type = 'sine', gain = 0.1] of SOUNDS[name]) {
     const o = ac.createOscillator(), g = ac.createGain();
     o.type = type;

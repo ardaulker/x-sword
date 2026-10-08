@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { PUZZLES } from '../game/puzzles';
 import { puzzleHint } from '../game/puzzleText';
 import {
@@ -294,6 +295,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
             <div className="panel-title">{title}</div>
             <div className="panel-sub">{sub}</div>
           </div>
+          {view.phase === 'rival' && ctl.canNudge && actor?.kind === 'star' && <BellButton ctl={ctl} name={seatName(st, actor.seat)} />}
           {timer != null && (
             <div className={`panel-timer${lastSeconds && view.phase === 'mine' ? ' is-pulse' : ''}`} style={{ color: view.phase === 'mine' ? timerColor : TXT }}>
               {timer}
@@ -437,3 +439,14 @@ function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
   );
 }
 
+
+// Rings a bell for the player who is taking their time. One bell per 8 seconds.
+function BellButton({ ctl, name }: { ctl: GameController; name: string }) {
+  const [wait, setWait] = useState(false);
+  return (
+    <button type="button" className={`bell-btn${wait ? ' is-rung' : ''}`} disabled={wait} aria-label={tr('Ring the bell for {name}', { name })}
+      onClick={() => { ctl.nudge(); setWait(true); window.setTimeout(() => setWait(false), 8000); }}>
+      <Icon d="M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18 H4 Z M10 21 H14" size={20} stroke={2} />
+    </button>
+  );
+}
