@@ -25,22 +25,25 @@ export interface MatchStart {
   obstacles?: boolean; // obstacle squares
   teams?: boolean;     // 2 vs 2 (4 players only)
   names?: (string | null)[]; // profile names in match seat order (null for AI)
+  rules?: number;    // rules version (RULES_VERSION); missing means 1
 }
 
 // Options chosen by the host in the lobby, off by default.
 export interface LobbyOpts { personas: boolean; obstacles: boolean; teams: boolean }
 
 export type ToHost =
-  | { t: 'hello'; token?: string; profile?: PublicProfile }
+  | { t: 'hello'; token?: string; profile?: PublicProfile; rules?: number }
   | { t: 'bye' }
   | { t: 'ready'; ready: boolean }
-  | { t: 'move'; move: Move | null };
+  | { t: 'move'; move: Move | null }
+  // The guest's state hash differs from the host's: please send the match from the start again.
+  | { t: 'resync' };
 
 export type ToGuest =
   | { t: 'lobby'; code: string; you: number; seats: LobbySeat[]; level: Level; size: number; bots: number | null; opts?: LobbyOpts }
   | { t: 'start'; match: MatchStart; you: number }
-  // n: which move of the match (starting at 1). A guest that falls out of step is resynced from the start.
-  | { t: 'move'; n: number; move: Move | null }
+  // n: which move of the match (starting at 1). h: the host's state hash after the move; a guest that differs asks to resync.
+  | { t: 'move'; n: number; move: Move | null; h?: string }
   | { t: 'sync'; match: MatchStart; you: number; moves: (Move | null)[] }
   | { t: 'closed'; reason: string };
 

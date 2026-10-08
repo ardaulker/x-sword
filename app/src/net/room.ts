@@ -1,7 +1,7 @@
 // Room (lobby) logic. HostRoom creates the room and runs the match; GuestRoom joins by code and follows and plays the match.
 // The screen reads both through subscribe/getSnapshot.
 
-import { SIZE_BY_STARS, defaultNeutrals, maxNeutrals } from '../../../engine/rules.js';
+import { RULES_VERSION, SIZE_BY_STARS, defaultNeutrals, maxNeutrals } from '../../../engine/rules.js';
 import type { Level } from '../../../engine/rules.js';
 import type { GameController } from '../game/controller';
 import { peerTransport } from './transport';
@@ -32,6 +32,7 @@ export const lobbySize = (v: Pick<RoomView, 'size' | 'seats'>) =>
 const EMPTY: LobbySeat = { kind: 'empty', ready: false };
 const MAX_SEATS = 4;
 const GRACE_MS = 15000;
+const MAX_RESYNCS = 3; // a guest that keeps falling out of step is let go instead of looping
 
 abstract class Room {
   abstract readonly role: 'host' | 'guest';
@@ -113,6 +114,8 @@ export class HostRoom extends Room {
 
   private message(i: number, m: ToHost) {
     if (m.t === 'hello') {
+      // A guest on older rules would replay the same moves differently: send them to update instead.
+      if ((m.rules ?? 1) < RULES_VERSION) { this.refuse(i, tr('Your game is older than this room. Update it to join.')); return; }
       if (m.token) this.tokens[i] = m.token;
       // The guest's profile name and color (cleaned). Broadcast to everyone in the lobby.
       const pub = readPublic(m.profile);
@@ -120,8 +123,18 @@ export class HostRoom extends Room {
       else this.broadcastLobby();
     }
     else if (m.t === 'bye') this.leave(i, this.links[i]!, true);
+    else if (m.t === 'resync' && this.view.status === 'playing' && this.match) this.links[i]?.send({ t: 'sync', match: this.match, you: this.engineSeat[i], moves: this.ctl.movesSoFar() });
     else if (m.t === 'ready' && this.view.status === 'lobby') this.setSeat(i, { ...this.view.seats[i], kind: 'guest', ready: m.ready });
     else if (m.t === 'move' && this.view.status === 'playing') this.ctl.receiveMove(this.engineSeat[i], m.move);
+  }
+
+  private refuse(i: number, reason: string) {
+    const l = this.links[i];
+    if (!l) return;
+    this.links[i] = null;
+    l.send({ t: 'closed', reason });
+    setTimeout(() => l.close(), 300);
+    if (this.view.status === 'lobby') this.setSeat(i, EMPTY);
   }
 
   private leave(i: number, link: Link<ToHost, ToGuest>, bye = false) {
@@ -175,14 +188,14 @@ export class HostRoom extends Room {
     this.match = {
       seed: Math.floor(Math.random() * 2 ** 31),
       seats: order.map(i => (this.view.seats[i].kind === 'bot' ? { kind: 'bot', level } : { kind: 'human' })),
-      level, moveSeconds, size, neutrals,
+      level, moveSeconds, size, neutrals, rules: RULES_VERSION,
       names: order.map(i => (this.view.seats[i].kind === 'bot' ? null : this.view.seats[i].name ?? null)),
       personas: this.view.opts.personas, obstacles: this.view.opts.obstacles, teams: this.view.opts.teams && order.length === 4,
     };
     this.links.forEach((l, i) => l?.send({ t: 'start', match: this.match!, you: this.engineSeat[i] }));
     this.ctl.startMatch(this.match, 0, {
       role: 'host',
-      broadcast: (n, move) => this.links.forEach(l => l?.send({ t: 'move', n, move })),
+      broadcast: (n, move, h) => this.links.forEach(l => l?.send({ t: 'move', n, move, h })),
     });
     this.set({ status: 'playing' });
   }
@@ -212,6 +225,8 @@ export class GuestRoom extends Room {
   private link: Link<ToGuest, ToHost> | null = null;
   private closed = false;
   private reconnecting = false;
+  private resyncs = 0;
+  private resyncing = false;
   private readonly token = Math.random().toString(36).slice(2) + Date.now().toString(36);
 
   constructor(ctl: GameController, code: string, private transport: Transport = peerTransport) {
@@ -227,7 +242,7 @@ export class GuestRoom extends Room {
     this.link = link;
     link.onMessage(m => this.message(m));
     link.onClose(() => this.lost());
-    link.send({ t: 'hello', token: this.token, profile: publicProfile() });
+    link.send({ t: 'hello', token: this.token, profile: publicProfile(), rules: RULES_VERSION });
   }
 
   // If the connection drops during a match, it keeps trying to rejoin the same room for 15 s.
@@ -262,11 +277,20 @@ export class GuestRoom extends Room {
       if (this.view.status === 'playing') this.ctl.dispose();
       this.set({ status: 'lobby', code: m.code, you: m.you, seats: m.seats, level: m.level, size: m.size, bots: m.bots, opts: m.opts ?? { personas: false, obstacles: false, teams: false } });
     } else if (m.t === 'start' || m.t === 'sync') {
-      this.ctl.startMatch(m.match, m.you, { role: 'guest', send: move => this.link?.send({ t: 'move', move }) },
+      // The room plays by newer rules than this app knows: it cannot follow the match.
+      if ((m.match.rules ?? 1) > RULES_VERSION) {
+        this.closed = true;
+        this.set({ status: 'closed', error: tr('This room needs a newer version of the game. Update it to join.') });
+        this.link?.close();
+        return;
+      }
+      this.resyncing = false;
+      if (m.t === 'start') this.resyncs = 0;
+      this.ctl.startMatch(m.match, m.you, { role: 'guest', send: move => this.link?.send({ t: 'move', move }), desync: () => this.desync() },
         m.t === 'sync' ? m.moves : []);
       this.set({ status: 'playing' });
     } else if (m.t === 'move') {
-      this.ctl.receiveNetMove(m.n, m.move);
+      this.ctl.receiveNetMove(m.n, m.move, m.h);
     } else if (m.t === 'closed') {
       if (this.view.status === 'playing') this.ctl.netLost();
       this.closed = true;
@@ -281,6 +305,23 @@ export class GuestRoom extends Room {
     this.closed = true;
     this.ctl.netLost();
     this.set({ status: 'closed', error: this.view.error || tr('Lost connection to the room.') });
+  }
+
+  // The state hash differs from the host's. Ask for the match again from the start, a few times at most.
+  private desync() {
+    if (this.resyncing || this.closed) return;
+    if (this.resyncs >= MAX_RESYNCS) {
+      this.closed = true;
+      this.ctl.netLost();
+      this.set({ status: 'closed', error: tr('The match went out of step with the host.') });
+      this.link?.send({ t: 'bye' });
+      this.link?.close();
+      return;
+    }
+    this.resyncs++;
+    this.resyncing = true;
+    this.ctl.note(tr('Out of step · syncing again…'));
+    this.link?.send({ t: 'resync' });
   }
 
   ready(ready: boolean) { this.link?.send({ t: 'ready', ready }); }

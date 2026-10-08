@@ -27,6 +27,13 @@ export function XSwordLogo({ size }: { size: number }) {
   );
 }
 
+// What "Quick match" starts: the last used settings (the defaults for a new player), in a few words.
+function quickSummary(s: Setup) {
+  const level = s.level === 'easy' ? tr('Easy') : s.level === 'hard' ? tr('Hard') : tr('Normal');
+  const players = s.players === 1 ? tr('Solo') : tr('{n} players', { n: s.players });
+  return `${players} · ${level} · ${s.boardSize}×${s.boardSize}`;
+}
+
 export function MainMenu({ setup, onStart, onResume, resumeInfo, onTutorial, onProfile, onPuzzles, onStats, onDaily, onRules, onMultiplayer, onSettings }: {
   setup: Setup; onStart: (s: Setup) => void; onResume?: () => void; resumeInfo?: { round: number; score: number }; onTutorial?: () => void; onProfile?: () => void; onPuzzles?: () => void; onStats?: () => void; onDaily?: () => void; onRules?: () => void; onMultiplayer?: () => void; onSettings?: () => void;
 }) {
@@ -80,11 +87,11 @@ export function MainMenu({ setup, onStart, onResume, resumeInfo, onTutorial, onP
             </span>
           </button>
         )}
-        <button type="button" className={demoted ? 'menu-btn menu-daily' : 'menu-play'} onClick={() => setSetupOpen(true)}>
+        <button type="button" className={demoted ? 'menu-btn menu-daily' : 'menu-play'} onClick={() => onStart({ ...setup, daily: null, puzzle: null })}>
           <Icon d="M7 4.5 L19 12 L7 19.5 Z" size={demoted ? 20 : 26} fill={demoted ? 'currentColor' : '#0B1026'} />
           <span className="menu-play-text">
-            <b>{tr('Play')}</b>
-            <span>{tr('Against bots · solo or 2–4 players')}</span>
+            <b>{tr('Quick match')}</b>
+            <span>{quickSummary(setup)}</span>
           </span>
         </button>
         {onDaily && (
@@ -115,10 +122,16 @@ export function MainMenu({ setup, onStart, onResume, resumeInfo, onTutorial, onP
             {!onRules && <span className="menu-soon">{tr('Soon')}</span>}
           </button>
         </div>
-        <button type="button" className="menu-link" disabled={!onSettings} onClick={onSettings}>
-          <Icon d="M4 7 H14 M18 7 H20 M4 17 H8 M12 17 H20 M16 5 V9 M10 15 V19" size={18} />
-          <span>{tr('Settings')}</span>
-        </button>
+        <div className="menu-row">
+          <button type="button" className="menu-link" onClick={() => setSetupOpen(true)}>
+            <Icon d="M4 4 H20 V20 H4 Z M4 12 H20 M12 4 V20" size={18} stroke={2} />
+            <span>{tr('Custom game')}</span>
+          </button>
+          <button type="button" className="menu-link" disabled={!onSettings} onClick={onSettings}>
+            <Icon d="M4 7 H14 M18 7 H20 M4 17 H8 M12 17 H20 M16 5 V9 M10 15 V19" size={18} />
+            <span>{tr('Settings')}</span>
+          </button>
+        </div>
       </nav>
 
       {setupOpen && <SetupSheet setup={setup} onStart={onStart} onClose={() => setSetupOpen(false)} />}

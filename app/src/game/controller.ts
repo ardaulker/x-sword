@@ -2,7 +2,7 @@
 // The engine (engine/) knows the rules; this file only calls its functions and tells the screen what happened.
 
 import {
-  BONUS_NAMES, POINTS, isWinner, TWIN_TAKE_MULT, collapseDue, createGame, createPuzzle, endMatch, play, currentActor, legalMoves, pieceById, starOf,
+  BONUS_NAMES, POINTS, RULES_VERSION, isWinner, stateHash, TWIN_TAKE_MULT, collapseDue, createGame, createPuzzle, endMatch, play, currentActor, legalMoves, pieceById, starOf,
 } from '../../../engine/rules.js';
 import type { BonusKind, GameState, Level, Move, Piece } from '../../../engine/rules.js';
 import { chooseMove } from '../../../engine/bots.js';
@@ -25,8 +25,9 @@ import { tr } from '../i18n';
 // a guest sends its own move to the host and applies every move it receives from the host.
 export interface NetRole {
   role: 'host' | 'guest';
-  broadcast?: (n: number, move: Move | null) => void;
+  broadcast?: (n: number, move: Move | null, hash: string) => void;
   send?: (move: Move | null) => void;
+  desync?: () => void; // guest: the state differs from the host's (hash check failed)
 }
 
 export type Phase =
@@ -342,21 +343,21 @@ export class GameController {
     const s = this.setup;
     if (s.puzzle != null) {
       const def = PUZZLES.find(p => p.id === s.puzzle) ?? PUZZLES[0];
-      return { puzzle: { map: def.map, limit: def.par + 1, mode: def.mode, bonuses: def.bonuses, shrink: def.shrink ?? null } };
+      return { rules: RULES_VERSION, puzzle: { map: def.map, limit: def.par + 1, mode: def.mode, bonuses: def.bonuses, shrink: def.shrink ?? null } };
     }
-    if (s.daily) return { seats: [{ kind: 'human' }], neutralLevel: 'normal', seed: seedOf(s.daily), size: DAILY.boardSize, neutrals: DAILY.bots };
+    if (s.daily) return { rules: RULES_VERSION, seats: [{ kind: 'human' }], neutralLevel: 'normal', seed: seedOf(s.daily), size: DAILY.boardSize, neutrals: DAILY.bots };
     const seats = Array.from({ length: s.players }, (_, i) =>
       i === ME ? { kind: 'human' } : { kind: 'bot', level: s.aiLevel });
     // On Easy you move first; on Normal and Hard your place in the order is random too.
     return {
-      seats, neutralLevel: s.level, seed: Math.floor(Math.random() * 2 ** 31), firstSeat: s.level === 'easy' ? ME : null, keepGoing: true,
+      rules: RULES_VERSION, seats, neutralLevel: s.level, seed: Math.floor(Math.random() * 2 ** 31), firstSeat: s.level === 'easy' ? ME : null, keepGoing: true,
       size: s.boardSize, neutrals: s.bots,
       personas: s.players > 1 && !!s.personas, obstacles: !!s.obstacles, teams: s.players === 4 && !!s.teams,
     };
   }
 
   private makeState(o: Opts): GameState {
-    return (o.puzzle ? createPuzzle(o.puzzle as unknown as Parameters<typeof createPuzzle>[0]) : createGame(o as unknown as Parameters<typeof createGame>[0])) as GameState;
+    return (o.puzzle ? createPuzzle({ ...(o.puzzle as object), rules: o.rules } as unknown as Parameters<typeof createPuzzle>[0]) : createGame(o as unknown as Parameters<typeof createGame>[0])) as GameState;
   }
 
   private freshView(): View {
@@ -373,7 +374,7 @@ export class GameController {
     setSeatNames(match ? match.names ?? [] : [getProfile().name]);
     if (match) {
       this.opts = null;
-      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals, personas: !!match.personas, obstacles: !!match.obstacles, teams: !!match.teams });
+      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals, personas: !!match.personas, obstacles: !!match.obstacles, teams: !!match.teams, rules: match.rules ?? 1 });
     } else {
       this.opts = preset?.opts ?? this.buildOpts();
       this.state = this.makeState(this.opts);
@@ -491,11 +492,12 @@ export class GameController {
     }
   }
 
-  receiveNetMove(n: number, move: Move | null) {
+  receiveNetMove(n: number, move: Move | null, hash?: string) {
     if (this.net?.role !== 'guest' || n !== this.moves.length + 1) return;
     const a = currentActor(this.state);
     this.stopTicker();
     const o = this.apply(move);
+    if (hash && stateHash(this.state) !== hash) { this.net.desync?.(); return; }
     if (a && isBot(a)) this.view = { ...this.view, bots: { ...this.view.bots, done: this.botQueue.indexOf(a.id) + 1, currentId: a.id } };
     this.emit({ phase: a && isBot(a) && !o?.roundEnded ? 'bot' : 'wait' });
     if (!o) return;
@@ -814,7 +816,7 @@ export class GameController {
     }
     this.moves.push(move);
     this.saveGame();
-    if (this.net?.role === 'host') this.net.broadcast?.(this.moves.length, move);
+    if (this.net?.role === 'host') this.net.broadcast?.(this.moves.length, move, stateHash(st));
 
     const fallen = st.pieces.filter(p => aliveBefore.has(p.id) && !p.alive && p !== victim);
     const collapsed = st.ring !== ring;

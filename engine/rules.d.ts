@@ -75,6 +75,8 @@ export interface GameState {
   lastStep: { id: string; dr: number; dc: number } | null;
   // Set while a star plays the extra moves of a Double move: n moves are already played in this sequence, `takes` of them took a piece.
   extra: { id: string; n: number; takes: number } | null;
+  /** Rules version this match is played by (see RULES_VERSION). */
+  rules: number;
   matchOrder: string[];
   keepGoing: boolean;
   decided: boolean;
@@ -103,6 +105,8 @@ export interface GameOptions {
   personas?: boolean;
   obstacles?: boolean;
   teams?: boolean;
+  /** Rules version to play by; old saves and replays carry theirs. Defaults to RULES_VERSION. */
+  rules?: number;
   /** 9, 11, 13 or 15; ignored if smaller than the default for the player count. */
   size?: number;
 }
@@ -137,8 +141,12 @@ export function nameOf(state: GameState, p: Piece): string;
 export function endMatch(state: GameState): GameState;
 export function isWinner(state: GameState, seat: number): boolean;
 export function friendly(state: GameState, a: Piece, b: Piece): boolean;
-export function createPuzzle(def: { map?: string[]; me?: [number, number]; bots?: { kind: 'red' | 'blue'; r: number; c: number }[]; limit: number; mode?: Mode; size?: number; bonuses?: Partial<Record<BonusKind, number>> | null; shrink?: { start: number; every: number } | null }): GameState;
+export function createPuzzle(def: { map?: string[]; me?: [number, number]; bots?: { kind: 'red' | 'blue'; r: number; c: number }[]; limit: number; mode?: Mode; size?: number; bonuses?: Partial<Record<BonusKind, number>> | null; shrink?: { start: number; every: number } | null; rules?: number }): GameState;
 export function createGame(options: GameOptions): GameState;
+/** The newest rules version. Saves, replay links and rooms record the version they were played with. */
+export const RULES_VERSION: number;
+/** 8 hex digits describing the match state; equal states give equal hashes. */
+export function stateHash(state: GameState): string;
 export function roundOrder(state: GameState): string[];
 export function currentActor(state: GameState): Piece | null;
 export function isBotTurn(state: GameState): boolean;

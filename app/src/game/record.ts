@@ -1,6 +1,7 @@
 // Match record: seed + options + move list. Since the engine is seeded, these three are enough to replay a match.
 // The record is used in two places: resuming an unfinished match (on the device) and replay links.
 
+import { RULES_VERSION } from '../../../engine/rules.js';
 import type { BonusKind, Move } from '../../../engine/rules.js';
 import type { Setup } from './controller';
 import { legacyLevel, legacyOpts } from './legacy';
@@ -41,7 +42,9 @@ export function readSave(): SavedGame | null {
     const s = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null') as SavedGame | null;
     if (!(s && s.v === 1 && s.opts && s.setup)) return null;
     const setup = { ...s.setup, level: legacyLevel(s.setup.level), aiLevel: legacyLevel(s.setup.aiLevel ?? 'normal') };
-    return { ...s, opts: legacyOpts(s.opts), setup };
+    const opts = legacyOpts(s.opts);
+    if (Number(opts.rules) > RULES_VERSION) return null; // saved by a newer app than this one
+    return { ...s, opts, setup };
   } catch { return null; }
 }
 
@@ -62,7 +65,9 @@ export function parseReplay(code: string): ReplaySpec | null {
   try {
     const s = JSON.parse(unb64(code)) as ReplaySpec;
     decodeMoves(s.moves);
-    return s && s.opts && typeof s.moves === 'string' ? { ...s, opts: legacyOpts(s.opts) } : null;
+    if (!(s && s.opts && typeof s.moves === 'string')) return null;
+    const opts = legacyOpts(s.opts);
+    return Number(opts.rules) > RULES_VERSION ? null : { ...s, opts };
   } catch { return null; }
 }
 

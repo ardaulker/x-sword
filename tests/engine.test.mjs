@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {
   createGame, endMatch, maxNeutrals, createPuzzle, isWinner, friendly, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
-  roundOrder, random, pieceById, threatsFor, ranking, SIZE_BY_STARS, NEUTRALS_BY_STARS, POINTS, SURVIVOR_BONUS,
+  roundOrder, random, pieceById, threatsFor, ranking, SIZE_BY_STARS, NEUTRALS_BY_STARS, POINTS, SURVIVOR_BONUS, RULES_VERSION, stateHash,
 } from '../engine/rules.js';
 import { chooseMove, targetOf } from '../engine/bots.js';
 
@@ -235,6 +235,34 @@ test('a Double move with only one take, or two walks, gives no Armor', () => {
   play(st, { r: 2, c: 1, bonus: 'double', type: 'take', targetId: 'b1' });
   play(st, legalMoves(st, currentActor(st), st.mode).find(m => m.type === 'walk'));
   assert.equal(st.seats[0].bonuses.armor, 0);
+});
+
+test('a match played by rules 1 (an old save or replay) gives no Armor for two takes', () => {
+  const st = position([{ kind: 'red', r: 2, c: 1 }, { kind: 'red', r: 2, c: 2 }, { kind: 'blue', r: 6, c: 6 }]);
+  st.rules = 1;
+  st.seats[0].bonuses = { armor: 0, step: 0, double: 1, swap: 0 };
+  play(st, { r: 2, c: 1, bonus: 'double', type: 'take', targetId: 'b1' });
+  play(st, { r: 2, c: 2, type: 'take', targetId: 'b2' });
+  assert.equal(st.seats[0].bonuses.armor, 0);
+  assert.equal(createGame({ seats: seats(2), seed: 3 }).rules, RULES_VERSION);
+  assert.equal(createGame({ seats: seats(2), seed: 3, rules: 1 }).rules, 1);
+  assert.equal(createPuzzle({ map: ['S..', '...'], limit: 3, rules: 1 }).rules, 1);
+  assert.throws(() => createGame({ seats: seats(2), seed: 3, rules: RULES_VERSION + 1 }), /rules version/);
+});
+
+test('stateHash: the same moves give the same hash, a different state a different one', () => {
+  const a = createGame({ seats: seats(2), seed: 11 }), b = createGame({ seats: seats(2), seed: 11 });
+  assert.equal(stateHash(a), stateHash(b));
+  for (let i = 0; i < 12 && !a.over; i++) {
+    const m = chooseMove(a, currentActor(a)), before = stateHash(a);
+    play(a, m); play(b, m);
+    assert.equal(stateHash(a), stateHash(b));
+    assert.notEqual(stateHash(a), before);
+  }
+  const c = createGame({ seats: seats(2), seed: 12 });
+  assert.notEqual(stateHash(c), stateHash(createGame({ seats: seats(2), seed: 11 })));
+  b.seats[0].score += 1;
+  assert.notEqual(stateHash(a), stateHash(b));
 });
 
 test('the arena shrinks: pieces on the outer ring fall and it can no longer be entered', () => {

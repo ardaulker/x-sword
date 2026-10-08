@@ -1,0 +1,13 @@
+/* Shown when the app crashes (components/ErrorBoundary.tsx). */
+.crash {
+  width: 100%; max-width: 420px; min-height: 100vh; min-height: 100dvh; margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 48px) 24px calc(env(safe-area-inset-bottom) + 24px);
+  display: flex; flex-direction: column; justify-content: center; gap: 12px; text-align: center;
+}
+.crash h1 { margin: 0; font: 800 26px/1.15 var(--font-display); }
+.crash p { margin: 0 0 8px; color: var(--text-2); font-size: 15px; line-height: 1.4; }
+.crash .crash-hint { margin: 0; font-size: 12.5px; }
+.crash-detail {
+  margin-top: 12px; padding: 8px 10px; border-radius: 10px; background: var(--surface-1); color: var(--text-3);
+  font-size: 11.5px; overflow-wrap: anywhere; text-align: left;
+}

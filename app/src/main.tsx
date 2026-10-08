@@ -3,6 +3,7 @@ import './styles/global.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { applySettings } from './game/settings';
 import { bootPlatform } from './game/platform';
 
@@ -11,6 +12,6 @@ void bootPlatform(); // Game Center / Play Games sign-in in the phone app; does 
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary><App /></ErrorBoundary>
   </StrictMode>,
 );

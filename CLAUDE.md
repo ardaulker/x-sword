@@ -34,6 +34,14 @@
   redirects to `/play/`. The first demo was retired on 8 October 2026 (Arda: "that version is finished"): it
   lives in `archive/first-demo/` with its old tests, is not published (the workflow skips `archive/`) and nothing uses it.
 - Tests: `node tests/engine.test.mjs` (rules + bot strength). Run it before and after touching rules or bots.
+- **Rules version** (9 October 2026): `RULES_VERSION` in `engine/rules.js` (now 2). `createGame({ rules })` plays a match by an older
+  version; saves, replay links and multiplayer rooms record it (`opts.rules`, `MatchStart.rules`, `hello.rules`). A save or
+  replay without it is version 1 (`legacyOpts`); one from a newer app is ignored. **Raise the version whenever a change
+  would make an old move list play out differently** and gate the new behavior with `state.rules >= N` (version 2 =
+  Armor for two takes in one Double move). A host refuses a guest on older rules; a guest refuses a room on newer rules.
+- **Desync check**: the host sends `stateHash(state)` with every move; a guest whose hash differs sends `resync` and the host
+  replies with `sync` (the whole move list; at most 3 times, then the guest leaves). The hash leaves out the seed and seat
+  kinds on purpose (see the comment in `stateHash`).
 - Publishing: a push to `main` runs `.github/workflows/pages.yml`, which runs the engine tests, builds `app/` and
   publishes the site to GitHub Pages. Root pages (`index.html`, `arena/`, `engine/`) go out as they are; the game is
   served at https://ardaulker.github.io/x-sword/play/ and https://ardaulker.github.io/x-sword/ redirects there. The old address `/oyun/` (before the English rename) redirects
@@ -136,7 +144,8 @@
 - Discussed but not done: the TestFlight / Capacitor path (memory note), themes beyond the five board themes.
 
 ## When rules change (checklist)
-1. `engine/rules.js` / `bots.js` + the `engine/rules.d.ts` types.
+1. `engine/rules.js` / `bots.js` + the `engine/rules.d.ts` types. If old move lists would now play out differently,
+   raise `RULES_VERSION` and gate the change with `state.rules` (see "Rules version" above).
 2. `node tests/engine.test.mjs`; add a test when needed.
 3. `app/src/screens/RulesScreen.tsx`, the Rules window in `arena/index.html`, the game section of
    `docs/design-prompt.md`, this file.
@@ -460,6 +469,11 @@ S#....#.
 ```
 
 ## UI notes (UI/UX pass, 7–8 October 2026)
+- **Quick match** (9 October 2026): the big green main-menu button starts a match at once with the last used settings
+  (`ctl.setup`; the defaults for a new player) and shows them as a short summary ("Solo · Normal · 9×9"). "Custom game" (next to
+  Settings) opens the setup sheet.
+- **Error screen**: `components/ErrorBoundary.tsx` wraps the app; on a render error it offers "Reload" and "Reload without the
+  saved match" (clears `xsword-save`), so a broken save cannot crash the app on every start.
 - The top bar shows "ROUND n" translated; the menu and battle-log buttons have small captions (hidden on short
   screens). The mode box subtitle shows only in the first two matches (`ctl.autoMap`) and in puzzles; otherwise the box
   is 44 px.

@@ -14,6 +14,7 @@ export const legacyTheme = (v: string) => THEMES[v] ?? v;
 // createGame / createPuzzle options from an old save or replay link.
 export function legacyOpts<T extends Record<string, unknown>>(o: T): T {
   const out: Record<string, unknown> = { ...o };
+  if (out.rules == null) out.rules = 1; // saved before rules versions existed: played by the original rules
   if (typeof out.neutralLevel === 'string') out.neutralLevel = legacyLevel(out.neutralLevel);
   if (Array.isArray(out.seats)) out.seats = out.seats.map((s: Record<string, unknown>) => (typeof s?.level === 'string' ? { ...s, level: legacyLevel(s.level) } : s));
   const pz = out.puzzle as Record<string, unknown> | undefined;

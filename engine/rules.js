@@ -105,18 +105,25 @@ function randomSymmetry(state, size) {
   };
 }
 
+// Rules version. A saved match, a replay link or a multiplayer room replays moves through the engine, so each one records
+// the version it was played with (`rules` option) and the engine plays old matches by their old rules.
+// 1: the original rules. 2 (9 Oct 2026): taking two pieces with one Double move earns Armor.
+// Raise it whenever a change would make an old move list play out differently.
+export const RULES_VERSION = 2;
+
 // seats: [{ kind: 'human' | 'bot', level: 'easy' | 'normal' | 'hard' }], 1–4 of them.
 // A single seat is single-player mode: the player's mirror, the Twin, also joins the board.
 // firstSeat: this seat always moves first (the player on Easy). Without it everyone's place is random.
 // shuffle: false keeps corners and order fixed (tests only).
 export function createGame({
-  seats, neutralLevel = 'normal', seed, shrinkStart = 6, shrinkEvery = 6, neutrals, firstSeat = null, shuffle: mix = true, keepGoing = false, size: sizeOpt = null, personas = false, obstacles = false, teams = false,
+  seats, neutralLevel = 'normal', seed, shrinkStart = 6, shrinkEvery = 6, neutrals, firstSeat = null, shuffle: mix = true, keepGoing = false, size: sizeOpt = null, personas = false, obstacles = false, teams = false, rules = RULES_VERSION,
 } = {}) {
   const n = seats?.length;
+  if (!(rules >= 1 && rules <= RULES_VERSION)) throw new Error(`Unknown rules version ${rules}.`);
   if (!(n >= 1 && n <= 4)) throw new Error('A match has 1–4 stars.');
   const size = BOARD_SIZES.includes(sizeOpt) && sizeOpt >= SIZE_BY_STARS[n] ? sizeOpt : SIZE_BY_STARS[n];
   const state = {
-    size, round: 1, mode: 'STRAIGHT', ring: 0, shrinkStart, shrinkEvery, neutralLevel,
+    rules, size, round: 1, mode: 'STRAIGHT', ring: 0, shrinkStart, shrinkEvery, neutralLevel,
     rng: ((seed ?? Math.floor(Math.random() * 2 ** 31)) >>> 0) || 1,
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
@@ -233,7 +240,7 @@ function balancedKinds(state, cells, starts) {
 // The map need not be square; the short side is padded with void on both sides. The old form (me + bots) also works.
 // shrink: { start, every } makes the arena shrink in the puzzle too (e.g. the outer ring collapses at the end of round 2).
 // mode also accepts the old values 'DUZ' / 'CAPRAZ' from saves made before the English rename.
-export function createPuzzle({ map = null, me = null, bots = [], limit, mode = 'STRAIGHT', size = 9, bonuses = null, shrink = null }) {
+export function createPuzzle({ map = null, me = null, bots = [], limit, mode = 'STRAIGHT', size = 9, bonuses = null, shrink = null, rules = RULES_VERSION }) {
   let holes = null, walls = null;
   if (map) {
     const h = map.length, w = Math.max(...map.map(row => row.length));
@@ -252,7 +259,7 @@ export function createPuzzle({ map = null, me = null, bots = [], limit, mode = '
       }
     }
   }
-  const st = createGame({ seats: [{ kind: 'human' }], size: 9, neutrals: 0, seed: 1, shuffle: false, shrinkStart: 999, neutralLevel: 'normal' });
+  const st = createGame({ seats: [{ kind: 'human' }], size: 9, neutrals: 0, seed: 1, shuffle: false, shrinkStart: 999, neutralLevel: 'normal', rules });
   st.size = size;
   st.pieces = st.pieces.filter(p => p.kind !== 'twin');
   const star = st.pieces.find(p => p.kind === 'star');
@@ -445,7 +452,7 @@ export function play(state, move) {
     }
     // Two takes in one Double move earn Armor.
     const seqTakes = (seq?.takes ?? 0) + (took ? 1 : 0);
-    if (actor.kind === 'star' && (seq || m.bonus === 'double') && seqTakes === 2 && (seq?.takes ?? 0) < 2) {
+    if (state.rules >= 2 && actor.kind === 'star' && (seq || m.bonus === 'double') && seqTakes === 2 && (seq?.takes ?? 0) < 2) {
       log(state, `🛡️ ${nameOf(state, actor)} took two pieces in one Double move.`);
       grantBonus(state, state.seats[actor.seat], 'armor');
     }
@@ -568,6 +575,21 @@ function checkOver(state) {
 export function isWinner(state, seat) {
   if (state.winner == null) return false;
   return state.teams ? state.teams[seat] === state.teams[state.winner] : seat === state.winner;
+}
+
+// A short fingerprint of the match state (FNV-1a, 8 hex digits). The host sends it with every move; a guest whose own
+// state hashes differently has fallen out of step and asks for a resync. The random seed is left out on purpose: the
+// host's bots draw from it while a guest's do not (the guest only plays the broadcast moves). Seat kinds are left out too: the host turns a
+// dropped player's seat into an AI, a guest does not.
+export function stateHash(state) {
+  const parts = [
+    state.rules, state.round, state.mode, state.ring, state.turn, state.over ? 1 : 0, state.winner ?? '-', state.extra ? `${state.extra.id}.${state.extra.n}.${state.extra.takes}` : '-',
+    ...state.seats.map(s => `${s.score}.${s.takes}.${s.out ? 1 : 0}.${s.bonuses.armor}${s.bonuses.step}${s.bonuses.double}${s.bonuses.swap}.${s.scoreTier}`),
+    ...state.pieces.map(p => `${p.id}@${p.r},${p.c}${p.alive ? '' : 'x'}`),
+  ];
+  let h = 0x811c9dc5;
+  for (const ch of parts.join('|')) { h ^= ch.charCodeAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h.toString(16).padStart(8, '0');
 }
 
 // Ends a match whose winner is already decided (when the player chooses "End").
