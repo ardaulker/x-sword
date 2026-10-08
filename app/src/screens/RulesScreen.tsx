@@ -102,7 +102,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
           <p>{tr("On the new match screen you pick the board (at least 9, 11, 13; at most 15) and the number of bots. The AI rivals' and the arena bots' intelligence are set separately: a Hard rival hunts like a predator, a Normal one sometimes slips.")}</p>
         </Card>
         <Card title={tr('Solo: the Twin')} visual={<div className="rule-pair"><PieceGlyph {...star} size={34} diamond={false} /><PieceGlyph kind="twin" seat={0} size={34} diamond={false} /></div>}>
-          <p>{tr("The Twin is your mirror: right after you, it plays the same direction you did. If that square is occupied it takes the piece there; if the way is blocked it stays put. It can never take you. You win when all bots are gone; you don't need to take the Twin. If the Twin takes a piece, you get double points and a Mirror bonus.")}</p>
+          <p>{tr("The Twin is your mirror: right after you, it plays the same direction you did. If that square is occupied it takes the piece there; if the way is blocked it stays put. It can never take you. You win when all bots are gone; you don't need to take the Twin. If the Twin takes a piece, you get double points and a Switcheroo bonus.")}</p>
         </Card>
 
         <Card title={tr('Options')} visual={<Icon d="M4 7 H14 M18 7 H20 M4 17 H8 M12 17 H20 M16 5 V9 M10 15 V19" size={36} stroke={2} />}>
