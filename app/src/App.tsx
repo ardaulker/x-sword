@@ -153,7 +153,7 @@ export function App() {
       <MultiplayerEntry
         error=""
         onBack={() => go('menu')}
-        onHost={() => { room?.close(); setRoom(new HostRoom(ctl, ctl.setup.level)); go('room'); }}
+        onHost={isPublic => { room?.close(); setRoom(new HostRoom(ctl, ctl.setup.level, undefined, isPublic)); go('room'); }}
         onJoin={code => { room?.close(); setRoom(new GuestRoom(ctl, code)); go('room'); }}
       />
     );

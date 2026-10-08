@@ -1,10 +1,13 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { BOARD_SIZES, SIZE_BY_STARS, defaultNeutrals, maxNeutrals } from '../../../engine/rules.js';
 import type { Level } from '../../../engine/rules.js';
 import { Icon } from '../components/bits';
 import { PieceGlyph } from '../components/PieceGlyph';
 import { Opt } from '../components/Sheets';
 import { cleanCode, isCode } from '../net/protocol';
+import { directory } from '../net/directory';
+import type { RoomAd } from '../net/directory';
+import { AVATAR_COLORS } from '../game/profile';
 import { GuestRoom, HostRoom, lobbySize } from '../net/room';
 import type { AnyRoom } from '../net/room';
 import './Lobby.css';
@@ -17,10 +20,35 @@ export const inviteLink = (code: string) =>
 
 // ------------------------------------------------------------ entry: create a room or join by code
 
+// The open rooms other players made public. Empty while there is no room board (see net/directory.ts).
+function useOpenRooms() {
+  const [ads, setAds] = useState<RoomAd[]>([]);
+  useEffect(() => (directory ? directory.watch(list => setAds([...list].sort((a, b) => b.seats - a.seats))) : undefined), []);
+  return ads;
+}
+
+function RoomRow({ ad, onJoin }: { ad: RoomAd; onJoin: (code: string) => void }) {
+  const level = ad.level === 'easy' ? tr('Easy') : ad.level === 'hard' ? tr('Hard') : tr('Normal');
+  const tags = [ad.obstacles && tr('Obstacles'), ad.personas && tr('Characters'), ad.teams && tr('Teams')].filter(Boolean);
+  const full = ad.seats >= 4;
+  return (
+    <li className="room-row">
+      <span className="room-dot" style={{ background: AVATAR_COLORS[ad.color] }} aria-hidden="true" />
+      <div className="room-info">
+        <b>{ad.host}</b>
+        <span>{[`${ad.seats}/4`, `${ad.size}×${ad.size}`, level, ...tags].join(' · ')}</span>
+      </div>
+      <button type="button" className="btn btn-main room-join" disabled={full} onClick={() => onJoin(ad.code)}>{full ? tr('Full') : tr('Join')}</button>
+    </li>
+  );
+}
+
 export function MultiplayerEntry({ onHost, onJoin, onBack, error }: {
-  onHost: () => void; onJoin: (code: string) => void; onBack: () => void; error: string;
+  onHost: (isPublic: boolean) => void; onJoin: (code: string) => void; onBack: () => void; error: string;
 }) {
   const [code, setCode] = useState('');
+  const [isPublic, setPublic] = useState(true);
+  const ads = useOpenRooms();
   const ok = isCode(code);
   return (
     <div className="lobby">
@@ -29,10 +57,19 @@ export function MultiplayerEntry({ onHost, onJoin, onBack, error }: {
         <div className="lobby-titles"><h1>{tr('Multiplayer')}</h1><span>{tr('On the same board as your friends')}</span></div>
       </header>
       <div className="lobby-body">
-        <button type="button" className="menu-play" onClick={onHost}>
+        <button type="button" className="menu-play" onClick={() => onHost(isPublic && !!directory)}>
           <Icon d="M12 5 V19 M5 12 H19" size={26} stroke={2.6} color="#0B1026" />
           <span className="menu-play-text"><b>{tr('Create room')}</b><span>{tr('Share the code and your friends join')}</span></span>
         </button>
+        {directory && <Opt label={tr('Show in the public lobby')} sub={tr('Anyone can find your room with your name and board settings.')} on={isPublic} onChange={setPublic} />}
+        {directory && (
+          <section className="rooms" aria-label={tr('Open rooms')}>
+            <div className="field-label">{tr('OPEN ROOMS')}</div>
+            {ads.length
+              ? <ul className="room-list">{ads.map(ad => <RoomRow key={ad.code} ad={ad} onJoin={onJoin} />)}</ul>
+              : <p className="lobby-note">{tr('No open rooms right now. Create one and others can join.')}</p>}
+          </section>
+        )}
         <form className="join" onSubmit={e => { e.preventDefault(); if (ok) onJoin(code); }}>
           <label htmlFor="join-code">{tr('ROOM CODE')}</label>
           <input
@@ -101,6 +138,7 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
       </header>
 
       <div className="lobby-body">
+        {host && directory && <Opt label={tr('Public room')} sub={tr('Anyone can find this room in the lobby.')} on={v.isPublic} onChange={x => hostRoom?.setPublic(x)} />}
         {host && (
           <div className="lobby-invite">
             <a className="btn lobby-wa" href={`https://wa.me/?text=${encodeURIComponent(tr('Join me in X Sword! {code}', { code: link }))}`} target="_blank" rel="noreferrer">

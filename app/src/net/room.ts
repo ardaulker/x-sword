@@ -9,6 +9,7 @@ import type { HostEndpoint, Link, Transport } from './transport';
 import type { LobbyOpts, LobbySeat, MatchStart, ToGuest, ToHost } from './protocol';
 import { tr } from '../i18n';
 import { publicProfile, readPublic } from '../game/profile';
+import { AD_EVERY_MS, directory } from './directory';
 
 export type RoomStatus = 'connecting' | 'lobby' | 'playing' | 'error' | 'closed';
 
@@ -21,6 +22,7 @@ export interface RoomView {
   size: number;           // chosen board (at least the default for the number of filled seats)
   bots: number | null;    // null: the default for the board
   opts: LobbyOpts;        // personalities, obstacles, teams (off by default)
+  isPublic: boolean;      // the room is listed in the public lobby (host only)
   error: string;
   version: number;
 }
@@ -37,7 +39,7 @@ const MAX_RESYNCS = 3; // a guest that keeps falling out of step is let go inste
 abstract class Room {
   abstract readonly role: 'host' | 'guest';
   view: RoomView = {
-    status: 'connecting', code: '', you: 0, seats: [], level: 'normal', size: 9, bots: null, opts: { personas: false, obstacles: false, teams: false }, error: '', version: 0,
+    status: 'connecting', code: '', you: 0, seats: [], level: 'normal', size: 9, bots: null, opts: { personas: false, obstacles: false, teams: false }, isPublic: false, error: '', version: 0,
   };
   private listeners = new Set<() => void>();
   constructor(protected ctl: GameController) {}
@@ -69,9 +71,12 @@ export class HostRoom extends Room {
   private closed = false;
   private nudgeAt: number[] = []; // per lobby seat: when it may ring the bell again
 
-  constructor(ctl: GameController, level: Level, transport: Transport = peerTransport) {
+  private adKey = '';           // the ad last published (so an unchanged room is not published again)
+  private adTimer: number | null = null;
+
+  constructor(ctl: GameController, level: Level, transport: Transport = peerTransport, isPublic = false) {
     super(ctl);
-    this.view = { ...this.view, level, seats: [{ kind: 'host', ready: true, ...publicProfile() }, EMPTY, EMPTY, EMPTY] };
+    this.view = { ...this.view, level, isPublic: isPublic && !!directory, seats: [{ kind: 'host', ready: true, ...publicProfile() }, EMPTY, EMPTY, EMPTY] };
     transport.host().then(ep => {
       if (this.closed) return ep.close();
       this.endpoint = ep;
@@ -79,6 +84,32 @@ export class HostRoom extends Room {
       this.set({ status: 'lobby', code: ep.code });
     }).catch((e: Error) => this.set({ status: 'error', error: e.message }));
   }
+
+  // The public lobby ad follows the room: published while the room is public and waiting, withdrawn otherwise.
+  protected set(patch: Partial<RoomView>) {
+    super.set(patch);
+    this.advertise();
+  }
+
+  private advertise(force = false) {
+    const v = this.view;
+    if (!directory || !v.code) return;
+    if (!v.isPublic || v.status !== 'lobby' || this.closed) {
+      if (this.adKey) { directory.withdraw(v.code); this.adKey = ''; }
+      if (this.adTimer != null) { clearInterval(this.adTimer); this.adTimer = null; }
+      return;
+    }
+    const me = v.seats[0];
+    const ad = {
+      code: v.code, host: me?.name ?? publicProfile().name, color: me?.color ?? publicProfile().color, seats: v.seats.filter(s => s.kind !== 'empty').length,
+      size: lobbySize(v), level: v.level, personas: v.opts.personas, obstacles: v.opts.obstacles, teams: v.opts.teams, rules: RULES_VERSION,
+    };
+    const key = JSON.stringify(ad);
+    if (key !== this.adKey || force) { this.adKey = key; directory.publish(ad); }
+    if (this.adTimer == null) this.adTimer = window.setInterval(() => this.advertise(true), AD_EVERY_MS);
+  }
+
+  setPublic(isPublic: boolean) { this.set({ isPublic: isPublic && !!directory }); }
 
   private join(link: Link<ToHost, ToGuest>) {
     if (this.view.status === 'playing') { this.rejoin(link); return; }
@@ -228,6 +259,7 @@ export class HostRoom extends Room {
 
   close() {
     this.closed = true;
+    this.advertise();
     this.grace.forEach(g => g != null && clearTimeout(g));
     this.links.forEach(l => { l?.send({ t: 'closed', reason: tr('The host closed the room.') }); l?.close(); });
     this.links = Array(MAX_SEATS).fill(null);

@@ -484,6 +484,10 @@ S#....#.
   `GameController.canNudge / nudge / ring`). The message is `nudge` (guest → host: target seat; host → guest: sender seat); the
   host checks that it really is that seat's move and allows one bell per 6 s per sender; the receiver hears a bell
   (`playBell`), feels a strong buzz and sees "{name} is waiting for you!".
+- **Public lobby** (9 October 2026): `screens/Lobby.tsx → MultiplayerEntry` lists open rooms and offers Create room with a "Show in
+  the public lobby" switch; `net/directory.ts` is the room board (`Directory`). The shipped app has no internet-wide board yet
+  (`directory` is null, so no list and no public switches); development uses a same-browser board for two-tab tests. Choosing the
+  service is Arda's decision, see `docs/public-lobby.md`.
 - **Error screen**: `components/ErrorBoundary.tsx` wraps the app; on a render error it offers "Reload" and "Reload without the
   saved match" (clears `xsword-save`), so a broken save cannot crash the app on every start.
 - The top bar shows "ROUND n" translated; the menu and battle-log buttons have small captions (hidden on short

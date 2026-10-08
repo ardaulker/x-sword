@@ -566,5 +566,17 @@ const dict: Record<string, string> = {
   'Bell rung for {name}': 'Campana tocada para {name}',
   '{name} is waiting for you!': '¡{name} te está esperando!',
   'Match starts in {n}': 'La partida empieza en {n}',
+  'Obstacles': 'Obstáculos',
+  'Characters': 'Personajes',
+  'Teams': 'Equipos',
+  'Full': 'Llena',
+  'Join': 'Unirse',
+  'OPEN ROOMS': 'SALAS ABIERTAS',
+  'Open rooms': 'Salas abiertas',
+  'No open rooms right now. Create one and others can join.': 'Ahora no hay salas abiertas. Crea una y otros podrán unirse.',
+  'Show in the public lobby': 'Mostrar en el lobby público',
+  'Anyone can find your room with your name and board settings.': 'Cualquiera puede encontrar tu sala con tu nombre y los ajustes del tablero.',
+  'Public room': 'Sala pública',
+  'Anyone can find this room in the lobby.': 'Cualquiera puede encontrar esta sala en el lobby.',
 };
 export default dict;

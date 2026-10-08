@@ -566,5 +566,17 @@ const dict: Record<string, string> = {
   'Bell rung for {name}': '{name} için çan çalındı',
   '{name} is waiting for you!': '{name} seni bekliyor!',
   'Match starts in {n}': 'Maç {n} saniye içinde başlıyor',
+  'Obstacles': 'Engeller',
+  'Characters': 'Karakterler',
+  'Teams': 'Takımlar',
+  'Full': 'Dolu',
+  'Join': 'Katıl',
+  'OPEN ROOMS': 'AÇIK ODALAR',
+  'Open rooms': 'Açık odalar',
+  'No open rooms right now. Create one and others can join.': 'Şu an açık oda yok. Bir tane kur, başkaları katılsın.',
+  'Show in the public lobby': 'Herkese açık lobide göster',
+  'Anyone can find your room with your name and board settings.': 'Odanı adınla ve tahta ayarlarınla herkes bulabilir.',
+  'Public room': 'Herkese açık oda',
+  'Anyone can find this room in the lobby.': 'Bu odayı lobide herkes bulabilir.',
 };
 export default dict;
