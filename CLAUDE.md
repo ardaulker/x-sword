@@ -34,6 +34,10 @@
   redirects to `/play/`. The first demo was retired on 8 October 2026 (Arda: "that version is finished"): it
   lives in `archive/first-demo/` with its old tests, is not published (the workflow skips `archive/`) and nothing uses it.
 - Tests: `node tests/engine.test.mjs` (rules + bot strength). Run it before and after touching rules or bots.
+- **Smoke test** (`tests/smoke.mjs`, run in CI before the site is published): opens the built game in real Chrome (`playwright-core`, no
+  browser download; set `CHROME_PATH` if Chrome is elsewhere), visits every screen in English and Turkish, starts a Quick match
+  through the countdown and a puzzle with a hunter, and fails on any console error, uncaught exception or crash screen. Run it
+  after `npm --prefix app run build`; add a route or screen here when you add one.
 - **Rules version** (9 October 2026): `RULES_VERSION` in `engine/rules.js` (now 2). `createGame({ rules })` plays a match by an older
   version; saves, replay links and multiplayer rooms record it (`opts.rules`, `MatchStart.rules`, `hello.rules`). A save or
   replay without it is version 1 (`legacyOpts`); one from a newer app is ignored. **Raise the version whenever a change

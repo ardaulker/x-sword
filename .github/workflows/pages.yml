@@ -40,6 +40,9 @@ jobs:
           npm ci
           npm run build
 
+      - name: Smoke test (the built game in Chrome: screens, quick match, a puzzle; fails on any console error or crash)
+        run: node tests/smoke.mjs
+
       - name: Assemble the site
         run: |
           mkdir _site
