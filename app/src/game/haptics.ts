@@ -59,11 +59,10 @@ const SOUNDS: Record<string, Note[]> = {
   // The sword strokes are built from noise (see playSlash); the note lists stay empty.
   slash: [],
   slashBig: [],
-  // Match start: the sword leaves its scabbard (playUnsheath), a tick for 3, 2, 1 and a rising pair for the start.
+  // Match start: a tick for 3, 2, 1, then the sword leaves its scabbard (a recording, with the synthesized playUnsheath as fallback).
   unsheath: [],
   bell: [],
   count: [[330, 0, 0.14, 'triangle', 0.12], [165, 0, 0.18, 'sine', 0.14]],
-  go: [[523, 0, 0.1, 'triangle', 0.12], [784, 0.08, 0.1, 'triangle', 0.12], [1047, 0.16, 0.28, 'triangle', 0.12]],
   win: [[523, 0, 0.12, 'triangle', 0.12], [659, 0.12, 0.12, 'triangle', 0.12], [784, 0.24, 0.12, 'triangle', 0.12], [1047, 0.36, 0.35, 'triangle', 0.12]],
   lose: [[330, 0, 0.2, 'sine', 0.1], [262, 0.2, 0.2, 'sine', 0.1], [196, 0.4, 0.45, 'sine', 0.1]],
   tick: [[1000, 0, 0.03, 'square', 0.04]],

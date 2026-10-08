@@ -171,14 +171,17 @@ export class GameController {
     this.launch(300);
   }
 
-  // The first move of a new match: the sword is drawn, 3 · 2 · 1, then the first mode card. Puzzles skip the countdown
-  // (they restart often); so does a guest who rejoins a match in progress (see startMatch).
+  // The first move of a new match: 3 · 2 · 1 over the board, then the sword is drawn, then the first mode card.
+  // Puzzles skip it (they restart often); so does a guest who rejoins a match in progress (see startMatch).
   private launch(delay: number) {
     if (this.setup.puzzle != null) { this.later(delay, () => this.advance()); return; }
     this.later(delay, () => {
-      feel('unsheath', BUZZ.mode);
-      [3, 2, 1].forEach((n, i) => this.later(1000 + i * 900, () => { this.emit({ countdown: n }); feel('count', 12); }));
-      this.later(1000 + 3 * 900, () => { this.emit({ countdown: null }); sound('go'); this.advance(); });
+      [3, 2, 1].forEach((n, i) => this.later(i * 900, () => { this.emit({ countdown: n }); feel('count', 12); }));
+      this.later(3 * 900, () => {
+        this.emit({ countdown: null });
+        feel('unsheath', BUZZ.mode);
+        this.later(900, () => this.advance()); // the "shing" lands, then the first card
+      });
     });
   }
 

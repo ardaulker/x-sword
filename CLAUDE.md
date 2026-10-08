@@ -477,9 +477,9 @@ S#....#.
   picker, `components/SkinPicker.tsx`, shared with Settings) + Start. "Obstacle squares" and "Bot characters" (the AI rival
   personalities) are two tiles side by side. Rival intelligence is always shown but disabled in solo, so the sheet keeps its
   height when the player count changes; `.sheet-tall` lets it fill 94% so Start stays in view up to 3 players (4 adds the Teams row).
-- **Match start** (9 October 2026): every new match except puzzles starts with the sword drawn from its scabbard (`playUnsheath`),
-  then a 3 · 2 · 1 countdown over the board (`View.countdown`, `GameController.launch`, `.countdown` in `GameScreen.css`) and
-  only then the first mode card. A guest who rejoins a running match skips it.
+- **Match start** (9 October 2026): every new match except puzzles starts with a 3 · 2 · 1 countdown over the board (`View.countdown`,
+  `GameController.launch`, `.countdown` in `GameScreen.css`), then the sword is drawn (the recorded `unsheath` sound; Arda asked for
+  the sword after the countdown, not before) and 0.9 s later the first mode card. A guest who rejoins a running match skips it.
 - **Bell** (multiplayer): while another human is on the move, a bell button sits in the panel (`ActionPanel.tsx → BellButton`,
   `GameController.canNudge / nudge / ring`). The message is `nudge` (guest → host: target seat; host → guest: sender seat); the
   host checks that it really is that seat's move and allows one bell per 6 s per sender; the receiver hears a bell
