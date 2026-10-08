@@ -154,11 +154,13 @@
   display: flex; align-items: flex-start; justify-content: center; padding-top: 10px;
 }
 .mode-ov-pill {
-  position: relative; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 20px;
+  position: relative; display: flex; align-items: center; gap: 10px; min-height: 40px; width: max-content; max-width: calc(100% - 24px);
+  padding: 6px 16px; border-radius: 20px;
   background: var(--ice); color: var(--ink); box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
   animation: pill-in calc(1300ms * var(--speed-factor)) var(--ease-slide) forwards;
 }
-.mode-ov-pill b { font: 800 18px var(--font-display); letter-spacing: .08em; }
+.mode-ov-text { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 8px; row-gap: 0; min-width: 0; line-height: 1.25; }
+.mode-ov-pill b { font: 800 18px/1.25 var(--font-display); letter-spacing: .08em; overflow-wrap: anywhere; }
 .mode-ov-pill span { font-size: 12px; font-weight: 700; opacity: .7; }
 @keyframes pill-in { 0% { transform: translateY(-12px); opacity: 0; } 15%, 80% { transform: none; opacity: 1; } 100% { opacity: 0; } }
 .mode-ov-band {
@@ -173,12 +175,14 @@
 .center-banner {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 6; pointer-events: none;
   display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: 16px;
-  background: rgba(11, 16, 38, .94); white-space: nowrap;
+  width: max-content; max-width: min(calc(100% - 24px), 340px);
+  background: rgba(11, 16, 38, .94);
   animation: banner-in calc(var(--t-panel-open) * var(--speed-factor)) var(--ease-slide);
 }
-.center-banner-text { display: flex; flex-direction: column; gap: 2px; }
+.center-banner-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; line-height: 1.25; overflow-wrap: anywhere; }
 .center-banner-text span:first-child { font-size: 17px; font-weight: 700; }
 .center-banner-text span:last-child { font-size: 13px; font-weight: 500; color: var(--text-2); }
+.center-banner > svg { flex: none; }
 @keyframes banner-in { from { opacity: 0; transform: translate(-50%, -40%); } }
 
 @media (prefers-reduced-motion: reduce) {

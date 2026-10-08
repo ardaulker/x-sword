@@ -13,8 +13,10 @@ export function ModeOverlay({ mode, round }: { mode: Mode; round: number }) {
       <div className="mode-ov-band" style={{ '--band-rot': straight ? '0deg' : '-45deg' } as CSSProperties} />
       <div className="mode-ov-pill">
         <ModeIcon mode={mode} size={22} stroke={9} />
-        <b>{modeWord(mode)}</b>
-        <span>{tr('ROUND {n}', { n: round })} · {straight ? tr('squares move') : tr('diamonds move')}</span>
+        <div className="mode-ov-text">
+          <b>{modeWord(mode)}</b>
+          <span>{tr('ROUND {n}', { n: round })} · {straight ? tr('squares move') : tr('diamonds move')}</span>
+        </div>
       </div>
     </div>
   );

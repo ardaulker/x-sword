@@ -114,8 +114,8 @@
 
 .toast {
   position: absolute; top: 2px; left: 50%; transform: translateX(-50%); z-index: 9;
-  display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 18px;
-  background: var(--ice); color: var(--ink); font-size: 14px; font-weight: 700; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px; min-height: 36px; width: max-content; max-width: calc(100% - 16px); padding: 6px 14px; border-radius: 18px;
+  background: var(--ice); color: var(--ink); font-size: 14px; font-weight: 700; line-height: 1.25;
   box-shadow: 0 6px 20px rgba(0, 0, 0, .45); pointer-events: none;
   animation: toast-in calc(var(--t-panel-open) * var(--speed-factor)) var(--ease-slide);
 }
@@ -340,3 +340,7 @@
 .coach-dots { display: flex; justify-content: center; gap: 8px; }
 .coach-dots button { width: 10px; height: 10px; padding: 0; border: 0; border-radius: 5px; background: var(--line-2); }
 .coach-dots button.is-on { width: 24px; background: var(--ice); }
+
+/* Long texts wrap instead of being cut; the icon keeps its size. */
+.toast > svg { flex: none; }
+.toast > span { min-width: 0; }
