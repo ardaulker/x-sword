@@ -162,6 +162,7 @@ export function BonusSheet({ ctl }: { ctl: GameController }) {
         <div className="bg-head">{tr('Earned by surviving')}</div>
         <Track marks={rounds} value={st.round} color={color} you={tr('Round {n}', { n: st.round })} />
         <p className="bg-note">{tr('Stay inside when the outer ring collapses: Armor the first time, a Double move the second time.')}</p>
+        <p className="bg-note">{tr('Take two pieces with the two moves of a Double move and you earn Armor.')}</p>
       </div>
     </SheetFrame>
   );

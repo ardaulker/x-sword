@@ -210,10 +210,31 @@ test('a Double move counts its moves in `extra` so the screen can say "move 2 of
   st.seats[0].bonuses = { armor: 0, step: 0, double: 1, swap: 0 };
   assert.equal(st.extra, null);
   play(st, { r: 1, c: 2, bonus: 'double' });
-  assert.deepEqual(st.extra, { id: 's0', n: 1 });
+  assert.deepEqual(st.extra, { id: 's0', n: 1, takes: 0 });
   play(st, legalMoves(st, currentActor(st), st.mode)[0]);
   assert.equal(st.extra, null);
   assert.notEqual(currentActor(st)?.id, 's0');
+});
+
+test('taking two pieces with one Double move earns Armor (once)', () => {
+  const st = position([{ kind: 'red', r: 2, c: 1 }, { kind: 'red', r: 2, c: 2 }, { kind: 'blue', r: 6, c: 6 }]);
+  const s0 = pieceById(st, 's0');
+  assert.deepEqual([s0.r, s0.c], [1, 1]);
+  st.seats[0].bonuses = { armor: 0, step: 0, double: 1, swap: 0 };
+  play(st, { r: 2, c: 1, bonus: 'double', type: 'take', targetId: 'b1' });
+  assert.deepEqual(st.extra, { id: 's0', n: 1, takes: 1 });
+  assert.equal(st.seats[0].bonuses.armor, 0);
+  play(st, { r: 2, c: 2, type: 'take', targetId: 'b2' });
+  assert.equal(st.seats[0].bonuses.armor, 1);
+  assert.equal(st.extra, null);
+});
+
+test('a Double move with only one take, or two walks, gives no Armor', () => {
+  const st = position([{ kind: 'red', r: 2, c: 1 }, { kind: 'blue', r: 6, c: 6 }]);
+  st.seats[0].bonuses = { armor: 0, step: 0, double: 1, swap: 0 };
+  play(st, { r: 2, c: 1, bonus: 'double', type: 'take', targetId: 'b1' });
+  play(st, legalMoves(st, currentActor(st), st.mode).find(m => m.type === 'walk'));
+  assert.equal(st.seats[0].bonuses.armor, 0);
 });
 
 test('the arena shrinks: pieces on the outer ring fall and it can no longer be entered', () => {

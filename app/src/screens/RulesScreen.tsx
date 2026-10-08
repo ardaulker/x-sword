@@ -119,6 +119,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         <Card title={tr('Armor')} visual={<Icon d="M12 3 L20 6 V12 C20 16.5 16.5 20 12 21 C7.5 20 4 16.5 4 12 V6 Z" size={36} stroke={2} />}>
           <p>{tr('+1 life: protects you from being taken once. It works by itself; the piece that tried to take you bounces back.')}</p>
           <p className="rule-when">{rich('**How to earn it:** be still standing when the arena shrinks for the first time.')}</p>
+          <p className="rule-when">{tr('Take two pieces with the two moves of a Double move and you earn Armor.')}</p>
         </Card>
         <Card title={tr('Double step')} visual={<Icon d="M4 12 H12 M9 8 L13 12 L9 16 M12 12 H20 M17 8 L21 12 L17 16" size={36} stroke={2} />}>
           <p>{tr('This move you go two squares (the square between must be empty).')}</p>
@@ -126,6 +127,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         </Card>
         <Card title={tr('Double move')} visual={<Icon d="M3 5 L12 12 L3 19 Z M12 5 L21 12 L12 19 Z" size={36} stroke={2} />}>
           <p>{tr('After your move you immediately make another.')}</p>
+          <p>{tr('Take two pieces with the two moves of a Double move and you earn Armor.')}</p>
           <p className="rule-when">{rich('**How to earn it:** reach 40 points, and survive the second shrink. At 60 points it comes at random alongside Double step.')}</p>
         </Card>
         <Card title={tr('Switcheroo')} visual={<Icon d="M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19" size={36} stroke={2} />}>

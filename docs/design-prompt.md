@@ -89,7 +89,8 @@ shrinking arena and the move preview can be tried there. That screen is a test b
 ## Bonuses
 - Everyone starts with one double step. Bonuses are earned by conditions: 20 points double step, 40 points double
   move, 60 points one of the two; 50 points Switcheroo (swap places with any piece on the board); surviving the first
-  shrink gives armor; surviving the second gives a double move; in single player a take by the Twin also gives a Switcheroo
+  shrink gives armor, and so does taking two pieces with the two moves of one double move; surviving the second
+  shrink gives a double move; in single player a take by the Twin also gives a Switcheroo
   bonus and double points. Optional in setup: teams (2 vs 2, 4 players), obstacle squares (can't be entered or jumped
   with a double step), rival personalities (hunter, careful, opportunist). In puzzle mode every bot must be taken in a
   limited number of moves. In single player you win when every bot is gone; with 2–4 players you can keep fighting the

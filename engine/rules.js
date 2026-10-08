@@ -18,6 +18,7 @@ export const SEAT_NAMES = ['Turquoise', 'Purple', 'Yellow', 'Pink'];
 export const POINTS = { star: 50, twin: 30, red: 10, blue: 10 };
 export const SURVIVOR_BONUS = 30;
 
+// Taking two pieces with the two moves of one Double move also earns Armor.
 // Bonuses are earned by conditions: 20 points double step, 40 points double move, 60 points one of the two (from the seed),
 // 50 points Switcheroo (swap places with any piece), surviving the first shrink gives armor, the second shrink a double move.
 // In single player a Switcheroo also comes when the Twin takes a piece.
@@ -431,18 +432,26 @@ export function play(state, move) {
     }
     if (state.puzzle && actor.id === 's0') state.puzzle.used++;
     state.lastStep = { id: actor.id, dr: m.r - actor.r, dc: m.c - actor.c };
+    const seq = state.extra?.id === actor.id ? state.extra : null; // earlier moves of this Double move
+    let took = false;
     if (m.type === 'swap') {
       const other = pieceById(state, m.targetId);
       [other.r, other.c] = [actor.r, actor.c];
       actor.r = m.r; actor.c = m.c;
-    } else if (m.type === 'take' && !takePiece(state, actor, pieceById(state, m.targetId))) {
+    } else if (m.type === 'take' && !(took = takePiece(state, actor, pieceById(state, m.targetId)))) {
       // Armor took the hit: the move is wasted and the taker stays where it was.
     } else {
       actor.r = m.r; actor.c = m.c;
     }
+    // Two takes in one Double move earn Armor.
+    const seqTakes = (seq?.takes ?? 0) + (took ? 1 : 0);
+    if (actor.kind === 'star' && (seq || m.bonus === 'double') && seqTakes === 2 && (seq?.takes ?? 0) < 2) {
+      log(state, `🛡️ ${nameOf(state, actor)} took two pieces in one Double move.`);
+      grantBonus(state, state.seats[actor.seat], 'armor');
+    }
     // Double move: the same star plays once more. `extra` counts the moves played in this sequence, so the screen can say "move 2 of 2".
     if (m.bonus === 'double' && !state.over && actor.alive) {
-      state.extra = { id: actor.id, n: (state.extra?.id === actor.id ? state.extra.n : 0) + 1 };
+      state.extra = { id: actor.id, n: (seq?.n ?? 0) + 1, takes: seqTakes };
       state.lastStep = { id: actor.id, dr: 0, dc: 0 };
       return state;
     }

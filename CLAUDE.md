@@ -92,7 +92,7 @@
   Arda chose this on 6 October 2026. In the first demo file the Twin was different: a hunter that chose its own
   moves under the player's rules.
 - Bonuses: everyone starts with one double step. 20 points double step, 40 double move, 60 one of the two at random,
-  50 Switcheroo (swap places with any piece on the board; Turkish name "Yer Çalma"). Surviving the first shrink gives armor (one extra life), the
+  50 Switcheroo (swap places with any piece on the board; Turkish name "Yer Çalma"). Surviving the first shrink gives armor (one extra life); so does taking two pieces with the two moves of one Double move (`state.extra.takes`, once per sequence). The
   second a double move. AI players use bonuses too (`bonusMoves`, `BONUS_COST`).
 - Difficulty: Easy (you move first), Normal (random place), Hard (random place, bot target triangles hidden). AI rivals
   (`Setup.aiLevel`) and arena bots (`Setup.level`) are set separately. A Normal rival picks the second best move 30%

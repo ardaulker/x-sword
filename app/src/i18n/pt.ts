@@ -536,5 +536,6 @@ const dict: Record<string, string> = {
   '{name} swung their sword. You are out!': '{name} brandiu a espada. Você foi eliminado!',
   'Struck down by {name} ({how}) · round {n}': 'Abatido por {name} ({how}) · rodada {n}',
   'Every piece carries a sword mark: + points straight, × points diagonally. A piece takes in the direction its sword points.': 'Cada peça tem uma marca de espada: + aponta em linha reta, × na diagonal. A peça captura na direção que a espada aponta.',
+  'Take two pieces with the two moves of a Double move and you earn Armor.': 'Se capturar duas peças com as duas jogadas de uma Jogada dupla, você ganha uma Armadura.',
 };
 export default dict;

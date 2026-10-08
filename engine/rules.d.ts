@@ -73,8 +73,8 @@ export interface GameState {
   log: { round: number; text: string }[];
   solo: boolean;
   lastStep: { id: string; dr: number; dc: number } | null;
-  // Set while a star plays the extra moves of a Double move: n moves are already played in this sequence.
-  extra: { id: string; n: number } | null;
+  // Set while a star plays the extra moves of a Double move: n moves are already played in this sequence, `takes` of them took a piece.
+  extra: { id: string; n: number; takes: number } | null;
   matchOrder: string[];
   keepGoing: boolean;
   decided: boolean;

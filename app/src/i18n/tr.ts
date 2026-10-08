@@ -536,5 +536,6 @@ const dict: Record<string, string> = {
   '{name} swung their sword. You are out!': '{name} kılıcını savurdu, elendin!',
   'Struck down by {name} ({how}) · round {n}': '{name} tarafından kılıçla elendin ({how}) · tur {n}',
   'Every piece carries a sword mark: + points straight, × points diagonally. A piece takes in the direction its sword points.': 'Her taşın üstünde bir kılıç işareti var: + düzü, × çaprazı gösterir. Taş, kılıcının gösterdiği yönde alır.',
+  'Take two pieces with the two moves of a Double move and you earn Armor.': 'Çift hamlenin iki hamlesiyle iki taş alırsan Zırh kazanırsın.',
 };
 export default dict;
