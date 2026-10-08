@@ -39,7 +39,7 @@ export function InfoChip({ ctl, id }: { ctl: GameController; id: string }) {
   const wStraight = straight(walkDirs(p, mode)), tStraight = straight(takeDirs(p, mode));
   const how = p.kind === 'twin' ? tr('mirrors your move') : walk === take ? tr('moves {w}, takes {t}', { w: walk, t: take }) : tr('walks {w}, takes {t}', { w: walk, t: take });
   const hard = ctl.setup.level === 'hard';
-  const target = isBot(p) && !hard && !st.puzzle ? targetOf(st, p) : null;
+  const target = isBot(p) && ((!hard && !st.puzzle) || (st.puzzle && p.walks)) ? targetOf(st, p) : null;
   const danger = me.alive && p.id !== me.id && attackersOfMe(st, me).some(q => q.id === p.id);
   return (
     <button
@@ -61,7 +61,8 @@ export function InfoChip({ ctl, id }: { ctl: GameController; id: string }) {
           <span style={{ color: PLAYER_COLORS[target.seat] }}>{target.seat === ME ? tr('You') : labelOf(st, target)}</span>
         </span>
       )}
-      {isBot(p) && hard && <span className="info-chip-meta">{tr('· target hidden')}</span>}
+      {isBot(p) && hard && !st.puzzle && <span className="info-chip-meta">{tr('· target hidden')}</span>}
+      {p.walks && <span className="info-chip-meta">{tr('· hunter: steps toward you')}</span>}
       {danger && <Icon d={ICON.warn} size={16} stroke={2.2} />}
     </button>
   );

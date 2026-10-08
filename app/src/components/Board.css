@@ -236,3 +236,11 @@
   .fl, .fx-ember, .fx-bolt .ring, .fx-bolt .bolt, .fx-crystal .orbit, .fx-crystal .glow, .fx-gold .halo-gold, .fx-gold .spark { animation: none; }
   .fx-bolt .b1, .fx-gold .spark { opacity: 1; }
 }
+
+/* A puzzle hunter (a bot that also walks toward you): a slowly turning dashed ring around it. */
+.board-piece.is-walker::after {
+  content: ''; position: absolute; inset: -5px; border-radius: 50%; border: 2px dashed rgba(233, 240, 255, .85);
+  pointer-events: none; animation: walker-spin 7s linear infinite;
+}
+@keyframes walker-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .board-piece.is-walker::after { animation: none; } }

@@ -256,6 +256,9 @@ export function createPuzzle({ map = null, me = null, bots = [], limit, mode = '
         else if (ch === 'S') me = [r, c];
         else if (ch === 'R' || ch === 'K') bots.push({ kind: 'red', r, c });
         else if (ch === 'B' || ch === 'C') bots.push({ kind: 'blue', r, c });
+        // A small letter is a hunter: it also walks one step toward your star every round (see chooseMove in bots.js).
+        else if (ch === 'r') bots.push({ kind: 'red', r, c, walks: true });
+        else if (ch === 'b') bots.push({ kind: 'blue', r, c, walks: true });
       }
     }
   }
@@ -265,7 +268,7 @@ export function createPuzzle({ map = null, me = null, bots = [], limit, mode = '
   const star = st.pieces.find(p => p.kind === 'star');
   [star.r, star.c] = me;
   st.seats[0].bonuses = { armor: 0, step: 0, double: 0, swap: 0, ...bonuses };
-  bots.forEach((b, i) => st.pieces.push({ id: `b${i + 1}`, kind: b.kind, label: String(i + 1), r: b.r, c: b.c, alive: true }));
+  bots.forEach((b, i) => st.pieces.push({ id: `b${i + 1}`, kind: b.kind, label: String(i + 1), r: b.r, c: b.c, alive: true, ...(b.walks ? { walks: true } : {}) }));
   if (holes) {
     st.holes = holes;
     st.blocked = new Set([...holes, ...walls]);

@@ -408,7 +408,7 @@ const dict: Record<string, string> = {
   'Diamond': 'Diamant',
   'Fortress': 'Festung',
   'Maze': 'Labyrinth',
-  'The mode changes every round: straight this round, diagonal the next.': 'Der Modus wechselt jede Runde: diese Runde gerade, nächste Runde diagonal.',
+  'Bots with a dashed ring are hunters: they step toward you every round. Let them come.': 'Bots mit gestricheltem Ring sind Jäger: Sie gehen jede Runde auf dich zu. Lass sie kommen.',
   'The arms are narrow. Choose well which bot to take first.': 'Die Arme sind schmal. Wähle gut, welchen Bot du zuerst nimmst.',
   'The middle is empty. The short way is always along the edge.': 'Die Mitte ist leer. Der kurze Weg führt immer am Rand entlang.',
   'No one can enter a blocked square. Behind a pillar can be safe.': 'Niemand kann ein gesperrtes Feld betreten. Hinter einer Säule kann es sicher sein.',
@@ -418,7 +418,7 @@ const dict: Record<string, string> = {
   'Double move: two moves in a row, the bots don\'t play in between.': 'Doppelzug: zwei Züge hintereinander, die Bots spielen dazwischen nicht.',
   'The gates in the walls are narrow. Work out which gate to enter through.': 'Die Tore in den Mauern sind eng. Überlege, durch welches Tor du gehst.',
   'Narrow paths and one double step. Plan the order well.': 'Enge Wege und ein Doppelschritt. Plane die Reihenfolge gut.',
-  'Take every bot within a limited number of moves. Bots don\'t walk, but they take you if you step into their reach. Solving in fewer moves earns more stars.': 'Nimm alle Bots in begrenzten Zügen. Bots laufen nicht, aber sie nehmen dich, wenn du in ihre Reichweite kommst. Weniger Züge bringen mehr Sterne.',
+  'Take every bot within a limited number of moves. Most bots wait, but they take you if you step into their reach. Bots with a dashed ring are hunters: they also step toward you every round. Solving in fewer moves earns more stars.': 'Nimm jeden Bot in begrenzt vielen Zügen. Die meisten Bots warten, nehmen dich aber, wenn du in ihre Reichweite trittst. Bots mit gestricheltem Ring sind Jäger: Sie gehen außerdem jede Runde auf dich zu. Je weniger Züge, desto mehr Sterne.',
   'Step ×2': 'Schritt ×2',
   'Move ×2': 'Zug ×2',
   'Log': 'Protokoll',
@@ -586,5 +586,6 @@ const dict: Record<string, string> = {
   'Delete data on this device': 'Daten auf diesem Gerät löschen',
   'Removes your settings, statistics, puzzle stars, profile and paused match from this device. This cannot be undone.': 'Entfernt deine Einstellungen, Statistiken, Rätselsterne, dein Profil und das pausierte Spiel von diesem Gerät. Das kann nicht rückgängig gemacht werden.',
   'Delete everything': 'Alles löschen',
+  '· hunter: steps toward you': '· Jäger: geht auf dich zu',
 };
 export default dict;

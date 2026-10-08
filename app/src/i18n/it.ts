@@ -408,7 +408,7 @@ const dict: Record<string, string> = {
   'Diamond': 'Diamante',
   'Fortress': 'Fortezza',
   'Maze': 'Labirinto',
-  'The mode changes every round: straight this round, diagonal the next.': 'La modalità cambia a ogni turno: dritto in questo, diagonale nel prossimo.',
+  'Bots with a dashed ring are hunters: they step toward you every round. Let them come.': 'I bot con un anello tratteggiato sono cacciatori: avanzano verso di te a ogni round. Lasciali venire.',
   'The arms are narrow. Choose well which bot to take first.': 'I bracci sono stretti. Scegli bene quale bot prendere per primo.',
   'The middle is empty. The short way is always along the edge.': 'Il centro è vuoto. La via breve passa sempre dal bordo.',
   'No one can enter a blocked square. Behind a pillar can be safe.': 'Nessuno può entrare in una casella bloccata. Dietro una colonna puoi essere al sicuro.',
@@ -418,7 +418,7 @@ const dict: Record<string, string> = {
   'Double move: two moves in a row, the bots don\'t play in between.': 'Mossa doppia: due mosse di fila, i bot non giocano in mezzo.',
   'The gates in the walls are narrow. Work out which gate to enter through.': 'Le porte nelle mura sono strette. Calcola da quale entrare.',
   'Narrow paths and one double step. Plan the order well.': 'Strade strette e un passo doppio. Pianifica bene l\'ordine.',
-  'Take every bot within a limited number of moves. Bots don\'t walk, but they take you if you step into their reach. Solving in fewer moves earns more stars.': 'Prendi tutti i bot in mosse limitate. I bot non camminano, ma ti prendono se entri nel loro raggio. Meno mosse danno più stelle.',
+  'Take every bot within a limited number of moves. Most bots wait, but they take you if you step into their reach. Bots with a dashed ring are hunters: they also step toward you every round. Solving in fewer moves earns more stars.': 'Prendi ogni bot in un numero limitato di mosse. La maggior parte dei bot aspetta, ma ti prende se entri nel loro raggio. I bot con un anello tratteggiato sono cacciatori: avanzano anche verso di te a ogni round. Meno mosse usi, più stelle ottieni.',
   'Step ×2': 'Passo ×2',
   'Move ×2': 'Mossa ×2',
   'Log': 'Registro',
@@ -586,5 +586,6 @@ const dict: Record<string, string> = {
   'Delete data on this device': 'Elimina i dati su questo dispositivo',
   'Removes your settings, statistics, puzzle stars, profile and paused match from this device. This cannot be undone.': 'Rimuove impostazioni, statistiche, stelle dei puzzle, profilo e partita in pausa da questo dispositivo. Non si può annullare.',
   'Delete everything': 'Elimina tutto',
+  '· hunter: steps toward you': '· cacciatore: avanza verso di te',
 };
 export default dict;

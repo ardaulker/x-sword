@@ -112,7 +112,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
           <p>{rich('**Bot characters:** AI rivals play as a hunter, a cautious one or an opportunist.')}</p>
         </Card>
         <Card title={tr('Puzzles')} visual={<Icon d="M10 3 H14 V6 A2 2 0 1 0 18 6 V3 H21 V9 H18 A2 2 0 1 0 18 13 H21 V21 H3 V13 H6 A2 2 0 1 1 6 9 H3 V3 Z" size={36} stroke={2} />}>
-          <p>{tr("Take every bot within a limited number of moves. Bots don't walk, but they take you if you step into their reach. Solving in fewer moves earns more stars.")}</p>
+          <p>{tr("Take every bot within a limited number of moves. Most bots wait, but they take you if you step into their reach. Bots with a dashed ring are hunters: they also step toward you every round. Solving in fewer moves earns more stars.")}</p>
         </Card>
 
         <h2>{tr('Bonuses')}</h2>

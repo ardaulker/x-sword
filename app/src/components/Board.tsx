@@ -425,7 +425,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
 
         {st.pieces.map(p => {
           const halo = haloOf(p);
-          const target = showTargets && isBot(p) && p.alive ? targetOf(st, p) : null;
+          const target = (showTargets || (st.puzzle && p.walks)) && isBot(p) && p.alive ? targetOf(st, p) : null; // hunters in a puzzle always show whom they chase
           const pip = p.alive && !st.over ? pipState.get(p.id) ?? (settings.numbers ? 'idle' : null) : null;
           const badge = p.id === me.id && myThreats ? myThreats : 0;
           return (
@@ -435,7 +435,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
               seat={seatOf(p)}
               size={cell}
               diamond={diamondOf(p, st.mode)}
-              className={`board-piece ${isBot(p) ? 'is-bot' : 'is-star'}`}
+              className={`board-piece ${isBot(p) ? 'is-bot' : 'is-star'}${p.walks ? ' is-walker' : ''}`}
               style={{
                 transform: `translate(${(p.c - o) * step}px, ${(p.r - o) * step}px) scale(${p.alive ? 1 : 0.4})`,
                 opacity: p.alive ? 1 : 0,

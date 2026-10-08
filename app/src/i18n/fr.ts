@@ -408,7 +408,7 @@ const dict: Record<string, string> = {
   'Diamond': 'Diamant',
   'Fortress': 'Forteresse',
   'Maze': 'Labyrinthe',
-  'The mode changes every round: straight this round, diagonal the next.': 'Le mode change à chaque tour : droit ce tour-ci, diagonal au suivant.',
+  'Bots with a dashed ring are hunters: they step toward you every round. Let them come.': 'Les bots à anneau pointillé sont des chasseurs : ils avancent vers toi à chaque tour. Laisse-les venir.',
   'The arms are narrow. Choose well which bot to take first.': 'Les bras sont étroits. Choisis bien quel bot prendre en premier.',
   'The middle is empty. The short way is always along the edge.': 'Le centre est vide. Le chemin court passe toujours par le bord.',
   'No one can enter a blocked square. Behind a pillar can be safe.': 'Personne ne peut entrer sur une case bloquée. Derrière une colonne, on peut être à l\'abri.',
@@ -418,7 +418,7 @@ const dict: Record<string, string> = {
   'Double move: two moves in a row, the bots don\'t play in between.': 'Double coup : deux coups d\'affilée, les bots ne jouent pas entre les deux.',
   'The gates in the walls are narrow. Work out which gate to enter through.': 'Les portes des murs sont étroites. Calcule par quelle porte entrer.',
   'Narrow paths and one double step. Plan the order well.': 'Des chemins étroits et un double pas. Planifie bien l\'ordre.',
-  'Take every bot within a limited number of moves. Bots don\'t walk, but they take you if you step into their reach. Solving in fewer moves earns more stars.': 'Prends tous les bots en un nombre limité de coups. Les bots ne marchent pas, mais ils te prennent si tu entres à leur portée. Moins de coups, plus d\'étoiles.',
+  'Take every bot within a limited number of moves. Most bots wait, but they take you if you step into their reach. Bots with a dashed ring are hunters: they also step toward you every round. Solving in fewer moves earns more stars.': 'Prends chaque bot en un nombre de coups limité. La plupart des bots attendent mais te prennent si tu entres dans leur portée. Les bots à anneau pointillé sont des chasseurs : ils avancent aussi vers toi à chaque tour. Moins tu joues de coups, plus tu gagnes d’étoiles.',
   'Step ×2': 'Pas ×2',
   'Move ×2': 'Coup ×2',
   'Log': 'Journal',
@@ -586,5 +586,6 @@ const dict: Record<string, string> = {
   'Delete data on this device': 'Supprimer les données de cet appareil',
   'Removes your settings, statistics, puzzle stars, profile and paused match from this device. This cannot be undone.': 'Supprime tes réglages, statistiques, étoiles de puzzle, ton profil et la partie en pause de cet appareil. Action irréversible.',
   'Delete everything': 'Tout supprimer',
+  '· hunter: steps toward you': '· chasseur : avance vers toi',
 };
 export default dict;

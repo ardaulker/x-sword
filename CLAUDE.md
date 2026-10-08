@@ -176,21 +176,24 @@
   data, not prose.
 
 ## Puzzle maps
-- Rules: take every bot in at most par+1 moves; solving in par gives 3 stars, par+1 gives 2. Bots don't walk; they take
-  a star that steps into their reach. The mode flips every round. No timer, no tip card, no target triangle.
+- Rules: take every bot in at most par+1 moves; solving in par gives 3 stars, par+1 gives 2. Plain bots don't walk; they take
+  a star that steps into their reach. **Hunters** (9 October 2026, Arda: the puzzles after the tutorial were too easy) also step one
+  square toward your star every round (the walk that ends nearest to it, ties to the lowest row then column, no step that gets
+  closer = stays; they don't look out for danger, so a puzzle can lure them). On the board they have a dashed ring and a
+  target marker; the first puzzle after the tutorial (101) explains them. All of 101–125 now have 1–2 hunters and 1–2 more moves. The mode flips every round. No timer, no tip card, no target triangle.
 - Map language: `.` floor, `#` obstacle, `-` off the map (the board need not be square; the engine pads the short side
-  with void, `state.holes`), `S` you, `R` red bot, `B` blue bot.
+  with void, `state.holes`), `S` you, `R` red bot, `B` blue bot, small `r` / `b` a hunter (`walk: n` in the map definition turns n
+  of the placed bots into hunters).
 - Flow: draw the map in `tools/puzzle-maps.mjs` (title, hint, mode, bot count, target par, bonuses, `needBonus`,
   `botCols`, `near`, `trap`, `shrink`, `tutorial`, `fixed`), then `node tools/make-puzzles.mjs <id>` places the pieces
   and verifies with the solver (exact par, at most 2 right first moves, the player takes every bot, with `needBonus`
-  not solvable without the bonus; ids above 110 require the exact par). Regenerate one map at a time: a full run
+  not solvable without the bonus; ids above 110 require the exact par). Regenerate only the maps you change (`node tools/make-puzzles.mjs 101,102`): a full run
   shifts the random sequence. Add the title and hint to `app/src/game/puzzleText.ts` and to the six dictionaries.
   Puzzle ids start at 101 (so old star records don't mix); the screen shows a running number. Tutorials are 201–203.
 - Design lessons: a row of obstacles on odd-odd squares boxes a piece in on all four sides in a diagonal round; avoid
   it. A Switcheroo swaps you with a bot and sends the bot to your old square, so a "separate islands" puzzle can't be
   solved. Far-away bots can't be solved in 5–6 moves; use `near`.
-- **Don't repeat the ideas and shapes below when adding puzzles.** Unused ideas so far: a puzzle with the Twin, a bot that
-  walks.
+- **Don't repeat the ideas and shapes below when adding puzzles.** Unused ideas so far: a puzzle with the Twin.
 
 ### 201 · Take straight — STRAIGHT, par 1, bonus - — idea: tutorial: take straight
 ```
@@ -215,7 +218,7 @@
 .....
 .....
 ```
-### 101 · Corridor — STRAIGHT, par 3, bonus - — idea: teaches the mode flip (straight/diagonal)
+### 101 · Corridor — STRAIGHT, par 4, hunters 1, bonus - — idea: teaches the mode flip (straight/diagonal)
 ```
 #.....#
 .......
@@ -223,7 +226,7 @@
 .......
 #..S..#
 ```
-### 102 · Cross — DIAGONAL, par 4, bonus - — idea: narrow arms, order of takes
+### 102 · Cross — DIAGONAL, par 5, hunters 1, bonus - — idea: narrow arms, order of takes
 ```
 --...--
 --...--
@@ -233,7 +236,7 @@
 --...--
 --.S.--
 ```
-### 103 · Ring — STRAIGHT, par 5, bonus - — idea: ring with an empty middle; going around the edge
+### 103 · Ring — STRAIGHT, par 6, hunters 1, bonus - — idea: ring with an empty middle; going around the edge
 ```
 -.BR..-
 .......
@@ -243,7 +246,7 @@ S.---..
 .......
 -.....-
 ```
-### 104 · Pillars — DIAGONAL, par 5, bonus - — idea: single pillars; behind an obstacle
+### 104 · Pillars — DIAGONAL, par 6, hunters 2, bonus - — idea: single pillars; behind an obstacle
 ```
 .......
 .#...#.
@@ -253,7 +256,7 @@ S.---..
 ...#.S.
 .......
 ```
-### 105 · Staircase — STRAIGHT, par 5, bonus - — idea: diagonal strip; the path narrows in straight rounds
+### 105 · Staircase — STRAIGHT, par 6, hunters 1, bonus - — idea: diagonal strip; the path narrows in straight rounds
 ```
 ...-----
 R.B.----
@@ -263,7 +266,7 @@ R.B.----
 ----....
 -----...
 ```
-### 106 · Double step — STRAIGHT, par 3, bonus step:1 — idea: double step required
+### 106 · Double step — STRAIGHT, par 4, hunters 1, bonus step:1 — idea: double step required
 ```
 ....---
 ...S---
@@ -271,7 +274,7 @@ R.B.----
 ..#R...
 .......
 ```
-### 107 · Switcheroo — DIAGONAL, par 4, bonus swap:1 — idea: Switcheroo required (to change direction / square color)
+### 107 · Switcheroo — DIAGONAL, par 5, hunters 1, bonus swap:1 — idea: Switcheroo required (to change direction / square color)
 ```
 .........
 ..RR.....
@@ -280,7 +283,7 @@ R.B.----
 ---...---
 ---...---
 ```
-### 108 · Diamond — DIAGONAL, par 4, bonus double:1 — idea: double move required
+### 108 · Diamond — DIAGONAL, par 5, hunters 1, bonus double:1 — idea: double move required
 ```
 ---.---
 --...--
@@ -290,7 +293,7 @@ R.B.----
 --...--
 ---.---
 ```
-### 109 · Fortress — STRAIGHT, par 6, bonus - — idea: castle walls with gates
+### 109 · Fortress — STRAIGHT, par 7, hunters 2, bonus - — idea: castle walls with gates
 ```
 .........
 .###.###.
@@ -302,7 +305,7 @@ S...B....
 .###.###.
 .........
 ```
-### 110 · Maze — DIAGONAL, par 6, bonus step:1 — idea: maze + double step, 3 bots
+### 110 · Maze — DIAGONAL, par 7, hunters 1, bonus step:1 — idea: maze + double step, 3 bots
 ```
 -...#...-
 .#.....#.
@@ -314,7 +317,7 @@ S...B....
 .#R....#.
 -...#...-
 ```
-### 111 · L — STRAIGHT, par 6, bonus - — idea: L shape, 4 bots, greedy-take trap
+### 111 · L — STRAIGHT, par 7, hunters 2, bonus - — idea: L shape, 4 bots, greedy-take trap
 ```
 ....-----
 ....-----
@@ -322,7 +325,7 @@ S...B....
 B...B....
 ..S.R....
 ```
-### 112 · U — DIAGONAL, par 6, bonus - — idea: U shape, 4 bots, which arm to start with
+### 112 · U — DIAGONAL, par 7, hunters 2, bonus - — idea: U shape, 4 bots, which arm to start with
 ```
 ...---...
 RR.---...
@@ -330,7 +333,7 @@ RR.---...
 B..S.....
 .R.......
 ```
-### 113 · Armor — STRAIGHT, par 4, bonus armor:1 — idea: armor required: step into danger on purpose
+### 113 · Armor — STRAIGHT, par 5, hunters 1, bonus armor:1 — idea: armor required: step into danger on purpose
 ```
 .......
 R#..S#.
@@ -340,7 +343,7 @@ R#..S#.
 .#...#.
 .......
 ```
-### 114 · Pair — DIAGONAL, par 5, bonus step:1,swap:1 — idea: two bonuses together (double step + Switcheroo)
+### 114 · Pair — DIAGONAL, par 6, hunters 2, bonus step:1,swap:1 — idea: two bonuses together (double step + Switcheroo)
 ```
 ...R....
 .##R.##.
@@ -349,7 +352,7 @@ R#..S#.
 .##..##.
 ...R....
 ```
-### 115 · Collapse — STRAIGHT, par 5, bonus -, shrink 2/2 — idea: collapse inside a puzzle: the outer ring falls at the end of round 2 (shrink)
+### 115 · Collapse — STRAIGHT, par 6, hunters 1, bonus -, shrink 2/2 — idea: collapse inside a puzzle: the outer ring falls at the end of round 2 (shrink)
 ```
 .......
 .......
@@ -359,7 +362,7 @@ R#..S#.
 .B.....
 ...S...
 ```
-### 116 · Butterfly — DIAGONAL, par 4, bonus swap:1 — idea: symmetric butterfly map + Switcheroo required
+### 116 · Butterfly — DIAGONAL, par 5, hunters 1, bonus swap:1 — idea: symmetric butterfly map + Switcheroo required
 ```
 ..-----..
 ...---...
@@ -369,7 +372,7 @@ R#..S#.
 ...---...
 ..-----.S
 ```
-### 117 · Courtyard — STRAIGHT, par 6, bonus - — idea: courtyard closed in the middle, going around the wall
+### 117 · Courtyard — STRAIGHT, par 7, hunters 2, bonus - — idea: courtyard closed in the middle, going around the wall
 ```
 .........
 .........
@@ -381,7 +384,7 @@ R#..S#.
 ......B..
 ......R.B
 ```
-### 118 · Zigzag — STRAIGHT, par 6, bonus - — idea: diagonal wall: no crossing in straight rounds
+### 118 · Zigzag — STRAIGHT, par 7, hunters 2, bonus - — idea: diagonal wall: no crossing in straight rounds
 ```
 #.......
 .#......
@@ -392,7 +395,7 @@ R#..S#.
 ....B.#.
 .S.B...#
 ```
-### 119 · Hourglass — DIAGONAL, par 5, bonus double:1 — idea: hourglass, one-square waist + double move required
+### 119 · Hourglass — DIAGONAL, par 6, hunters 2, bonus double:1 — idea: hourglass, one-square waist + double move required
 ```
 .......
 -..B.B-
@@ -402,7 +405,7 @@ R#..S#.
 -.S...-
 .......
 ```
-### 120 · Finale — STRAIGHT, par 6, bonus step:1,double:1 — idea: finale: 4 bots, double step + double move
+### 120 · Finale — STRAIGHT, par 7, hunters 2, bonus step:1,double:1 — idea: finale: 4 bots, double step + double move
 ```
 ...#...
 .#...#.
@@ -412,7 +415,7 @@ R#..S#.
 .#S.R#.
 ...#...
 ```
-### 121 · Two for one — STRAIGHT, par 4, bonus double:1 — idea: a Double move that takes two bots earns Armor (and 20 points bring a Double step)
+### 121 · Two for one — STRAIGHT, par 5, hunters 1, bonus double:1 — idea: a Double move that takes two bots earns Armor (and 20 points bring a Double step)
 ```
 .......
 .......
@@ -422,7 +425,7 @@ R#..S#.
 ..R.R..
 ......S
 ```
-### 122 · Crowd — STRAIGHT, par 6, bonus - — idea: five bots packed close; every take changes who can reach you
+### 122 · Crowd — STRAIGHT, par 7, hunters 2, bonus - — idea: five bots packed close; every take changes who can reach you
 ```
 ..B....
 S.R....
@@ -432,7 +435,7 @@ BR.....
 .......
 .......
 ```
-### 123 · Toolbox — DIAGONAL, par 4, bonus step:1, double:1, swap:1 — idea: three bonuses at once (Double step, Double move, Switcheroo)
+### 123 · Toolbox — DIAGONAL, par 5, hunters 1, bonus step:1, double:1, swap:1 — idea: three bonuses at once (Double step, Double move, Switcheroo)
 ```
 ........
 .#....#.
@@ -443,7 +446,7 @@ BR.....
 S#....#.
 ........
 ```
-### 124 · Falling walls — STRAIGHT, par 5, bonus -, shrink 2/3 — idea: obstacles inside + a collapsing ring (shrink at the end of round 2)
+### 124 · Falling walls — STRAIGHT, par 6, hunters 1, bonus -, shrink 2/3 — idea: obstacles inside + a collapsing ring (shrink at the end of round 2)
 ```
 .........
 .........
@@ -455,7 +458,7 @@ S#....#.
 ...B.....
 .S.......
 ```
-### 125 · Two rings — DIAGONAL, par 6, bonus -, shrink 2/2 — idea: two shrinks (end of rounds 2 and 4)
+### 125 · Two rings — DIAGONAL, par 7, hunters 2, bonus -, shrink 2/2 — idea: two shrinks (end of rounds 2 and 4)
 ```
 .........
 .........

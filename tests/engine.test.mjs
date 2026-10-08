@@ -653,6 +653,30 @@ test('numbers are reassigned among survivors every round, the order is unchanged
   next.forEach((id, i) => { const p = pieceById(st, id); if (p.kind === 'red' || p.kind === 'blue') assert.equal(p.label, String(i + 1)); });
 });
 
+test('puzzle hunters (small letters on the map) step toward your star, plain bots wait, both take what steps into reach', () => {
+  // The bots play after your move: this plays your pass and then every bot's turn.
+  const turn = st => { play(st, null); while (!st.over && currentActor(st).id !== 's0') play(st, chooseMove(st, currentActor(st))); };
+  // 'b' is a blue hunter (walks diagonally), 'R' a plain red bot.
+  const st = createPuzzle({ map: ['b......', '.......', '.......', '...S...', '.......', '.......', '......R'], limit: 9, mode: 'STRAIGHT' });
+  const hunter = st.pieces.find(p => p.kind === 'blue'), plain = st.pieces.find(p => p.kind === 'red');
+  assert.equal(hunter.walks, true);
+  assert.equal(plain.walks, undefined);
+  turn(st);
+  assert.deepEqual([hunter.r, hunter.c], [1, 1]);
+  assert.deepEqual([plain.r, plain.c], [6, 6]);
+  turn(st);
+  assert.deepEqual([hunter.r, hunter.c], [2, 2]);
+  // A hunter right beside you takes you (blue takes straight).
+  const st2 = createPuzzle({ map: ['.....', '..S..', '..b..', '.....'], limit: 9, mode: 'STRAIGHT' });
+  turn(st2);
+  assert.equal(pieceById(st2, 's0').alive, false);
+  // A hunter that cannot get closer stays put.
+  const st3 = createPuzzle({ map: ['S#b', '.#.', '.#.'], limit: 9, mode: 'STRAIGHT' });
+  const stuck = st3.pieces.find(p => p.kind === 'blue'), at = [stuck.r, stuck.c];
+  turn(st3);
+  assert.deepEqual([stuck.r, stuck.c], at);
+});
+
 test('puzzle map: shape and obstacles are closed, bots don\'t walk, they take whoever steps into reach', async () => {
   const { PUZZLES } = await import('../tools/puzzles-out.mjs');
   assert.ok(PUZZLES.length >= 10);

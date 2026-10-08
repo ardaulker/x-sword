@@ -408,7 +408,7 @@ const dict: Record<string, string> = {
   'Diamond': 'Elmas',
   'Fortress': 'Kale',
   'Maze': 'Labirent',
-  'The mode changes every round: straight this round, diagonal the next.': 'Mod her tur değişir: bu tur düz, sonraki tur çapraz.',
+  'Bots with a dashed ring are hunters: they step toward you every round. Let them come.': 'Kesik halkalı botlar avcıdır: her tur sana doğru bir adım atar. Gelmelerine izin ver.',
   'The arms are narrow. Choose well which bot to take first.': 'Kollar dar. Hangi botu önce alacağını iyi seç.',
   'The middle is empty. The short way is always along the edge.': 'Ortası boş. Kısa yol hep kenardan.',
   'No one can enter a blocked square. Behind a pillar can be safe.': 'Engel karesine kimse giremez. Sütunun arkası güvenli olabilir.',
@@ -418,7 +418,7 @@ const dict: Record<string, string> = {
   'Double move: two moves in a row, the bots don\'t play in between.': 'Çift hamle: iki hamle art arda, botlar arada oynamaz.',
   'The gates in the walls are narrow. Work out which gate to enter through.': 'Duvarların kapısı dar. Hangi kapıdan gireceğini hesapla.',
   'Narrow paths and one double step. Plan the order well.': 'Dar yollar ve bir çift adım. Sırayı iyi kur.',
-  'Take every bot within a limited number of moves. Bots don\'t walk, but they take you if you step into their reach. Solving in fewer moves earns more stars.': 'Sınırlı hamlede bütün botları al. Botlar yürümez ama menziline girersen sana saldırır. Az hamlede çözmek daha çok yıldız verir.',
+  'Take every bot within a limited number of moves. Most bots wait, but they take you if you step into their reach. Bots with a dashed ring are hunters: they also step toward you every round. Solving in fewer moves earns more stars.': 'Her botu sınırlı sayıda hamlede al. Çoğu bot bekler ama menzillerine girersen seni alır. Kesik halkalı botlar avcıdır: her tur sana doğru da yürür. Ne kadar az hamlede çözersen o kadar çok yıldız kazanırsın.',
   'Step ×2': 'Adım ×2',
   'Move ×2': 'Hamle ×2',
   'Log': 'Kayıt',
@@ -586,5 +586,6 @@ const dict: Record<string, string> = {
   'Delete data on this device': 'Bu cihazdaki verileri sil',
   'Removes your settings, statistics, puzzle stars, profile and paused match from this device. This cannot be undone.': 'Ayarlarını, istatistiklerini, bulmaca yıldızlarını, profilini ve duraklattığın maçı bu cihazdan siler. Geri alınamaz.',
   'Delete everything': 'Hepsini sil',
+  '· hunter: steps toward you': '· avcı: sana doğru yürür',
 };
 export default dict;

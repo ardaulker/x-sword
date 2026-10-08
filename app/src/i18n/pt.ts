@@ -408,7 +408,7 @@ const dict: Record<string, string> = {
   'Diamond': 'Diamante',
   'Fortress': 'Fortaleza',
   'Maze': 'Labirinto',
-  'The mode changes every round: straight this round, diagonal the next.': 'O modo muda a cada rodada: reto nesta, diagonal na próxima.',
+  'Bots with a dashed ring are hunters: they step toward you every round. Let them come.': 'Os bots com um anel tracejado são caçadores: andam até você a cada rodada. Deixe-os vir.',
   'The arms are narrow. Choose well which bot to take first.': 'Os braços são estreitos. Escolha bem qual bot pegar primeiro.',
   'The middle is empty. The short way is always along the edge.': 'O centro é vazio. O caminho curto é sempre pela borda.',
   'No one can enter a blocked square. Behind a pillar can be safe.': 'Ninguém entra numa casa bloqueada. Atrás de uma coluna pode ser seguro.',
@@ -418,7 +418,7 @@ const dict: Record<string, string> = {
   'Double move: two moves in a row, the bots don\'t play in between.': 'Movimento duplo: dois movimentos seguidos, os bots não jogam no meio.',
   'The gates in the walls are narrow. Work out which gate to enter through.': 'Os portões das muralhas são estreitos. Calcule por qual entrar.',
   'Narrow paths and one double step. Plan the order well.': 'Caminhos estreitos e um passo duplo. Planeje bem a ordem.',
-  'Take every bot within a limited number of moves. Bots don\'t walk, but they take you if you step into their reach. Solving in fewer moves earns more stars.': 'Pegue todos os bots em movimentos limitados. Os bots não andam, mas pegam você se entrar no alcance deles. Menos movimentos dão mais estrelas.',
+  'Take every bot within a limited number of moves. Most bots wait, but they take you if you step into their reach. Bots with a dashed ring are hunters: they also step toward you every round. Solving in fewer moves earns more stars.': 'Pegue cada bot em um número limitado de jogadas. A maioria dos bots espera, mas pega você se entrar no alcance deles. Os bots com um anel tracejado são caçadores: também andam até você a cada rodada. Quanto menos jogadas, mais estrelas.',
   'Step ×2': 'Passo ×2',
   'Move ×2': 'Jogada ×2',
   'Log': 'Registro',
@@ -586,5 +586,6 @@ const dict: Record<string, string> = {
   'Delete data on this device': 'Excluir os dados deste dispositivo',
   'Removes your settings, statistics, puzzle stars, profile and paused match from this device. This cannot be undone.': 'Remove suas configurações, estatísticas, estrelas dos quebra-cabeças, seu perfil e a partida pausada deste dispositivo. Não dá para desfazer.',
   'Delete everything': 'Excluir tudo',
+  '· hunter: steps toward you': '· caçador: anda até você',
 };
 export default dict;

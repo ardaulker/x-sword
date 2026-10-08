@@ -48,19 +48,19 @@ export const PUZZLES = [
     ]
   },
   {
-    "tutorial": false,
     "id": 101,
     "title": "Corridor",
-    "hint": "The mode changes every round: straight this round, diagonal the next.",
+    "hint": "Bots with a dashed ring are hunters: they step toward you every round. Let them come.",
+    "tutorial": false,
     "mode": "STRAIGHT",
-    "par": 3,
     "bonuses": null,
+    "par": 4,
     "map": [
-      "#.....#",
+      "#.b...#",
+      "B...S..",
       ".......",
-      ".RB....",
       ".......",
-      "#..S..#"
+      "#.....#"
     ]
   },
   {
@@ -69,16 +69,16 @@ export const PUZZLES = [
     "title": "Cross",
     "hint": "The arms are narrow. Choose well which bot to take first.",
     "mode": "DIAGONAL",
-    "par": 4,
     "bonuses": null,
+    "par": 5,
     "map": [
+      "--b.B--",
       "--...--",
-      "--...--",
+      ".B.....",
+      "....S..",
       ".......",
-      ".......",
-      "....BR.",
       "--...--",
-      "--.S.--"
+      "--...--"
     ]
   },
   {
@@ -87,15 +87,15 @@ export const PUZZLES = [
     "title": "Ring",
     "hint": "The middle is empty. The short way is always along the edge.",
     "mode": "STRAIGHT",
-    "par": 5,
     "bonuses": null,
+    "par": 6,
     "map": [
-      "-.BR..-",
-      ".......",
-      ".B---..",
+      "-...b.-",
+      "......B",
       "..---..",
-      "S.---..",
-      ".......",
+      "..---S.",
+      "..---..",
+      "......B",
       "-.....-"
     ]
   },
@@ -105,16 +105,16 @@ export const PUZZLES = [
     "title": "Pillars",
     "hint": "No one can enter a blocked square. Behind a pillar can be safe.",
     "mode": "DIAGONAL",
-    "par": 5,
     "bonuses": null,
+    "par": 6,
     "map": [
       ".......",
       ".#...#.",
-      "...#B..",
+      "...#r..",
       ".......",
-      ".#RB.#.",
-      "...#.S.",
-      "......."
+      ".#.b.#.",
+      ".S.#...",
+      ".....R."
     ]
   },
   {
@@ -123,14 +123,14 @@ export const PUZZLES = [
     "title": "Staircase",
     "hint": "A diagonal strip: in a straight round your path gets narrow.",
     "mode": "STRAIGHT",
-    "par": 5,
     "bonuses": null,
+    "par": 6,
     "map": [
-      "...-----",
-      "R.B.----",
-      "-...B---",
-      "--....--",
-      "---..S.-",
+      "b..-----",
+      "....----",
+      "-....---",
+      "--.S..--",
+      "---..BR-",
       "----....",
       "-----..."
     ]
@@ -141,16 +141,16 @@ export const PUZZLES = [
     "title": "Double step",
     "hint": "Double step takes you two squares. Wait for the right moment.",
     "mode": "STRAIGHT",
-    "par": 3,
     "bonuses": {
       "step": 1
     },
+    "par": 4,
     "map": [
-      "....---",
-      "...S---",
-      "..#..R.",
-      "..#R...",
-      "......."
+      ".b..---",
+      "..B.---",
+      "..#....",
+      "..#....",
+      "....S.."
     ]
   },
   {
@@ -159,15 +159,15 @@ export const PUZZLES = [
     "title": "Switcheroo",
     "hint": "Use the Switcheroo to take a bot's place. Sometimes it's the only way to change direction.",
     "mode": "DIAGONAL",
-    "par": 4,
     "bonuses": {
       "swap": 1
     },
+    "par": 5,
     "map": [
-      ".........",
-      "..RR.....",
+      ".......b.",
+      "...R.R...",
       "---...---",
-      "---.S.---",
+      "---S..---",
       "---...---",
       "---...---"
     ]
@@ -178,16 +178,16 @@ export const PUZZLES = [
     "title": "Diamond",
     "hint": "Double move: two moves in a row, the bots don't play in between.",
     "mode": "DIAGONAL",
-    "par": 4,
     "bonuses": {
       "double": 1
     },
+    "par": 5,
     "map": [
-      "---.---",
-      "--...--",
-      "-...B.-",
-      "....RB.",
-      "-.S...-",
+      "---r---",
+      "--..R--",
+      "-.....-",
+      "...S...",
+      "-B....-",
       "--...--",
       "---.---"
     ]
@@ -198,16 +198,16 @@ export const PUZZLES = [
     "title": "Fortress",
     "hint": "The gates in the walls are narrow. Work out which gate to enter through.",
     "mode": "STRAIGHT",
-    "par": 6,
     "bonuses": null,
+    "par": 7,
     "map": [
       ".........",
       ".###.###.",
+      ".#.S...#.",
       ".#.....#.",
-      ".#.....#.",
-      "S...B....",
-      ".#..R..#.",
-      ".#.B...#.",
+      ".........",
+      "b#.....#.",
+      ".#b.R..#.",
       ".###.###.",
       "........."
     ]
@@ -218,20 +218,20 @@ export const PUZZLES = [
     "title": "Maze",
     "hint": "Narrow paths and one double step. Plan the order well.",
     "mode": "DIAGONAL",
-    "par": 6,
     "bonuses": {
       "step": 1
     },
+    "par": 7,
     "map": [
-      "-...#...-",
+      "-...#r..-",
       ".#.....#.",
       "...##....",
-      ".#.....#S",
-      "....#R...",
-      ".#..B..#.",
-      "....##...",
-      ".#R....#.",
-      "-...#...-"
+      ".#.....#.",
+      "...R#....",
+      ".#.....#.",
+      ".S..##...",
+      ".#.....#.",
+      "-..B#...-"
     ]
   },
   {
@@ -241,13 +241,13 @@ export const PUZZLES = [
     "hint": "Four bots, a tight corner. A greedy take leads you into a trap.",
     "mode": "STRAIGHT",
     "bonuses": null,
-    "par": 6,
+    "par": 7,
     "map": [
+      "...b-----",
       "....-----",
-      "....-----",
-      ".R..-----",
-      "B...B....",
-      "..S.R...."
+      "...S-----",
+      ".r.......",
+      "...R..R.."
     ]
   },
   {
@@ -257,13 +257,13 @@ export const PUZZLES = [
     "hint": "Two arms, one bottom. Which arm you start with changes everything.",
     "mode": "DIAGONAL",
     "bonuses": null,
-    "par": 6,
+    "par": 7,
     "map": [
       "...---...",
-      "RR.---...",
       "...---...",
-      "B..S.....",
-      ".R......."
+      "...---.S.",
+      ".b..bR...",
+      "........B"
     ]
   },
   {
@@ -275,13 +275,13 @@ export const PUZZLES = [
     "bonuses": {
       "armor": 1
     },
-    "par": 4,
+    "par": 5,
     "map": [
+      "..b....",
+      ".#...#.",
+      "....R..",
       ".......",
-      "R#..S#.",
-      "..R....",
-      "..R....",
-      ".......",
+      "...S.B.",
       ".#...#.",
       "......."
     ]
@@ -296,14 +296,14 @@ export const PUZZLES = [
       "step": 1,
       "swap": 1
     },
-    "par": 5,
+    "par": 6,
     "map": [
-      "...R....",
-      ".##R.##.",
-      "........",
-      ".....S..",
+      "....b...",
       ".##..##.",
-      "...R...."
+      ".S......",
+      "...rBR..",
+      ".##..##.",
+      "........"
     ]
   },
   {
@@ -317,14 +317,14 @@ export const PUZZLES = [
       "start": 2,
       "every": 2
     },
-    "par": 5,
+    "par": 6,
     "map": [
       ".......",
+      ".b.....",
       ".......",
-      "...R...",
       ".......",
-      "...B...",
-      ".B.....",
+      "...BR..",
+      ".......",
       "...S..."
     ]
   },
@@ -337,15 +337,15 @@ export const PUZZLES = [
     "bonuses": {
       "swap": 1
     },
-    "par": 4,
+    "par": 5,
     "map": [
       "..-----..",
-      "...---...",
+      ".S.---...",
       "....-....",
-      "......RR.",
-      "....-...B",
+      "...rR....",
+      "B...-....",
       "...---...",
-      "..-----.S"
+      "..-----.."
     ]
   },
   {
@@ -355,17 +355,17 @@ export const PUZZLES = [
     "hint": "A courtyard closed in the middle. Work out which side of the wall to go around.",
     "mode": "STRAIGHT",
     "bonuses": null,
-    "par": 6,
+    "par": 7,
     "map": [
       ".........",
       ".........",
       "..##.##..",
       "..#...#..",
-      ".........",
+      "...r.....",
       "..#...#..",
-      "..##.##.S",
-      "......B..",
-      "......R.B"
+      "S.##.##..",
+      "..r......",
+      "....R...."
     ]
   },
   {
@@ -375,16 +375,16 @@ export const PUZZLES = [
     "hint": "The diagonal wall blocks you in straight rounds. Choose when to cross.",
     "mode": "STRAIGHT",
     "bonuses": null,
-    "par": 6,
+    "par": 7,
     "map": [
       "#.......",
       ".#......",
       "..#.....",
       "...#....",
       "....#...",
-      "..B..#..",
-      "....B.#.",
-      ".S.B...#"
+      "..rb.#..",
+      "S.....#.",
+      "...R...#"
     ]
   },
   {
@@ -396,15 +396,15 @@ export const PUZZLES = [
     "bonuses": {
       "double": 1
     },
-    "par": 5,
+    "par": 6,
     "map": [
       ".......",
-      "-..B.B-",
-      "--..B--",
-      "---R---",
-      "--...--",
-      "-.S...-",
-      "......."
+      "-.....-",
+      "--..S--",
+      "---.---",
+      "--..b--",
+      "-bR...-",
+      ".B....."
     ]
   },
   {
@@ -417,35 +417,35 @@ export const PUZZLES = [
       "step": 1,
       "double": 1
     },
-    "par": 6,
+    "par": 7,
     "map": [
+      "...#S..",
+      ".#...#r",
+      "...#...",
+      "#b.RR.#",
       "...#...",
       ".#...#.",
-      "..B#...",
-      "#B....#",
-      "...#.B.",
-      ".#S.R#.",
       "...#..."
     ]
   },
   {
+    "tutorial": false,
     "id": 121,
     "title": "Two for one",
     "hint": "Take two bots with one Double move: you earn Armor, and the points bring a Double step.",
-    "tutorial": false,
     "mode": "STRAIGHT",
     "bonuses": {
       "double": 1
     },
-    "par": 4,
+    "par": 5,
     "map": [
       ".......",
-      ".......",
+      "..b.B.S",
+      "..#.#..",
+      "..B....",
       "..#.#..",
       ".......",
-      "..#.#B.",
-      "..R.R..",
-      "......S"
+      "......."
     ]
   },
   {
@@ -455,13 +455,13 @@ export const PUZZLES = [
     "hint": "Five bots close together. Every take changes who can reach you.",
     "mode": "STRAIGHT",
     "bonuses": null,
-    "par": 6,
+    "par": 7,
     "map": [
-      "..B....",
-      "S.R....",
+      "...r...",
+      "S......",
       ".......",
-      "BR.....",
-      "..B....",
+      ".rR....",
+      "..RB...",
       ".......",
       "......."
     ]
@@ -477,15 +477,15 @@ export const PUZZLES = [
       "double": 1,
       "swap": 1
     },
-    "par": 4,
+    "par": 5,
     "map": [
       "........",
+      ".#....#S",
+      ".....b..",
+      "...R..B.",
+      "........",
+      "........",
       ".#....#.",
-      "........",
-      "........",
-      "..B.B...",
-      "..R.....",
-      "S#....#.",
       "........"
     ]
   },
@@ -500,17 +500,17 @@ export const PUZZLES = [
       "start": 2,
       "every": 3
     },
-    "par": 5,
+    "par": 6,
     "map": [
       ".........",
-      ".........",
+      "......r..",
+      "..##.##.S",
+      ".....R...",
+      "....#....",
+      "....B....",
       "..##.##..",
       ".........",
-      ".B..#....",
-      ".........",
-      ".B##.##..",
-      "...B.....",
-      ".S......."
+      "........."
     ]
   },
   {
@@ -524,15 +524,15 @@ export const PUZZLES = [
       "start": 2,
       "every": 2
     },
-    "par": 6,
+    "par": 7,
     "map": [
       ".........",
+      "....S....",
+      "..b......",
       ".........",
+      "........r",
+      "....R.R..",
       ".........",
-      "....R....",
-      "....B....",
-      "......S..",
-      "..B......",
       ".........",
       "........."
     ]

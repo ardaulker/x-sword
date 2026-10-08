@@ -15,7 +15,7 @@ export function PuzzleScreen({ onBack, onPick }: { onBack: () => void; onPick: (
         <h1>{tr('Puzzles')}</h1>
       </header>
       <div className="rules-body">
-        <p className="rules-foot" style={{ marginTop: 0 }}>{tr("Take every bot within a limited number of moves. Bots don't walk, but they take you if you step into their reach. Solving in fewer moves earns more stars.")}</p>
+        <p className="rules-foot" style={{ marginTop: 0 }}>{tr("Take every bot within a limited number of moves. Most bots wait, but they take you if you step into their reach. Bots with a dashed ring are hunters: they also step toward you every round. Solving in fewer moves earns more stars.")}</p>
         {[true, false].map(tut => (
           <div key={String(tut)}>
             <h2>{tut ? tr('Tutorial') : tr('Puzzles')}</h2>

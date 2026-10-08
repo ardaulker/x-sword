@@ -38,7 +38,7 @@ const hints = (): Record<string, string> => ({
   "It's a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.": tr("It's a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm."),
   'The mode changes every round. Walk straight first, then take diagonally next round.': tr('The mode changes every round. Walk straight first, then take diagonally next round.'),
   'A red-striped square is dangerous: a piece will take you there. Take both pieces; pick the unstriped square first.': tr('A red-striped square is dangerous: a piece will take you there. Take both pieces; pick the unstriped square first.'),
-  'The mode changes every round: straight this round, diagonal the next.': tr('The mode changes every round: straight this round, diagonal the next.'),
+  'Bots with a dashed ring are hunters: they step toward you every round. Let them come.': tr('Bots with a dashed ring are hunters: they step toward you every round. Let them come.'),
   'The arms are narrow. Choose well which bot to take first.': tr('The arms are narrow. Choose well which bot to take first.'),
   'The middle is empty. The short way is always along the edge.': tr('The middle is empty. The short way is always along the edge.'),
   'No one can enter a blocked square. Behind a pillar can be safe.': tr('No one can enter a blocked square. Behind a pillar can be safe.'),

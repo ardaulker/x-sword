@@ -19,8 +19,23 @@ export function chooseMove(state, piece, level = levelOf(state, piece)) {
   if (piece.kind === 'twin') return twinMove(state, piece);
   const moves = legalMoves(state, piece, state.mode);
   if (!moves.length) return null;
-  // In puzzles bots don't walk: they only take a star that steps into their reach, otherwise they wait.
-  if (state.puzzle && piece.kind !== 'star') return moves.find(m => m.type === 'take' && pieceById(state, m.targetId).kind === 'star') ?? null;
+  // In puzzles a bot takes a star that steps into its reach. Otherwise it waits, unless it is a hunter (`walks`): then it
+  // takes one step toward your star (the walk that ends nearest to it; ties go to the lowest row, then column) and stays
+  // put when no step gets it closer. Hunters are plain on purpose: they don't look out for danger, so a puzzle can lure them.
+  if (state.puzzle && piece.kind !== 'star') {
+    const bite = moves.find(m => m.type === 'take' && pieceById(state, m.targetId).kind === 'star');
+    if (bite || !piece.walks) return bite ?? null;
+    const star = state.pieces.find(p => p.id === 's0' && p.alive);
+    if (!star) return null;
+    const gap = (r, c) => (r - star.r) ** 2 + (c - star.c) ** 2;
+    let best = null, bestGap = gap(piece.r, piece.c);
+    for (const m of moves) {
+      if (m.type !== 'walk') continue;
+      const g = gap(m.r, m.c);
+      if (g < bestGap || (g === bestGap && best && (m.r < best.r || (m.r === best.r && m.c < best.c)))) { best = m; bestGap = g; }
+    }
+    return best;
+  }
   if (level === 'easy') return easyMove(state, piece, moves);
   let best = moves[0], bestScore = -Infinity, second = null, secondScore = -Infinity;
   for (const m of moves) {

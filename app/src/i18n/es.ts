@@ -408,7 +408,7 @@ const dict: Record<string, string> = {
   'Diamond': 'Diamante',
   'Fortress': 'Fortaleza',
   'Maze': 'Laberinto',
-  'The mode changes every round: straight this round, diagonal the next.': 'El modo cambia cada ronda: recto esta ronda, diagonal la siguiente.',
+  'Bots with a dashed ring are hunters: they step toward you every round. Let them come.': 'Los bots con un anillo discontinuo son cazadores: avanzan hacia ti cada ronda. Déjalos venir.',
   'The arms are narrow. Choose well which bot to take first.': 'Los brazos son estrechos. Elige bien qué bot tomar primero.',
   'The middle is empty. The short way is always along the edge.': 'El centro está vacío. El camino corto va siempre por el borde.',
   'No one can enter a blocked square. Behind a pillar can be safe.': 'Nadie puede entrar en una casilla bloqueada. Detrás de una columna puedes estar a salvo.',
@@ -418,7 +418,7 @@ const dict: Record<string, string> = {
   'Double move: two moves in a row, the bots don\'t play in between.': 'Movimiento doble: dos movimientos seguidos, los bots no juegan en medio.',
   'The gates in the walls are narrow. Work out which gate to enter through.': 'Las puertas de los muros son estrechas. Calcula por cuál entrar.',
   'Narrow paths and one double step. Plan the order well.': 'Caminos estrechos y un paso doble. Planea bien el orden.',
-  'Take every bot within a limited number of moves. Bots don\'t walk, but they take you if you step into their reach. Solving in fewer moves earns more stars.': 'Toma todos los bots en movimientos limitados. Los bots no caminan, pero te toman si entras en su alcance. Menos movimientos dan más estrellas.',
+  'Take every bot within a limited number of moves. Most bots wait, but they take you if you step into their reach. Bots with a dashed ring are hunters: they also step toward you every round. Solving in fewer moves earns more stars.': 'Toma cada bot en un número limitado de movimientos. La mayoría de los bots esperan, pero te toman si entras en su alcance. Los bots con un anillo discontinuo son cazadores: también avanzan hacia ti cada ronda. Cuantos menos movimientos, más estrellas.',
   'Step ×2': 'Paso ×2',
   'Move ×2': 'Jugada ×2',
   'Log': 'Registro',
@@ -586,5 +586,6 @@ const dict: Record<string, string> = {
   'Delete data on this device': 'Borrar los datos de este dispositivo',
   'Removes your settings, statistics, puzzle stars, profile and paused match from this device. This cannot be undone.': 'Elimina tus ajustes, estadísticas, estrellas de puzzles, tu perfil y la partida en pausa de este dispositivo. No se puede deshacer.',
   'Delete everything': 'Borrar todo',
+  '· hunter: steps toward you': '· cazador: camina hacia ti',
 };
 export default dict;

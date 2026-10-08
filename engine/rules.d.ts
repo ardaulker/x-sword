@@ -10,6 +10,8 @@ interface PieceBase {
   r: number;
   c: number;
   alive: boolean;
+  /** Puzzle hunter (bots only): also steps toward your star every round (a small letter on the puzzle map). */
+  walks?: boolean;
 }
 export interface StarPiece extends PieceBase {
   kind: 'star';
