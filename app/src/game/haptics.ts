@@ -115,40 +115,58 @@ function playSlash(ac: AudioContext, t0: number, big: boolean) {
   }
 }
 
-// A sword drawn from its scabbard: a rough scrape of noise that rises in pitch (metal on metal, with a fast flutter),
-// then a bright ring as the blade comes free.
+// A sword drawn slowly from its scabbard, cinematic: a click at the mouth of the scabbard, a long scrape of metal that
+// swells and climbs in pitch with a flutter that speeds up, a low leather rumble underneath, and a long ringing "shing"
+// as the blade comes free. About 1.3 s of scrape, the ring rings out for two seconds more.
 function playUnsheath(ac: AudioContext, t0: number) {
-  const dur = 0.85;
-  const len = Math.floor(ac.sampleRate * dur);
-  const buf = ac.createBuffer(1, len, ac.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-  const src = ac.createBufferSource();
-  src.buffer = buf;
-  const bp = ac.createBiquadFilter();
-  bp.type = 'bandpass'; bp.Q.value = 4;
-  bp.frequency.setValueAtTime(1500, t0);
-  bp.frequency.exponentialRampToValueAtTime(5200, t0 + dur);
-  const g = ac.createGain();
-  const peak = 0.22 * settings.volume;
-  g.gain.setValueAtTime(0.0001, t0);
-  g.gain.exponentialRampToValueAtTime(peak, t0 + 0.12);
-  g.gain.setValueAtTime(peak, t0 + dur - 0.12);
-  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  // The flutter: the scrape's loudness wobbles 28 times a second.
+  const dur = 1.3;
+  const noise = (secs: number) => {
+    const buf = ac.createBuffer(1, Math.floor(ac.sampleRate * secs), ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const src = ac.createBufferSource();
+    src.buffer = buf;
+    return src;
+  };
+  const vol = settings.volume;
+  // The click: the guard leaves the mouth of the scabbard.
+  const click = noise(0.05), cbp = ac.createBiquadFilter(), cg = ac.createGain();
+  cbp.type = 'bandpass'; cbp.frequency.value = 2600; cbp.Q.value = 1.5;
+  cg.gain.setValueAtTime(0.0001, t0); cg.gain.exponentialRampToValueAtTime(0.25 * vol, t0 + 0.004); cg.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.04);
+  click.connect(cbp).connect(cg).connect(ac.destination); click.start(t0); click.stop(t0 + 0.05);
+
+  // The scrape: narrow band of noise sweeping up, swelling, with a flutter that speeds up.
+  const scrape = noise(dur + 0.05), bp = ac.createBiquadFilter(), g = ac.createGain();
+  bp.type = 'bandpass'; bp.Q.value = 6;
+  bp.frequency.setValueAtTime(700, t0 + 0.03);
+  bp.frequency.exponentialRampToValueAtTime(5000, t0 + dur);
+  const peak = 0.3 * vol;
+  g.gain.setValueAtTime(0.0001, t0 + 0.03);
+  g.gain.exponentialRampToValueAtTime(peak * 0.35, t0 + 0.3);
+  g.gain.exponentialRampToValueAtTime(peak, t0 + dur - 0.1);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur + 0.03);
   const lfo = ac.createOscillator(), lfoG = ac.createGain();
-  lfo.frequency.value = 28; lfoG.gain.value = peak * 0.45;
+  lfo.frequency.setValueAtTime(14, t0); lfo.frequency.linearRampToValueAtTime(34, t0 + dur);
+  lfoG.gain.value = peak * 0.4;
   lfo.connect(lfoG).connect(g.gain);
-  src.connect(bp).connect(g).connect(ac.destination);
-  src.start(t0); src.stop(t0 + dur); lfo.start(t0); lfo.stop(t0 + dur);
-  for (const [f, gain] of [[2400, 0.07], [3600, 0.05], [5100, 0.03]] as const) {
+  scrape.connect(bp).connect(g).connect(ac.destination);
+  scrape.start(t0 + 0.03); scrape.stop(t0 + dur + 0.08); lfo.start(t0); lfo.stop(t0 + dur + 0.08);
+
+  // The leather rumble: low noise that fades out in the first half.
+  const rumble = noise(0.8), lp = ac.createBiquadFilter(), rg = ac.createGain();
+  lp.type = 'lowpass'; lp.frequency.value = 420;
+  rg.gain.setValueAtTime(0.0001, t0 + 0.02); rg.gain.exponentialRampToValueAtTime(0.2 * vol, t0 + 0.12); rg.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.8);
+  rumble.connect(lp).connect(rg).connect(ac.destination); rumble.start(t0 + 0.02); rumble.stop(t0 + 0.85);
+
+  // The ring: a metallic "shing" as the tip clears, partials that fade slowly (the higher the faster).
+  for (const [f, gain, ring] of [[1900, 0.1, 2.2], [2850, 0.075, 1.8], [4300, 0.05, 1.3], [6100, 0.03, 0.9]] as const) {
     const o = ac.createOscillator(), og = ac.createGain();
     o.type = 'sine'; o.frequency.value = f;
-    og.gain.setValueAtTime(0.0001, t0 + dur - 0.08);
-    og.gain.exponentialRampToValueAtTime(gain * settings.volume, t0 + dur - 0.06);
-    og.gain.exponentialRampToValueAtTime(0.0001, t0 + dur + 0.9);
+    og.gain.setValueAtTime(0.0001, t0 + dur - 0.1);
+    og.gain.exponentialRampToValueAtTime(gain * vol, t0 + dur - 0.07);
+    og.gain.exponentialRampToValueAtTime(0.0001, t0 + dur + ring);
     o.connect(og).connect(ac.destination);
-    o.start(t0 + dur - 0.08); o.stop(t0 + dur + 1);
+    o.start(t0 + dur - 0.1); o.stop(t0 + dur + ring + 0.05);
   }
 }
 
