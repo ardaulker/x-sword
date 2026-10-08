@@ -222,9 +222,9 @@ export function CoachSheet({ step, onDone }: { step: number; onDone: () => void 
 
 const levelLabels = (): [Level, string][] => [['easy', tr('Easy')], ['normal', tr('Normal')], ['hard', tr('Hard')]];
 
-export function Opt({ label, sub, on, onChange, disabled = false, className = '' }: { label: string; sub?: string; on: boolean; className?: string; onChange: (v: boolean) => void; disabled?: boolean }) {
+export function Opt({ label, sub, on, onChange, disabled = false, className = '', title }: { label: string; sub?: string; title?: string; on: boolean; className?: string; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <button type="button" className={`opt-row ${className}`} role="switch" aria-checked={on && !disabled} disabled={disabled} onClick={() => onChange(!on)}>
+    <button type="button" className={`opt-row ${className}`} role="switch" aria-checked={on && !disabled} disabled={disabled} title={title} onClick={() => onChange(!on)}>
       <span className="opt-text"><b>{label}</b>{sub && <small>{sub}</small>}</span>
       <span className={`switch${on && !disabled ? ' is-on' : ''}`} aria-hidden="true"><span /></span>
     </button>
@@ -342,7 +342,7 @@ export function SetupSheet({ setup, onStart, onClose }: {
         {players === 4 && <Opt label={tr('Teams (2 vs 2)')} sub={tr("Opposite corners form a team; you can't take your teammate.")} on={teams} onChange={setTeams} />}
         <div className="opts-pair">
           <Opt className="opt-tile" label={tr('Obstacle squares')} on={obstacles} onChange={setObstacles} />
-          <Opt className="opt-tile" label={tr('Bot characters')} sub={players === 1 ? tr('Needs 2–4 players') : undefined} on={personas} onChange={setPersonas} disabled={players === 1} />
+          <Opt className="opt-tile" label={tr('Bot characters')} title={players === 1 ? tr('Needs 2–4 players') : undefined} on={personas} onChange={setPersonas} disabled={players === 1} />
         </div>
       </div>
       <div className="menu-note">
