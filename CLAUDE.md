@@ -558,7 +558,9 @@ S#....#.
   cut across the taken square along the attack direction; bigger for your own takes. The being-taken toast says
   "{name} swung their sword. You are out!" and the "why I lost" line says "Struck down by {name} (…) · round n"; the
   rules' Taking card explains the sword mark (+ straight, × diagonal).
-- **Sounds** (`game/haptics.ts`, all synthesized): every take plays a sword stroke (`playSlash`: a noise whoosh that
+- **Sounds** (`game/haptics.ts`, synthesized except one recorded file: the sword-draw at match start, `app/public/sounds/sword-draw.m4a`,
+  played through `SAMPLE_FILES`/`playSample` with the synthesized `playUnsheath` as the fallback; its license is recorded in
+  `docs/third-party-licenses.md`; add more recordings by adding names to `SAMPLE_FILES`): every take plays a sword stroke (`playSlash`: a noise whoosh that
   sweeps up plus a short metallic ring; `slashBig` for your own takes), and each bonus has its own sound when used
   (`useStep` a dash, `useDouble` a quick double tap, `useSwap` a crossing swap). The slash animation lasts 360 ms
   (560 ms for yours) and scales with the animation speed setting.

@@ -82,7 +82,7 @@ const audio = () => {
 };
 
 // Unlock audio on the first tap (iOS and Chrome require a user gesture).
-if (typeof window !== 'undefined') window.addEventListener('pointerdown', () => audio(), { once: true });
+if (typeof window !== 'undefined') window.addEventListener('pointerdown', () => { const ac = audio(); if (ac) loadSamples(ac); }, { once: true });
 
 // A sword stroke: a band of noise that sweeps up (the whoosh) and a short metallic ring after it.
 function playSlash(ac: AudioContext, t0: number, big: boolean) {
@@ -185,11 +185,41 @@ function playBell(ac: AudioContext, t0: number) {
   }
 }
 
+// Recorded sounds. A name listed here plays its file (decoded once, kept in memory); the synthesized version below is
+// the fallback while the file loads or if it cannot be loaded. Files live in app/public/sounds/ (sources: docs/third-party-licenses.md).
+const SAMPLE_FILES: Partial<Record<SoundName, string>> = { unsheath: 'sounds/sword-draw.m4a' };
+const samples = new Map<string, AudioBuffer | 'loading' | 'failed'>();
+
+function loadSamples(ac: AudioContext) {
+  for (const [name, file] of Object.entries(SAMPLE_FILES)) {
+    if (samples.has(name)) continue;
+    samples.set(name, 'loading');
+    fetch(import.meta.env.BASE_URL + file)
+      .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
+      .then(data => ac.decodeAudioData(data))
+      .then(buf => samples.set(name, buf))
+      .catch(() => samples.set(name, 'failed'));
+  }
+}
+
+function playSample(ac: AudioContext, buf: AudioBuffer, t0: number, gain: number) {
+  const src = ac.createBufferSource(), g = ac.createGain();
+  src.buffer = buf;
+  g.gain.value = gain * settings.volume;
+  src.connect(g).connect(ac.destination);
+  src.start(t0);
+}
+
 export function sound(name: SoundName) {
   if (!settings.sound || settings.volume <= 0) return;
   const ac = audio();
   if (!ac || ac.state !== 'running') return;
   const t0 = ac.currentTime;
+  if (SAMPLE_FILES[name]) {
+    const buf = samples.get(name);
+    if (buf && buf !== 'loading' && buf !== 'failed') { playSample(ac, buf, t0, 0.9); return; }
+    loadSamples(ac);
+  }
   if (name === 'slash' || name === 'slashBig') playSlash(ac, t0, name === 'slashBig');
   if (name === 'unsheath') playUnsheath(ac, t0);
   if (name === 'bell') playBell(ac, t0);

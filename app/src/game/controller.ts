@@ -177,8 +177,8 @@ export class GameController {
     if (this.setup.puzzle != null) { this.later(delay, () => this.advance()); return; }
     this.later(delay, () => {
       feel('unsheath', BUZZ.mode);
-      [3, 2, 1].forEach((n, i) => this.later(1100 + i * 900, () => { this.emit({ countdown: n }); feel('count', 12); }));
-      this.later(1100 + 3 * 900, () => { this.emit({ countdown: null }); sound('go'); this.advance(); });
+      [3, 2, 1].forEach((n, i) => this.later(1000 + i * 900, () => { this.emit({ countdown: n }); feel('count', 12); }));
+      this.later(1000 + 3 * 900, () => { this.emit({ countdown: null }); sound('go'); this.advance(); });
     });
   }
 
