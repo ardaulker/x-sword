@@ -27,6 +27,11 @@ const titles = (): Record<string, string> => ({
   'Zigzag': tr('Zigzag'),
   'Hourglass': tr('Hourglass'),
   'Finale': tr('Finale'),
+  'Two for one': tr('Two for one'),
+  'Crowd': tr('Crowd'),
+  'Toolbox': tr('Toolbox'),
+  'Falling walls': tr('Falling walls'),
+  'Two rings': tr('Two rings'),
 });
 
 const hints = (): Record<string, string> => ({
@@ -53,6 +58,11 @@ const hints = (): Record<string, string> => ({
   'The diagonal wall blocks you in straight rounds. Choose when to cross.': tr('The diagonal wall blocks you in straight rounds. Choose when to cross.'),
   'The waist is a single square. Spend the double move at the pass.': tr('The waist is a single square. Spend the double move at the pass.'),
   'Four bots, two bonuses. Every move counts.': tr('Four bots, two bonuses. Every move counts.'),
+  "Take two bots with one Double move: you earn Armor, and the points bring a Double step.": tr("Take two bots with one Double move: you earn Armor, and the points bring a Double step."),
+  "Five bots close together. Every take changes who can reach you.": tr("Five bots close together. Every take changes who can reach you."),
+  "Double step, Double move and Switcheroo, all at once. Find the combination that works.": tr("Double step, Double move and Switcheroo, all at once. Find the combination that works."),
+  "Walls inside, a collapsing ring outside. Take the bots before the floor goes.": tr("Walls inside, a collapsing ring outside. Take the bots before the floor goes."),
+  "The arena shrinks twice. Be on the inside before each collapse.": tr("The arena shrinks twice. Be on the inside before each collapse."),
 });
 
 export const puzzleTitle = (t: string) => titles()[t] ?? t;

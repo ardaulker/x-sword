@@ -50,6 +50,13 @@ const SOUNDS: Record<string, Note[]> = {
   bonusGain: [[660, 0, 0.07, 'sine', 0.1], [880, 0.07, 0.07, 'sine', 0.1], [1175, 0.14, 0.14, 'sine', 0.1]],
   bonusUse: [[1047, 0, 0.06, 'triangle', 0.1], [784, 0.06, 0.1, 'triangle', 0.1]],
   armor: [[1568, 0, 0.12, 'triangle', 0.12], [1175, 0.08, 0.18, 'triangle', 0.08]],
+  // One sound per bonus when you use it: a dash, a quick double tap, a swap that crosses.
+  useStep: [[392, 0, 0.05, 'triangle', 0.1], [587, 0.05, 0.1, 'triangle', 0.1]],
+  useDouble: [[784, 0, 0.05, 'triangle', 0.1], [784, 0.09, 0.05, 'triangle', 0.1], [1047, 0.18, 0.12, 'triangle', 0.1]],
+  useSwap: [[880, 0, 0.08, 'sine', 0.09], [440, 0, 0.08, 'sine', 0.09], [440, 0.08, 0.1, 'sine', 0.09], [880, 0.08, 0.1, 'sine', 0.09]],
+  // The sword strokes are built from noise (see playSlash); the note lists stay empty.
+  slash: [],
+  slashBig: [],
   win: [[523, 0, 0.12, 'triangle', 0.12], [659, 0.12, 0.12, 'triangle', 0.12], [784, 0.24, 0.12, 'triangle', 0.12], [1047, 0.36, 0.35, 'triangle', 0.12]],
   lose: [[330, 0, 0.2, 'sine', 0.1], [262, 0.2, 0.2, 'sine', 0.1], [196, 0.4, 0.45, 'sine', 0.1]],
   tick: [[1000, 0, 0.03, 'square', 0.04]],
@@ -70,11 +77,43 @@ const audio = () => {
 // Unlock audio on the first tap (iOS and Chrome require a user gesture).
 if (typeof window !== 'undefined') window.addEventListener('pointerdown', () => audio(), { once: true });
 
+// A sword stroke: a band of noise that sweeps up (the whoosh) and a short metallic ring after it.
+function playSlash(ac: AudioContext, t0: number, big: boolean) {
+  const len = Math.floor(ac.sampleRate * 0.3);
+  const buf = ac.createBuffer(1, len, ac.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  const bp = ac.createBiquadFilter();
+  bp.type = 'bandpass'; bp.Q.value = 1.1;
+  bp.frequency.setValueAtTime(500, t0);
+  bp.frequency.exponentialRampToValueAtTime(3400, t0 + 0.17);
+  const g = ac.createGain();
+  const peak = (big ? 0.34 : 0.2) * settings.volume;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(peak, t0 + 0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + (big ? 0.28 : 0.2));
+  src.connect(bp).connect(g).connect(ac.destination);
+  src.start(t0); src.stop(t0 + 0.3);
+  // The ring: two inharmonic high partials, quick to fade.
+  for (const [f, gain] of [[2140, 0.05], [3210, 0.03]] as const) {
+    const o = ac.createOscillator(), og = ac.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    og.gain.setValueAtTime(0.0001, t0 + 0.11);
+    og.gain.exponentialRampToValueAtTime(gain * (big ? 1.6 : 1) * settings.volume, t0 + 0.125);
+    og.gain.exponentialRampToValueAtTime(0.0001, t0 + (big ? 0.5 : 0.34));
+    o.connect(og).connect(ac.destination);
+    o.start(t0 + 0.11); o.stop(t0 + 0.55);
+  }
+}
+
 export function sound(name: SoundName) {
   if (!settings.sound || settings.volume <= 0) return;
   const ac = audio();
   if (!ac || ac.state !== 'running') return;
   const t0 = ac.currentTime;
+  if (name === 'slash' || name === 'slashBig') playSlash(ac, t0, name === 'slashBig');
   for (const [freq, at, dur, type = 'sine', gain = 0.1] of SOUNDS[name]) {
     const o = ac.createOscillator(), g = ac.createGain();
     o.type = type;

@@ -537,5 +537,15 @@ const dict: Record<string, string> = {
   'Struck down by {name} ({how}) · round {n}': '{name} tarafından kılıçla elendin ({how}) · tur {n}',
   'Every piece carries a sword mark: + points straight, × points diagonally. A piece takes in the direction its sword points.': 'Her taşın üstünde bir kılıç işareti var: + düzü, × çaprazı gösterir. Taş, kılıcının gösterdiği yönde alır.',
   'Take two pieces with the two moves of a Double move and you earn Armor.': 'Çift hamlenin iki hamlesiyle iki taş alırsan Zırh kazanırsın.',
+  'Two for one': 'İkisi bir arada',
+  'Crowd': 'Kalabalık',
+  'Toolbox': 'Alet çantası',
+  'Falling walls': 'Düşen duvarlar',
+  'Two rings': 'İki halka',
+  'Take two bots with one Double move: you earn Armor, and the points bring a Double step.': 'Bir Çift hamle ile iki bot al: Zırh kazanırsın, puanlar da sana bir Çift adım getirir.',
+  'Five bots close together. Every take changes who can reach you.': 'Beş bot birbirine yakın. Her alış, kimin sana ulaşabileceğini değiştirir.',
+  'Double step, Double move and Switcheroo, all at once. Find the combination that works.': 'Çift adım, Çift hamle ve Yer Çalma elinde. Işe yarayan birleşimi bul.',
+  'Walls inside, a collapsing ring outside. Take the bots before the floor goes.': 'İçeride duvarlar, dışarıda çöken bir halka. Zemin gitmeden botları al.',
+  'The arena shrinks twice. Be on the inside before each collapse.': 'Arena iki kez daralır. Her çöküşten önce içeride ol.',
 };
 export default dict;

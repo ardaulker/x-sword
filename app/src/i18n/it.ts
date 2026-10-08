@@ -537,5 +537,15 @@ const dict: Record<string, string> = {
   'Struck down by {name} ({how}) · round {n}': 'Abbattuto da {name} ({how}) · turno {n}',
   'Every piece carries a sword mark: + points straight, × points diagonally. A piece takes in the direction its sword points.': 'Ogni pezzo porta un segno di spada: + indica la linea retta, × la diagonale. Un pezzo prende nella direzione indicata dalla sua spada.',
   'Take two pieces with the two moves of a Double move and you earn Armor.': 'Se prendi due pezzi con le due mosse di una Doppia mossa, ottieni un\'Armatura.',
+  'Two for one': 'Due in un colpo',
+  'Crowd': 'Folla',
+  'Toolbox': 'Cassetta degli attrezzi',
+  'Falling walls': 'Muri che cadono',
+  'Two rings': 'Due anelli',
+  'Take two bots with one Double move: you earn Armor, and the points bring a Double step.': 'Prendi due bot con una Doppia mossa: ottieni un\'Armatura e i punti ti portano un Doppio passo.',
+  'Five bots close together. Every take changes who can reach you.': 'Cinque bot vicini. Ogni presa cambia chi può raggiungerti.',
+  'Double step, Double move and Switcheroo, all at once. Find the combination that works.': 'Doppio passo, Doppia mossa e Scambio furtivo, tutto insieme. Trova la combinazione giusta.',
+  'Walls inside, a collapsing ring outside. Take the bots before the floor goes.': 'Muri dentro, un anello che crolla fuori. Prendi i bot prima che il pavimento sparisca.',
+  'The arena shrinks twice. Be on the inside before each collapse.': 'L\'arena si restringe due volte. Mettiti all\'interno prima di ogni crollo.',
 };
 export default dict;

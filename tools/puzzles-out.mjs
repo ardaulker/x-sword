@@ -1,10 +1,10 @@
 // Last output of make-puzzles.mjs (when one map is regenerated, the others are taken from here).
 export const PUZZLES = [
   {
+    "tutorial": true,
     "id": 201,
     "title": "Take straight",
     "hint": "It's a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.",
-    "tutorial": true,
     "mode": "STRAIGHT",
     "bonuses": null,
     "par": 1,
@@ -426,6 +426,115 @@ export const PUZZLES = [
       "...#.B.",
       ".#S.R#.",
       "...#..."
+    ]
+  },
+  {
+    "id": 121,
+    "title": "Two for one",
+    "hint": "Take two bots with one Double move: you earn Armor, and the points bring a Double step.",
+    "tutorial": false,
+    "mode": "STRAIGHT",
+    "bonuses": {
+      "double": 1
+    },
+    "par": 4,
+    "map": [
+      ".......",
+      ".......",
+      "..#.#..",
+      ".......",
+      "..#.#B.",
+      "..R.R..",
+      "......S"
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 122,
+    "title": "Crowd",
+    "hint": "Five bots close together. Every take changes who can reach you.",
+    "mode": "STRAIGHT",
+    "bonuses": null,
+    "par": 6,
+    "map": [
+      "..B....",
+      "S.R....",
+      ".......",
+      "BR.....",
+      "..B....",
+      ".......",
+      "......."
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 123,
+    "title": "Toolbox",
+    "hint": "Double step, Double move and Switcheroo, all at once. Find the combination that works.",
+    "mode": "DIAGONAL",
+    "bonuses": {
+      "step": 1,
+      "double": 1,
+      "swap": 1
+    },
+    "par": 4,
+    "map": [
+      "........",
+      ".#....#.",
+      "........",
+      "........",
+      "..B.B...",
+      "..R.....",
+      "S#....#.",
+      "........"
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 124,
+    "title": "Falling walls",
+    "hint": "Walls inside, a collapsing ring outside. Take the bots before the floor goes.",
+    "mode": "STRAIGHT",
+    "bonuses": null,
+    "shrink": {
+      "start": 2,
+      "every": 3
+    },
+    "par": 5,
+    "map": [
+      ".........",
+      ".........",
+      "..##.##..",
+      ".........",
+      ".B..#....",
+      ".........",
+      ".B##.##..",
+      "...B.....",
+      ".S......."
+    ]
+  },
+  {
+    "tutorial": false,
+    "id": 125,
+    "title": "Two rings",
+    "hint": "The arena shrinks twice. Be on the inside before each collapse.",
+    "mode": "DIAGONAL",
+    "bonuses": null,
+    "shrink": {
+      "start": 2,
+      "every": 2
+    },
+    "par": 6,
+    "map": [
+      ".........",
+      ".........",
+      ".........",
+      "....R....",
+      "....B....",
+      "......S..",
+      "..B......",
+      ".........",
+      "........."
     ]
   }
 ];

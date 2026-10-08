@@ -802,7 +802,7 @@ export class GameController {
     // Bonus: using one, being saved by armor, earning one.
     if (move?.bonus && actor.kind === 'star' && actor.seat === ME) {
       this.toast(move.bonus === 'double' && st.extra ? tr('Double move! Now play your second move.') : `${tr(BONUS_NAMES[move.bonus])}!`, 'info');
-      feel('bonusUse', BUZZ.bonusUse);
+      feel(move.bonus === 'step' ? 'useStep' : move.bonus === 'double' ? 'useDouble' : 'useSwap', BUZZ.bonusUse);
     }
     if (victim?.alive && victim.kind === 'star') {
       this.toast(victim.seat === ME ? tr('Your armor saved you!') : tr('{name} survived thanks to armor', { name: labelOf(st, victim) }), 'info');
@@ -896,7 +896,8 @@ export class GameController {
     const key = this.key();
     const angle = Math.round(Math.atan2(Math.sign(to.r - from.r), Math.sign(to.c - from.c)) * 180 / Math.PI);
     this.view = { ...this.view, slashes: [...this.view.slashes, { key, r: to.r, c: to.c, angle, color, big }] };
-    this.later(big ? 800 : 560, () => this.emit({ slashes: this.view.slashes.filter(s => s.key !== key) }));
+    sound(big ? 'slashBig' : 'slash');
+    this.later(big ? 900 : 640, () => this.emit({ slashes: this.view.slashes.filter(s => s.key !== key) }));
   }
 
   private float(r: number, c: number, text: string, color: string, big = false) {
