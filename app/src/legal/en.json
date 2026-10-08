@@ -1,0 +1,218 @@
+[
+  {
+    "id": "privacy",
+    "title": "Privacy policy",
+    "summary": "What X Sword stores, what leaves your phone and who sees it.",
+    "sections": [
+      {
+        "h": "The short version",
+        "p": [
+          "X Sword has no accounts, no advertising and no analytics. We do not collect, sell or share your personal data.",
+          "Your progress stays on your device. The only things that leave it are the ones needed for online play, listed under \"Data and third parties\"."
+        ]
+      },
+      {
+        "h": "What stays on your device",
+        "p": [
+          "Settings and language, statistics, puzzle stars, daily-challenge results, the match you paused, and a profile: a display name, a color and a random device id.",
+          "None of this is sent to us. You can erase it at any time with \"Delete data on this device\" on the Legal documents screen, or by clearing the app's data or uninstalling the app."
+        ]
+      },
+      {
+        "h": "Online play",
+        "p": [
+          "Multiplayer connects your device directly to the other players' devices. The other players in your room receive your display name, your color and the moves you make. Because the connection is direct, they can technically see your network (IP) address.",
+          "To set up the connection, your device contacts a matchmaking service (PeerJS) and connection helper servers (STUN and relay servers). They see your IP address and the room code while you connect. They do not receive your name or your moves, except that a relay server passes encrypted game traffic along when a direct connection is not possible.",
+          "If you switch on \"Show in the public lobby\", your display name, color and the room's settings (seats filled, board, difficulty, options) are shown to everyone who opens the lobby, and the room code is used to let them join. This switch only appears when the public room list is available, and you can turn it off at any time."
+        ]
+      },
+      {
+        "h": "Platform accounts",
+        "p": [
+          "In the iPhone and Android apps you can sign in with Game Center or Google Play Games to keep your progress. That sign-in and the cloud save are handled by Apple or Google under their own privacy policies. We receive only what the game needs to show your name."
+        ]
+      },
+      {
+        "h": "Children",
+        "p": [
+          "X Sword is a general-audience game and we do not knowingly collect personal data from anyone, including children. In multiplayer, other players see your display name. Parents should help children choose a name that does not reveal personal information, and may prefer private rooms (rooms shared by code only)."
+        ]
+      },
+      {
+        "h": "Your rights",
+        "p": [
+          "We do not hold personal data about you, so there is normally nothing for us to give you, correct or delete. If you believe we hold data about you, or you have questions about your rights under laws such as the GDPR, the UK GDPR, the Turkish KVKK or the CCPA, contact us and we will answer.",
+          "For data held by the services named above, contact those services."
+        ]
+      },
+      {
+        "h": "Security",
+        "p": [
+          "Your data stays on your device. Connections to the website use HTTPS and game connections between devices are encrypted."
+        ]
+      },
+      {
+        "h": "Changes",
+        "p": [
+          "If we add advertising, analytics, accounts or purchases, or change who handles online play, we will update this policy before the change goes live and ask for your consent where the law requires it. The date at the bottom shows the latest version."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data",
+    "title": "Data and third parties",
+    "summary": "A plain list of every service that can see something from your device.",
+    "sections": [
+      {
+        "h": "What we collect",
+        "p": [
+          "Nothing. X Sword has no server of its own that receives your data, no advertising identifiers and no usage tracking."
+        ]
+      },
+      {
+        "h": "Services that can see something",
+        "p": [
+          "Web version: the website is hosted on GitHub Pages. When you open it, GitHub receives the usual web request information (such as your IP address and browser type) under GitHub's privacy statement. The game's fonts and code are served from the same place; nothing is loaded from other websites.",
+          "Matchmaking (online play only): the PeerJS cloud service sees your IP address and the room code while a connection is set up.",
+          "Connection helpers (online play only): STUN servers (run by Google and PeerJS) learn your IP address so two devices can find each other; relay (TURN) servers run by PeerJS may carry encrypted game traffic when a direct connection is not possible.",
+          "Platform services (phone apps only, if you sign in): Apple Game Center and iCloud, or Google Play Games.",
+          "Stores (phone apps): Apple and Google receive your download and, in future, purchases, under their own policies."
+        ]
+      },
+      {
+        "h": "What other players see",
+        "p": [
+          "Your display name and color, your moves, and (through the direct connection) your IP address. Choose a name that does not reveal personal information."
+        ]
+      },
+      {
+        "h": "Nothing is sold or shared for advertising",
+        "p": [
+          "We do not sell your data and we do not share it with advertisers or data brokers."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "terms",
+    "title": "Terms of use",
+    "summary": "The rules for using the game and playing with others.",
+    "sections": [
+      {
+        "h": "Agreement",
+        "p": [
+          "By installing or playing X Sword you agree to these terms. If you do not agree, please do not use the game."
+        ]
+      },
+      {
+        "h": "Your license",
+        "p": [
+          "We give you a personal, non-exclusive, non-transferable license to play X Sword for your own entertainment. The game, its art, sounds and code remain ours or our licensors'. Parts built with open-source software stay under those licenses (see \"Open-source licenses\")."
+        ]
+      },
+      {
+        "h": "Playing fair and kind",
+        "p": [
+          "Do not cheat, tamper with the game or its connections, use automated tools to play, or disturb other players' matches.",
+          "Do not use display names or any other text that is hateful, harassing, sexual, or reveals someone's personal information. A room host can remove players from a room, and we may remove public rooms or block access if the rules are broken."
+        ]
+      },
+      {
+        "h": "Online play",
+        "p": [
+          "Online matches run phone to phone. If the host leaves, the match ends. We cannot promise that a connection will always work: it depends on your network and on third-party services."
+        ]
+      },
+      {
+        "h": "Rewards and unlocks",
+        "p": [
+          "Board themes and piece effects you unlock by playing are cosmetic, have no cash value and cannot be traded or sold. We may rebalance or change how they are earned."
+        ]
+      },
+      {
+        "h": "Purchases and advertising",
+        "p": [
+          "X Sword is free to play today. If purchases or advertising are added, they are described in \"Advertising and purchases\", which then forms part of these terms."
+        ]
+      },
+      {
+        "h": "No warranty",
+        "p": [
+          "X Sword is provided \"as is\". We try to keep it working and fair, but we do not promise that it will be free of errors or always available."
+        ]
+      },
+      {
+        "h": "Limits on our responsibility",
+        "p": [
+          "To the extent the law allows, we are not responsible for indirect or consequential loss, or for loss of progress caused by clearing app data or by third-party services. Nothing here limits rights you have under mandatory consumer law, or liability that cannot be limited by law."
+        ]
+      },
+      {
+        "h": "Changes",
+        "p": [
+          "We may update these terms and the game. The date at the bottom shows the latest version. If you keep playing after a change, you accept it."
+        ]
+      },
+      {
+        "h": "Governing law",
+        "p": [
+          "These terms follow the law of the country where the developer is based, without taking away the mandatory consumer rights you have where you live."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "commerce",
+    "title": "Advertising and purchases",
+    "summary": "How ads and in-app purchases will work if they are added.",
+    "sections": [
+      {
+        "h": "Today",
+        "p": [
+          "X Sword shows no advertising and sells nothing. Everything in the game is free."
+        ]
+      },
+      {
+        "h": "If we add purchases",
+        "p": [
+          "Purchases would be made through the Apple App Store or Google Play and handled by them: payment, receipts, refunds and parental controls follow the store's rules. We will show the real price before you buy and offer \"Restore purchases\" on a new device. We do not plan to sell anything that changes who wins a match: planned purchases are cosmetic, such as board themes and piece effects."
+        ]
+      },
+      {
+        "h": "If we add advertising",
+        "p": [
+          "Ads would come from an advertising partner that may use a device identifier to show and measure ads. Before showing any ad we will ask for your consent where the law requires it (for example in the EU, the UK and on iPhone), tell you which partner is used, and let you change your choice at any time in Settings. We will not show personalized ads to children.",
+          "This policy and the \"Data and third parties\" list will be updated before any ad or purchase goes live."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "licenses",
+    "title": "Open-source licenses",
+    "summary": "The free software and fonts X Sword is built with.",
+    "sections": [
+      {
+        "h": "Fonts",
+        "p": [
+          "Oxanium (© The Oxanium Project Authors) and Barlow (© The Barlow Project Authors) are used under the SIL Open Font License 1.1. The license text is at https://openfontlicense.org."
+        ]
+      },
+      {
+        "h": "Software",
+        "p": [
+          "React and React DOM (MIT License, © Meta Platforms, Inc. and affiliates).",
+          "PeerJS (MIT License, © Michelle Bu, Eric Zhang and contributors): connections between devices.",
+          "Build tools such as Vite and TypeScript are used to make the game and are not part of what you run."
+        ]
+      },
+      {
+        "h": "Source code",
+        "p": [
+          "The game's source is at https://github.com/ardaulker/x-sword. Full license texts for the packages above are included with them in the source distribution."
+        ]
+      }
+    ]
+  }
+]

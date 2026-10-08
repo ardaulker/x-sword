@@ -14,6 +14,7 @@ import { StatsScreen } from './screens/StatsScreen';
 import { PuzzleScreen } from './screens/PuzzleScreen';
 import { ReplayScreen } from './screens/ReplayScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
+import { LegalScreen } from './screens/LegalScreen';
 import { legacyLevel } from './game/legacy';
 
 const SETUP_KEY = 'xsword-app-setup';
@@ -43,8 +44,8 @@ function saveSetup(s: Setup) {
 // Screens are chosen by the #/ in the address bar; the phone's back button returns to the previous screen.
 // #/join/CODE is an invite link: opening it joins that room. #/replay/CODE opens a replay.
 // Links shared before the English rename use the old Turkish paths; they still work (LEGACY).
-type Screen = 'menu' | 'play' | 'rules' | 'settings' | 'multiplayer' | 'room' | 'match' | 'join' | 'stats' | 'puzzles' | 'replay' | 'profile';
-const SCREENS: Screen[] = ['play', 'rules', 'settings', 'multiplayer', 'room', 'match', 'stats', 'puzzles', 'profile'];
+type Screen = 'menu' | 'play' | 'rules' | 'settings' | 'multiplayer' | 'room' | 'match' | 'join' | 'stats' | 'puzzles' | 'replay' | 'profile' | 'legal';
+const SCREENS: Screen[] = ['play', 'rules', 'settings', 'multiplayer', 'room', 'match', 'stats', 'puzzles', 'profile', 'legal'];
 const LEGACY: Record<string, Screen> = {
   oyun: 'play', kurallar: 'rules', ayarlar: 'settings', cok: 'multiplayer', oda: 'room', mac: 'match',
   istatistik: 'stats', bulmaca: 'puzzles', profil: 'profile', katil: 'join', izle: 'replay',
@@ -53,7 +54,7 @@ const LEGACY: Record<string, Screen> = {
 function readRoute(): [Screen, string] {
   const [head, ...rest] = location.hash.replace(/^#\//, '').split('/');
   const s = (LEGACY[head] ?? head) as Screen;
-  if (s === 'join' || s === 'replay') return [s, rest.join('/')];
+  if (s === 'join' || s === 'replay' || s === 'legal') return [s, rest.join('/')];
   return [SCREENS.includes(s) ? s : 'menu', ''];
 }
 const readScreen = () => readRoute()[0];
@@ -76,7 +77,7 @@ export function App() {
   const roomView = useSyncExternalStore(room?.subscribe ?? noRoom.subscribe, room?.getSnapshot ?? noRoom.getSnapshot);
 
   useEffect(() => {
-    const onHash = () => setScreen(readScreen());
+    const onHash = () => { setScreen(readScreen()); setTick(n => n + 1); }; // a new argument on the same screen (#/legal/privacy) must redraw too
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
@@ -135,8 +136,12 @@ export function App() {
     return <PuzzleScreen onBack={() => go('menu')} onPick={id => start({ ...ctl.setup, players: 1, daily: null, puzzle: id })} />;
   }
   if (screen === 'replay') return <ReplayScreen code={readRoute()[1]} onBack={() => go('menu')} />;
+  if (screen === 'legal') {
+    const open = (id: string) => { location.hash = id ? `#/legal/${id}` : '#/legal'; };
+    return <LegalScreen docId={readRoute()[1]} onOpen={open} onBack={() => go('settings')} />;
+  }
   if (screen === 'rules') return <RulesScreen onBack={() => go('menu')} />;
-  if (screen === 'settings') return <SettingsScreen onBack={() => go('menu')} onRules={() => go('rules')} />;
+  if (screen === 'settings') return <SettingsScreen onBack={() => go('menu')} onRules={() => go('rules')} onLegal={() => go('legal')} />;
   if (screen === 'match' && room) {
     return (
       <GameScreen

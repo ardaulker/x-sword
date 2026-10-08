@@ -27,7 +27,7 @@ function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: 
 }
 
 // inGame: opened during a match; settings that change the game are hidden (only sound, vibration and language remain).
-export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: () => void; onRules?: () => void; inGame?: boolean }) {
+export function SettingsScreen({ onBack, onRules, onLegal, inGame = false }: { onBack: () => void; onRules?: () => void; onLegal?: () => void; inGame?: boolean }) {
   const lang = useLang();
   const [s, setS] = useState(settings);
   const stats = loadStats();
@@ -133,6 +133,12 @@ export function SettingsScreen({ onBack, onRules, inGame = false }: { onBack: ()
           })()}
         </div>
           </>
+        )}
+        {onLegal && (
+          <button type="button" className="rule set-row" onClick={onLegal}>
+            <div className="rule-text"><h3>{tr('Legal documents')}</h3><p>{tr('Privacy policy, terms of use and what we do with data.')}</p></div>
+            <Icon d="M9 5 L16 12 L9 19" size={18} stroke={2.4} />
+          </button>
         )}
       </div>
     </div>

@@ -1,0 +1,218 @@
+[
+  {
+    "id": "privacy",
+    "title": "Gizlilik politikası",
+    "summary": "X Sword neyi saklar, telefonundan ne çıkar ve kim görür.",
+    "sections": [
+      {
+        "h": "Kısaca",
+        "p": [
+          "X Sword'de hesap, reklam ve analiz yoktur. Kişisel verini toplamayız, satmayız, paylaşmayız.",
+          "İlerlemen cihazında kalır. Cihazından çıkan tek şey çevrim içi oyun için gerekenlerdir; bunlar \"Veriler ve üçüncü taraflar\" bölümünde sıralıdır."
+        ]
+      },
+      {
+        "h": "Cihazında kalanlar",
+        "p": [
+          "Ayarlar ve dil, istatistikler, bulmaca yıldızları, günlük meydan okuma sonuçları, duraklattığın maç ve bir profil: görünen ad, renk ve rastgele bir cihaz kimliği.",
+          "Bunların hiçbiri bize gönderilmez. Hepsini istediğin zaman Hukuki belgeler ekranındaki \"Bu cihazdaki verileri sil\" ile, uygulama verisini temizleyerek ya da uygulamayı silerek yok edebilirsin."
+        ]
+      },
+      {
+        "h": "Çevrim içi oyun",
+        "p": [
+          "Çok oyunculu mod, cihazını diğer oyuncuların cihazına doğrudan bağlar. Odandaki oyuncular görünen adını, rengini ve yaptığın hamleleri alır. Bağlantı doğrudan olduğu için ağ (IP) adresini teknik olarak görebilirler.",
+          "Bağlantıyı kurmak için cihazın bir eşleştirme hizmetiyle (PeerJS) ve bağlantı yardımcı sunucularıyla (STUN ve aktarma sunucuları) konuşur. Bağlanırken IP adresini ve oda kodunu görürler. Adını ve hamlelerini almazlar; yalnızca doğrudan bağlantı kurulamadığında bir aktarma sunucusu şifreli oyun trafiğini iletir.",
+          "\"Herkese açık lobide göster\"i açarsan görünen adın, rengin ve odanın ayarları (dolu koltuk, tahta, zorluk, seçenekler) lobiyi açan herkese gösterilir; katılabilmeleri için oda kodu kullanılır. Bu anahtar yalnızca herkese açık oda listesi varken görünür ve istediğin zaman kapatabilirsin."
+        ]
+      },
+      {
+        "h": "Platform hesapları",
+        "p": [
+          "iPhone ve Android uygulamalarında ilerlemeni korumak için Game Center ya da Google Play Games ile giriş yapabilirsin. Bu giriş ve bulut kaydı Apple veya Google'ın kendi gizlilik politikalarıyla yönetilir. Adını göstermek için oyunun ihtiyaç duyduğundan fazlasını almayız."
+        ]
+      },
+      {
+        "h": "Çocuklar",
+        "p": [
+          "X Sword genel izleyiciye yönelik bir oyundur ve çocuklar dahil kimseden bilerek kişisel veri toplamayız. Çok oyunculu modda diğer oyuncular görünen adını görür. Ebeveynler çocuklarına kişisel bilgi içermeyen bir ad seçmelerinde yardım etmeli, yalnızca kodla paylaşılan özel odaları tercih edebilir."
+        ]
+      },
+      {
+        "h": "Hakların",
+        "p": [
+          "Hakkında kişisel veri tutmadığımız için bizden isteyebileceğin, düzelttirebileceğin ya da sildirebileceğin bir şey normalde yoktur. Hakkında veri tuttuğumuzu düşünüyorsan ya da GDPR, Birleşik Krallık GDPR'ı, KVKK veya CCPA gibi yasalardaki haklarınla ilgili sorun varsa bize yaz, yanıtlarız.",
+          "Yukarıda adı geçen hizmetlerin tuttuğu veriler için o hizmetlerle iletişime geç."
+        ]
+      },
+      {
+        "h": "Güvenlik",
+        "p": [
+          "Verilerin cihazında kalır. Web sitesine bağlantılar HTTPS kullanır, cihazlar arasındaki oyun bağlantıları şifrelidir."
+        ]
+      },
+      {
+        "h": "Değişiklikler",
+        "p": [
+          "Reklam, analiz, hesap ya da satın alma eklersek veya çevrim içi oyunu kimin yürüttüğünü değiştirirsek, değişiklik yayına girmeden bu politikayı güncelleriz ve yasa gerektiriyorsa onayını isteriz. Alttaki tarih son sürümü gösterir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data",
+    "title": "Veriler ve üçüncü taraflar",
+    "summary": "Cihazından bir şey görebilen her hizmetin düz bir listesi.",
+    "sections": [
+      {
+        "h": "Ne topluyoruz",
+        "p": [
+          "Hiçbir şey. X Sword'ün verini alan kendi sunucusu, reklam kimliği ya da kullanım takibi yoktur."
+        ]
+      },
+      {
+        "h": "Bir şey görebilen hizmetler",
+        "p": [
+          "Web sürümü: site GitHub Pages'te barındırılır. Siteyi açtığında GitHub, olağan web isteği bilgilerini (IP adresin ve tarayıcı türün gibi) kendi gizlilik bildirimi kapsamında alır. Oyunun yazı tipleri ve kodu aynı yerden gelir; başka sitelerden hiçbir şey yüklenmez.",
+          "Eşleştirme (yalnızca çevrim içi oyun): PeerJS bulut hizmeti, bağlantı kurulurken IP adresini ve oda kodunu görür.",
+          "Bağlantı yardımcıları (yalnızca çevrim içi oyun): iki cihazın birbirini bulması için STUN sunucuları (Google ve PeerJS işletir) IP adresini öğrenir; doğrudan bağlantı kurulamazsa PeerJS'in aktarma (TURN) sunucuları şifreli oyun trafiğini taşıyabilir.",
+          "Platform hizmetleri (yalnızca telefon uygulamaları, giriş yaparsan): Apple Game Center ve iCloud ya da Google Play Games.",
+          "Mağazalar (telefon uygulamaları): Apple ve Google, kendi politikalarına göre indirmeni ve ileride satın almalarını alır."
+        ]
+      },
+      {
+        "h": "Diğer oyuncular ne görür",
+        "p": [
+          "Görünen adın ve rengin, hamlelerin ve (doğrudan bağlantı yüzünden) IP adresin. Kişisel bilgi içermeyen bir ad seç."
+        ]
+      },
+      {
+        "h": "Hiçbir şey satılmaz, reklam için paylaşılmaz",
+        "p": [
+          "Verini satmayız; reklamcılarla ya da veri simsarlarıyla paylaşmayız."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "terms",
+    "title": "Kullanım koşulları",
+    "summary": "Oyunu kullanmanın ve başkalarıyla oynamanın kuralları.",
+    "sections": [
+      {
+        "h": "Anlaşma",
+        "p": [
+          "X Sword'ü yükleyerek ya da oynayarak bu koşulları kabul edersin. Kabul etmiyorsan lütfen oyunu kullanma."
+        ]
+      },
+      {
+        "h": "Lisansın",
+        "p": [
+          "X Sword'ü kendi eğlencen için oynaman üzere sana kişisel, münhasır olmayan, devredilemez bir lisans veriyoruz. Oyun, görselleri, sesleri ve kodu bizim ya da lisans verenlerimizin kalır. Açık kaynak yazılımla yapılan parçalar kendi lisanslarına bağlıdır (\"Açık kaynak lisansları\"na bak)."
+        ]
+      },
+      {
+        "h": "Adil ve kibar oyna",
+        "p": [
+          "Hile yapma, oyunu ya da bağlantılarını kurcalama, otomatik araçlarla oynama, başkalarının maçını bozma.",
+          "Nefret içeren, taciz eden, cinsel ya da birinin kişisel bilgisini açığa çıkaran görünen ad veya başka metin kullanma. Oda sahibi oyuncuları odadan çıkarabilir; kurallar çiğnenirse herkese açık odaları kaldırabilir veya erişimi engelleyebiliriz."
+        ]
+      },
+      {
+        "h": "Çevrim içi oyun",
+        "p": [
+          "Çevrim içi maçlar telefondan telefona çalışır. Oda sahibi ayrılırsa maç biter. Bağlantının her zaman çalışacağını vaat edemeyiz: ağına ve üçüncü taraf hizmetlere bağlıdır."
+        ]
+      },
+      {
+        "h": "Ödüller ve açılanlar",
+        "p": [
+          "Oynayarak açtığın tahta temaları ve taş efektleri görseldir, nakit değeri yoktur, takas edilemez ve satılamaz. Nasıl kazanıldıklarını dengeleyebilir ya da değiştirebiliriz."
+        ]
+      },
+      {
+        "h": "Satın alma ve reklam",
+        "p": [
+          "X Sword bugün oynaması ücretsizdir. Satın alma veya reklam eklenirse bunlar \"Reklam ve satın alma\" bölümünde anlatılır ve o bölüm bu koşulların parçası olur."
+        ]
+      },
+      {
+        "h": "Garanti yok",
+        "p": [
+          "X Sword \"olduğu gibi\" sunulur. Çalışır ve adil kalmasına çalışırız; ancak hatasız ya da her zaman erişilebilir olacağını vaat etmeyiz."
+        ]
+      },
+      {
+        "h": "Sorumluluğumuzun sınırı",
+        "p": [
+          "Yasanın izin verdiği ölçüde; dolaylı ya da sonuç olarak doğan zararlardan, uygulama verisini temizlemenin veya üçüncü taraf hizmetlerin yol açtığı ilerleme kaybından sorumlu değiliz. Buradaki hiçbir şey, zorunlu tüketici hukukundan doğan haklarını veya yasayla sınırlanamayan sorumluluğu kısıtlamaz."
+        ]
+      },
+      {
+        "h": "Değişiklikler",
+        "p": [
+          "Bu koşulları ve oyunu güncelleyebiliriz. Alttaki tarih son sürümü gösterir. Değişiklikten sonra oynamaya devam edersen kabul etmiş olursun."
+        ]
+      },
+      {
+        "h": "Geçerli hukuk",
+        "p": [
+          "Bu koşullar geliştiricinin bulunduğu ülkenin hukukuna tabidir; yaşadığın yerdeki zorunlu tüketici haklarını ortadan kaldırmaz."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "commerce",
+    "title": "Reklam ve satın alma",
+    "summary": "Reklam ve oyun içi satın alma eklenirse nasıl işleyeceği.",
+    "sections": [
+      {
+        "h": "Bugün",
+        "p": [
+          "X Sword reklam göstermez ve hiçbir şey satmaz. Oyundaki her şey ücretsizdir."
+        ]
+      },
+      {
+        "h": "Satın alma eklersek",
+        "p": [
+          "Satın almalar Apple App Store veya Google Play üzerinden yapılır ve onlar tarafından yürütülür: ödeme, makbuz, iade ve ebeveyn denetimleri mağazanın kurallarına tabidir. Satın almadan önce gerçek fiyatı gösteririz ve yeni bir cihazda \"Satın almaları geri yükle\" seçeneği sunarız. Maçı kimin kazandığını değiştiren hiçbir şey satmayı planlamıyoruz: planlanan satın almalar tahta temaları ve taş efektleri gibi görseldir."
+        ]
+      },
+      {
+        "h": "Reklam eklersek",
+        "p": [
+          "Reklamlar, reklamı göstermek ve ölçmek için cihaz kimliği kullanabilen bir reklam ortağından gelir. Herhangi bir reklam göstermeden önce yasa gerektirdiği yerlerde (örneğin AB, Birleşik Krallık ve iPhone'da) onayını isteriz, hangi ortağın kullanıldığını söyleriz ve tercihini istediğin zaman Ayarlar'dan değiştirmene izin veririz. Çocuklara kişiselleştirilmiş reklam göstermeyiz.",
+          "Herhangi bir reklam ya da satın alma yayına girmeden bu politika ve \"Veriler ve üçüncü taraflar\" listesi güncellenir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "licenses",
+    "title": "Açık kaynak lisansları",
+    "summary": "X Sword'ün yapıldığı özgür yazılımlar ve yazı tipleri.",
+    "sections": [
+      {
+        "h": "Yazı tipleri",
+        "p": [
+          "Oxanium (© The Oxanium Project Authors) ve Barlow (© The Barlow Project Authors), SIL Open Font License 1.1 kapsamında kullanılır. Lisans metni: https://openfontlicense.org."
+        ]
+      },
+      {
+        "h": "Yazılım",
+        "p": [
+          "React ve React DOM (MIT Lisansı, © Meta Platforms, Inc. ve bağlı kuruluşları).",
+          "PeerJS (MIT Lisansı, © Michelle Bu, Eric Zhang ve katkıda bulunanlar): cihazlar arası bağlantılar.",
+          "Vite ve TypeScript gibi derleme araçları oyunu üretmek için kullanılır, çalıştırdığın şeyin parçası değildir."
+        ]
+      },
+      {
+        "h": "Kaynak kodu",
+        "p": [
+          "Oyunun kaynağı https://github.com/ardaulker/x-sword adresindedir. Yukarıdaki paketlerin tam lisans metinleri kaynak dağıtımında kendileriyle birlikte bulunur."
+        ]
+      }
+    ]
+  }
+]

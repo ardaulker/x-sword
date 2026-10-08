@@ -488,6 +488,12 @@ S#....#.
   the public lobby" switch; `net/directory.ts` is the room board (`Directory`). The shipped app has no internet-wide board yet
   (`directory` is null, so no list and no public switches); development uses a same-browser board for two-tab tests. Choosing the
   service is Arda's decision, see `docs/public-lobby.md`.
+- **Legal documents** (9 October 2026): Settings → Legal documents (`screens/LegalScreen.tsx`, route `#/legal[/id]`) shows the privacy policy,
+  data/third-party list, terms, advertising & purchases and open-source licenses from `app/src/legal/{en,tr}.json` (other
+  languages show English; `config.json` holds the update date and the contact e-mail, empty until Arda adds it). The build checks both
+  languages match and writes static store pages to `dist/legal/` (`tools/make-legal-pages.mjs`). "Delete data on this device" clears
+  every `xsword-*` key. **When the game starts collecting or sharing anything new (ads, analytics, accounts, purchases, a server),
+  update these documents in the same change**; checklist in `docs/store-compliance.md`.
 - **Error screen**: `components/ErrorBoundary.tsx` wraps the app; on a render error it offers "Reload" and "Reload without the
   saved match" (clears `xsword-save`), so a broken save cannot crash the app on every start.
 - The top bar shows "ROUND n" translated; the menu and battle-log buttons have small captions (hidden on short

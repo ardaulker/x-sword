@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && node check-css.mjs && node check-i18n.mjs",
+    "build": "tsc && vite build && node check-css.mjs && node check-i18n.mjs && node ../tools/make-legal-pages.mjs",
     "preview": "vite preview",
     "typecheck": "tsc"
   },

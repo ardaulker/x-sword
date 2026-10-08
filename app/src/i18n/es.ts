@@ -578,5 +578,13 @@ const dict: Record<string, string> = {
   'Anyone can find your room with your name and board settings.': 'Cualquiera puede encontrar tu sala con tu nombre y los ajustes del tablero.',
   'Public room': 'Sala pública',
   'Anyone can find this room in the lobby.': 'Cualquiera puede encontrar esta sala en el lobby.',
+  'Legal documents': 'Documentos legales',
+  'Privacy policy, terms of use and what we do with data.': 'Política de privacidad, términos de uso y qué hacemos con los datos.',
+  'Last updated: {date}': 'Última actualización: {date}',
+  'Contact: {email}': 'Contacto: {email}',
+  'Legal documents are available in English and Turkish. The English text applies in other languages.': 'Los documentos legales están en inglés y turco. En otros idiomas rige el texto en inglés.',
+  'Delete data on this device': 'Borrar los datos de este dispositivo',
+  'Removes your settings, statistics, puzzle stars, profile and paused match from this device. This cannot be undone.': 'Elimina tus ajustes, estadísticas, estrellas de puzzles, tu perfil y la partida en pausa de este dispositivo. No se puede deshacer.',
+  'Delete everything': 'Borrar todo',
 };
 export default dict;
