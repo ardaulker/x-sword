@@ -54,10 +54,12 @@
 - Decisions made after the first design brief override the design:
   - The game is called **X Sword**.
   - Pieces are **taken** ("take / took"), never hit, eaten or killed. Examples: "You took #5!", "#3 took you!".
-  - Turkish glossary (Arda chose these on 8 October 2026; the game ships in Turkish first): to take = **elemek**
-    ("5 numarayı eledin!", "3 numara seni eledi!", "Elendin", "Eleme sayısı"; never vurmak, yemek or öldürmek). The
-    Switcheroo bonus = **Yer Çalma**. The sword (kılıç) is the mark that shows the taking direction. "Almak" stays only
-    for receiving things (bonus alır) and "Geri al" (undo).
+  - Turkish glossary (Arda chose these on 8 October 2026; the game ships in Turkish first): the one who takes **alır**
+    ("5 numarayı aldın!", "düz alır", "Alma sayısı"). The one taken is never "alındı" or "seni aldı"; Arda dislikes
+    both. Use "Elendin" / "elendi" and "3 numara tarafından elendin!". Threats are "seni tehdit ediyor" or "bir taşın
+    menzilindesin", an attacking piece "saldırır". Never vurmak, yemek, öldürmek. Arda tried "elemek" as the main verb and
+    dropped it (it lost the sword feel). The Switcheroo bonus = **Yer Çalma**. The sword (kılıç) is the mark that shows
+    the taking direction. "Almak" is also used for receiving things (bonus alır) and "Geri al" (undo).
   - The design's "Twin" in an empty seat is now an **AI player**, called "Player N" like a human. "Twin" belongs only to
     the mirror in single-player mode.
   - The top bar has a **match clock**: it counts from 00:00 when the match starts and stops at the end; the end screen
