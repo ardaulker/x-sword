@@ -6,6 +6,7 @@ const config: CapacitorConfig = {
   appName: 'X Sword',
   webDir: 'dist',
   ios: { contentInset: 'never', backgroundColor: '#0B1026' },
+  android: { backgroundColor: '#0B1026' },
 };
 
 export default config;

@@ -176,6 +176,9 @@
   saved games, Core Haptics). It builds and runs in the simulator; signing, iCloud and the store are Arda's steps. Everything about it,
   including build commands (`npm --prefix app run ios:sync`) and what Arda still has to do: `docs/ios-app.md`. Rerun `ios:sync` after web
   changes; use `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` until `xcode-select` points at Xcode.
+- **Android app** (17 October 2026): `app/android/` is the Capacitor shell with the Java `XSwordGames` plugin (Play Games, saved games, vibration),
+  icons and splash. **Written but not yet built**: no JDK or Android SDK was installed; toolchain, build commands and Arda's Play Console steps
+  are in `docs/android-app.md`. Rerun `android:sync` after web changes.
 - Docs: `docs/design-prompt.md` (the design brief), `docs/profile-infrastructure.md` (profiles, platform accounts).
 
 ## Watch out
@@ -607,5 +610,5 @@ S#....#.
   Kılıç 482'yi).
 - Multiplayer: `profile` in the `hello` message (name + color, cleaned by `readPublic`), `LobbySeat.name/color`,
   `MatchStart.names`. Only the name and color reach opponents.
-- The Capacitor shell + the iOS `XSwordGames` plugin exist (`docs/ios-app.md`); the Android shell and plugin are not started. Next steps: Apple Developer / App Store Connect / Game Center
+- The Capacitor shell + the iOS `XSwordGames` plugin exist (`docs/ios-app.md`); the Android shell and plugin are written but not built (`docs/android-app.md`). Next steps: Apple Developer / App Store Connect / Game Center
   / Google Play Console / Play Games Services / privacy policy (Arda's clicks).
