@@ -86,9 +86,14 @@ One round is straight, the next is diagonal. Your star moves and takes in that r
 - **Review notes (English):** "X Sword needs no login. Online play is peer to peer: create a room on one device (Multiplayer → Create room)
   and join with the 5-character code on a second device. A match can also be played alone (Quick match) or against AI players (New game →
   2 players). There are no in-app purchases and no ads. Game Center is used only to sign in silently when available."
-- **Screenshots (6.9-inch, 1320×2868, 5–8 images):** 1 the main menu, 2 a match mid-game with the sword stroke on a take, 3 the bonus bar and
-  the Double move strip, 4 a puzzle with a hunter (dashed ring), 5 the lobby with seats, 6 the bonus guide, 7 achievements, 8 the result card.
-  Capture them from the simulator (`xcrun simctl io booted screenshot`) in Turkish and English. Add 6.5-inch only if Connect asks for it.
+- **Screenshots (6.9-inch, 1320×2868): ready in `store/screenshots/ios-6.9/{tr,en}/`**, eight scenes each: 01 main menu, 02 a take with the sword
+  stroke, 03 the bonus bar and the Double move strip, 04 a puzzle with a hunter, 05 the New game sheet, 06 the bonus guide, 07 achievements,
+  08 a solved puzzle. `plain/` is the game under a status bar; `captioned/` adds a headline (`overview-tr.png` / `overview-en.png` show all
+  eight at a glance). Regenerate after UI changes: `node tools/make-store-screenshots.mjs <rawDir>` then
+  `python3 tools/compose-store-screenshots.py <rawDir>`. The raw shots come from the web game in Chrome at an iPhone viewport with a faked
+  9:41 status bar, not from a device; Apple accepts that, but retake them on the simulator or a phone if a reviewer objects. Not covered: the
+  multiplayer lobby (it needs a live room). Apple scales the 6.9-inch set down for smaller iPhones; add 6.5-inch or iPad sets only if
+  Connect asks.
 - **Version text "What's New" (1.0):** "İlk sürüm." / "First release."
 
 ## Google Play Console fields
