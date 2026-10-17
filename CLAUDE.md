@@ -107,7 +107,7 @@
   50 Switcheroo (swap places with any piece on the board; Turkish name "Yer Çalma"). Surviving the first shrink gives armor (one extra life); so does taking two pieces with the two moves of one Double move (`state.extra.takes`, once per sequence). The
   second a double move. AI players use bonuses too (`bonusMoves`, `BONUS_COST`).
 - Difficulty: Easy (you move first), Normal (random place), Hard (random place, bot target triangles hidden). AI rivals
-  (`Setup.aiLevel`) and arena bots (`Setup.level`) are set separately. A Normal rival picks the second best move 30%
+  (`Setup.aiLevel`) and arena bots (`Setup.level`) are set separately. A Normal rival picks the second best move 70%
   of the time (`SLIP`); Hard never slips and hunts the rival star (`HUNT_PULL`).
 - Options (off by default): personalities (hunter / careful / opportunist), obstacle squares (can't be entered or
   jumped with a double step), teams (2 vs 2, 4 players only); engine: `state.blocked`, `state.teams`, `friendly()`,
@@ -120,8 +120,9 @@
   vibration and language), Main menu.
 
 ## Measurements (printed by `tests/engine.test.mjs`)
-- Careful player: wins 92–96% against an Easy rival, ~35–37% against Normal, ~14–15% against Hard. Hard beats Normal
-  about 2:1 (149–51 and 134–66 in two runs).
+- Careful player: wins 92–96% against an Easy rival, ~50–54% against Normal, ~14–15% against Hard. Hard beats Normal
+  about 3:1 (161–39 in one run). Normal used to be ~35% (`SLIP` 0.3): on 17 October 2026 `SLIP` went to 0.7 so the ladder is
+  Easy 92 · Normal ~52 · Hard 15 instead of a cliff after Easy. The careful player is a bot, not a human: recheck with real players.
 - Personality wins (90 matches, 4 Hard): hunter 42, careful 32, opportunist 16.
 - Team balance (100 matches, 4 AI): Normal A47/B53, Hard A42/B58; within noise, left alone. If "B always wins" comes up,
   check with 300 matches.

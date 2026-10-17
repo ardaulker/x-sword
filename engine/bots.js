@@ -56,7 +56,9 @@ export function chooseMove(state, piece, level = levelOf(state, piece)) {
   return best;
 }
 
-const SLIP = 0.3;
+// How often a Normal AI player picks its second best move. 0.3 made Normal much harder than Easy (a careful player won 92% against
+// Easy, 33% against Normal, 15% against Hard); 0.7 puts Normal in the middle (about 52%) and Hard still beats it about 3:1.
+const SLIP = 0.7;
 const HUNT_PULL = 20, HUNT_SQUEEZE = 30;
 const BONUS_COST = { step: 220, swap: 320, double: 200 };
 
