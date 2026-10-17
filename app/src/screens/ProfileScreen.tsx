@@ -5,6 +5,7 @@ import type { Profile } from '../game/profile';
 import { importProgress, progressCode } from '../game/progress';
 import { platform } from '../game/platform';
 import { loadStats } from '../game/stats';
+import { blockedNames, unblock } from '../game/blocklist';
 import { tr } from '../i18n';
 import './RulesScreen.css';
 
@@ -25,6 +26,7 @@ export function ProfileScreen({ onBack, onStats }: { onBack: () => void; onStats
   const [copied, setCopied] = useState(false);
   const [paste, setPaste] = useState('');
   const [result, setResult] = useState<'' | 'ok' | 'bad'>('');
+  const [blocked, setBlocked] = useState(blockedNames());
   const s = loadStats();
   const stars = Object.values(s.puzzleStars).reduce((a, b) => a + b, 0);
   const native = platform() !== 'web';
@@ -95,6 +97,17 @@ export function ProfileScreen({ onBack, onStats }: { onBack: () => void; onStats
           <button type="button" className="btn btn-main" disabled={!paste.trim()} onClick={load}>{tr('Load code')}</button>
           {result && <p className={`set-note${result === 'bad' ? ' is-bad' : ''}`}>{result === 'ok' ? tr('Progress loaded and merged.') : tr("This code couldn't be read.")}</p>}
         </div>
+        {blocked.length > 0 && (
+          <div className="rule set-col">
+            <div className="rule-text"><h3>{tr('Blocked players')}</h3></div>
+            {blocked.map(n => (
+              <div key={n} className="btn-row" style={{ alignItems: 'center' }}>
+                <span style={{ flex: 1, overflowWrap: 'anywhere' }}>{n}</span>
+                <button type="button" className="btn btn-ghost" style={{ flex: 'none', height: 40 }} onClick={() => { unblock(n); setBlocked(blockedNames()); }}>{tr('Unblock')}</button>
+              </div>
+            ))}
+          </div>
+        )}
         <p className="rules-foot">{tr("Your profile isn't sent to any server.")}</p>
       </div>
     </div>

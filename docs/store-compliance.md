@@ -23,8 +23,9 @@ the static pages (`tools/make-legal-pages.mjs`).
   tracking" and re-check when a server is added.
 - **Privacy policy URL**: the static page above. **Support URL** and contact: required.
 - **App Tracking Transparency**: needed only if ads or analytics track across apps (then a prompt plus `NSUserTrackingUsageDescription`).
-- **User-generated content (guideline 1.2)**: display names and the public lobby count. Needed before the lobby ships: a way to
-  report a player or room, a way to block, and the right to remove content. Keep the lobby off in the first build if these are not ready.
+- **User-generated content (guideline 1.2)**: display names and the public lobby count. Built (17 Oct 2026): block by name, report by prefilled
+  mail (needs `contactEmail` in `app/src/legal/config.json`; the report button is hidden until it is set), host removal. Still missing
+  and worth having before the lobby ships: a name filter, and a human reading the reports promptly (Apple expects timely action).
 - **In-app purchases (3.1.1)**: use StoreKit; "Restore purchases" button; show the price from the store; no codes or external
   payment links for digital goods. Randomized paid items need published odds: we do not plan them.
 - **Minimum functionality (4.2)**: the plan in `docs/profile-infrastructure.md` (Game Center, native haptics, offline play).

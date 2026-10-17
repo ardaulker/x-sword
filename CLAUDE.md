@@ -507,6 +507,12 @@ S#....#.
   `bestStreak`; the engine counts `seats[].bonusUses` and `pairTakes`), so nothing extra is stored and `mergeProgress` keeps them across
   devices; only "already announced" is kept (`xsword-achievements-seen`). The result card says "Achievement unlocked: …". To add one,
   append to `ACHIEVEMENTS` (name, description, goal, value from stats) and add its texts to all six dictionaries.
+- **Block and report** (17 October 2026; Apple guideline 1.2 asks for it before a public lobby ships): a "⋯" button on lobby seats, on
+  public-lobby rows and in the in-match menu (`Sheets.tsx → PlayerSheet`) blocks a player by display name (`game/blocklist.ts`,
+  `xsword-blocked`; a blocked name shows as "Blocked player", their rooms leave the lobby list, a banner offers to leave a room they
+  are in; blocked players are listed on the Profile screen) and, once `app/src/legal/config.json → contactEmail` is set, reports them
+  through a prefilled mail (`game/report.ts`; nothing is sent automatically; the button stays hidden while the address is empty). The
+  host can also remove a guest. There is no name filter and no server-side moderation yet: see `docs/public-lobby.md`.
 - **Error screen**: `components/ErrorBoundary.tsx` wraps the app; on a render error it offers "Reload" and "Reload without the
   saved match" (clears `xsword-save`), so a broken save cannot crash the app on every start.
 - The top bar shows "ROUND n" translated; the menu and battle-log buttons have small captions (hidden on short

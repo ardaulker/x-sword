@@ -23,7 +23,8 @@
         "p": [
           "Multiplayer connects your device directly to the other players' devices. The other players in your room receive your display name, your color and the moves you make. Because the connection is direct, they can technically see your network (IP) address.",
           "To set up the connection, your device contacts a matchmaking service (PeerJS) and connection helper servers (STUN and relay servers). They see your IP address and the room code while you connect. They do not receive your name or your moves, except that a relay server passes encrypted game traffic along when a direct connection is not possible.",
-          "If you switch on \"Show in the public lobby\", your display name, color and the room's settings (seats filled, board, difficulty, options) are shown to everyone who opens the lobby, and the room code is used to let them join. This switch only appears when the public room list is available, and you can turn it off at any time."
+          "If you switch on \"Show in the public lobby\", your display name, color and the room's settings (seats filled, board, difficulty, options) are shown to everyone who opens the lobby, and the room code is used to let them join. This switch only appears when the public room list is available, and you can turn it off at any time.",
+          "Blocking another player stores their display name on your device only. If you report a player, your mail app opens a message to us with the room code, the player's name and the reason; nothing is sent until you send it."
         ]
       },
       {

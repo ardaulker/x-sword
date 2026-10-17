@@ -15,6 +15,9 @@ import { freshAchievements, markAchievementsSeen } from '../game/achievements';
 import { SkinFx } from './SkinFx';
 import { SkinPicker } from './SkinPicker';
 import { saveSettings, settings } from '../game/settings';
+import { block, isBlocked, unblock } from '../game/blocklist';
+import { canReport, reportLink } from '../game/report';
+import type { ReportReason } from '../game/report';
 import { skinById } from '../game/themes';
 import { BONUS_ICONS, shortBonus } from './ActionPanel';
 import { PUZZLES } from '../game/puzzles';
@@ -22,7 +25,7 @@ import { puzzleNo, puzzleTitle } from '../game/puzzleText';
 import { tr } from '../i18n';
 
 // A bottom sheet; the background dims and tapping outside closes it.
-function SheetFrame({ label, onClose, children, tall = false }: { label: string; onClose: () => void; children: ReactNode; tall?: boolean }) {
+export function SheetFrame({ label, onClose, children, tall = false }: { label: string; onClose: () => void; children: ReactNode; tall?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     ref.current?.focus();
@@ -363,8 +366,42 @@ export function SetupSheet({ setup, onStart, onClose }: {
   );
 }
 
-// Menu in a multiplayer match: leave the room.
-export function LeaveSheet({ onLeave, onClose }: { onLeave: () => void; onClose: () => void }) {
+// Block or report another player (from the lobby, the public room list and the in-match menu). The host can also remove them.
+export function PlayerSheet({ name, code, onClose, onRemove }: { name: string; code?: string; onClose: () => void; onRemove?: () => void }) {
+  const [blocked, setBlocked] = useState(isBlocked(name));
+  const reasons: [ReportReason, string][] = [['name', tr('Offensive name')], ['abuse', tr('Harassment or abuse')], ['cheating', tr('Cheating')], ['other', tr('Something else')]];
+  return (
+    <SheetFrame label={name} onClose={onClose}>
+      <div className="sheet-head">
+        <div className="sheet-title">{name}</div>
+        <button type="button" className="round-btn" aria-label={tr('Close')} onClick={onClose}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
+      </div>
+      <div className="pause-list">
+        <button type="button" className="btn btn-ghost pause-btn" onClick={() => { if (blocked) unblock(name); else block(name); setBlocked(!blocked); }}>
+          {blocked ? tr('Unblock {name}', { name }) : tr('Block {name}', { name })}
+        </button>
+        {onRemove && <button type="button" className="btn btn-ghost pause-btn" onClick={() => { onRemove(); onClose(); }}>{tr('Remove from room')}</button>}
+      </div>
+      {blocked && <p className="menu-note">{tr('Their name is hidden from now on, and rooms they host are left out of the lobby list.')}</p>}
+      {canReport && (
+        <>
+          <div className="field-label">{tr('REPORT')}</div>
+          <div className="pause-list">
+            {reasons.map(([r, label]) => (
+              <a key={r} className="btn btn-ghost pause-btn" href={reportLink(r, name, code)}>{label}</a>
+            ))}
+          </div>
+          <p className="menu-note">{tr('This opens your mail app with a message to us. Nothing is sent until you send it.')}</p>
+        </>
+      )}
+    </SheetFrame>
+  );
+}
+
+// Menu in a multiplayer match: leave the room, or block or report a player.
+export function LeaveSheet({ onLeave, onClose, players = [], code }: { onLeave: () => void; onClose: () => void; players?: string[]; code?: string }) {
+  const [who, setWho] = useState<string | null>(null);
+  if (who) return <PlayerSheet name={who} code={code} onClose={() => setWho(null)} />;
   return (
     <SheetFrame label={tr('Leave match')} onClose={onClose}>
       <div className="sheet-head">
@@ -372,6 +409,11 @@ export function LeaveSheet({ onLeave, onClose }: { onLeave: () => void; onClose:
         <button type="button" className="round-btn" aria-label={tr('Close')} onClick={onClose}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
       </div>
       <p className="menu-note">{tr('If you leave, an AI takes your place. If you created the room, the match ends for everyone.')}</p>
+      {players.length > 0 && (
+        <div className="pause-list">
+          {players.map(n => <button key={n} type="button" className="btn btn-ghost pause-btn" onClick={() => setWho(n)}>{tr('Block or report {name}', { name: n })}</button>)}
+        </div>
+      )}
       <div className="btn-row">
         <button type="button" className="btn btn-ghost" onClick={onClose}>{tr('Cancel')}</button>
         <button type="button" className="btn btn-main" style={{ background: 'var(--danger)' }} onClick={onLeave}>{tr('Leave match')}</button>

@@ -23,7 +23,8 @@
         "p": [
           "Çok oyunculu mod, cihazını diğer oyuncuların cihazına doğrudan bağlar. Odandaki oyuncular görünen adını, rengini ve yaptığın hamleleri alır. Bağlantı doğrudan olduğu için ağ (IP) adresini teknik olarak görebilirler.",
           "Bağlantıyı kurmak için cihazın bir eşleştirme hizmetiyle (PeerJS) ve bağlantı yardımcı sunucularıyla (STUN ve aktarma sunucuları) konuşur. Bağlanırken IP adresini ve oda kodunu görürler. Adını ve hamlelerini almazlar; yalnızca doğrudan bağlantı kurulamadığında bir aktarma sunucusu şifreli oyun trafiğini iletir.",
-          "\"Herkese açık lobide göster\"i açarsan görünen adın, rengin ve odanın ayarları (dolu koltuk, tahta, zorluk, seçenekler) lobiyi açan herkese gösterilir; katılabilmeleri için oda kodu kullanılır. Bu anahtar yalnızca herkese açık oda listesi varken görünür ve istediğin zaman kapatabilirsin."
+          "\"Herkese açık lobide göster\"i açarsan görünen adın, rengin ve odanın ayarları (dolu koltuk, tahta, zorluk, seçenekler) lobiyi açan herkese gösterilir; katılabilmeleri için oda kodu kullanılır. Bu anahtar yalnızca herkese açık oda listesi varken görünür ve istediğin zaman kapatabilirsin.",
+          "Bir oyuncuyu engellemek, görünen adını yalnızca cihazında saklar. Bir oyuncuyu bildirirsen e-posta uygulaman bize oda kodu, oyuncunun adı ve sebep yazılı bir mesajla açılır; sen göndermeden hiçbir şey gitmez."
         ]
       },
       {

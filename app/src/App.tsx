@@ -146,7 +146,7 @@ export function App() {
     return (
       <GameScreen
         ctl={ctl} onNewGame={start} onHome={() => go('menu')}
-        net={{ onLeave: () => go('menu'), onRematch: hostRoom ? () => hostRoom.backToLobby() : undefined }}
+        net={{ code: roomView?.code, onLeave: () => go('menu'), onRematch: hostRoom ? () => hostRoom.backToLobby() : undefined }}
       />
     );
   }

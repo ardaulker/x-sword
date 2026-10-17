@@ -3,7 +3,8 @@ import { BOARD_SIZES, SIZE_BY_STARS, defaultNeutrals, maxNeutrals } from '../../
 import type { Level } from '../../../engine/rules.js';
 import { Icon } from '../components/bits';
 import { PieceGlyph } from '../components/PieceGlyph';
-import { Opt } from '../components/Sheets';
+import { Opt, PlayerSheet } from '../components/Sheets';
+import { isBlocked } from '../game/blocklist';
 import { cleanCode, isCode } from '../net/protocol';
 import { directory } from '../net/directory';
 import type { RoomAd } from '../net/directory';
@@ -23,11 +24,11 @@ export const inviteLink = (code: string) =>
 // The open rooms other players made public. Empty while there is no room board (see net/directory.ts).
 function useOpenRooms() {
   const [ads, setAds] = useState<RoomAd[]>([]);
-  useEffect(() => (directory ? directory.watch(list => setAds([...list].sort((a, b) => b.seats - a.seats))) : undefined), []);
+  useEffect(() => (directory ? directory.watch(list => setAds(list.filter(a => !isBlocked(a.host)).sort((a, b) => b.seats - a.seats))) : undefined), []);
   return ads;
 }
 
-function RoomRow({ ad, onJoin }: { ad: RoomAd; onJoin: (code: string) => void }) {
+function RoomRow({ ad, onJoin, onMore }: { ad: RoomAd; onJoin: (code: string) => void; onMore: () => void }) {
   const level = ad.level === 'easy' ? tr('Easy') : ad.level === 'hard' ? tr('Hard') : tr('Normal');
   const tags = [ad.obstacles && tr('Obstacles'), ad.personas && tr('Characters'), ad.teams && tr('Teams')].filter(Boolean);
   const full = ad.seats >= 4;
@@ -38,6 +39,7 @@ function RoomRow({ ad, onJoin }: { ad: RoomAd; onJoin: (code: string) => void })
         <b>{ad.host}</b>
         <span>{[`${ad.seats}/4`, `${ad.size}×${ad.size}`, level, ...tags].join(' · ')}</span>
       </div>
+      <button type="button" className="seat-x" aria-label={tr('Block or report {name}', { name: ad.host })} onClick={onMore}><Icon d="M5 12 H5.01 M12 12 H12.01 M19 12 H19.01" size={16} stroke={3} /></button>
       <button type="button" className="btn btn-main room-join" disabled={full} onClick={() => onJoin(ad.code)}>{full ? tr('Full') : tr('Join')}</button>
     </li>
   );
@@ -49,6 +51,7 @@ export function MultiplayerEntry({ onHost, onJoin, onBack, error }: {
   const [code, setCode] = useState('');
   const [isPublic, setPublic] = useState(true);
   const ads = useOpenRooms();
+  const [more, setMore] = useState<RoomAd | null>(null);
   const ok = isCode(code);
   return (
     <div className="lobby">
@@ -66,7 +69,7 @@ export function MultiplayerEntry({ onHost, onJoin, onBack, error }: {
           <section className="rooms" aria-label={tr('Open rooms')}>
             <div className="field-label">{tr('OPEN ROOMS')}</div>
             {ads.length
-              ? <ul className="room-list">{ads.map(ad => <RoomRow key={ad.code} ad={ad} onJoin={onJoin} />)}</ul>
+              ? <ul className="room-list">{ads.map(ad => <RoomRow key={ad.code} ad={ad} onJoin={onJoin} onMore={() => setMore(ad)} />)}</ul>
               : <p className="lobby-note">{tr('No open rooms right now. Create one and others can join.')}</p>}
           </section>
         )}
@@ -79,6 +82,7 @@ export function MultiplayerEntry({ onHost, onJoin, onBack, error }: {
           <button type="submit" className="btn btn-main" disabled={!ok}>{tr('Join room')}</button>
         </form>
         {error && <p className="lobby-error" role="alert">{error}</p>}
+        {more && <PlayerSheet name={more.host} code={more.code} onClose={() => setMore(null)} />}
         <p className="lobby-note">{tr("The connection goes phone to phone; no account needed. The host's phone runs the match; if it leaves, the match ends.")}</p>
       </div>
     </div>
@@ -98,7 +102,10 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
   const maxBots = maxNeutrals(size);
   const botCount = Math.min(v.bots ?? defaultNeutrals(filled, size), maxBots);
   const [copied, setCopied] = useState(false);
+  const [more, setMore] = useState<number | null>(null); // the seat whose block / report sheet is open
   const me = v.seats[v.you];
+  const shown = (name?: string) => (name && isBlocked(name) ? tr('Blocked player') : name);
+  const blockedHere = v.seats.some((s, i) => i !== v.you && s.kind !== 'bot' && s.kind !== 'empty' && isBlocked(s.name));
   const link = v.code ? inviteLink(v.code) : '';
 
   const copy = async () => {
@@ -151,6 +158,12 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
           </div>
         )}
 
+        {blockedHere && (
+          <p className="lobby-error" role="alert">
+            {tr('A player you blocked is in this room.')}{' '}
+            <button type="button" className="btn btn-ghost" style={{ height: 36, marginTop: 6 }} onClick={onLeave}>{tr('Leave room')}</button>
+          </p>
+        )}
         <div className="seats">
           {v.seats.map((s, i) => {
             const filled = s.kind !== 'empty';
@@ -164,12 +177,17 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
                     <div className="seat-top">
                       <PieceGlyph kind="star" seat={n} size={32} diamond={false} />
                       <div className="seat-names">
-                        <b>{i === v.you ? `${tr('You')} · ${s.name ?? tr('Player {n}', { n: n + 1 })}` : s.name ?? tr('Player {n}', { n: n + 1 })}</b>
+                        <b>{i === v.you ? `${tr('You')} · ${s.name ?? tr('Player {n}', { n: n + 1 })}` : shown(s.name) ?? tr('Player {n}', { n: n + 1 })}</b>
                         <span>{tag}</span>
                       </div>
                     </div>
                     <div className="seat-bottom">
                       <span className={`seat-ready${s.ready ? ' is-ready' : ''}`}>{s.ready ? tr('Ready') : tr('Waiting')}</span>
+                      {i !== v.you && s.kind !== 'bot' && s.name && (
+                        <button type="button" className="seat-x" aria-label={tr('Block or report {name}', { name: s.name })} onClick={() => setMore(i)}>
+                          <Icon d="M5 12 H5.01 M12 12 H12.01 M19 12 H19.01" size={14} stroke={3} />
+                        </button>
+                      )}
                       {host && i !== v.you && (
                         <button type="button" className="seat-x" aria-label={tr('Clear seat')} onClick={() => hostRoom?.clearSeat(i)}>
                           <Icon d="M6 6 L18 18 M18 6 L6 18" size={14} stroke={2.4} />
@@ -223,6 +241,10 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
           ))}
         </div>
       </div>
+
+      {more != null && v.seats[more]?.name && (
+        <PlayerSheet name={v.seats[more].name!} code={v.code} onClose={() => setMore(null)} onRemove={host && v.seats[more].kind === 'guest' ? () => hostRoom?.clearSeat(more) : undefined} />
+      )}
 
       <footer className="lobby-foot">
         {host ? (

@@ -2,7 +2,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState, useSyncExternal
 import { currentActor, isWinner } from '../../../engine/rules.js';
 import type { GameController, Setup, View } from '../game/controller';
 import { ICON } from '../game/look';
-import { labelOf, modeWord } from '../game/names';
+import { ME, labelOf, modeWord, seatName } from '../game/names';
 import { ActionPanel } from '../components/ActionPanel';
 import { BOARD_PAD, Board, RING_W, boardGap, boardOuter } from '../components/Board';
 import { SPEED, settings } from '../game/settings';
@@ -42,6 +42,7 @@ function announce(ctl: GameController, view: View) {
 
 // In a multiplayer match: the menu leaves the room; the host can send everyone back to the lobby after the match.
 export interface NetActions {
+  code?: string;
   onLeave: () => void;
   onRematch?: () => void;
 }
@@ -173,7 +174,10 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
         <div className="rules-overlay"><SettingsScreen inGame onBack={() => setSub(null)} onRules={() => setRulesOpen(true)} /></div>
       )}
       {rulesOpen && <div className="rules-overlay"><RulesScreen onBack={() => setRulesOpen(false)} /></div>}
-      {sheet?.type === 'menu' && net && <LeaveSheet onLeave={net.onLeave} onClose={() => ctl.closeSheet()} />}
+      {sheet?.type === 'menu' && net && (
+        <LeaveSheet onLeave={net.onLeave} onClose={() => ctl.closeSheet()} code={net.code}
+          players={st.seats.flatMap((s, i) => (i !== ME && s.kind === 'human' ? [seatName(st, i)] : [])).filter(n => n !== tr('Blocked player') && !/^Player \d+$|^Oyuncu \d+$/.test(n))} />
+      )}
 
       {view.countdown != null && (
         <div className="countdown" aria-hidden="true"><span key={view.countdown}>{view.countdown}</span></div>

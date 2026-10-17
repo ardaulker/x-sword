@@ -19,6 +19,7 @@ import { ME, clockText, labelOf, objectOf, seatName, setMe, setSeatNames, subjec
 import { getProfile } from './profile';
 import { syncCloud } from './platform';
 import type { MatchStart } from '../net/protocol';
+import { isBlocked } from './blocklist';
 import { tr } from '../i18n';
 
 // This device's role in a multiplayer match. The host runs the match and broadcasts every move;
@@ -417,7 +418,7 @@ export class GameController {
 
   private reset(match?: MatchStart, preset?: { opts: Opts; moves: (Move | null)[] }) {
     // Seat names: profile names from the lobby in multiplayer, your name on one device (AI players stay "Player N").
-    setSeatNames(match ? match.names ?? [] : [getProfile().name]);
+    setSeatNames(match ? (match.names ?? []).map(n => (n && isBlocked(n) ? tr('Blocked player') : n)) : [getProfile().name]);
     if (match) {
       this.opts = null;
       this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals, personas: !!match.personas, obstacles: !!match.obstacles, teams: !!match.teams, rules: match.rules ?? 1 });
