@@ -176,7 +176,7 @@
   saved games, Core Haptics). It builds and runs in the simulator; signing, iCloud and the store are Arda's steps. Everything about it,
   including build commands (`npm --prefix app run ios:sync`) and what Arda still has to do: `docs/ios-app.md`. Rerun `ios:sync` after web
   changes; use `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` until `xcode-select` points at Xcode.
-- **Android app** (17 October 2026): `app/android/` is the Capacitor shell with the Java `XSwordGames` plugin (Play Games, saved games, vibration),
+- **Android app** (17 October 2026; **paused** by Arda until the iPhone TestFlight build has been seen): `app/android/` is the Capacitor shell with the Java `XSwordGames` plugin (Play Games, saved games, vibration),
   icons and splash. Built and run in the emulator; JDK 21 and the Android SDK live under `~/Library` (`source tools/android-env.sh` first). Build
   commands, the emulator (`-gpu host`!) and Arda's Play Console steps are in `docs/android-app.md`. Rerun `android:sync` after web changes.
 - Docs: `docs/design-prompt.md` (the design brief), `docs/profile-infrastructure.md` (profiles, platform accounts).

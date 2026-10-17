@@ -1,5 +1,8 @@
 # The Android app (Capacitor shell)
 
+> **Paused on 17 October 2026** (Arda's decision): everything below works and was last built and run that day; the Google Play account
+> and the store steps wait until the iPhone app has been seen in TestFlight and a studio name, domain and mail address exist.
+
 `app/android/` is an Android Studio / Gradle project that wraps the web game (`app/dist`) like the iPhone shell does
 (`docs/ios-app.md`): Capacitor 8, minSdk 24 (Android 7), compile and target SDK 36. **Built and run on 17 October 2026** in an emulator
 (Pixel 8, Android 16): the game starts, a Quick match plays, and the native plugin answers (`haptic` runs without error; `signIn`
