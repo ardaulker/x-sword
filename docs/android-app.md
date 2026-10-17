@@ -1,30 +1,38 @@
 # The Android app (Capacitor shell)
 
 `app/android/` is an Android Studio / Gradle project that wraps the web game (`app/dist`) like the iPhone shell does
-(`docs/ios-app.md`): Capacitor 8, minSdk 24 (Android 7), compile and target SDK 36. **Written on 17 October 2026 but not yet
-built or run:** this Mac had no Java or Android SDK, so the first build still has to happen (see "Toolchain").
+(`docs/ios-app.md`): Capacitor 8, minSdk 24 (Android 7), compile and target SDK 36. **Built and run on 17 October 2026** in an emulator
+(Pixel 8, Android 16): the game starts, a Quick match plays, and the native plugin answers (`haptic` runs without error; `signIn`
+rejects with "Play Games is not configured for this build" and the game keeps the guest profile, as designed).
 
-## Toolchain (one time)
+## Toolchain (installed on this Mac under ~/Library, no admin password)
 
-Needed: JDK 21, the Android SDK (platform 36, build-tools, platform-tools) and, to try the app without a phone, the emulator with a system
-image. Either install Android Studio (it brings all of it) or the command-line tools:
+JDK 21 (Temurin) in `~/Library/Java/JavaVirtualMachines/jdk-21.*`, the Android SDK (platform 36, build-tools 36.0.0, platform-tools,
+emulator, the Android 36 arm64 Google APIs system image) in `~/Library/Android/sdk`. Homebrew here is too old for this macOS, so they were
+installed from Adoptium and dl.google.com directly. Every shell that builds Android needs the paths:
 
 ```
-brew install --cask temurin@21 android-commandlinetools
-export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
-sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "emulator" "system-images;android-36;google_apis;arm64-v8a"
+source tools/android-env.sh        # sets JAVA_HOME, ANDROID_HOME and PATH
 ```
+
+(`app/android/local.properties` with `sdk.dir=...` is git-ignored and must exist on each machine.) Android Studio would bring all of this too.
 
 ## Build and run
 
 ```
-npm --prefix app run android:sync      # builds the web game and copies it into the Android project
-cd app/android && ./gradlew assembleDebug          # app/android/app/build/outputs/apk/debug/app-debug.apk
-adb install -r app/build/outputs/apk/debug/app-debug.apk     # emulator or a phone with USB debugging on
-npm --prefix app run android:open      # or open the project in Android Studio and press Run
+npm --prefix app run android:sync                  # builds the web game and copies it into the Android project
+cd app/android && ./gradlew assembleDebug          # app/android/app/build/outputs/apk/debug/app-debug.apk (first build ~2 min)
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb shell am start -n com.xsword.game/.MainActivity
 ```
 
-Run `android:sync` after every web change.
+Run `android:sync` after every web change. The emulator: `avdmanager create avd -n xsword -k "system-images;android-36;google_apis;arm64-v8a" -d pixel_8`, then
+`emulator -avd xsword -no-window -no-audio -no-snapshot -gpu host &` (headless) or without `-no-window` to see it. **Use `-gpu host`**: the software renderer
+(`swiftshader_indirect`) draws overlapping ghost frames that look like layout bugs but are not. Screenshots: `adb exec-out screencap -p > shot.png`.
+
+Debugging the web page inside the app: `adb forward tcp:9222 localabstract:webview_devtools_remote_$(adb shell pidof com.xsword.game)`; then
+open `chrome://inspect` in Chrome, or talk to `http://localhost:9222/json` with any DevTools-protocol client (the console output also shows in
+`adb logcat -s Capacitor/Console`).
 
 ## What is in the shell
 
@@ -35,7 +43,7 @@ Run `android:sync` after every web change.
 | Play Games | `play-services-games-v2` in `app/android/app/build.gradle` | Needs the game created in the Play Console with Play Games Services configured (an OAuth credential bound to the app's signing fingerprint) and the manifest meta-data described in the comment in `AndroidManifest.xml`. Until then `signIn` rejects ("not configured") and the guest profile is used. |
 | Permissions | `AndroidManifest.xml` | `INTERNET` (multiplayer) and `VIBRATE`. Nothing else. `allowBackup` is off so the local progress is not copied to Google Drive behind the player's back (the privacy text says it stays on the device). |
 | Icons and splash | `res/mipmap-*`, `res/drawable*/splash.png`, `ic_launcher_background.xml`, drawn by `tools/make-android-assets.py` | Adaptive icon (dark background plus the logo in the safe zone), legacy square and round icons. Rerun the script if the logo changes. |
-| Theme | `res/values/styles.xml`, `colors.xml` | Dark status and navigation bars. Android 15+ draws the page edge to edge: check the safe-area padding on a real phone and the emulator. |
+| Theme | `res/values/styles.xml` (`AppTheme.NoActionBar` is the theme the game runs in), `colors.xml`, `capacitor.config.ts → SystemBars` | Dark window background so the bars behind the edge-to-edge page are dark, light status and navigation bar icons. Checked in the emulator; check the safe-area padding again on a real phone. |
 
 ## Arda's steps (accounts, money, signing)
 

@@ -7,6 +7,8 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   ios: { contentInset: 'never', backgroundColor: '#0B1026' },
   android: { backgroundColor: '#0B1026' },
+  // The game is dark everywhere: light status and navigation bar icons.
+  plugins: { SystemBars: { style: 'DARK' } },
 };
 
 export default config;

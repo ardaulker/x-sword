@@ -12,10 +12,16 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <!-- The theme the game runs in (Capacitor switches to it after the splash). The page draws edge to edge on Android 15+;
+         whatever shows behind the system bars is the window background, so it is the game's dark color, with light bar icons. -->
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <item name="android:background">@null</item>
+        <item name="android:windowBackground">@color/xsword_background</item>
+        <item name="android:statusBarColor">@color/xsword_background</item>
+        <item name="android:navigationBarColor">@color/xsword_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
     </style>
 
 
