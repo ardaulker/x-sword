@@ -30,6 +30,24 @@ generated (`app/ios/App/App/public` is git-ignored): run `ios:sync` after every 
 | Info.plist | `App/Info.plist` | Dark interface style, `arm64`, `ITSAppUsesNonExemptEncryption = false` (only HTTPS and system crypto). |
 | Icon and splash | `Assets.xcassets`, drawn by `tools/make-ios-assets.py` | Rerun the script if the logo changes. The icon has no transparency, as the App Store requires. |
 
+## Testing on your own iPhone for free (no paid account)
+
+A free Apple ID is enough to run the app on your own phone from Xcode; only TestFlight, other people's phones and the store need the
+paid Apple Developer Program.
+
+1. iPhone: Settings → Privacy & Security → **Developer Mode** on (the phone restarts). Connect it with a cable and tap "Trust".
+2. Xcode → Settings → Accounts → add your Apple ID. Open `app/ios/App/App.xcodeproj` → target **App** → Signing & Capabilities → tick
+   "Automatically manage signing" → Team: your name (Personal Team).
+3. Change the **Bundle Identifier** to something unique (for example `com.<yourname>.xsword`); free accounts cannot reuse an id that
+   someone else registered. Tell Claude which one you used so `capacitor.config.ts` can match.
+4. Pick your iPhone as the run destination and press Run. On the phone: Settings → General → VPN & Device Management → trust your
+   developer app.
+5. Limits of a free account: the app stops opening after **7 days** (run it again from Xcode), at most 3 apps at a time, no Game Center
+   or iCloud capability. Debug builds carry no entitlements for exactly this reason, so they run; Game Center sign-in simply fails and the
+   game keeps the guest profile. Vibration, sound, touch feel and multiplayer can all be tested this way.
+
+The no-install alternative is the web version: Safari → Share → "Add to Home Screen" (works fully, but iPhone web has no vibration).
+
 ## Arda's steps (accounts, money, signing)
 
 1. Join the **Apple Developer Program** (yearly fee) with an Apple ID that belongs to Arda or to X Sword (never another project's).
