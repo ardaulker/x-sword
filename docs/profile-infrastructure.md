@@ -48,7 +48,7 @@ haptic({ pattern }: { pattern: number[] }): Promise<void>   // optional: vibrate
 
 ## Roadmap
 
-1. **Capacitor shell** (Claude): `app/` goes inside as it is; iOS and Android projects are generated.
+1. **Capacitor shell** (Claude; iOS done 17 Oct 2026, see `docs/ios-app.md`): `app/` goes inside as it is; iOS and Android projects are generated.
    See the memory note "X Sword TestFlight".
 2. **`XSwordGames` plugin** (Claude): the three functions above, for iOS and Android.
 3. **Store and account setup** (Arda's clicks; money and accounts are Arda's):
