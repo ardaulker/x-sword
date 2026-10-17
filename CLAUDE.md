@@ -165,7 +165,9 @@
   (`mulberry32`); a replay is options + seed + move list.
 - App: `app/src/App.tsx` (hash routes `#/ #/play #/rules #/settings #/multiplayer #/room #/match #/join/CODE #/stats
   #/puzzles #/replay/CODE #/profile`, plus the legacy Turkish paths), `game/controller.ts` (match flow, pause / park /
-  save / restart / replay / undo), `game/{settings,order,names,record,stats,daily,share,coach,haptics,threats,puzzles,
+  save / restart / replay / undo, multiplayer host and guest turns, the bell; 895 lines after the 17 October 2026 split), its parts
+  `game/controllerTypes.ts` (Setup, View, NetRole …; re-exported by controller.ts), `game/matchOpts.ts` (buildOpts / makeState /
+  freshView) and `game/effects.ts` (trails, bursts, sword strokes, floats, toasts, banner queue; `GameController.fx`), `game/{settings,order,names,record,stats,daily,share,coach,haptics,threats,puzzles,
   puzzleText,themes,profile,progress,platform,legacy}.ts`, `components/{Board,Sheets,InfoChip,PlayerStrip,ActionPanel,
   TurnQueue,Header,Flag,SkinFx,PieceGlyph}.tsx`, `screens/*`, `net/{room,protocol,transport}.ts`, `i18n/`.
 - Tools: `tools/puzzle-maps.mjs` (hand-drawn maps) → `node tools/make-puzzles.mjs [id]` → `app/src/game/puzzles.ts` +

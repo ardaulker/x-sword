@@ -2,13 +2,13 @@
 // The engine (engine/) knows the rules; this file only calls its functions and tells the screen what happened.
 
 import {
-  BONUS_NAMES, POINTS, RULES_VERSION, isWinner, stateHash, TWIN_TAKE_MULT, collapseDue, createGame, createPuzzle, endMatch, play, currentActor, legalMoves, pieceById, starOf,
+  BONUS_NAMES, POINTS, isWinner, stateHash, TWIN_TAKE_MULT, collapseDue, createGame, endMatch, play, currentActor, legalMoves, pieceById, starOf,
 } from '../../../engine/rules.js';
-import type { BonusKind, GameState, Level, Move, Piece } from '../../../engine/rules.js';
+import type { BonusKind, GameState, Move, Piece } from '../../../engine/rules.js';
 import { chooseMove } from '../../../engine/bots.js';
 import { BUZZ, feel, sound, startTension, stopTension } from './haptics';
 import { coachStep, markCoachSeen } from './coach';
-import { DAILY, saveDaily, seedOf } from './daily';
+import { saveDaily } from './daily';
 import { PUZZLES } from './puzzles';
 import { clearSave, decodeMoves, encodeMoves, readSave, writeSave } from './record';
 import type { Opts, ReplaySpec } from './record';
@@ -21,95 +21,12 @@ import { syncCloud } from './platform';
 import type { MatchStart } from '../net/protocol';
 import { isBlocked } from './blocklist';
 import { tr } from '../i18n';
+import { DEFAULT_SETUP } from './controllerTypes';
+import type { NetRole, Outcome, Setup, View } from './controllerTypes';
+import { Effects } from './effects';
+import { buildOpts, freshView, makeState } from './matchOpts';
 
-// This device's role in a multiplayer match. The host runs the match and broadcasts every move;
-// a guest sends its own move to the host and applies every move it receives from the host.
-export interface NetRole {
-  role: 'host' | 'guest';
-  broadcast?: (n: number, move: Move | null, hash: string) => void;
-  send?: (move: Move | null) => void;
-  desync?: () => void; // guest: the state differs from the host's (hash check failed)
-  nudge?: (seat: number) => void; // ring the bell for the player whose move it is
-}
-
-export type Phase =
-  | 'ready'     // the match is starting
-  | 'mine'       // your turn
-  | 'preview'  // you picked a square, waiting for confirmation
-  | 'rival'     // another star (an AI player) is moving
-  | 'bot'       // arena bots are moving
-  | 'wait'     // a move was played, the next step is coming
-  | 'mode'       // the mode is changing
-  | 'over';
-
-export interface Setup {
-  players: number;
-  level: Level;        // arena bot intelligence
-  aiLevel: Level;      // AI rival intelligence (2–4 players)
-  moveSeconds: number;
-  /** Board side and arena bot count. */
-  boardSize: number;
-  bots: number;
-  /** Daily challenge: the date text (YYYY-MM-DD). When set, board, bots and difficulty are fixed. */
-  daily?: string | null;
-  /** Puzzle id; when set, the match is that puzzle. */
-  puzzle?: number | null;
-  /** Options (off by default): rival personalities, obstacle squares, teams (4 players only). */
-  personas?: boolean;
-  obstacles?: boolean;
-  teams?: boolean;
-}
-// players 1: single-player mode (you + your mirror Twin + bots). 2–4: against AI players.
-export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', aiLevel: 'normal', moveSeconds: 20, boardSize: 9, bots: 14 };
-
-export interface Spot { r: number; c: number }
-export interface Trail { key: number; from: Spot; to: Spot; color: string }
-export interface Burst { key: number; r: number; c: number; color: string; big?: boolean }
-// A sword stroke across the taken square. angle: the attack direction in degrees (0 = right, 90 = down).
-export interface Slash { key: number; r: number; c: number; angle: number; color: string; big: boolean }
-export interface Float { key: number; r: number; c: number; text: string; color: string; big?: boolean }
-// The last moves played this round: they stay on the board as faint dashed lines.
-export interface LastMove { id: string; round: number; from: Spot; to: Spot; color: string }
-export interface Toast { key: number; text: string; icon: 'sword' | 'clock' | 'info' | 'ring' }
-export interface Banner { key: number; title: string; sub: string; color: string; pieceId: string | null }
-// attackerId null: the piece fell with a collapsing ring.
-export interface TakeEvent { key: number; round: number; attackerId: string | null; victimId: string; at: number } // at: number of moves played up to that moment (to jump there in a replay)
-export type Sheet = { type: 'log' } | { type: 'bonus' } | { type: 'menu' } | { type: 'results' } | { type: 'coach'; step: number } | null;
-
-export interface View {
-  phase: Phase;
-  sel: Move | null;
-  showThreats: boolean;
-  timer: number;
-  trails: Trail[];
-  lastMoves: LastMove[];
-  bursts: Burst[];
-  slashes: Slash[];
-  floats: Float[];
-  toast: Toast | null;
-  banner: Banner | null;
-  modeOverlay: boolean;
-  sheet: Sheet;
-  inspect: string | null;
-  bonus: BonusKind | null; // the bonus you picked on your turn: reachable squares follow it
-  bots: { done: number; total: number; currentId: string | null };
-  events: TakeEvent[];
-  clockStart: number;
-  clockEnd: number | null;
-  watching: boolean;
-  shake: number;
-  fall: { key: number; ring: number } | null; // the ring that just collapsed (for the animation)
-  hit: number; // grows when you are taken or fall: the screen flashes red
-  countdown: number | null; // 3, 2, 1 before a match starts (null: not counting)
-  version: number;
-}
-
-const BANNER_MS = 1800;
-
-interface Outcome {
-  roundEnded: boolean;
-  collapsed: boolean;
-}
+export * from './controllerTypes';
 
 export class GameController {
   state!: GameState;
@@ -121,8 +38,6 @@ export class GameController {
   private ticker: number | null = null;
   private botTimer: number | null = null;
   private botQueue: string[] = [];
-  private banners: Omit<Banner, 'key'>[] = [];
-  private bannerUntil = 0;
   private fast = false;
   private decisionShown = false;
   autoMap = false; // the danger map is on by itself in the first matches
@@ -142,8 +57,14 @@ export class GameController {
   private undoPoints: number[] = []; // move count at the start of each of my turns (for undo)
   private undosLeft = 3;
   replay: { opts: Opts; moves: (Move | null)[]; i: number } | null = null;
+  private fx: Effects;
 
   constructor(setup: Setup = DEFAULT_SETUP) {
+    const ctl = this;
+    this.fx = new Effects({
+      get view() { return ctl.view; }, set view(v: View) { ctl.view = v; },
+      emit: p => this.emit(p), later: (ms, fn) => this.later(ms, fn), key: () => this.key(),
+    });
     this.setup = setup;
     this.reset();
     this.restoreFromStorage();
@@ -305,13 +226,13 @@ export class GameController {
     const r = this.replay;
     if (!r) return;
     const n = Math.max(0, Math.min(r.moves.length, i));
-    this.state = this.makeState(r.opts);
+    this.state = makeState(r.opts);
     let done = 0;
     try {
       for (; done < n; done++) play(this.state, r.moves[done]);
     } catch { /* broken record: play up to where it breaks */ }
     r.i = done;
-    this.view = { ...this.freshView(), phase: 'over', clockEnd: Date.now(), version: this.view.version + 1 };
+    this.view = { ...freshView(this.setup), phase: 'over', clockEnd: Date.now(), version: this.view.version + 1 };
     this.listeners.forEach(fn => fn());
   }
 
@@ -347,7 +268,7 @@ export class GameController {
     const a = currentActor(this.state);
     if (!this.canNudge || !a || a.kind !== 'star') return;
     this.net?.nudge?.(a.seat);
-    this.toast(tr('Bell rung for {name}', { name: seatName(this.state, a.seat) }), 'info');
+    this.fx.toast(tr('Bell rung for {name}', { name: seatName(this.state, a.seat) }), 'info');
     this.emit();
   }
 
@@ -355,7 +276,7 @@ export class GameController {
   ring(fromSeat: number) {
     if (!this.isTurnOf(ME)) return;
     feel('bell', [90, 70, 90, 70, 160]);
-    this.toast(tr('{name} is waiting for you!', { name: seatName(this.state, fromSeat) }), 'clock');
+    this.fx.toast(tr('{name} is waiting for you!', { name: seatName(this.state, fromSeat) }), 'clock');
     this.emit();
   }
 
@@ -368,7 +289,7 @@ export class GameController {
     this.stopTicker();
     stopTension();
     this.botTimer = null;
-    this.banners = [];
+    this.fx.clearBanners();
     this.waitingSeat = null;
     this.away.clear();
     this.paused = false;
@@ -386,36 +307,6 @@ export class GameController {
     return starOf(this.state, ME)!;
   }
 
-  private buildOpts(): Opts {
-    const s = this.setup;
-    if (s.puzzle != null) {
-      const def = PUZZLES.find(p => p.id === s.puzzle) ?? PUZZLES[0];
-      return { rules: RULES_VERSION, puzzle: { map: def.map, limit: def.par + 1, mode: def.mode, bonuses: def.bonuses, shrink: def.shrink ?? null } };
-    }
-    if (s.daily) return { rules: RULES_VERSION, seats: [{ kind: 'human' }], neutralLevel: 'normal', seed: seedOf(s.daily), size: DAILY.boardSize, neutrals: DAILY.bots };
-    const seats = Array.from({ length: s.players }, (_, i) =>
-      i === ME ? { kind: 'human' } : { kind: 'bot', level: s.aiLevel });
-    // On Easy you move first; on Normal and Hard your place in the order is random too.
-    return {
-      rules: RULES_VERSION, seats, neutralLevel: s.level, seed: Math.floor(Math.random() * 2 ** 31), firstSeat: s.level === 'easy' ? ME : null, keepGoing: true,
-      size: s.boardSize, neutrals: s.bots,
-      personas: s.players > 1 && !!s.personas, obstacles: !!s.obstacles, teams: s.players === 4 && !!s.teams,
-    };
-  }
-
-  private makeState(o: Opts): GameState {
-    return (o.puzzle ? createPuzzle({ ...(o.puzzle as object), rules: o.rules } as unknown as Parameters<typeof createPuzzle>[0]) : createGame(o as unknown as Parameters<typeof createGame>[0])) as GameState;
-  }
-
-  private freshView(): View {
-    return {
-      phase: 'ready', sel: null, showThreats: false, timer: this.setup.moveSeconds,
-      trails: [], lastMoves: [], bursts: [], slashes: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null, bonus: null,
-      bots: { done: 0, total: 0, currentId: null }, events: [],
-      clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, hit: 0, countdown: null, version: 0,
-    };
-  }
-
   private reset(match?: MatchStart, preset?: { opts: Opts; moves: (Move | null)[] }) {
     // Seat names: profile names from the lobby in multiplayer, your name on one device (AI players stay "Player N").
     setSeatNames(match ? (match.names ?? []).map(n => (n && isBlocked(n) ? tr('Blocked player') : n)) : [getProfile().name]);
@@ -423,8 +314,8 @@ export class GameController {
       this.opts = null;
       this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals, personas: !!match.personas, obstacles: !!match.obstacles, teams: !!match.teams, rules: match.rules ?? 1 });
     } else {
-      this.opts = preset?.opts ?? this.buildOpts();
-      this.state = this.makeState(this.opts);
+      this.opts = preset?.opts ?? buildOpts(this.setup);
+      this.state = makeState(this.opts);
     }
     this.moves = [];
     this.undoPoints = [];
@@ -435,7 +326,7 @@ export class GameController {
     this.bonusShown = false;
     this.statsDone = false;
     stopTension();
-    this.view = this.freshView();
+    this.view = freshView(this.setup);
   }
 
   private advance() {
@@ -470,14 +361,14 @@ export class GameController {
   awaySeat(seat: number) {
     if (!this.state.seats[seat] || this.state.seats[seat].kind === 'bot') return;
     this.away.add(seat);
-    this.toast(tr('{name} lost connection · waiting for them to return', { name: seatName(this.state, seat) }), 'info');
+    this.fx.toast(tr('{name} lost connection · waiting for them to return', { name: seatName(this.state, seat) }), 'info');
     this.emit();
     if (this.waitingSeat === seat) { this.stopTicker(); this.later(300, () => this.awayMove()); }
   }
 
   returnSeat(seat: number) {
     if (!this.away.delete(seat)) return;
-    this.toast(tr('{name} is back', { name: seatName(this.state, seat) }), 'info');
+    this.fx.toast(tr('{name} is back', { name: seatName(this.state, seat) }), 'info');
     this.emit();
   }
 
@@ -485,7 +376,7 @@ export class GameController {
   movesSoFar() { return [...this.moves]; }
 
   // Connection status notice (guest screen).
-  note(text: string) { this.toast(text, 'info'); }
+  note(text: string) { this.fx.toast(text, 'info'); }
 
   receiveMove(seat: number, move: Move | null) {
     const st = this.state;
@@ -512,7 +403,7 @@ export class GameController {
     if (!s || s.kind === 'bot') return;
     s.kind = 'bot';
     s.level = this.setup.level;
-    this.toast(tr('{name} left · an AI plays in their place', { name: seatName(this.state, seat) }), 'info');
+    this.fx.toast(tr('{name} left · an AI plays in their place', { name: seatName(this.state, seat) }), 'info');
     this.emit();
     if (this.waitingSeat === seat) {
       this.waitingSeat = null;
@@ -560,7 +451,7 @@ export class GameController {
 
   netLost() {
     this.stopTicker();
-    this.toast(tr('Lost connection to the room'), 'info');
+    this.fx.toast(tr('Lost connection to the room'), 'info');
     this.emit();
   }
 
@@ -579,8 +470,8 @@ export class GameController {
     const me = this.myStar();
     if (this.state.seats[ME].bonus && me && !this.bonusShown) {
       this.bonusShown = true;
-      this.float(me.r, me.c, `+${this.state.seats[ME].bonus}`, PLAYER_COLORS[ME]);
-      this.toast(tr('Survival bonus +{n}', { n: this.state.seats[ME].bonus }), 'sword');
+      this.fx.float(me.r, me.c, `+${this.state.seats[ME].bonus}`, PLAYER_COLORS[ME]);
+      this.fx.toast(tr('Survival bonus +{n}', { n: this.state.seats[ME].bonus }), 'sword');
     }
     this.emit({
       phase: 'over', clockEnd: pending ? null : this.view.clockEnd ?? Date.now(), sel: null, showThreats: false, modeOverlay: false,
@@ -631,7 +522,7 @@ export class GameController {
     this.emit({ phase: 'mine', sel: null, showThreats: false, bonus: null, timer: this.setup.moveSeconds });
     feel('myTurn', BUZZ.myTurn);
     if (!legalMoves(this.state, this.myStar(), this.state.mode).length) {
-      this.toast(tr('No square to move to · turn passed'), 'info');
+      this.fx.toast(tr('No square to move to · turn passed'), 'info');
       this.emit();
       this.later(1200, () => this.commitMine(null));
       return;
@@ -688,13 +579,13 @@ export class GameController {
     const points = this.undoPoints.slice(0, -2);
     const left = this.state.puzzle ? this.undosLeft : this.undosLeft - 1;
     this.dispose();
-    this.state = this.makeState(this.opts);
+    this.state = makeState(this.opts);
     this.moves = [];
     for (const m of keep) { play(this.state, m); this.moves.push(m); }
     this.undoPoints = points;
     this.undosLeft = left;
-    this.view = { ...this.freshView(), clockStart, clockEnd, events: events.filter(e => e.round < this.state.round), phase: 'wait', version: this.view.version + 1 };
-    this.toast(tr('Move undone'), 'info');
+    this.view = { ...freshView(this.setup), clockStart, clockEnd, events: events.filter(e => e.round < this.state.round), phase: 'wait', version: this.view.version + 1 };
+    this.fx.toast(tr('Move undone'), 'info');
     this.saveGame();
     this.emit();
     this.later(250, () => this.advance());
@@ -711,7 +602,7 @@ export class GameController {
 
   private autoMove() {
     const m = chooseMove(this.state, this.myStar(), 'normal');
-    this.toast(tr("Time's up · a safe move was played"), 'clock');
+    this.fx.toast(tr("Time's up · a safe move was played"), 'clock');
     this.commitMine(m);
   }
 
@@ -814,7 +705,7 @@ export class GameController {
       this.later(pause, () => this.finish());
     } else if (o.roundEnded) {
       // The mode card comes after the end-of-round banners (ring collapsed, you are out) have been read.
-      this.later(pause + this.bannerBacklog(), () => this.modeChange());
+      this.later(pause + this.fx.bannerBacklog(), () => this.modeChange());
     } else {
       this.later(pause, () => this.advance());
     }
@@ -826,7 +717,7 @@ export class GameController {
     this.later(settings.fastBots ? 800 : 1300, () => {
       // A clear warning at the start of a collapse round: whoever stays on the outer ring at the end of it is out.
       if (collapseDue(this.state)) {
-        this.toast(tr('The outer ring collapses at the end of this round!'), 'ring');
+        this.fx.toast(tr('The outer ring collapses at the end of this round!'), 'ring');
         feel('collapse', BUZZ.collapse);
         startTension();
       }
@@ -852,16 +743,16 @@ export class GameController {
 
     // Bonus: using one, being saved by armor, earning one.
     if (move?.bonus && actor.kind === 'star' && actor.seat === ME) {
-      this.toast(move.bonus === 'double' && st.extra ? tr('Double move! Now play your second move.') : `${tr(BONUS_NAMES[move.bonus])}!`, 'info');
+      this.fx.toast(move.bonus === 'double' && st.extra ? tr('Double move! Now play your second move.') : `${tr(BONUS_NAMES[move.bonus])}!`, 'info');
       feel(move.bonus === 'step' ? 'useStep' : move.bonus === 'double' ? 'useDouble' : 'useSwap', BUZZ.bonusUse);
     }
     if (victim?.alive && victim.kind === 'star') {
-      this.toast(victim.seat === ME ? tr('Your armor saved you!') : tr('{name} survived thanks to armor', { name: labelOf(st, victim) }), 'info');
-      this.burst(victim.r, victim.c, '#E9F0FF');
+      this.fx.toast(victim.seat === ME ? tr('Your armor saved you!') : tr('{name} survived thanks to armor', { name: labelOf(st, victim) }), 'info');
+      this.fx.burst(victim.r, victim.c, '#E9F0FF');
       feel('armor', BUZZ.armor);
     }
     for (const k of Object.keys(myBonuses) as BonusKind[]) {
-      if (st.seats[ME].bonuses[k] > myBonuses[k]) { this.toast(tr('Bonus earned: {name}', { name: tr(BONUS_NAMES[k]) }), 'info'); feel('bonusGain', BUZZ.bonusGain); }
+      if (st.seats[ME].bonuses[k] > myBonuses[k]) { this.fx.toast(tr('Bonus earned: {name}', { name: tr(BONUS_NAMES[k]) }), 'info'); feel('bonusGain', BUZZ.bonusGain); }
     }
     this.moves.push(move);
     this.saveGame();
@@ -872,7 +763,7 @@ export class GameController {
     const events = [...this.view.events];
 
     if (move) {
-      this.trail(from, { r: move.r, c: move.c }, colorOf(actor));
+      this.fx.trail(from, { r: move.r, c: move.c }, colorOf(actor));
       const last = [...this.view.lastMoves.filter(l => l.id !== actor.id && l.round === round), { id: actor.id, round, from, to: { r: move.r, c: move.c }, color: colorOf(actor) }];
       this.view = { ...this.view, lastMoves: last.slice(-6) };
     }
@@ -880,27 +771,27 @@ export class GameController {
     if (victim && move && !victim.alive) {
       events.push({ key: this.key(), round, attackerId: actor.id, victimId: victim.id, at: this.moves.length });
       const mine = actor.kind === 'star' && actor.seat === ME;
-      this.burst(move.r, move.c, colorOf(actor), mine);
-      this.slash(from, { r: move.r, c: move.c }, colorOf(actor), mine);
+      this.fx.burst(move.r, move.c, colorOf(actor), mine);
+      this.fx.slash(from, { r: move.r, c: move.c }, colorOf(actor), mine);
       if (!mine) sound('take');
       this.view = { ...this.view, shake: this.view.shake + 1 };
       const me = victim.kind === 'star' && victim.seat === ME;
       // Only stars collect points: the taken piece's value floats over the board and the scoreboard updates at once.
-      if (actor.kind === 'star') this.float(move.r, move.c, `+${POINTS[victim.kind]}`, colorOf(actor), mine);
+      if (actor.kind === 'star') this.fx.float(move.r, move.c, `+${POINTS[victim.kind]}`, colorOf(actor), mine);
       if (actor.kind === 'twin' && st.seats[ME].score > scoreBefore) {
         const pts = POINTS[victim.kind] * TWIN_TAKE_MULT;
-        this.float(move.r, move.c, `+${pts}`, PLAYER_COLORS[ME]);
-        this.toast(tr('Your mirror took {obj}! +{pts} (2×)', { obj: objectOf(st, victim), pts }), 'sword');
+        this.fx.float(move.r, move.c, `+${pts}`, PLAYER_COLORS[ME]);
+        this.fx.toast(tr('Your mirror took {obj}! +{pts} (2×)', { obj: objectOf(st, victim), pts }), 'sword');
         this.later(120, () => sound('points'));
       }
-      if (mine) { this.toast(tr('You took {obj}! +{pts}', { obj: objectOf(st, victim), pts: POINTS[victim.kind] }), 'sword'); feel('take', victim.kind === 'star' ? BUZZ.takeStar : BUZZ.take); this.later(120, () => sound('points')); }
+      if (mine) { this.fx.toast(tr('You took {obj}! +{pts}', { obj: objectOf(st, victim), pts: POINTS[victim.kind] }), 'sword'); feel('take', victim.kind === 'star' ? BUZZ.takeStar : BUZZ.take); this.later(120, () => sound('points')); }
       if (me) {
-        this.toast(tr('{name} swung their sword. You are out!', { name: subjectOf(st, actor) }), 'sword');
+        this.fx.toast(tr('{name} swung their sword. You are out!', { name: subjectOf(st, actor) }), 'sword');
         feel('out', BUZZ.takenOrOut);
         this.view = { ...this.view, hit: this.view.hit + 1 };
       }
       if (victim.kind === 'star') {
-        this.banner(me ? tr("You're out") : tr('{name} is out', { name: seatName(st, victim.seat) }),
+        this.fx.banner(me ? tr("You're out") : tr('{name} is out', { name: seatName(st, victim.seat) }),
           tr('Taken by {name} · on {n} pts', { name: labelOf(st, actor), n: st.seats[victim.seat].score }), PLAYER_COLORS[victim.seat], victim.id);
       }
     }
@@ -910,7 +801,7 @@ export class GameController {
       this.view = { ...this.view, fall: { key: this.key(), ring: st.ring - 1 } };
       for (const p of fallen) {
         events.push({ key: this.key(), round, attackerId: null, victimId: p.id, at: this.moves.length });
-        this.burst(p.r, p.c, HAZARD);
+        this.fx.burst(p.r, p.c, HAZARD);
       }
       const side = st.size - 2 * st.ring;
       const stars = fallen.filter(p => p.kind === 'star');
@@ -921,68 +812,12 @@ export class GameController {
         this.view = { ...this.view, hit: this.view.hit + 1 };
       }
       else if (stars.length) sub = tr('{names} fell · arena {side}×{side}', { names: stars.map(p => labelOf(st, p)).join(', '), side });
-      this.banner(tr('Outer ring collapsed'), sub, HAZARD, null);
+      this.fx.banner(tr('Outer ring collapsed'), sub, HAZARD, null);
       feel(iFell ? 'out' : 'collapse', iFell ? BUZZ.takenOrOut : BUZZ.collapse);
     }
 
     this.view = { ...this.view, events };
     return { roundEnded: st.round !== round, collapsed };
-  }
-
-  // ------------------------------------------------------------ short-lived visuals
-
-  private trail(from: Spot, to: Spot, color: string) {
-    const key = this.key();
-    this.view = { ...this.view, trails: [...this.view.trails, { key, from, to, color }] };
-    this.later(700, () => this.emit({ trails: this.view.trails.filter(t => t.key !== key) }));
-  }
-
-  private burst(r: number, c: number, color: string, big = false) {
-    const key = this.key();
-    this.view = { ...this.view, bursts: [...this.view.bursts, { key, r, c, color, big }] };
-    this.later(big ? 700 : 450, () => this.emit({ bursts: this.view.bursts.filter(b => b.key !== key) }));
-  }
-
-  private slash(from: Spot, to: Spot, color: string, big: boolean) {
-    const key = this.key();
-    const angle = Math.round(Math.atan2(Math.sign(to.r - from.r), Math.sign(to.c - from.c)) * 180 / Math.PI);
-    this.view = { ...this.view, slashes: [...this.view.slashes, { key, r: to.r, c: to.c, angle, color, big }] };
-    sound(big ? 'slashBig' : 'slash');
-    this.later(big ? 900 : 640, () => this.emit({ slashes: this.view.slashes.filter(s => s.key !== key) }));
-  }
-
-  private float(r: number, c: number, text: string, color: string, big = false) {
-    const key = this.key();
-    this.view = { ...this.view, floats: [...this.view.floats, { key, r, c, text, color, big }] };
-    this.later(big ? 1500 : 1000, () => this.emit({ floats: this.view.floats.filter(f => f.key !== key) }));
-  }
-
-  private toast(text: string, icon: Toast['icon']) {
-    const key = this.key();
-    this.view = { ...this.view, toast: { key, text, icon } };
-    this.later(1800, () => { if (this.view.toast?.key === key) this.emit({ toast: null }); });
-  }
-
-  // Banners never overlap; they show one after another, BANNER_MS each.
-  private banner(title: string, sub: string, color: string, pieceId: string | null) {
-    this.banners.push({ title, sub, color, pieceId });
-    if (!this.view.banner) this.nextBanner();
-  }
-
-  private nextBanner() {
-    const b = this.banners.shift();
-    if (!b) {
-      this.view = { ...this.view, banner: null };
-      return;
-    }
-    this.view = { ...this.view, banner: { key: this.key(), ...b } };
-    this.bannerUntil = Date.now() + BANNER_MS;
-    this.later(BANNER_MS, () => { this.nextBanner(); this.emit(); });
-  }
-
-  private bannerBacklog() {
-    const now = this.view.banner ? Math.max(0, this.bannerUntil - Date.now()) : 0;
-    return now + this.banners.length * BANNER_MS;
   }
 
   // ------------------------------------------------------------ sheets
@@ -1026,7 +861,7 @@ export class GameController {
         this.emit({ timer: Math.max(0, t) });
         if (t <= 0 && this.waitingSeat != null) {
           const a = currentActor(this.state)!;
-          this.toast(tr("Time's up for {name}", { name: labelOf(this.state, a) }), 'clock');
+          this.fx.toast(tr("Time's up for {name}", { name: labelOf(this.state, a) }), 'clock');
           this.commitRemote(chooseMove(this.state, a, 'normal'));
         }
       } else {
