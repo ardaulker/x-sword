@@ -39,6 +39,9 @@ export interface Seat {
   bonus: number;
   bonuses: Record<BonusKind, number>;
   scoreTier: number;
+  /** Bonuses this seat has used, and Double moves that took two pieces (Armor earned). For achievements. */
+  bonusUses: number;
+  pairTakes: number;
   swapGiven: boolean;
   persona: 'hunter' | 'careful' | 'opportunist' | null;
   team: number | null;

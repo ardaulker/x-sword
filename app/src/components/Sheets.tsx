@@ -11,6 +11,7 @@ import { PieceGlyph } from './PieceGlyph';
 import { shareReplay, shareResult } from '../game/share';
 import { replayCode } from '../game/record';
 import { freshRewards, markRewardsSeen } from '../game/themes';
+import { freshAchievements, markAchievementsSeen } from '../game/achievements';
 import { SkinFx } from './SkinFx';
 import { SkinPicker } from './SkinPicker';
 import { saveSettings, settings } from '../game/settings';
@@ -400,7 +401,8 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
   const [shared, setShared] = useState(false);
   const [linked, setLinked] = useState(false);
   const [fresh] = useState(() => freshRewards());
-  useEffect(() => { markRewardsSeen(); }, []);
+  const [freshAch] = useState(() => freshAchievements());
+  useEffect(() => { markRewardsSeen(); markAchievementsSeen(); }, []);
   const newSkin = fresh.find(r => r.kind === 'skin');
   const unlocked = fresh.length > 0 && (
     <div className="res-unlock">
@@ -408,6 +410,15 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
       <div>
         <b>{tr('New reward unlocked: {name}', { name: fresh.map(r => r.name).join(', ') })}</b>
         <span>{tr('Settings → Piece effect and Board theme')}</span>
+      </div>
+    </div>
+  );
+  const achievements = freshAch.length > 0 && (
+    <div className="res-unlock">
+      <Icon d={freshAch[0].icon} size={30} stroke={2} />
+      <div>
+        <b>{tr('Achievement unlocked: {name}', { name: freshAch.slice(0, 2).map(a => a.name()).join(', ') + (freshAch.length > 2 ? ` +${freshAch.length - 2}` : '') })}</b>
+        <span>{freshAch.length === 1 ? freshAch[0].desc() : tr('Statistics → Achievements')}</span>
       </div>
     </div>
   );
@@ -442,6 +453,7 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
           <div className="res-sub">{tr('You used {a}/{b} moves', { a: st.puzzle.used, b: st.puzzle.limit })}</div>
         </div>
         {unlocked}
+        {achievements}
         <div className="btn-row">
           <button type="button" className="btn btn-ghost" onClick={() => onPuzzle(null)}>{tr('Puzzles')}</button>
           <button type="button" className="btn btn-ghost" onClick={() => ctl.restart()}>{tr('Try again')}</button>
@@ -463,6 +475,7 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
       </div>
       {why && <div className="res-why">{why}</div>}
       {unlocked}
+      {achievements}
       <div className="res-stats">
         <div><b>{me.score}</b><span>{tr('Score')}</span></div>
         <div><b>{me.takes}</b><span>{tr('Takes')}</span></div>

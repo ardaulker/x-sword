@@ -502,6 +502,11 @@ S#....#.
   languages match and writes static store pages to `dist/legal/` (`tools/make-legal-pages.mjs`). "Delete data on this device" clears
   every `xsword-*` key. **When the game starts collecting or sharing anything new (ads, analytics, accounts, purchases, a server),
   update these documents in the same change**; checklist in `docs/store-compliance.md`.
+- **Achievements** (17 October 2026): 15 goals beyond the cosmetic unlocks (`game/achievements.ts`), shown under Statistics with progress bars.
+  Everything is derived from `Stats` (new counters: `cleanWins`, `hardWins`, `pairTakes`, `onlineMatches`, `fourWins`, `winStreak`,
+  `bestStreak`; the engine counts `seats[].bonusUses` and `pairTakes`), so nothing extra is stored and `mergeProgress` keeps them across
+  devices; only "already announced" is kept (`xsword-achievements-seen`). The result card says "Achievement unlocked: …". To add one,
+  append to `ACHIEVEMENTS` (name, description, goal, value from stats) and add its texts to all six dictionaries.
 - **Error screen**: `components/ErrorBoundary.tsx` wraps the app; on a render error it offers "Reload" and "Reload without the
   saved match" (clears `xsword-save`), so a broken save cannot crash the app on every start.
 - The top bar shows "ROUND n" translated; the menu and battle-log buttons have small captions (hidden on short

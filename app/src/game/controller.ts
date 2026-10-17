@@ -603,6 +603,8 @@ export class GameController {
     recordMatch({
       won, score: s.seats[ME].score, takes: s.seats[ME].takes, rounds: s.round,
       ms: Date.now() - this.view.clockStart, daily: !!this.setup.daily,
+      bonusUses: s.seats[ME].bonusUses, pairTakes: s.seats[ME].pairTakes, online: !!this.net, players: s.seats.length,
+      hard: this.net ? false : this.setup.level === 'hard' || (s.seats.length > 1 && this.setup.aiLevel === 'hard'),
     });
     void syncCloud(); // to the platform cloud save in the phone app; does nothing on the web
   }

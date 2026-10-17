@@ -128,7 +128,7 @@ export function createGame({
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
       level: s.level || 'normal', takes: 0, score: 0, bonus: 0, out: false,
-      bonuses: startBonuses(), scoreTier: 0, swapGiven: false, persona: null, team: null,
+      bonuses: startBonuses(), scoreTier: 0, swapGiven: false, persona: null, team: null, bonusUses: 0, pairTakes: 0,
     })),
     pieces: [], order: [], turn: 0, over: false, winner: null, outOrder: [], log: [],
     solo: n === 1, lastStep: null, extra: null, matchOrder: [], keepGoing: !!keepGoing, decided: false,
@@ -438,6 +438,7 @@ export function play(state, move) {
     if (!m) throw new Error(`Illegal move: ${nameOf(state, actor)} → ${move.r},${move.c}`);
     if (m.bonus) {
       state.seats[actor.seat].bonuses[m.bonus]--;
+      state.seats[actor.seat].bonusUses++;
       log(state, `✨ ${nameOf(state, actor)} used a bonus: ${BONUS_NAMES[m.bonus]}.`);
     }
     if (state.puzzle && actor.id === 's0') state.puzzle.used++;
@@ -458,6 +459,7 @@ export function play(state, move) {
     if (state.rules >= 2 && actor.kind === 'star' && (seq || m.bonus === 'double') && seqTakes === 2 && (seq?.takes ?? 0) < 2) {
       log(state, `🛡️ ${nameOf(state, actor)} took two pieces in one Double move.`);
       grantBonus(state, state.seats[actor.seat], 'armor');
+      state.seats[actor.seat].pairTakes++;
     }
     // Double move: the same star plays once more. `extra` counts the moves played in this sequence, so the screen can say "move 2 of 2".
     if (m.bonus === 'double' && !state.over && actor.alive) {

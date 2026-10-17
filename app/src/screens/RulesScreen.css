@@ -166,3 +166,10 @@
 .set-note.is-bad { color: var(--danger-text); }
 
 .set-col > .btn { height: 44px; flex: none; }
+
+/* Achievements (Statistics screen). */
+.ach { align-items: center; }
+.ach-icon { flex: none; width: 44px; height: 44px; border-radius: 14px; background: var(--surface-3); color: var(--text-2); display: flex; align-items: center; justify-content: center; }
+.ach.is-done .ach-icon { background: rgba(59, 255, 143, .16); color: var(--ice); }
+.ach:not(.is-done) .rule-text { opacity: .9; }
+.ach-count { font-size: 12px; color: var(--text-2); }

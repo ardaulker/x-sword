@@ -1,5 +1,6 @@
 import { Icon } from '../components/bits';
 import { loadStats } from '../game/stats';
+import { ACHIEVEMENTS, achievementProgress, isEarned } from '../game/achievements';
 import { tr } from '../i18n';
 import './RulesScreen.css';
 
@@ -34,6 +35,25 @@ export function StatsScreen({ onBack }: { onBack: () => void }) {
             <div key={l} className="stat"><b>{v}</b><span>{l}</span></div>
           ))}
         </div>
+        <h2>{tr('Achievements')} · {tr('{a}/{b} unlocked', { a: ACHIEVEMENTS.filter(a => isEarned(a, s)).length, b: ACHIEVEMENTS.length })}</h2>
+        {ACHIEVEMENTS.map(a => {
+          const done = isEarned(a, s), have = achievementProgress(a, s);
+          return (
+            <div key={a.id} className={`rule ach${done ? ' is-done' : ''}`}>
+              <span className="ach-icon" aria-hidden="true"><Icon d={done ? 'M5 12.5 L10 17 L19 7' : a.icon} size={24} stroke={2.2} /></span>
+              <div className="rule-text">
+                <h3>{a.name()}</h3>
+                <p>{a.desc()}</p>
+                {!done && a.n > 1 && (
+                  <>
+                    <small className="ach-count">{have}/{a.n}</small>
+                    <div className="peek-bar" aria-hidden="true"><i style={{ width: `${Math.round((100 * have) / a.n)}%` }} /></div>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })}
         <p className="rules-foot">{tr('Statistics are stored only on this device.')}</p>
       </div>
     </div>

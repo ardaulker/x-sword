@@ -227,6 +227,8 @@ test('taking two pieces with one Double move earns Armor (once)', () => {
   play(st, { r: 2, c: 2, type: 'take', targetId: 'b2' });
   assert.equal(st.seats[0].bonuses.armor, 1);
   assert.equal(st.extra, null);
+  assert.equal(st.seats[0].pairTakes, 1);
+  assert.equal(st.seats[0].bonusUses, 1); // counted for the achievements
 });
 
 test('a Double move with only one take, or two walks, gives no Armor', () => {
