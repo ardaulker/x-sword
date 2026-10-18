@@ -17,6 +17,8 @@ body {
   overflow-wrap: break-word;
   hyphens: auto;
 }
+/* Narrow boxes with long single words: break anywhere when the browser has no hyphenation dictionary for the language. */
+.menu-tile .menu-play-text, .puzzle-name, .theme-chip small, .opt-text b { overflow-wrap: anywhere; }
 
 button { font: inherit; color: inherit; cursor: pointer; }
 button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); outline-offset: 2px; }

@@ -39,7 +39,12 @@ for (const lang of ['tr', 'de']) for (const [w, h] of SIZES) {
       }
       return [...new Set(out)].slice(0, 6);
     });
-    for (const f of found) { issues++; console.log(`✗ ${lang} ${w}×${h} #/${route}: ${f}`); }
+    for (const f of found) {
+      issues++;
+      const line = `${lang} ${w}×${h} #/${route}: ${f}`;
+      console.log(`✗ ${line}`);
+      if (process.env.GITHUB_ACTIONS) console.log(`::error title=Layout::${line}`); // shows as a public annotation on the run
+    }
   }
   await ctx.close();
 }

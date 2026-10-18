@@ -16,7 +16,11 @@ for (let i = 0; i < 60; i++) { try { if ((await fetch(BASE)).ok) break; } catch 
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--autoplay-policy=no-user-gesture-required'] });
 let failures = 0, checks = 0;
-const fail = (what, why) => { failures++; console.error(`✗ ${what}: ${why}`); };
+const fail = (what, why) => {
+  failures++;
+  console.error(`✗ ${what}: ${why}`);
+  if (process.env.GITHUB_ACTIONS) console.log(`::error title=Smoke::${what}: ${why}`); // shows as a public annotation on the run
+};
 const ok = what => { checks++; console.log(`✓ ${what}`); };
 
 async function visit(lang, label, fn) {
