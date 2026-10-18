@@ -38,11 +38,17 @@
   browser download; set `CHROME_PATH` if Chrome is elsewhere), visits every screen in English and Turkish, starts a Quick match
   through the countdown and a puzzle with a hunter, and fails on any console error, uncaught exception or crash screen. Run it
   after `npm --prefix app run build`; add a route or screen here when you add one.
-- **Rules version** (9 October 2026): `RULES_VERSION` in `engine/rules.js` (now 2). `createGame({ rules })` plays a match by an older
+- **Layout check** (`tests/layout.mjs`, also in CI): every screen and a match at 320×568 … 430×932, landscape and tablet, in Turkish and German;
+  fails on sideways scrolling or text leaving its box. **Monkey test** (`tests/monkey.mjs [n]`, ~10 min, not in CI): plays whole matches with
+  random legal moves (bonuses, pause, undo) in six setups on the dev server and checks for crashes, stuck matches, the result card and that the
+  replay link reproduces the match. Run it after changing the controller or the engine; don't edit app files while it runs (the dev
+  server reloads the page).
+- **Rules version** (9 October 2026): `RULES_VERSION` in `engine/rules.js` (now 3; 3 = the random 60-point bonus draws from `state.ruleRng`,
+  a stream the bots never touch, because guests and replays do not run the bots and used to get a different bonus). `createGame({ rules })` plays a match by an older
   version; saves, replay links and multiplayer rooms record it (`opts.rules`, `MatchStart.rules`, `hello.rules`). A save or
   replay without it is version 1 (`legacyOpts`); one from a newer app is ignored. **Raise the version whenever a change
   would make an old move list play out differently** and gate the new behavior with `state.rules >= N` (version 2 =
-  Armor for two takes in one Double move). A host refuses a guest on older rules; a guest refuses a room on newer rules.
+  Armor for two takes in one Double move). **Never call `random(state)` inside `play()`**: it is the bots' stream; rules use `ruleRandom`. A host refuses a guest on older rules; a guest refuses a room on newer rules.
 - **Desync check**: the host sends `stateHash(state)` with every move; a guest whose hash differs sends `resync` and the host
   replies with `sync` (the whole move list; at most 3 times, then the guest leaves). The hash leaves out the seed and seat
   kinds on purpose (see the comment in `stateHash`).

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { DEFAULT_SETUP, GameController } from './game/controller';
 import type { Setup } from './game/controller';
 import { todayKey } from './game/daily';
@@ -14,7 +14,8 @@ import { StatsScreen } from './screens/StatsScreen';
 import { PuzzleScreen } from './screens/PuzzleScreen';
 import { ReplayScreen } from './screens/ReplayScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
-import { LegalScreen } from './screens/LegalScreen';
+// Rarely opened screens load on demand (the legal texts are long).
+const LegalScreen = lazy(() => import('./screens/LegalScreen').then(m => ({ default: m.LegalScreen })));
 import { legacyLevel } from './game/legacy';
 
 const SETUP_KEY = 'xsword-app-setup';
@@ -138,7 +139,7 @@ export function App() {
   if (screen === 'replay') return <ReplayScreen code={readRoute()[1]} onBack={() => go('menu')} />;
   if (screen === 'legal') {
     const open = (id: string) => { location.hash = id ? `#/legal/${id}` : '#/legal'; };
-    return <LegalScreen docId={readRoute()[1]} onOpen={open} onBack={() => go('settings')} />;
+    return <Suspense fallback={null}><LegalScreen docId={readRoute()[1]} onOpen={open} onBack={() => go('settings')} /></Suspense>;
   }
   if (screen === 'rules') return <RulesScreen onBack={() => go('menu')} />;
   if (screen === 'settings') return <SettingsScreen onBack={() => go('menu')} onRules={() => go('rules')} onLegal={() => go('legal')} />;

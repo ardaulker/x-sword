@@ -54,7 +54,8 @@ export function clearSave() {
 
 // ------------------------------------------------------------ replay link
 
-export interface ReplaySpec { opts: Opts; moves: string }
+// ended: the player chose "Finish" once the winner was decided (no move marks that, so the replay must end the match itself).
+export interface ReplaySpec { opts: Opts; moves: string; ended?: boolean }
 
 const b64 = (s: string) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64 = (s: string) => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));

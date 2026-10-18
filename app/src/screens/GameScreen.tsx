@@ -183,6 +183,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
         <div className="countdown" aria-hidden="true"><span key={view.countdown}>{view.countdown}</span></div>
       )}
       {view.hit > 0 && <div key={view.hit} className="hit-flash" aria-hidden="true" />}
+      <h1 className="sr-only">X Sword</h1>
       <div className="sr-only" aria-live="polite">{announce(ctl, view)}</div>
     </div>
   );

@@ -82,6 +82,8 @@ export interface GameState {
   extra: { id: string; n: number; takes: number } | null;
   /** Rules version this match is played by (see RULES_VERSION). */
   rules: number;
+  /** Seeded stream for rule randomness (rules 3+), separate from `rng`, which the bots consume. */
+  ruleRng: number;
   matchOrder: string[];
   keepGoing: boolean;
   decided: boolean;

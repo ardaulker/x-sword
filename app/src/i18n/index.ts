@@ -6,11 +6,6 @@
 import { createElement, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import trDict from './tr';
-import de from './de';
-import fr from './fr';
-import es from './es';
-import it from './it';
-import pt from './pt';
 
 export type Lang = 'tr' | 'en' | 'de' | 'fr' | 'es' | 'it' | 'pt';
 export const LANGS: { code: Lang; name: string }[] = [
@@ -18,7 +13,16 @@ export const LANGS: { code: Lang; name: string }[] = [
   { code: 'fr', name: 'Français' }, { code: 'es', name: 'Español' }, { code: 'it', name: 'Italiano' }, { code: 'pt', name: 'Português' },
 ];
 
-const DICT: Partial<Record<Lang, Record<string, string>>> = { tr: trDict, de, fr, es, it, pt };
+// Turkish (the launch language) ships in the main bundle; the others load when chosen (each is ~45 kB of text).
+type Dict = Record<string, string>;
+const DICT: Partial<Record<Lang, Dict>> = { tr: trDict };
+const LOADERS: Partial<Record<Lang, () => Promise<{ default: Dict }>>> = {
+  de: () => import('./de'), fr: () => import('./fr'), es: () => import('./es'), it: () => import('./it'), pt: () => import('./pt'),
+};
+async function loadDict(l: Lang) {
+  if (DICT[l] || !LOADERS[l]) return;
+  try { DICT[l] = (await LOADERS[l]!()).default; } catch { /* offline: English text until it loads */ }
+}
 const KEY = 'xsword-lang';
 
 function detect(): Lang {
@@ -35,11 +39,15 @@ const listeners = new Set<() => void>();
 if (typeof document !== 'undefined') document.documentElement.lang = lang;
 
 export const getLang = () => lang;
+/** Loads the starting language's dictionary; main.tsx waits for it before the first render. */
+export const langReady = () => loadDict(lang);
 export function setLang(next: Lang) {
-  lang = next;
   try { localStorage.setItem(KEY, next); } catch { /* private tab */ }
-  document.documentElement.lang = next;
-  listeners.forEach(l => l());
+  void loadDict(next).then(() => {
+    lang = next;
+    document.documentElement.lang = next;
+    listeners.forEach(l => l());
+  });
 }
 export const useLang = () => useSyncExternalStore(cb => { listeners.add(cb); return () => { listeners.delete(cb); }; }, getLang);
 

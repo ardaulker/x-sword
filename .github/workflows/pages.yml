@@ -43,6 +43,9 @@ jobs:
       - name: Smoke test (the built game in Chrome, fails on any console error or crash)
         run: node tests/smoke.mjs
 
+      - name: Layout check (every screen on small, normal and wide phones and in landscape, Turkish and German)
+        run: node tests/layout.mjs
+
       - name: Assemble the site
         run: |
           mkdir _site

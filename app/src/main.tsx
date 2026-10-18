@@ -14,13 +14,15 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { applySettings } from './game/settings';
+import { langReady } from './i18n';
 import { bootPlatform } from './game/platform';
 
 applySettings();
 void bootPlatform(); // Game Center / Play Games sign-in in the phone app; does nothing on the web
 
-createRoot(document.getElementById('root')!).render(
+// The chosen language's dictionary loads first (Turkish and English need nothing), then the app draws.
+void langReady().then(() => createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary><App /></ErrorBoundary>
   </StrictMode>,
-);
+));

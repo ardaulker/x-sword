@@ -2,7 +2,9 @@
 // ready message to the developer's contact address (app/src/legal/config.json). Nothing is sent automatically. While the
 // address is empty the report button is hidden (blocking still works).
 
-import { contactEmail } from '../legal';
+import config from '../legal/config.json';
+
+const contactEmail = config.contactEmail;
 
 export const canReport = !!contactEmail;
 

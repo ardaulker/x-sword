@@ -56,7 +56,8 @@ export class GameController {
   private statsDone = false;
   private undoPoints: number[] = []; // move count at the start of each of my turns (for undo)
   private undosLeft = 3;
-  replay: { opts: Opts; moves: (Move | null)[]; i: number } | null = null;
+  replay: { opts: Opts; moves: (Move | null)[]; i: number; ended: boolean } | null = null;
+  private endedEarly = false; // "Finish" was chosen after the winner was decided
   private fx: Effects;
 
   constructor(setup: Setup = DEFAULT_SETUP) {
@@ -159,7 +160,7 @@ export class GameController {
 
   // Record for a replay link (local matches only).
   replaySpec(): ReplaySpec | null {
-    return !this.net && this.opts ? { opts: this.opts, moves: encodeMoves(this.moves) } : null;
+    return !this.net && this.opts ? { opts: this.opts, moves: encodeMoves(this.moves), ...(this.endedEarly ? { ended: true } : {}) } : null;
   }
 
   get canResume() { return !this.net && this.parked && !this.state.over; }
@@ -218,7 +219,7 @@ export class GameController {
     setMe(0);
     this.setup = { ...DEFAULT_SETUP };
     this.opts = spec.opts;
-    this.replay = { opts: spec.opts, moves: decodeMoves(spec.moves), i: 0 };
+    this.replay = { opts: spec.opts, moves: decodeMoves(spec.moves), i: 0, ended: !!spec.ended };
     this.seek(0);
   }
 
@@ -231,6 +232,7 @@ export class GameController {
     try {
       for (; done < n; done++) play(this.state, r.moves[done]);
     } catch { /* broken record: play up to where it breaks */ }
+    if (done === r.moves.length && r.ended) endMatch(this.state);
     r.i = done;
     this.view = { ...freshView(this.setup), phase: 'over', clockEnd: Date.now(), version: this.view.version + 1 };
     this.listeners.forEach(fn => fn());
@@ -318,6 +320,7 @@ export class GameController {
       this.state = makeState(this.opts);
     }
     this.moves = [];
+    this.endedEarly = false;
     this.undoPoints = [];
     this.undosLeft = 3;
     for (const m of preset?.moves ?? []) { play(this.state, m); this.moves.push(m); }
@@ -511,6 +514,7 @@ export class GameController {
   // End the match after the winner is decided.
   endNow() {
     endMatch(this.state);
+    this.endedEarly = this.state.over;
     this.emit({ sheet: null });
     this.finish();
   }
@@ -521,7 +525,11 @@ export class GameController {
     if (this.undoPoints[this.undoPoints.length - 1] !== this.moves.length) this.undoPoints.push(this.moves.length);
     this.emit({ phase: 'mine', sel: null, showThreats: false, bonus: null, timer: this.setup.moveSeconds });
     feel('myTurn', BUZZ.myTurn);
-    if (!legalMoves(this.state, this.myStar(), this.state.mode).length) {
+    // Pass only when nothing at all can be played: a bonus (Double step, Switcheroo ...) may still open a way out.
+    const st = this.state, me = this.myStar(), held = st.seats[ME].bonuses;
+    const canPlay = legalMoves(st, me, st.mode).length > 0
+      || (['step', 'double', 'swap'] as const).some(k => held[k] > 0 && legalMoves(st, me, st.mode, k).some(m => m.bonus === k));
+    if (!canPlay) {
       this.fx.toast(tr('No square to move to · turn passed'), 'info');
       this.emit();
       this.later(1200, () => this.commitMine(null));

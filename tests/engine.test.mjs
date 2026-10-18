@@ -252,6 +252,19 @@ test('a match played by rules 1 (an old save or replay) gives no Armor for two t
   assert.throws(() => createGame({ seats: seats(2), seed: 3, rules: RULES_VERSION + 1 }), /rules version/);
 });
 
+test('rules 3: the random bonus at 60 points does not depend on how many random numbers the bots drew', () => {
+  const make = () => { const st = position([{ kind: 'red', r: 2, c: 1 }, { kind: 'blue', r: 6, c: 6 }]); st.rules = RULES_VERSION; st.ruleRng = 777; st.seats[0].score = 55; st.seats[0].scoreTier = 2; st.seats[0].swapGiven = true; return st; };
+  const picks = new Set();
+  for (let extra = 0; extra < 12; extra++) {
+    const st = make();
+    for (let i = 0; i < extra; i++) random(st); // a bot thinking on the host
+    st.seats[0].bonuses = { armor: 0, step: 0, double: 0, swap: 0 };
+    play(st, { r: 2, c: 1, type: 'take', targetId: 'b1' });
+    picks.add(JSON.stringify(st.seats[0].bonuses));
+  }
+  assert.equal(picks.size, 1);
+});
+
 test('stateHash: the same moves give the same hash, a different state a different one', () => {
   const a = createGame({ seats: seats(2), seed: 11 }), b = createGame({ seats: seats(2), seed: 11 });
   assert.equal(stateHash(a), stateHash(b));

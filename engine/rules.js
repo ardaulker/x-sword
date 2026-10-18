@@ -57,6 +57,15 @@ export function random(state) {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 
+// A second seeded stream for the rules themselves (the random bonus at 60 points). Bots draw from `state.rng` while they
+// choose; a guest phone or a replay never runs the bots, so a rule that used `state.rng` would come out differently there.
+function ruleRandom(state) {
+  let t = (state.ruleRng = (state.ruleRng + 0x6d2b79f5) >>> 0);
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+
 export const pieceById = (state, id) => state.pieces.find(p => p.id === id);
 export const starOf = (state, seat) => state.pieces.find(p => p.kind === 'star' && p.seat === seat);
 export const pieceAt = (state, r, c) => state.pieces.find(p => p.alive && p.r === r && p.c === c) || null;
@@ -108,8 +117,9 @@ function randomSymmetry(state, size) {
 // Rules version. A saved match, a replay link or a multiplayer room replays moves through the engine, so each one records
 // the version it was played with (`rules` option) and the engine plays old matches by their old rules.
 // 1: the original rules. 2 (9 Oct 2026): taking two pieces with one Double move earns Armor.
+// 3 (19 Oct 2026): the random bonus at 60 points draws from its own stream (`ruleRandom`), so replays and guest phones agree.
 // Raise it whenever a change would make an old move list play out differently.
-export const RULES_VERSION = 2;
+export const RULES_VERSION = 3;
 
 // seats: [{ kind: 'human' | 'bot', level: 'easy' | 'normal' | 'hard' }], 1–4 of them.
 // A single seat is single-player mode: the player's mirror, the Twin, also joins the board.
@@ -122,9 +132,10 @@ export function createGame({
   if (!(rules >= 1 && rules <= RULES_VERSION)) throw new Error(`Unknown rules version ${rules}.`);
   if (!(n >= 1 && n <= 4)) throw new Error('A match has 1–4 stars.');
   const size = BOARD_SIZES.includes(sizeOpt) && sizeOpt >= SIZE_BY_STARS[n] ? sizeOpt : SIZE_BY_STARS[n];
+  const rng = ((seed ?? Math.floor(Math.random() * 2 ** 31)) >>> 0) || 1;
   const state = {
     rules, size, round: 1, mode: 'STRAIGHT', ring: 0, shrinkStart, shrinkEvery, neutralLevel,
-    rng: ((seed ?? Math.floor(Math.random() * 2 ** 31)) >>> 0) || 1,
+    rng, ruleRng: ((rng ^ 0x9e3779b9) >>> 0) || 1,
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
       level: s.level || 'normal', takes: 0, score: 0, bonus: 0, out: false,
@@ -514,7 +525,7 @@ function addScore(state, seat, points) {
   seat.score += points;
   while (seat.scoreTier < BONUS_SCORES.length && seat.score >= BONUS_SCORES[seat.scoreTier]) {
     const tier = seat.scoreTier++;
-    grantBonus(state, seat, tier === 0 ? 'step' : tier === 1 ? 'double' : random(state) < 0.5 ? 'step' : 'double');
+    grantBonus(state, seat, tier === 0 ? 'step' : tier === 1 ? 'double' : (state.rules >= 3 ? ruleRandom(state) : random(state)) < 0.5 ? 'step' : 'double');
   }
   if (!seat.swapGiven && seat.score >= SWAP_SCORE) { seat.swapGiven = true; grantBonus(state, seat, 'swap'); }
 }
