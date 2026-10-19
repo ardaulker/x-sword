@@ -21,7 +21,7 @@ generated (`app/ios/App/App/public` is git-ignored): run `ios:sync` after every 
 
 | Piece | Where | Notes |
 |---|---|---|
-| App id, name | `app/capacitor.config.ts`, Xcode target | `com.xsword.game` is a **placeholder**; it must match the App ID registered in Arda's Apple Developer account. Change it in both places. |
+| App id, name | `app/capacitor.config.ts`, Xcode target | `com.ardaulker.xsword` (Arda, 19 October 2026). It must match the App ID in Arda's Apple Developer account and can never change once the app exists on App Store Connect. The paused Android shell still says `com.xsword.game`; pick its Google Play id when Android resumes. |
 | Native plugin `XSwordGames` | `app/ios/App/App/XSwordGamesPlugin.swift`, registered in `XSwordViewController.swift` | Game Center sign-in (`signIn`), progress in a Game Center saved game (`loadSnapshot`/`saveSnapshot`), vibration rhythms through Core Haptics (`haptic`). The web side is `app/src/game/platform.ts`. |
 | Haptics | `haptic` | The web game's `BUZZ` patterns play on iPhone (Safari has no `navigator.vibrate`). Simulators have no haptic hardware: the plugin falls back to one tap per step. **Feel it on a real iPhone.** |
 | Sign-in | `signIn` | In a simulator without a Game Center account it rejects ("local player has not been authenticated") and the game keeps the guest profile; verified in the simulator log. |
