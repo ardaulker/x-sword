@@ -65,6 +65,10 @@ The no-install alternative is the web version: Safari → Share → "Add to Home
 
 - Xcode: device selector → **Any iOS Device (arm64)** → Product → **Archive** → Organizer → **Distribute App → App Store Connect**.
   Raise `CURRENT_PROJECT_VERSION` (build number) for every new upload; `MARKETING_VERSION` is the version players see.
+- From the terminal (what Claude does after a fix): raise `CURRENT_PROJECT_VERSION`, `npm --prefix app run ios:sync`, then
+  `xcodebuild -project app/ios/App/App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS' -archivePath <archive> -allowProvisioningUpdates archive`
+  and `xcodebuild -exportArchive -archivePath <archive> -exportOptionsPlist <plist> -exportPath <dir> -allowProvisioningUpdates` with a plist of
+  `method app-store-connect`, `destination upload`, `signingStyle automatic`, `teamID 7KYB5QW7U5`.
 - Signing needs a **local Apple Distribution certificate** (Xcode → Settings → Accounts → Manage Certificates → + Apple Distribution).
   Xcode's cloud-managed certificate writes the "Ü" of "Arda ÜLKER" decomposed into the signature's requirement, and App Store
   Connect rejects the upload with "Invalid Signature. Code failed to satisfy specified code requirement(s)".
