@@ -61,6 +61,16 @@ The no-install alternative is the web version: Safari → Share → "Add to Home
 5. Xcode → Product → Archive → Distribute App → App Store Connect → upload; then TestFlight (internal testers need no review).
 6. Screenshots (6.9" and 6.5" iPhone) and the store text in each language.
 
+## Uploading (first build 1.0 (1) uploaded on 19 October 2026)
+
+- Xcode: device selector → **Any iOS Device (arm64)** → Product → **Archive** → Organizer → **Distribute App → App Store Connect**.
+  Raise `CURRENT_PROJECT_VERSION` (build number) for every new upload; `MARKETING_VERSION` is the version players see.
+- Signing needs a **local Apple Distribution certificate** (Xcode → Settings → Accounts → Manage Certificates → + Apple Distribution).
+  Xcode's cloud-managed certificate writes the "Ü" of "Arda ÜLKER" decomposed into the signature's requirement, and App Store
+  Connect rejects the upload with "Invalid Signature. Code failed to satisfy specified code requirement(s)".
+- Nothing is public until a version is submitted for App Review and released. TestFlight: internal testers must be App Store
+  Connect users; friends go into an **external** group (email invites or a public link) after Beta App Review of the first build.
+
 ## Before the first TestFlight build
 
 - Apple's guideline 4.2 (minimum functionality): the native pieces above (Game Center, haptics, offline play) are what make this more
