@@ -545,8 +545,8 @@ S#....#.
 - Your own takes get a bigger burst, a bigger score and a 750 ms pause.
 - **Undo** (`GameController.undo`): only on Easy (3 per match) and in puzzles (unlimited); not in the daily or
   multiplayer. It rebuilds the match from the recorded moves at the start of your previous turn (`undoPoints`).
-  Settings has "One-tap moves" (`settings.quick`, Turkish "Tek dokunuşla oyna"; also in the in-match settings; every difficulty) and
-  "Play bots fast" (`settings.fastBots`), both off by default.
+  Settings has "One-tap moves" (`settings.quick`, Turkish "Tek dokunuşla oyna"; also in the in-match settings; every difficulty; **on by default** since 19 Oct 2026, the tip card and
+  rules text follow the setting) and "Play bots fast" (`settings.fastBots`, off by default).
 - **Match clock** starts after the countdown and the sword draw (or when a puzzle starts), not while the tip card shows
   (`GameController.startClock`, `clockOn`; `freshView` freezes it at 00:00).
 - **Tutorial**: three mini puzzles (201 Take straight, 202 The mode changes, 203 Danger), all `fixed` (hand-placed; the

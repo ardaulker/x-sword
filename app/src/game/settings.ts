@@ -30,7 +30,7 @@ const KEY = 'xsword-settings';
 export const SPEED = { slow: 1.45, normal: 1, fast: 0.65 } as const;
 
 function load(): Settings {
-  const def: Settings = { sound: true, music: true, tips: true, dangerMap: false, volume: 0.8, haptics: true, speed: 'normal', danger: true, targets: true, numbers: true, colorBlind: false, quick: false, fastBots: false, theme: 'night', skin: 'none' };
+  const def: Settings = { sound: true, music: true, tips: true, dangerMap: false, volume: 0.8, haptics: true, speed: 'normal', danger: true, targets: true, numbers: true, colorBlind: false, quick: true, fastBots: false, theme: 'night', skin: 'none' };
   try {
     const s = { ...def, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') } as Settings;
     return { ...s, speed: legacySpeed(s.speed), theme: legacyTheme(s.theme) }; // values saved by older versions

@@ -323,7 +323,7 @@ const dict: Record<string, string> = {
   'Step onto a piece\'s square and you take it; that piece leaves the game. Anyone can take anyone: player takes player, bot takes player, bot takes bot.': 'Si pisas la casilla de una ficha, la capturas; esa ficha sale del juego. Todos pueden capturar a todos: jugador a jugador, bot a jugador, bot a bot.',
   'Move order': 'Orden de juego',
   'The order is shuffled once at the start and stays the same all match. The number on a piece is its place among the players still alive; numbers are re-dealt every round, the order itself never changes. The strip on top shows who\'s playing and who\'s next.': 'El orden se baraja una vez al empezar y se mantiene toda la partida. El número de la ficha es su lugar entre las que siguen vivas; se reparte de nuevo cada ronda, el orden no cambia. La franja de arriba muestra quién juega y quién sigue.',
-  'A move takes two steps: tap a square, see the preview, confirm. You have 20 seconds; if time runs out, the game plays a safe move for you.': 'Un movimiento tiene dos pasos: toca una casilla, mira la vista previa y confirma. Tienes 20 segundos; si se acaba, el juego hace un movimiento seguro por ti.',
+  'Tap a lit square and your star moves there. If you turn off "One-tap moves" in Settings, you first see a preview and confirm it. You have 20 seconds; if time runs out, the game plays a safe move for you.': 'Toca una casilla iluminada y tu estrella irá allí. Si desactivas «Mover con un toque» en Ajustes, primero ves una vista previa y la confirmas. Tienes 20 segundos; si se acaba el tiempo, el juego hace un movimiento seguro por ti.',
   'Board': 'Tablero',
   'The arena shrinks': 'La arena se reduce',
   'Every 6 rounds (6th, 12th, 18th), the outermost ring collapses at the end of the round.': 'Cada 6 rondas (6.ª, 12.ª, 18.ª), el anillo más exterior se derrumba al final de la ronda.',
@@ -439,7 +439,7 @@ const dict: Record<string, string> = {
   'Take straight': 'Tomar recto',
   'The mode changes': 'El modo cambia',
   'Danger': 'Peligro',
-  'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.': 'Es una ronda RECTA: tu estrella camina y toma en recto. Toca la ficha de arriba y confirma.',
+  'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you to take it.': 'Es una ronda RECTA: tu estrella camina y toma en recto. Toca la ficha de arriba para tomarla.',
   'The mode changes every round. Walk straight first, then take diagonally next round.': 'El modo cambia cada ronda. Primero camina recto y en la siguiente ronda toma en diagonal.',
   'A red-striped square is dangerous: a piece will take you there. Take both pieces; pick the unstriped square first.': 'Una casilla con rayas rojas es peligrosa: una ficha te toma allí. Toma las dos fichas; elige primero la casilla sin rayas.',
   'Night': 'Noche',
@@ -636,5 +636,6 @@ const dict: Record<string, string> = {
   'Something else': 'Otra cosa',
   'This opens your mail app with a message to us. Nothing is sent until you send it.': 'Esto abre tu app de correo con un mensaje para nosotros. No se envía nada hasta que lo envíes.',
   'A player you blocked is in this room.': 'Un jugador que bloqueaste está en esta sala.',
+  'Tap a lit square: your star moves there at once. Want a preview first? Turn off One-tap moves in Settings.': 'Toca una casilla iluminada y tu estrella irá allí al instante. ¿Prefieres ver una vista previa? Desactiva «Mover con un toque» en Ajustes.',
 };
 export default dict;

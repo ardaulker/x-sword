@@ -180,7 +180,7 @@ export function BonusSheet({ ctl }: { ctl: GameController }) {
 export function CoachSheet({ step, onDone }: { step: number; onDone: () => void }) {
   const tips: [string, string[]][] = [
     [tr('Getting started'), [
-      tr('Tap a lit square, check the preview, press Confirm.'),
+      settings.quick ? tr('Tap a lit square: your star moves there at once. Want a preview first? Turn off One-tap moves in Settings.') : tr('Tap a lit square, check the preview, press Confirm.'),
       tr('The shape tells the direction: square is straight, diamond is diagonal. The mode changes every round.'),
       tr('A striped square is dangerous: a piece can take you there.'),
       tr('Pale red squares: next round a piece can take you there.'),

@@ -323,7 +323,7 @@ const dict: Record<string, string> = {
   'Step onto a piece\'s square and you take it; that piece leaves the game. Anyone can take anyone: player takes player, bot takes player, bot takes bot.': 'Se você pisar na casa de uma peça, captura ela; a peça sai do jogo. Todos podem capturar todos: jogador, bot, bot contra bot.',
   'Move order': 'Ordem das jogadas',
   'The order is shuffled once at the start and stays the same all match. The number on a piece is its place among the players still alive; numbers are re-dealt every round, the order itself never changes. The strip on top shows who\'s playing and who\'s next.': 'A ordem é embaralhada uma vez no início e fica a mesma a partida toda. O número da peça é o lugar dela entre as que restam; é redistribuído a cada rodada, a ordem não muda. A faixa no topo mostra quem joga e quem vem depois.',
-  'A move takes two steps: tap a square, see the preview, confirm. You have 20 seconds; if time runs out, the game plays a safe move for you.': 'Uma jogada tem dois passos: toque numa casa, veja a prévia e confirme. Você tem 20 segundos; se acabar, o jogo faz uma jogada segura por você.',
+  'Tap a lit square and your star moves there. If you turn off "One-tap moves" in Settings, you first see a preview and confirm it. You have 20 seconds; if time runs out, the game plays a safe move for you.': 'Toque numa casa acesa e sua estrela vai para lá. Se desligar "Jogadas com um toque" nas Configurações, você vê primeiro uma prévia e confirma. Você tem 20 segundos; se o tempo acabar, o jogo faz uma jogada segura por você.',
   'Board': 'Tabuleiro',
   'The arena shrinks': 'A arena encolhe',
   'Every 6 rounds (6th, 12th, 18th), the outermost ring collapses at the end of the round.': 'A cada 6 rodadas (6ª, 12ª, 18ª), o anel mais externo desaba no fim da rodada.',
@@ -439,7 +439,7 @@ const dict: Record<string, string> = {
   'Take straight': 'Pegar reto',
   'The mode changes': 'O modo muda',
   'Danger': 'Perigo',
-  'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.': 'É uma rodada RETA: sua estrela anda e pega em linha reta. Toque na peça acima e confirme.',
+  'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you to take it.': 'É uma rodada RETA: sua estrela anda e pega em linha reta. Toque na peça acima para pegá-la.',
   'The mode changes every round. Walk straight first, then take diagonally next round.': 'O modo muda a cada rodada. Ande reto primeiro e pegue na diagonal na rodada seguinte.',
   'A red-striped square is dangerous: a piece will take you there. Take both pieces; pick the unstriped square first.': 'Uma casa listrada de vermelho é perigosa: uma peça pega você ali. Pegue as duas peças; escolha primeiro a casa sem listras.',
   'Night': 'Noite',
@@ -636,5 +636,6 @@ const dict: Record<string, string> = {
   'Something else': 'Outra coisa',
   'This opens your mail app with a message to us. Nothing is sent until you send it.': 'Isto abre seu app de e-mail com uma mensagem para nós. Nada é enviado até você enviar.',
   'A player you blocked is in this room.': 'Um jogador que você bloqueou está nesta sala.',
+  'Tap a lit square: your star moves there at once. Want a preview first? Turn off One-tap moves in Settings.': 'Toque numa casa acesa e sua estrela vai para lá na hora. Prefere ver uma prévia? Desligue "Jogadas com um toque" nas Configurações.',
 };
 export default dict;

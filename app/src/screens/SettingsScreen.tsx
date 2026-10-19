@@ -67,7 +67,7 @@ export function SettingsScreen({ onBack, onRules, onLegal, inGame = false }: { o
         </div>
         <Toggle label={tr('Vibration')} sub={tr("On supported phones. On iPhone the browser doesn't allow vibration.")} on={s.haptics}
           onChange={v => { update({ haptics: v }); if (v) feel('select', 20); }} />
-        {/* A play-style choice, so it is also offered from the in-match menu. Off by default: the preview protects new players. */}
+        {/* A play-style choice, so it is also offered from the in-match menu. On by default (Arda, 19 Oct 2026); turning it off brings back the preview + confirm step. */}
         <Toggle label={tr('One-tap moves')} sub={tr('Tapping a square plays the move right away. No confirm screen.')} on={s.quick}
           onChange={v => update({ quick: v })} />
         {!inGame && (

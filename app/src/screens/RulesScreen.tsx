@@ -73,7 +73,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         </Card>
         <Card title={tr('Move order')} visual={<div className="anim-queue">{[3, 4, 5, 6, 7].map(n => <span key={n}>{n}</span>)}</div>}>
           <p>{tr("The order is shuffled once at the start and stays the same all match. The number on a piece is its place among the players still alive; numbers are re-dealt every round, the order itself never changes. The strip on top shows who's playing and who's next.")}</p>
-          <p>{tr('A move takes two steps: tap a square, see the preview, confirm. You have 20 seconds; if time runs out, the game plays a safe move for you.')}</p>
+          <p>{tr('Tap a lit square and your star moves there. If you turn off "One-tap moves" in Settings, you first see a preview and confirm it. You have 20 seconds; if time runs out, the game plays a safe move for you.')}</p>
         </Card>
 
         <h2>{tr('Board')}</h2>

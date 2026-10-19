@@ -11,7 +11,7 @@
 // Before adding a map, read the "Puzzle maps" list in CLAUDE.md and don't repeat an idea.
 export const MAPS = [
   {
-    id: 201, tutorial: true, fixed: true, title: 'Take straight', hint: 'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.', mode: 'STRAIGHT', par: 1,
+    id: 201, tutorial: true, fixed: true, title: 'Take straight', hint: 'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you to take it.', mode: 'STRAIGHT', par: 1,
     map: [
       '.....',
       '..R..',

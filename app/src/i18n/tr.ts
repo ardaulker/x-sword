@@ -323,7 +323,7 @@ const dict: Record<string, string> = {
   'Step onto a piece\'s square and you take it; that piece leaves the game. Anyone can take anyone: player takes player, bot takes player, bot takes bot.': 'Bir taşın karesine geçersen onu alırsın; o taş oyundan çıkar. Herkes herkesi alabilir: oyuncu oyuncuyu, bot oyuncuyu, bot botu.',
   'Move order': 'Hamle sırası',
   'The order is shuffled once at the start and stays the same all match. The number on a piece is its place among the players still alive; numbers are re-dealt every round, the order itself never changes. The strip on top shows who\'s playing and who\'s next.': 'Sıra maç başında bir kez karılır ve bütün maç aynı kalır. Taşın üstündeki numara, o turda ayakta kalanlar arasındaki yeridir; her tur baştan verilir, sıra değişmez. Üstteki şerit şu an oynayanı ve sıradakileri gösterir.',
-  'A move takes two steps: tap a square, see the preview, confirm. You have 20 seconds; if time runs out, the game plays a safe move for you.': 'Hamle iki adımdır: kareye dokun, önizlemeyi gör, onayla. Süren 20 saniye; biterse oyun senin yerine güvenli bir hamle yapar.',
+  'Tap a lit square and your star moves there. If you turn off "One-tap moves" in Settings, you first see a preview and confirm it. You have 20 seconds; if time runs out, the game plays a safe move for you.': 'Yanan bir kareye dokun, yıldızın oraya gider. Ayarlar\'dan "Tek dokunuşla oyna"yı kapatırsan önce önizlemeyi görür, sonra onaylarsın. Süren 20 saniye; biterse oyun senin yerine güvenli bir hamle yapar.',
   'Board': 'Tahta',
   'The arena shrinks': 'Arena daralır',
   'Every 6 rounds (6th, 12th, 18th), the outermost ring collapses at the end of the round.': 'Her 6 turda bir (6., 12., 18. tur), turun sonunda en dıştaki halka çöker.',
@@ -439,7 +439,7 @@ const dict: Record<string, string> = {
   'Take straight': 'Düz al',
   'The mode changes': 'Mod değişir',
   'Danger': 'Tehlike',
-  'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.': 'DÜZ turdasın: yıldız düz gider ve düz alır. Üstündeki taşa dokun, sonra Onayla.',
+  'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you to take it.': 'DÜZ turdasın: yıldız düz gider ve düz alır. Almak için üstündeki taşa dokun.',
   'The mode changes every round. Walk straight first, then take diagonally next round.': 'Mod her tur değişir. Önce düz yürü, sonraki turda çapraz al.',
   'A red-striped square is dangerous: a piece will take you there. Take both pieces; pick the unstriped square first.': 'Kırmızı çizgili kare tehlikelidir: orada bir taşın menzilindesin. İki taşı da al; önce çizgisiz kareyi seç.',
   'Night': 'Gece',
@@ -636,5 +636,6 @@ const dict: Record<string, string> = {
   'Something else': 'Başka bir şey',
   'This opens your mail app with a message to us. Nothing is sent until you send it.': 'Bu, e-posta uygulamanı bize yazılmış hazır bir mesajla açar. Sen göndermeden hiçbir şey gitmez.',
   'A player you blocked is in this room.': 'Engellediğin bir oyuncu bu odada.',
+  'Tap a lit square: your star moves there at once. Want a preview first? Turn off One-tap moves in Settings.': 'Yanan bir kareye dokun, yıldızın hemen oraya gider. Önce önizleme mi istersin? Ayarlar\'dan Tek dokunuşla oyna\'yı kapat.',
 };
 export default dict;

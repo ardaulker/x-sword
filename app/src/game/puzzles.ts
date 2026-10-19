@@ -19,7 +19,7 @@ export const PUZZLES: PuzzleDef[] = [
     "tutorial": true,
     "id": 201,
     "title": "Take straight",
-    "hint": "It's a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.",
+    "hint": "It's a STRAIGHT round: your star moves and takes straight. Tap the piece above you to take it.",
     "mode": "STRAIGHT",
     "bonuses": null,
     "par": 1,

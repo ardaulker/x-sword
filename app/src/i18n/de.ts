@@ -323,7 +323,7 @@ const dict: Record<string, string> = {
   'Step onto a piece\'s square and you take it; that piece leaves the game. Anyone can take anyone: player takes player, bot takes player, bot takes bot.': 'Ziehst du auf das Feld einer Figur, schlägst du sie; sie scheidet aus. Jeder kann jeden schlagen: Spieler Spieler, Bot Spieler, Bot Bot.',
   'Move order': 'Zugreihenfolge',
   'The order is shuffled once at the start and stays the same all match. The number on a piece is its place among the players still alive; numbers are re-dealt every round, the order itself never changes. The strip on top shows who\'s playing and who\'s next.': 'Die Reihenfolge wird zu Beginn einmal gemischt und bleibt das ganze Spiel gleich. Die Zahl auf der Figur ist ihr Platz unter den Verbliebenen; sie wird jede Runde neu vergeben, die Reihenfolge bleibt gleich. Der Streifen oben zeigt, wer zieht und wer folgt.',
-  'A move takes two steps: tap a square, see the preview, confirm. You have 20 seconds; if time runs out, the game plays a safe move for you.': 'Ein Zug hat zwei Schritte: Feld antippen, Vorschau ansehen, bestätigen. Du hast 20 Sekunden; läuft die Zeit ab, macht das Spiel einen sicheren Zug für dich.',
+  'Tap a lit square and your star moves there. If you turn off "One-tap moves" in Settings, you first see a preview and confirm it. You have 20 seconds; if time runs out, the game plays a safe move for you.': 'Tippe auf ein leuchtendes Feld und dein Stern zieht dorthin. Schaltest du in den Einstellungen „Züge mit einem Tippen“ aus, siehst du zuerst eine Vorschau und bestätigst sie. Du hast 20 Sekunden; läuft die Zeit ab, spielt das Spiel einen sicheren Zug für dich.',
   'Board': 'Brett',
   'The arena shrinks': 'Die Arena schrumpft',
   'Every 6 rounds (6th, 12th, 18th), the outermost ring collapses at the end of the round.': 'Alle 6 Runden (6., 12., 18.) bricht am Rundenende der äußerste Ring ein.',
@@ -439,7 +439,7 @@ const dict: Record<string, string> = {
   'Take straight': 'Gerade nehmen',
   'The mode changes': 'Der Modus wechselt',
   'Danger': 'Gefahr',
-  'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you, then Confirm.': 'Es ist eine GERADE Runde: Dein Stern geht und nimmt gerade. Tippe auf die Figur über dir und bestätige.',
+  'It\'s a STRAIGHT round: your star moves and takes straight. Tap the piece above you to take it.': 'Es ist eine GERADE Runde: Dein Stern geht und nimmt gerade. Tippe auf die Figur über dir, um sie zu nehmen.',
   'The mode changes every round. Walk straight first, then take diagonally next round.': 'Der Modus wechselt jede Runde. Geh zuerst gerade und nimm in der nächsten Runde diagonal.',
   'A red-striped square is dangerous: a piece will take you there. Take both pieces; pick the unstriped square first.': 'Ein rot gestreiftes Feld ist gefährlich: Dort nimmt dich eine Figur. Nimm beide Figuren; wähle zuerst das Feld ohne Streifen.',
   'Night': 'Nacht',
@@ -636,5 +636,6 @@ const dict: Record<string, string> = {
   'Something else': 'Etwas anderes',
   'This opens your mail app with a message to us. Nothing is sent until you send it.': 'Das öffnet deine Mail-App mit einer Nachricht an uns. Es wird nichts gesendet, bis du es abschickst.',
   'A player you blocked is in this room.': 'Ein Spieler, den du blockiert hast, ist in diesem Raum.',
+  'Tap a lit square: your star moves there at once. Want a preview first? Turn off One-tap moves in Settings.': 'Tippe auf ein leuchtendes Feld, dein Stern zieht sofort dorthin. Lieber erst eine Vorschau? Schalte in den Einstellungen „Züge mit einem Tippen“ aus.',
 };
 export default dict;
