@@ -1,7 +1,7 @@
 // Tests for the rules engine and the bots: node tests/engine.test.mjs
 import assert from 'node:assert/strict';
 import {
-  createGame, endMatch, maxNeutrals, createPuzzle, isWinner, friendly, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
+  createGame, collapseRound, nextCollapseRound, endMatch, maxNeutrals, createPuzzle, isWinner, friendly, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
   roundOrder, random, pieceById, threatsFor, ranking, SIZE_BY_STARS, NEUTRALS_BY_STARS, POINTS, SURVIVOR_BONUS, RULES_VERSION, stateHash,
 } from '../engine/rules.js';
 import { chooseMove, targetOf } from '../engine/bots.js';
@@ -478,6 +478,24 @@ test('Twin swap: your first take in single player brings it (once); it swaps you
   const old = soloPosition({ me: [1, 1], twin: [6, 6], bots: [{ kind: 'red', r: 1, c: 2 }, { kind: 'blue', r: 8, c: 8 }], rules: 3 });
   play(old, { r: 1, c: 2 });
   assert.equal(old.seats[0].bonuses.twinSwap, 0);
+});
+
+test('fast shrink (15×15 option, rules 5): rings fall after rounds 3, 5, 6, 7 …; off, every 6 rounds as before', () => {
+  const st = createGame({ seats: seats(4, 'bot'), seed: 5, size: 15, fastShrink: true, keepGoing: true });
+  assert.deepEqual([0, 1, 2, 3, 4].map(k => collapseRound(st, k)), [3, 5, 6, 7, 8]);
+  assert.equal(nextCollapseRound(st), 3);
+  const ringAt = {};
+  for (let i = 0; i < 20000 && !st.over && st.round <= 9; i++) {
+    const round = st.round;
+    play(st, chooseMove(st, currentActor(st)));
+    if (st.round !== round) ringAt[round] = st.ring;
+  }
+  assert.deepEqual([ringAt[2], ringAt[3], ringAt[4], ringAt[5], ringAt[6]], [0, 1, 1, 2, 3]); // ring = rings fallen by the end of that round
+
+  const plain = createGame({ seats: seats(4, 'bot'), seed: 5, size: 15 });
+  assert.deepEqual([0, 1, 2].map(k => collapseRound(plain, k)), [6, 12, 18]);
+  // An old match (rules 4) ignores the option.
+  assert.equal(createGame({ seats: seats(4, 'bot'), seed: 5, size: 15, fastShrink: true, rules: 4 }).fastShrink, false);
 });
 
 // ---------------------------------------------------------------- bots

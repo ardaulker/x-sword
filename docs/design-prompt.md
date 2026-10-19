@@ -106,7 +106,8 @@ shrinking arena and the move preview can be tried there. That screen is a test b
   alone doesn't win.
 - So that a match doesn't last forever, the arena shrinks. Every 6 rounds (rounds 6, 12, 18 …) the outermost ring
   collapses at the end of the round. Pieces left on that ring leave the game. The ring is flagged one round before and
-  marked during the collapse round.
+  marked during the collapse round. On 15×15 the "fast shrink" option (on by default) makes the rings fall after rounds
+  3, 5, 6, 7 … (3 rounds, then 2, then every round), because big matches ran long.
 - A match should last 5–10 minutes.
 - A player who has been taken can keep watching or leave.
 

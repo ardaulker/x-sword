@@ -325,7 +325,7 @@ export class GameController {
     setSeatNames(match ? (match.names ?? []).map(n => (n && isBlocked(n) ? tr('Blocked player') : n)) : [getProfile().name]);
     if (match) {
       this.opts = null;
-      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals, personas: !!match.personas, obstacles: !!match.obstacles, teams: !!match.teams, rules: match.rules ?? 1 });
+      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals, personas: !!match.personas, obstacles: !!match.obstacles, teams: !!match.teams, fastShrink: !!match.fastShrink, rules: match.rules ?? 1 });
     } else {
       this.opts = preset?.opts ?? buildOpts(this.setup);
       this.state = makeState(this.opts);

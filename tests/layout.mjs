@@ -33,7 +33,7 @@ for (const lang of ['tr', 'de']) for (const [w, h] of SIZES) {
       for (const el of document.querySelectorAll('button, .panel, .sheet, h1, h2, h3, b, .menu-play-text span, .toast, .pill, .seg button')) {
         const r = el.getBoundingClientRect();
         if (!r.width || !r.height) continue;
-        if (el.matches('.bonus, .bonus-info, .seat-x, .sr-only')) continue; // a count badge and 44 px tap areas stick out on purpose
+        if (el.matches('.bonus, .panel-mini, .seat-x, .sr-only')) continue; // a count badge and 44 px tap areas stick out on purpose
         if (r.right > W + 1 || r.left < -1) out.push(`${el.className || el.tagName} "${(el.textContent || '').trim().slice(0, 30)}" leaves the screen (${Math.round(r.left)}..${Math.round(r.right)})`);
         if (el.scrollWidth > el.clientWidth + 2 && getComputedStyle(el).overflowX !== 'auto' && getComputedStyle(el).overflowX !== 'scroll' && el.clientWidth > 0) out.push(`${el.className || el.tagName} "${(el.textContent || '').trim().slice(0, 30)}" text overflows its box`);
       }

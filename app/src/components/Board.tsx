@@ -16,8 +16,6 @@ import { orderNo, upcoming } from '../game/order';
 import { activeSkin, settings } from '../game/settings';
 import { SkinFx } from './SkinFx';
 import { PieceGlyph } from './PieceGlyph';
-import { CenterBanner } from './CenterBanner';
-import { ModeOverlay } from './ModeOverlay';
 import './Board.css';
 import { tr } from '../i18n';
 
@@ -475,8 +473,6 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
         )}
       </div>
 
-      {view.modeOverlay && <ModeOverlay mode={st.mode} round={st.round} />}
-      {view.banner && <CenterBanner key={view.banner.key} banner={view.banner} state={st} />}
     </div>
   );
 }

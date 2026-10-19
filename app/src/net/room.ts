@@ -240,6 +240,7 @@ export class HostRoom extends Room {
       level, moveSeconds, size, neutrals, rules: RULES_VERSION,
       names: order.map(i => (this.view.seats[i].kind === 'bot' ? null : this.view.seats[i].name ?? null)),
       personas: this.view.opts.personas, obstacles: this.view.opts.obstacles, teams: this.view.opts.teams && order.length === 4,
+      fastShrink: size === 15 && this.view.opts.fastShrink !== false,
     };
     this.links.forEach((l, i) => l?.send({ t: 'start', match: this.match!, you: this.engineSeat[i] }));
     this.ctl.startMatch(this.match, 0, {

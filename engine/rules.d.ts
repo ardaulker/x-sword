@@ -68,6 +68,8 @@ export interface GameState {
   ring: number;
   shrinkStart: number;
   shrinkEvery: number;
+  /** Rules 5: rings fall after rounds 3, 5, 6, 7 … instead of every `shrinkEvery` rounds. */
+  fastShrink: boolean;
   neutralLevel: Level;
   rng: number;
   seats: Seat[];
@@ -116,6 +118,8 @@ export interface GameOptions {
   personas?: boolean;
   obstacles?: boolean;
   teams?: boolean;
+  /** Rules 5: the ring falls after 3 rounds, 2 more, then every round (offered on 15×15). */
+  fastShrink?: boolean;
   /** Rules version to play by; old saves and replays carry theirs. Defaults to RULES_VERSION. */
   rules?: number;
   /** 9, 11, 13 or 15; ignored if smaller than the default for the player count. */
@@ -166,6 +170,8 @@ export function legalMoves(state: GameState, piece: Piece, mode?: Mode, bonus?: 
 export function attackersOf(state: GameState, r: number, c: number, except?: string[], victim?: Piece | null): Piece[];
 export function collapseDue(state: GameState): boolean;
 export function nextCollapseRound(state: GameState): number | null;
+/** The round at whose end ring k (0 = outermost) collapses. */
+export function collapseRound(state: GameState, k: number): number;
 export function doomedAt(state: GameState, r: number, c: number): boolean;
 export function twinMove(state: GameState, twin: Piece): Move | null;
 export function threatsFor(state: GameState, piece: Piece, move: Move): { attackers: Piece[]; doomed: boolean };

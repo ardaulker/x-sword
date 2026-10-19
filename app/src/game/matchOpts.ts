@@ -22,6 +22,7 @@ export function buildOpts(s: Setup): Opts {
       rules: RULES_VERSION, seats, neutralLevel: s.level, seed: Math.floor(Math.random() * 2 ** 31), firstSeat: s.level === 'easy' ? ME : null, keepGoing: true,
       size: s.boardSize, neutrals: s.bots,
       personas: s.players > 1 && !!s.personas, obstacles: !!s.obstacles, teams: s.players === 4 && !!s.teams,
+      fastShrink: s.boardSize === 15 && s.fastShrink !== false,
     };
 }
 

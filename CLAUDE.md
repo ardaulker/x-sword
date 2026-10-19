@@ -43,7 +43,7 @@
   random legal moves (bonuses, pause, undo) in six setups on the dev server and checks for crashes, stuck matches, the result card and that the
   replay link reproduces the match. Run it after changing the controller or the engine; don't edit app files while it runs (the dev
   server reloads the page).
-- **Rules version** (9 October 2026): `RULES_VERSION` in `engine/rules.js` (now 4; 3 = the random 60-point bonus draws from `state.ruleRng`,
+- **Rules version** (9 October 2026): `RULES_VERSION` in `engine/rules.js` (now 5; 5 = the fast shrink option; 3 = the random 60-point bonus draws from `state.ruleRng`,
   a stream the bots never touch, because guests and replays do not run the bots and used to get a different bonus; 4 = the Twin copies
   bonus moves (`state.twinSteps`) and the solo Twin swap bonus). `createGame({ rules })` plays a match by an older
   version; saves, replay links and multiplayer rooms record it (`opts.rules`, `MatchStart.rules`, `hello.rules`). A save or
@@ -100,7 +100,8 @@
   piece is taken mid-round, numbers don't change that round. The turn queue shows future rounds with that round's new
   numbers.
 - A move: tap a square, preview, confirm. 20 seconds per move; when time runs out a safe move is played.
-- Every 6 rounds (6, 12, 18 …) the outermost ring collapses; a thin orange edge warns one round before and stripes mark
+- Every 6 rounds (6, 12, 18 …) the outermost ring collapses (on 15×15 **fast shrink**, on by default since 19 October 2026 and rules 5:
+  after rounds 3, 5, 6, 7 …; `fastShrink`, `collapseRound`; Setup, lobby and `MatchStart` carry it); a thin orange edge warns one round before and stripes mark
   the collapse round. Tension music plays.
 - Points: star / Twin / red-blue (`POINTS`), `SURVIVOR_BONUS` for the last star standing. Ranking: score, takes,
   survival. The winner is decided when the rival stars are gone; in a local 2–4 player match the game asks
@@ -593,10 +594,13 @@ S#....#.
   `GameController.openBonusGuide`; the local clock stops while it is open) lists what each bonus does and shows two
   tracks: points (Start, 20, 40, 50, 60) and surviving shrinks (round 6 Armor, round 12 Double move), with a marker for
   your score or round.
-- **The panel never covers the board** (19 October 2026, Arda on a real iPhone 14: "I must always see what happens below"): the board
-  leaves at least `PANEL_ROOM`, and more if the panel was ever taller at this screen size (`GameScreen.tsx → panelSeen`, measured on
-  `.panel-dock`). Undo sits in the bonus header (`.bonus-undo`) outside puzzles to keep the panel short. `tests/layout.mjs` fails if the
-  board's frame reaches under the panel.
+- **The board comes first** (19 October 2026, Arda on a real iPhone 14: "the board must never be blocked", then "shrinking the board to
+  keep the panel is unacceptable"): the panel in play is short (your turn: title, the next point bonus as a link to the bonus guide, a small
+  Undo, a small timer, one warning line only when it matters, the bonus bar; the bots' turn: one row, speed-up is an icon). The board
+  leaves `PANEL_ROOM`, or more if a panel in play was ever taller at this screen size (`GameScreen.tsx → panelSeen`, `.panel-dock[data-play]`;
+  the end-of-match card may cover it). The board spans the full width; the zoom button sits next to the mode box (80 / 20, `.mode-row`).
+  Banners and the mode card are drawn over the whole board area, not the board, so they stay readable on a shrunken board.
+  `tests/layout.mjs` fails if the board's frame reaches under the panel.
 - **Double move counter**: the engine sets `state.extra = { id, n }` while a star plays the extra moves of a Double move
   (cleared when the turn passes). The panel shows a strip (`BonusStrip`) with the bonus, what to do and a "Move 1/2 ·
   2/2" counter; previews say "Move 1/2 · Double move". The strip takes the place of the hint and the bonus header so the

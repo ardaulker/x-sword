@@ -120,15 +120,16 @@ function randomSymmetry(state, size) {
 // 1: the original rules. 2 (9 Oct 2026): taking two pieces with one Double move earns Armor.
 // 3 (19 Oct 2026): the random bonus at 60 points draws from its own stream (`ruleRandom`), so replays and guest phones agree.
 // 4 (19 Oct 2026): the solo Twin copies bonus moves (`twinSteps`) and the first take brings a Twin swap.
+// 5 (19 Oct 2026): the fast shrink option (`fastShrink`, 15×15): the ring collapses after 3 rounds, 2 more, then every round.
 // Raise it whenever a change would make an old move list play out differently.
-export const RULES_VERSION = 4;
+export const RULES_VERSION = 5;
 
 // seats: [{ kind: 'human' | 'bot', level: 'easy' | 'normal' | 'hard' }], 1–4 of them.
 // A single seat is single-player mode: the player's mirror, the Twin, also joins the board.
 // firstSeat: this seat always moves first (the player on Easy). Without it everyone's place is random.
 // shuffle: false keeps corners and order fixed (tests only).
 export function createGame({
-  seats, neutralLevel = 'normal', seed, shrinkStart = 6, shrinkEvery = 6, neutrals, firstSeat = null, shuffle: mix = true, keepGoing = false, size: sizeOpt = null, personas = false, obstacles = false, teams = false, rules = RULES_VERSION,
+  seats, neutralLevel = 'normal', seed, shrinkStart = 6, shrinkEvery = 6, neutrals, firstSeat = null, shuffle: mix = true, keepGoing = false, size: sizeOpt = null, personas = false, obstacles = false, teams = false, fastShrink = false, rules = RULES_VERSION,
 } = {}) {
   const n = seats?.length;
   if (!(rules >= 1 && rules <= RULES_VERSION)) throw new Error(`Unknown rules version ${rules}.`);
@@ -136,7 +137,7 @@ export function createGame({
   const size = BOARD_SIZES.includes(sizeOpt) && sizeOpt >= SIZE_BY_STARS[n] ? sizeOpt : SIZE_BY_STARS[n];
   const rng = ((seed ?? Math.floor(Math.random() * 2 ** 31)) >>> 0) || 1;
   const state = {
-    rules, size, round: 1, mode: 'STRAIGHT', ring: 0, shrinkStart, shrinkEvery, neutralLevel,
+    rules, size, round: 1, mode: 'STRAIGHT', ring: 0, shrinkStart, shrinkEvery, neutralLevel, fastShrink: rules >= 5 && !!fastShrink,
     rng, ruleRng: ((rng ^ 0x9e3779b9) >>> 0) || 1,
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
@@ -419,14 +420,27 @@ export function attackersOf(state, r, c, except = [], victim = null) {
 }
 
 // Every 6 rounds (at the end of rounds 6, 12, 18 …) the arena loses its outer ring.
+// Fast shrink (rules 5, an option on 15×15, where matches ran long): the first ring falls after 3 rounds, the next 2 rounds later,
+// then one every round (rounds 3, 5, 6, 7 …).
+const FAST_GAPS = [3, 2];
 export function collapseDue(state) {
+  if (state.fastShrink) return state.ring < (state.size - 1) / 2 && state.round === collapseRound(state, state.ring);
   return state.round >= state.shrinkStart
     && (state.round - state.shrinkStart) % state.shrinkEvery === 0
     && state.ring < (state.size - 1) / 2;
 }
 
+// The round at whose end ring k (0 = the outermost) collapses.
+export function collapseRound(state, k) {
+  if (!state.fastShrink) return state.shrinkStart + k * state.shrinkEvery;
+  let r = 0;
+  for (let i = 0; i <= k; i++) r += FAST_GAPS[i] ?? 1;
+  return r;
+}
+
 export function nextCollapseRound(state) {
   if (state.ring >= (state.size - 1) / 2) return null;
+  if (state.fastShrink) return Math.max(state.round, collapseRound(state, state.ring));
   if (state.round < state.shrinkStart) return state.shrinkStart;
   const into = (state.round - state.shrinkStart) % state.shrinkEvery;
   return state.round + (into === 0 ? 0 : state.shrinkEvery - into);

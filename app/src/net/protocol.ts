@@ -24,12 +24,13 @@ export interface MatchStart {
   personas?: boolean;  // personalities for AI rivals
   obstacles?: boolean; // obstacle squares
   teams?: boolean;     // 2 vs 2 (4 players only)
+  fastShrink?: boolean; // rings fall after rounds 3, 5, 6, 7 … (15×15 only)
   names?: (string | null)[]; // profile names in match seat order (null for AI)
   rules?: number;    // rules version (RULES_VERSION); missing means 1
 }
 
 // Options chosen by the host in the lobby, off by default.
-export interface LobbyOpts { personas: boolean; obstacles: boolean; teams: boolean }
+export interface LobbyOpts { personas: boolean; obstacles: boolean; teams: boolean; fastShrink?: boolean }
 
 export type ToHost =
   | { t: 'hello'; token?: string; profile?: PublicProfile; rules?: number }

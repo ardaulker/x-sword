@@ -228,6 +228,7 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
         <div className="lobby-opts">
           <Opt label={tr('Bot characters')} sub={tr('AI rivals play as a hunter, a cautious one or an opportunist.')} on={v.opts.personas} onChange={x => host && hostRoom?.setOpts({ personas: x })} />
           <Opt label={tr('Obstacle squares')} sub={tr('Places blocked squares on the board that never touch each other.')} on={v.opts.obstacles} onChange={x => host && hostRoom?.setOpts({ obstacles: x })} />
+          {size === 15 && <Opt label={tr('Fast shrink')} sub={tr('The ring falls after 3 rounds, then after 2 more, then every round.')} on={v.opts.fastShrink !== false} onChange={x => host && hostRoom?.setOpts({ fastShrink: x })} />}
           {filled === 4 && <Opt label={tr('Teams (2 vs 2)')} sub={tr("Opposite corners form a team; you can't take your teammate.")} on={v.opts.teams} onChange={x => host && hostRoom?.setOpts({ teams: x })} />}
         </div>
 

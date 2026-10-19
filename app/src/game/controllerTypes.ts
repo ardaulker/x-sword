@@ -38,6 +38,8 @@ export interface Setup {
   personas?: boolean;
   obstacles?: boolean;
   teams?: boolean;
+  /** 15×15 only: rings fall after rounds 3, 5, 6, 7 … (on unless switched off). */
+  fastShrink?: boolean;
 }
 // players 1: single-player mode (you + your mirror Twin + bots). 2–4: against AI players.
 export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', aiLevel: 'normal', moveSeconds: 20, boardSize: 9, bots: 14 };

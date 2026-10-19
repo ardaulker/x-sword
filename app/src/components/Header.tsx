@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { collapseDue, nextCollapseRound, starOf } from '../../../engine/rules.js';
 import type { GameState, Mode } from '../../../engine/rules.js';
 import type { GameController, View } from '../game/controller';
@@ -94,7 +95,7 @@ export function ModeIndicator({ mode, showSub }: { mode: Mode; showSub: boolean 
 }
 
 // Short screen (SE): header and mode on one row.
-export function CompactBar({ ctl, view }: { ctl: GameController; view: View }) {
+export function CompactBar({ ctl, view, extra }: { ctl: GameController; view: View; extra?: ReactNode }) {
   const st = ctl.state;
   const ring = ringInfo(st);
   const time = useMatchTime(view.clockStart, view.clockEnd);
@@ -110,6 +111,7 @@ export function CompactBar({ ctl, view }: { ctl: GameController; view: View }) {
           <span className={ring.warn ? 'is-warn' : undefined}>{ring.long}</span>
         </div>
       </div>
+      {extra}
       <LogButton ctl={ctl} view={view} size={40} />
     </header>
   );

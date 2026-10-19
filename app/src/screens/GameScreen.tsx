@@ -5,6 +5,8 @@ import { ICON } from '../game/look';
 import { ME, labelOf, modeWord, seatName } from '../game/names';
 import { ActionPanel } from '../components/ActionPanel';
 import { BOARD_PAD, Board, RING_W, boardGap, boardOuter } from '../components/Board';
+import { CenterBanner } from '../components/CenterBanner';
+import { ModeOverlay } from '../components/ModeOverlay';
 import { SPEED, settings } from '../game/settings';
 import { CompactBar, ModeIndicator, TopBar } from '../components/Header';
 import { PlayerStrip } from '../components/PlayerStrip';
@@ -20,13 +22,13 @@ import { tr } from '../i18n';
 
 // On a short screen (iPhone SE, or with browser bars showing) the header and mode fold into one row.
 const COMPACT_BELOW = 740;
-// The panel needs at least this much room. The board always leaves it, so the board neither grows nor shifts when the panel
-// changes. Centering uses the panel's usual height.
-const PANEL_ROOM = { full: 196, compact: 182 };
+// The panel needs at least this much room (your turn with a warning line). The board always leaves it, so the board neither grows
+// nor shifts when the panel changes. Centering uses the panel's usual height.
+const PANEL_ROOM = { full: 156, compact: 146 };
 // The panel's tallest height seen at each screen size (your turn with the bonus bar and Undo is usually the tallest). The board
 // leaves at least that much, so the panel never covers it; kept across matches, so after the first turn the board stays put.
 const panelSeen = new Map<string, number>();
-const PANEL_USUAL = { full: 128, compact: 104 };
+const PANEL_USUAL = { full: 126, compact: 116 };
 const GAP = 6;
 
 function announce(ctl: GameController, view: View) {
@@ -67,6 +69,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
     dockObserver.current = null;
     if (!el) return;
     const ro = new ResizeObserver(() => {
+      if (el.dataset.play !== '1') return; // the end-of-match card may grow over the board; only panels in play count
       const key = sizeKey.current, h = Math.ceil(el.getBoundingClientRect().height);
       if (h > (panelSeen.get(key) ?? 0)) panelSeen.set(key, h);
       setPanelH(panelSeen.get(key) ?? h);
@@ -105,7 +108,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
   const seenH = panelSeen.get(sizeKey.current) ?? 0;
   const room = landscape ? 0 : Math.max(compact ? PANEL_ROOM.compact : PANEL_ROOM.full, seenH);
   const usual = landscape ? 0 : compact ? PANEL_USUAL.compact : PANEL_USUAL.full;
-  const availW = stage.w - 12, availH = stage.h - room - (landscape ? 0 : GAP);
+  const availW = stage.w - 4, availH = stage.h - room - (landscape ? 0 : GAP);
   const fitK = (a: number, k: number, g: number, pad: number) => Math.floor((a - 2 * BOARD_PAD - 2 * pad - g * (k - 1)) / k);
   // The full board's square size is the base; after a shrink squares grow, but in moderation: at most 1.7× and 64 px (a bigger base stays).
   const base = Math.max(14, Math.min(fitK(availW, n, boardGap(n), 0), fitK(availH, n, boardGap(n), 0)));
@@ -136,12 +139,21 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
   const [sub, setSub] = useState<null | 'new' | 'settings'>(null);
   const matchTime = useMatchTime(view.clockStart, view.clockEnd);
   const goPuzzle = (id: number) => onNewGame({ ...ctl.setup, puzzle: id });
+  const zoomBtn = canZoom ? (
+    <button type="button" className="zoom-btn" aria-pressed={zoomed} aria-label={zoomed ? tr('Zoom out') : tr('Zoom in')} onClick={() => setZoom(z => !z)}>
+      <Icon d={zoomed ? 'M10 4 A6 6 0 1 0 10.01 4 Z M15 15 L20 20 M7.5 10 H12.5' : 'M10 4 A6 6 0 1 0 10.01 4 Z M15 15 L20 20 M7.5 10 H12.5 M10 7.5 V12.5'} size={22} stroke={2.2} />
+    </button>
+  ) : null;
   const bars = (
     <>
-      {compact ? <CompactBar ctl={ctl} view={view} /> : (
+      {compact ? <CompactBar ctl={ctl} view={view} extra={zoomBtn} /> : (
         <>
           <TopBar ctl={ctl} view={view} />
-          <ModeIndicator mode={st.mode} showSub={ctl.autoMap || !!st.puzzle} />
+          {/* The zoom button sits next to the mode (80 / 20), so the board can use the full width. */}
+          <div className={`mode-row${zoomBtn ? ' has-zoom' : ''}`}>
+            <ModeIndicator mode={st.mode} showSub={ctl.autoMap || !!st.puzzle} />
+            {zoomBtn}
+          </div>
         </>
       )}
       <TurnQueue ctl={ctl} view={view} compact={compact} />
@@ -154,11 +166,9 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
         {stage.w > 0 && (zoomed
           ? <div ref={areaRef} className="board-scroll"><Board ctl={ctl} view={view} cell={cellZ} offset={shown} /></div>
           : <Board ctl={ctl} view={view} cell={cell} offset={shown} />)}
-        {canZoom && (
-          <button type="button" className="zoom-btn" aria-pressed={zoomed} aria-label={zoomed ? tr('Zoom out') : tr('Zoom in')} onClick={() => setZoom(z => !z)}>
-            <Icon d={zoomed ? 'M10 4 A6 6 0 1 0 10.01 4 Z M15 15 L20 20 M7.5 10 H12.5' : 'M10 4 A6 6 0 1 0 10.01 4 Z M15 15 L20 20 M7.5 10 H12.5 M10 7.5 V12.5'} size={20} stroke={2.2} />
-          </button>
-        )}
+        {/* Mode card and banners span the whole area, not the board: on a shrunken board they used to be squeezed thin. */}
+        {view.modeOverlay && <ModeOverlay mode={st.mode} round={st.round} />}
+        {view.banner && <CenterBanner key={view.banner.key} banner={view.banner} state={st} />}
         {view.inspect && <InfoChip ctl={ctl} id={view.inspect} />}
         {view.toast && (
           <div key={view.toast.key} className="toast" role="status">
@@ -167,7 +177,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
           </div>
         )}
       </div>
-      {!landscape && <div ref={dockRef} className="panel-dock"><ActionPanel ctl={ctl} view={view} net={net} onPuzzle={goPuzzle} /></div>}
+      {!landscape && <div ref={dockRef} className="panel-dock" data-play={!st.over && (ctl.myStar().alive || view.watching) ? '1' : '0'}><ActionPanel ctl={ctl} view={view} net={net} onPuzzle={goPuzzle} /></div>}
     </div>
   );
   return (

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { PUZZLES } from '../game/puzzles';
 import { puzzleHint } from '../game/puzzleText';
 import {
@@ -214,22 +214,20 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
             </svg>
             <div className="panel-titles">
               <div className="panel-title">{tr('Bots are playing')}</div>
-              <div className="panel-sub">{cur && cur.kind !== 'star' && isBot(cur) ? tr('Now #{n} · taken bots are skipped', { n: cur.label }) : tr('One after another')}</div>
+              <div className="panel-sub">{me.alive ? untilMe(st, me) : cur && cur.kind !== 'star' && isBot(cur) ? tr('Now #{n} · taken bots are skipped', { n: cur.label }) : tr('One after another')}</div>
             </div>
             <div className="panel-count">{Math.min(done, total)} / {total}</div>
+            {!ctl.isGuest && (
+              <button type="button" className="panel-mini is-fast" aria-label={tr('Speed up · or tap the board')} onClick={() => ctl.speedUp()}>
+                <Icon d={ICON.fast} size={18} fill="#EEF2FF" />
+              </button>
+            )}
           </div>
           <div className="segs" aria-hidden="true">
             {Array.from({ length: total }, (_, i) => (
               <div key={i} style={{ background: i < done - 1 ? '#6F7FB8' : i === done - 1 ? '#EEF2FF' : '#232D5E' }} />
             ))}
           </div>
-          {me.alive && <div className="panel-hint">{untilMe(st, me)}</div>}
-          {!ctl.isGuest && (
-            <button type="button" className="btn btn-fast" onClick={() => ctl.speedUp()}>
-              <Icon d={ICON.fast} size={18} fill="#EEF2FF" />
-              {tr('Speed up · or tap the board')}
-            </button>
-          )}
         </div>
       </section>
     );
@@ -242,24 +240,19 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
   let timer: number | null = null, barColor = myColor;
 
   if (view.phase === 'mine') {
-    who = me; timer = t; title = tr('Your turn'); sub = tr('Tap one of the lit squares');
-    const seq = extraMoves(st, me);
-    if (seq) sub = tr('Move {a} of {b}: tap a lit square', { a: seq + 1, b: seq + 1 });
-    else if (view.bonus === 'double') sub = tr('Move {a} of {b}: tap a lit square', { a: 1, b: 2 });
-    else if (view.bonus === 'step') sub = tr('Tap a square two steps away');
-    else if (view.bonus === 'swap') sub = tr('Tap any piece to swap places');
-    else if (view.bonus === 'twinSwap') sub = tr('Tap your Twin to swap places');
+    // Your turn is kept short so the board gets the room: no instructions, one warning line only when something matters.
+    // The sub line names the next point bonus (the bonus bar sits right below).
+    who = me; timer = t; title = tr('Your turn');
+    const next = st.puzzle ? null : nextPointBonus(st);
+    if (next) sub = tr('Next: {name} at {n} pts', { name: next.name, n: next.pts });
     const threats = attackersOfMe(st, me).length;
     // A puzzle's own hint comes before the threat warning: tutorial hints must always be read; danger already shows as striped squares.
     if (st.puzzle) hint = puzzleHint(PUZZLES.find(p => p.id === ctl.setup.puzzle)?.hint ?? '');
     else if (threats) { hint = tr('{n} {n:piece|pieces} can take you right now. Striped squares are dangerous.', { n: threats }); hintColor = DANGER_TXT; }
-    else hint = tr('Tap a piece: its paths and who it is chasing show on the board.');
     if (collapseDue(st)) {
-      sub = tr('The outer ring collapses at the end of this round');
-      hint = tr('Any piece left on the orange-striped ring is out. Move inward.'); hintColor = HAZARD_TXT; border = HAZARD;
+      hint = tr('The ring falls this round · move inward'); hintColor = HAZARD_TXT; border = HAZARD;
     }
     if (lastSeconds) {
-      sub = tr('Last seconds');
       hint = tr('If time runs out, the game plays a safe move for you.'); hintColor = TXT2;
       border = DANGER; glow = '0 0 0 3px rgba(255,59,92,.18)';
     }
@@ -294,8 +287,20 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
           <Who st={st} p={who} />
           <div className="panel-titles">
             <div className="panel-title">{title}</div>
-            <div className="panel-sub">{sub}</div>
+            {/* On your turn the sub line (the next point bonus) also opens the bonus guide. */}
+            {sub && (view.phase === 'mine' && !st.puzzle
+              ? <button type="button" className="panel-sub panel-sub-link" aria-label={`${sub} · ${tr('Bonus guide')}`} onClick={() => ctl.openBonusGuide()}>
+                  <Icon d="M12 3 A9 9 0 1 0 12.01 3 Z M12 11 V16 M12 8 V8.2" size={13} stroke={2.4} /><span>{sub}</span>
+                </button>
+              : <div className="panel-sub">{sub}</div>)}
           </div>
+          {view.phase === 'mine' && ctl.undoAvailable && !st.puzzle && (
+            <button type="button" className="panel-mini" disabled={!ctl.canUndo} onClick={() => ctl.undo()}
+              aria-label={ctl.undosRemaining == null ? tr('Undo') : tr('Undo ({n})', { n: ctl.undosRemaining })}>
+              <Icon d="M9 14 L4 9 L9 4 M4 9 H15 A5 5 0 0 1 15 19 H8" size={16} stroke={2.2} />
+              {ctl.undosRemaining != null && <span>{ctl.undosRemaining}</span>}
+            </button>
+          )}
           {view.phase === 'rival' && ctl.canNudge && actor?.kind === 'star' && <BellButton ctl={ctl} name={seatName(st, actor.seat)} />}
           {timer != null && (
             <div className={`panel-timer${lastSeconds && view.phase === 'mine' ? ' is-pulse' : ''}`} style={{ color: view.phase === 'mine' ? timerColor : TXT }}>
@@ -308,14 +313,8 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
             <div style={{ width: `${Math.max(0, Math.min(100, Math.round((timer / total) * 100)))}%`, background: view.phase === 'mine' && lastSeconds ? DANGER : barColor }} />
           </div>
         )}
-        {!stripOn && <div className="panel-hint" style={{ color: hintColor }}>{hint}</div>}
-        {/* Undo sits in the bonus header (outside puzzles) so the panel stays short and never covers the board. */}
-        {view.phase === 'mine' && <BonusBar ctl={ctl} view={view} undo={ctl.undoAvailable && !st.puzzle ? (
-          <button type="button" className="bonus-undo" disabled={!ctl.canUndo} onClick={() => ctl.undo()}>
-            <Icon d="M9 14 L4 9 L9 4 M4 9 H15 A5 5 0 0 1 15 19 H8" size={14} stroke={2.2} />
-            {ctl.undosRemaining == null ? tr('Undo') : tr('Undo ({n})', { n: ctl.undosRemaining })}
-          </button>
-        ) : undefined} />}
+        {!stripOn && hint && <div className={`panel-hint${view.phase === 'mine' && !st.puzzle ? ' is-line' : ' is-two'}`} style={{ color: hintColor }}>{hint}</div>}
+        {view.phase === 'mine' && <BonusBar ctl={ctl} view={view} />}
         {view.phase === 'mine' && st.puzzle && (ctl.undoAvailable || onPuzzle) && (
           <div className="mini-row">
             {ctl.undoAvailable && (
@@ -419,23 +418,14 @@ function BonusStrip({ st, me, view }: { st: GameState; me: Piece; view: View }) 
 
 // The bonuses on your turn: always visible so nobody misses them. Armor works by itself; tap another one and the squares light up for it.
 // A bonus you don't hold opens the guide that explains how to earn it.
-function BonusBar({ ctl, view, undo }: { ctl: GameController; view: View; undo?: ReactNode }) {
+function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
   const st = ctl.state;
   const b = st.seats[ME].bonuses;
   const me = ctl.myStar();
   if (st.puzzle && !Object.values(b).some(n => n > 0) && !extraMoves(st, me)) return null;
-  const next = st.puzzle ? null : nextPointBonus(st);
   return (
     <div className="bonus-wrap">
       <BonusStrip st={st} me={me} view={view} />
-      {!(view.bonus || extraMoves(st, me) > 0) && <div className="bonus-head">
-        <span className="bonus-label">{tr('Bonuses')}</span>
-        <span className="bonus-next">{next ? tr('Next: {name} at {n} pts', { name: next.name, n: next.pts }) : ''}</span>
-        {undo}
-        <button type="button" className="bonus-info" aria-label={tr('Bonus guide')} onClick={() => ctl.openBonusGuide()}>
-          <Icon d="M12 3 A9 9 0 1 0 12.01 3 Z M12 11 V16 M12 8 V8.2" size={16} stroke={2.2} />
-        </button>
-      </div>}
       <div className={`bonus-bar${bonusKinds(st).length > 4 ? ' is-five' : ''}`} role="group" aria-label={tr('Bonuses')}>
         {bonusKinds(st).map(k => {
           const have = b[k] > 0, usable = have && k !== 'armor';

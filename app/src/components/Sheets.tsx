@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { BONUS_NAMES, BONUS_SCORES, SWAP_SCORE, POINTS, isWinner, SIZE_BY_STARS, BOARD_SIZES, defaultNeutrals, maxNeutrals, pieceById, ranking, starOf } from '../../../engine/rules.js';
+import { BONUS_NAMES, BONUS_SCORES, SWAP_SCORE, POINTS, collapseRound, isWinner, SIZE_BY_STARS, BOARD_SIZES, defaultNeutrals, maxNeutrals, pieceById, ranking, starOf } from '../../../engine/rules.js';
 import type { BonusKind, GameState, Level, Piece } from '../../../engine/rules.js';
 import type { GameController, Setup, TakeEvent } from '../game/controller';
 import { HAZARD_TXT, ICON, TXT, colorOf, diamondOf, seatOf } from '../game/look';
@@ -139,7 +139,7 @@ export function BonusSheet({ ctl }: { ctl: GameController }) {
     { at: SWAP_SCORE, kind: 'swap', top: tr('{n} pts', { n: SWAP_SCORE }) },
     { at: BONUS_SCORES[2], kind: 'either', top: tr('{n} pts', { n: BONUS_SCORES[2] }) },
   ];
-  const first = st.shrinkStart, second = st.shrinkStart + st.shrinkEvery;
+  const first = collapseRound(st, 0), second = collapseRound(st, 1);
   const rounds: Milestone[] = [
     { at: 1, kind: 'none', top: tr('Round {n}', { n: 1 }), done: true },
     { at: first, kind: 'armor', top: tr('Round {n}', { n: first }), done: st.ring >= 1 },
@@ -272,6 +272,7 @@ export function SetupSheet({ setup, onStart, onClose }: {
   const [personas, setPersonas] = useState(!!setup.personas);
   const [obstacles, setObstacles] = useState(!!setup.obstacles);
   const [teams, setTeams] = useState(!!setup.teams);
+  const [fastShrink, setFastShrink] = useState(setup.fastShrink !== false);
   const [skin, setSkin] = useState(settings.skin);
   const [character, setCharacter] = useState(false); // the "Customize character" page
   const [pickedSize, setBoardSize] = useState(setup.boardSize);
@@ -345,6 +346,7 @@ export function SetupSheet({ setup, onStart, onClose }: {
       </div>
       <div className="field-label">{tr('OPTIONS')}</div>
       <div className="opts">
+        {size === 15 && <Opt label={tr('Fast shrink')} sub={tr('The ring falls after 3 rounds, then after 2 more, then every round.')} on={fastShrink} onChange={setFastShrink} />}
         {players === 4 && <Opt label={tr('Teams (2 vs 2)')} sub={tr("Opposite corners form a team; you can't take your teammate.")} on={teams} onChange={setTeams} />}
         <div className="opts-pair">
           <Opt className="opt-tile" label={tr('Obstacle squares')} on={obstacles} onChange={setObstacles} />
@@ -362,7 +364,7 @@ export function SetupSheet({ setup, onStart, onClose }: {
           <PieceGlyph kind="star" seat={ME} size={26} diamond={false}><SkinFx id={skinById(skin).id} /></PieceGlyph>
           <span>{tr('Customize character')}</span>
         </button>
-        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, aiLevel, boardSize: size, bots: botCount, daily: null, puzzle: null, personas: players > 1 && personas, obstacles, teams: players === 4 && teams })}>{tr('Start')}</button>
+        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, aiLevel, boardSize: size, bots: botCount, daily: null, puzzle: null, personas: players > 1 && personas, obstacles, teams: players === 4 && teams, fastShrink })}>{tr('Start')}</button>
       </div>
     </SheetFrame>
   );
