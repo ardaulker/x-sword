@@ -203,10 +203,11 @@ function loadSamples(ac: AudioContext) {
     if (samples.has(name)) continue;
     samples.set(name, 'loading');
     fetch(import.meta.env.BASE_URL + file)
-      .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
+      // The iPhone shell (capacitor://) answers local files with status 0, not 200: that is a success there too.
+      .then(r => (r.ok || r.status === 0 ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
       .then(data => ac.decodeAudioData(data))
       .then(buf => samples.set(name, buf))
-      .catch(() => samples.set(name, 'failed'));
+      .catch(e => { samples.set(name, 'failed'); console.warn(`X Sword: sound ${file} could not load:`, e instanceof Error ? e.message : e); });
   }
 }
 
