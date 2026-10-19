@@ -8,8 +8,8 @@ import { legacyLevel, legacyOpts } from './legacy';
 
 export type Opts = Record<string, unknown>;
 
-const CODE: Record<string, string> = { step: 's', double: 'd', swap: 'w' };
-const BONUS: Record<string, BonusKind> = { s: 'step', d: 'double', w: 'swap' };
+const CODE: Record<string, string> = { step: 's', double: 'd', swap: 'w', twinSwap: 't' };
+const BONUS: Record<string, BonusKind> = { s: 'step', d: 'double', w: 'swap', t: 'twinSwap' };
 
 // A move: "row.col" (with a bonus: a trailing letter); a pass: "p".
 export function encodeMoves(moves: (Move | null)[]) {
@@ -20,7 +20,7 @@ export function decodeMoves(text: string): (Move | null)[] {
   if (!text) return [];
   return text.split(';').map(tok => {
     if (tok === 'p') return null;
-    const m = /^(\d+)\.(\d+)([sdw]?)$/.exec(tok);
+    const m = /^(\d+)\.(\d+)([sdwt]?)$/.exec(tok);
     if (!m) throw new Error('broken record');
     // play() finds the move by r, c and bonus; it works out the type and target itself.
     return { r: +m[1], c: +m[2], type: 'walk', ...(m[3] ? { bonus: BONUS[m[3]] } : {}) } as Move;

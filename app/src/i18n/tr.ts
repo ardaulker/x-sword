@@ -637,5 +637,11 @@ const dict: Record<string, string> = {
   'This opens your mail app with a message to us. Nothing is sent until you send it.': 'Bu, e-posta uygulamanı bize yazılmış hazır bir mesajla açar. Sen göndermeden hiçbir şey gitmez.',
   'A player you blocked is in this room.': 'Engellediğin bir oyuncu bu odada.',
   'Tap a lit square: your star moves there at once. Want a preview first? Turn off One-tap moves in Settings.': 'Yanan bir kareye dokun, yıldızın hemen oraya gider. Önce önizleme mi istersin? Ayarlar\'dan Tek dokunuşla oyna\'yı kapat.',
+  'Twin swap': 'İkiz Takası',
+  'Swap places with your own Twin. Solo mode only.': 'Kendi İkiz\'inle yer değiştir. Yalnızca tek oyunculu modda.',
+  'Tap your Twin to swap places': 'Yer değiştirmek için İkiz\'ine dokun',
+  'In solo mode, your first take brings a Twin swap.': 'Tek oyunculu modda ilk aldığın taş sana bir İkiz Takası getirir.',
+  'The Twin copies bonus moves too: after a Double step it goes two squares, after a Double move it plays both of your moves one after the other. After a Switcheroo or a Twin swap it stays put; Armor protects only you.': 'İkiz bonus hamlelerini de kopyalar: Çift adımdan sonra o da iki kare gider, Çift hamleden sonra senin iki hamleni sırayla oynar. Yer Çalma ya da İkiz Takası sonrasında yerinde kalır; Zırh yalnızca seni korur.',
+  '**How to earn it:** take your first piece in solo mode (once per match).': '**Nasıl kazanılır:** tek oyunculu modda ilk taşını al (maç başına bir kez).',
 };
 export default dict;

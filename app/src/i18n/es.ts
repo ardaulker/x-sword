@@ -637,5 +637,11 @@ const dict: Record<string, string> = {
   'This opens your mail app with a message to us. Nothing is sent until you send it.': 'Esto abre tu app de correo con un mensaje para nosotros. No se envía nada hasta que lo envíes.',
   'A player you blocked is in this room.': 'Un jugador que bloqueaste está en esta sala.',
   'Tap a lit square: your star moves there at once. Want a preview first? Turn off One-tap moves in Settings.': 'Toca una casilla iluminada y tu estrella irá allí al instante. ¿Prefieres ver una vista previa? Desactiva «Mover con un toque» en Ajustes.',
+  'Twin swap': 'Cambio gemelo',
+  'Swap places with your own Twin. Solo mode only.': 'Intercambia tu lugar con tu propio Gemelo. Solo en modo solitario.',
+  'Tap your Twin to swap places': 'Toca a tu Gemelo para intercambiar lugares',
+  'In solo mode, your first take brings a Twin swap.': 'En solitario, tu primera captura te da un Cambio gemelo.',
+  'The Twin copies bonus moves too: after a Double step it goes two squares, after a Double move it plays both of your moves one after the other. After a Switcheroo or a Twin swap it stays put; Armor protects only you.': 'El Gemelo también copia los movimientos de bonus: tras un Doble paso avanza dos casillas, tras un Doble movimiento juega tus dos movimientos uno tras otro. Tras un Cambiazo o un Cambio gemelo se queda quieto; la Armadura solo te protege a ti.',
+  '**How to earn it:** take your first piece in solo mode (once per match).': '**Cómo se gana:** haz tu primera captura en modo solitario (una vez por partida).',
 };
 export default dict;

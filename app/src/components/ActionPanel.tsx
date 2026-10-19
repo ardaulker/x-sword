@@ -248,6 +248,7 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
     else if (view.bonus === 'double') sub = tr('Move {a} of {b}: tap a lit square', { a: 1, b: 2 });
     else if (view.bonus === 'step') sub = tr('Tap a square two steps away');
     else if (view.bonus === 'swap') sub = tr('Tap any piece to swap places');
+    else if (view.bonus === 'twinSwap') sub = tr('Tap your Twin to swap places');
     const threats = attackersOfMe(st, me).length;
     // A puzzle's own hint comes before the threat warning: tutorial hints must always be read; danger already shows as striped squares.
     if (st.puzzle) hint = puzzleHint(PUZZLES.find(p => p.id === ctl.setup.puzzle)?.hint ?? '');
@@ -343,10 +344,16 @@ export const BONUS_ICONS: Record<BonusKind, string> = {
   step: 'M4 12 H12 M9 8 L13 12 L9 16 M12 12 H20 M17 8 L21 12 L17 16',
   double: 'M3 5 L12 12 L3 19 Z M12 5 L21 12 L12 19 Z',
   swap: 'M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19',
+  // Two pieces (you and your mirror) with arrows turning between them.
+  twinSwap: 'M7 4 A3 3 0 1 1 7.01 4 Z M17 14 A3 3 0 1 1 17.01 14 Z M11 6 C15 6 17 8 17 11 M15 9 L17 11 L19 9 M13 18 C9 18 7 16 7 13 M5 15 L7 13 L9 15',
 };
 
 // Short names on the buttons: "Double step" and "Double move" looked the same on narrow screens.
-export const shortBonus = (k: BonusKind) => (k === 'step' ? tr('Step ×2') : k === 'double' ? tr('Move ×2') : tr(BONUS_NAMES[k]));
+export const shortBonus = (k: BonusKind) => (k === 'step' ? tr('Step ×2') : k === 'double' ? tr('Move ×2') : k === 'twinSwap' ? tr('Twin') : tr(BONUS_NAMES[k]));
+
+// The bonuses this match can have: the Twin swap exists only in single player (rules 4).
+export const bonusKinds = (st: GameState) =>
+  (Object.keys(BONUS_ICONS) as BonusKind[]).filter(k => k !== 'twinSwap' || (st.solo && st.rules >= 4 && !st.puzzle));
 
 // How many moves of a Double move sequence you have already played this turn (0 = none).
 const extraMoves = (st: GameState, me: Piece) => (st.extra && st.extra.id === me.id ? st.extra.n : 0);
@@ -376,6 +383,7 @@ const BONUS_HELP: Record<BonusKind, () => string> = {
   step: () => tr('Tap a square two steps away'),
   double: () => tr('You play two moves in a row'),
   swap: () => tr('Tap any piece to swap places'),
+  twinSwap: () => tr('Tap your Twin to swap places'),
 };
 
 // What you picked (or are in the middle of): the bonus, what to do, and for a Double move the "1/2 · 2/2" counter.
@@ -421,8 +429,8 @@ function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
           <Icon d="M12 3 A9 9 0 1 0 12.01 3 Z M12 11 V16 M12 8 V8.2" size={16} stroke={2.2} />
         </button>
       </div>}
-      <div className="bonus-bar" role="group" aria-label={tr('Bonuses')}>
-        {(Object.keys(BONUS_ICONS) as BonusKind[]).map(k => {
+      <div className={`bonus-bar${bonusKinds(st).length > 4 ? ' is-five' : ''}`} role="group" aria-label={tr('Bonuses')}>
+        {bonusKinds(st).map(k => {
           const have = b[k] > 0, usable = have && k !== 'armor';
           return (
             <button key={k} type="button" aria-pressed={view.bonus === k}

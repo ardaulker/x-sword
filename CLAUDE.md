@@ -43,8 +43,9 @@
   random legal moves (bonuses, pause, undo) in six setups on the dev server and checks for crashes, stuck matches, the result card and that the
   replay link reproduces the match. Run it after changing the controller or the engine; don't edit app files while it runs (the dev
   server reloads the page).
-- **Rules version** (9 October 2026): `RULES_VERSION` in `engine/rules.js` (now 3; 3 = the random 60-point bonus draws from `state.ruleRng`,
-  a stream the bots never touch, because guests and replays do not run the bots and used to get a different bonus). `createGame({ rules })` plays a match by an older
+- **Rules version** (9 October 2026): `RULES_VERSION` in `engine/rules.js` (now 4; 3 = the random 60-point bonus draws from `state.ruleRng`,
+  a stream the bots never touch, because guests and replays do not run the bots and used to get a different bonus; 4 = the Twin copies
+  bonus moves (`state.twinSteps`) and the solo Twin swap bonus). `createGame({ rules })` plays a match by an older
   version; saves, replay links and multiplayer rooms record it (`opts.rules`, `MatchStart.rules`, `hello.rules`). A save or
   replay without it is version 1 (`legacyOpts`); one from a newer app is ignored. **Raise the version whenever a change
   would make an old move list play out differently** and gate the new behavior with `state.rules >= N` (version 2 =
@@ -107,7 +108,11 @@
 - Single player: the **Twin** is the player's mirror. It moves right after the player in the same direction: walks if
   the square is empty, takes the piece there if occupied, stays put if blocked. So it can never take the player. You
   win when every bot is gone (no need to take the Twin). A take by the Twin gives double points and a Switcheroo bonus.
-  Arda chose this on 6 October 2026. In the first demo file the Twin was different: a hunter that chose its own
+  Arda chose this on 6 October 2026. Since 19 October 2026 (rules 4, Arda: "otherwise what's the point?") the Twin copies every step
+  of your turn (`state.twinSteps`): two squares after a Double step (the square between must be empty), both moves of a Double move
+  one after the other (it keeps the turn while steps remain), never onto its own star; it stays put after a Switcheroo or Twin swap,
+  and Armor protects only you. Your first take in solo brings a **Twin swap** (`twinSwap`, Turkish "İkiz Takası", once per match,
+  `seat.twinSwapGiven`): swap places with your own Twin. Its button (short name "Twin") shows only in solo, making the bar five wide. In the first demo file the Twin was different: a hunter that chose its own
   moves under the player's rules.
 - Bonuses: everyone starts with one double step. 20 points double step, 40 double move, 60 one of the two at random,
   50 Switcheroo (swap places with any piece on the board; Turkish name "Yer Çalma"). Surviving the first shrink gives armor (one extra life); so does taking two pieces with the two moves of one Double move (`state.extra.takes`, once per sequence). The
@@ -535,7 +540,7 @@ S#....#.
 - The top bar shows "ROUND n" translated; the menu and battle-log buttons have small captions (hidden on short
   screens). The mode box subtitle shows only in the first two matches (`ctl.autoMap`) and in puzzles; otherwise the box
   is 44 px.
-- Bonus buttons use short names: Armor, Step ×2, Move ×2, Switcheroo (`shortBonus`). The ring chip says "Shrink: n rounds".
+- Bonus buttons use short names: Armor, Step ×2, Move ×2, Switcheroo, Twin (solo only; `shortBonus`, `bonusKinds`). The ring chip says "Shrink: n rounds".
 - The danger map doesn't tint squares; it puts a faint red dot in the middle.
 - In single player the preview shows where the Twin will go as a faint Twin piece (`Board.tsx → twinGhost`, which copies
   the state and plays the move).

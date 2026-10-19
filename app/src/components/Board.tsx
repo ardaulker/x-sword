@@ -83,8 +83,9 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     try {
       const c = structuredClone(st);
       play(c, sel);
-      const t = currentActor(c);
-      if (c.over || !t || t.kind !== 'twin') return null;
+      // Normally the Twin is next; after the first move of a Double move you are still on the move, and the Twin will copy that step first.
+      const next = currentActor(c), t = c.pieces.find(p => p.kind === 'twin' && p.alive);
+      if (c.over || !t || !next || (next.id !== t.id && !(c.extra && c.extra.id === next.id))) return null;
       const m = twinMove(c, t);
       return m ? { from: { r: t.r, c: t.c }, to: { r: m.r, c: m.c }, diamond: diamondOf(t, c.mode) } : null;
     } catch { return null; }

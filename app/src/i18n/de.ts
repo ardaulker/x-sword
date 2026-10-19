@@ -637,5 +637,11 @@ const dict: Record<string, string> = {
   'This opens your mail app with a message to us. Nothing is sent until you send it.': 'Das öffnet deine Mail-App mit einer Nachricht an uns. Es wird nichts gesendet, bis du es abschickst.',
   'A player you blocked is in this room.': 'Ein Spieler, den du blockiert hast, ist in diesem Raum.',
   'Tap a lit square: your star moves there at once. Want a preview first? Turn off One-tap moves in Settings.': 'Tippe auf ein leuchtendes Feld, dein Stern zieht sofort dorthin. Lieber erst eine Vorschau? Schalte in den Einstellungen „Züge mit einem Tippen“ aus.',
+  'Twin swap': 'Zwillingstausch',
+  'Swap places with your own Twin. Solo mode only.': 'Tausche den Platz mit deinem eigenen Zwilling. Nur im Solo-Modus.',
+  'Tap your Twin to swap places': 'Tippe auf deinen Zwilling, um die Plätze zu tauschen',
+  'In solo mode, your first take brings a Twin swap.': 'Im Solo-Modus bringt dir deine erste geschlagene Figur einen Zwillingstausch.',
+  'The Twin copies bonus moves too: after a Double step it goes two squares, after a Double move it plays both of your moves one after the other. After a Switcheroo or a Twin swap it stays put; Armor protects only you.': 'Der Zwilling macht auch Bonuszüge nach: nach einem Doppelschritt geht er zwei Felder, nach einem Doppelzug spielt er deine beiden Züge nacheinander. Nach einem Platzklau oder Zwillingstausch bleibt er stehen; die Rüstung schützt nur dich.',
+  '**How to earn it:** take your first piece in solo mode (once per match).': '**So bekommst du es:** Schlage im Solo-Modus deine erste Figur (einmal pro Partie).',
 };
 export default dict;

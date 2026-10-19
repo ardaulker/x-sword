@@ -43,13 +43,15 @@ export interface Seat {
   bonusUses: number;
   pairTakes: number;
   swapGiven: boolean;
+  /** Rules 4, single player: the Twin swap for the first take was already given. */
+  twinSwapGiven: boolean;
   persona: 'hunter' | 'careful' | 'opportunist' | null;
   team: number | null;
   out: boolean;
   outRound?: number;
 }
 
-export type BonusKind = 'armor' | 'step' | 'double' | 'swap';
+export type BonusKind = 'armor' | 'step' | 'double' | 'swap' | 'twinSwap';
 
 export interface Move {
   r: number;
@@ -78,6 +80,8 @@ export interface GameState {
   log: { round: number; text: string }[];
   solo: boolean;
   lastStep: { id: string; dr: number; dc: number } | null;
+  /** Rules 4: the steps of the solo star's last turn that its Twin still has to copy. */
+  twinSteps: { dr: number; dc: number }[];
   // Set while a star plays the extra moves of a Double move: n moves are already played in this sequence, `takes` of them took a piece.
   extra: { id: string; n: number; takes: number } | null;
   /** Rules version this match is played by (see RULES_VERSION). */

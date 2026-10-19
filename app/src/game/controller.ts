@@ -540,7 +540,7 @@ export class GameController {
     // Pass only when nothing at all can be played: a bonus (Double step, Switcheroo ...) may still open a way out.
     const st = this.state, me = this.myStar(), held = st.seats[ME].bonuses;
     const canPlay = legalMoves(st, me, st.mode).length > 0
-      || (['step', 'double', 'swap'] as const).some(k => held[k] > 0 && legalMoves(st, me, st.mode, k).some(m => m.bonus === k));
+      || (['step', 'double', 'swap', 'twinSwap'] as const).some(k => held[k] > 0 && legalMoves(st, me, st.mode, k).some(m => m.bonus === k));
     if (!canPlay) {
       this.fx.toast(tr('No square to move to · turn passed'), 'info');
       this.emit();
@@ -764,7 +764,7 @@ export class GameController {
     // Bonus: using one, being saved by armor, earning one.
     if (move?.bonus && actor.kind === 'star' && actor.seat === ME) {
       this.fx.toast(move.bonus === 'double' && st.extra ? tr('Double move! Now play your second move.') : `${tr(BONUS_NAMES[move.bonus])}!`, 'info');
-      feel(move.bonus === 'step' ? 'useStep' : move.bonus === 'double' ? 'useDouble' : 'useSwap', BUZZ.bonusUse);
+      feel(move.bonus === 'step' ? 'useStep' : move.bonus === 'double' ? 'useDouble' : 'useSwap', BUZZ.bonusUse); // a Twin swap sounds like a Switcheroo
     }
     if (victim?.alive && victim.kind === 'star') {
       this.fx.toast(victim.seat === ME ? tr('Your armor saved you!') : tr('{name} survived thanks to armor', { name: labelOf(st, victim) }), 'info');

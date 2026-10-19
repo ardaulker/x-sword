@@ -67,7 +67,9 @@ shrinking arena and the move preview can be tried there. That screen is a test b
 - In single-player mode there is also a **Twin** on the board: the player's mirror. It moves right after the player, in
   the same direction the player just moved; it walks if that square is empty, takes the piece there if occupied and
   stays put if the way is closed. It can never take the player. The player wins when every bot is gone; the Twin
-  doesn't need to be taken. If the Twin takes a piece, the player gets double points and a Switcheroo bonus.
+  doesn't need to be taken. If the Twin takes a piece, the player gets double points and a Switcheroo bonus. The Twin
+  copies bonus moves too: after a Double step it goes two squares (the square between must be empty), after a Double
+  move it plays both moves one after the other; after a Switcheroo or a Twin swap it stays put. Armor protects only the player.
 - A match has 2–4 stars. An AI player can take an empty seat. It is also called "Player N" and plays its turn like a
   player.
 - With 2 stars the board is 9×9 with about 14 bots.
@@ -91,12 +93,12 @@ shrinking arena and the move preview can be tried there. That screen is a test b
   move, 60 points one of the two; 50 points Switcheroo (swap places with any piece on the board); surviving the first
   shrink gives armor, and so does taking two pieces with the two moves of one double move; surviving the second
   shrink gives a double move; in single player a take by the Twin also gives a Switcheroo
-  bonus and double points. Optional in setup: teams (2 vs 2, 4 players), obstacle squares (can't be entered or jumped
+  bonus and double points, and the player's first take brings a Twin swap (swap places with your own Twin; solo only). Optional in setup: teams (2 vs 2, 4 players), obstacle squares (can't be entered or jumped
   with a double step), rival personalities (hunter, careful, opportunist). In puzzle mode every bot must be taken in a
   limited number of moves; plain bots wait, hunters (dashed ring) also step toward you every round. In single player you win when every bot is gone; with 2–4 players you can keep fighting the
   bots after the winner is decided.
 - Armor: protects you from being taken once and works by itself. Double step: move two squares. Double move: one more
-  move right away. Switcheroo: swap places with a piece.
+  move right away. Switcheroo: swap places with a piece. Twin swap: swap places with your own Twin.
 
 ## End
 - The match ends when one star is left. The score decides the winner: taking a player is 50, the Twin 30, a bot 10

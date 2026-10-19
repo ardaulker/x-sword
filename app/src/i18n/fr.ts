@@ -637,5 +637,11 @@ const dict: Record<string, string> = {
   'This opens your mail app with a message to us. Nothing is sent until you send it.': 'Cela ouvre ton application mail avec un message pour nous. Rien n’est envoyé tant que tu ne l’envoies pas.',
   'A player you blocked is in this room.': 'Un joueur que tu as bloqué est dans ce salon.',
   'Tap a lit square: your star moves there at once. Want a preview first? Turn off One-tap moves in Settings.': 'Touche une case allumée : ton étoile y va aussitôt. Tu préfères un aperçu ? Désactive « Coups en un toucher » dans les Réglages.',
+  'Twin swap': 'Échange jumeau',
+  'Swap places with your own Twin. Solo mode only.': 'Échange ta place avec ton propre Jumeau. En solo uniquement.',
+  'Tap your Twin to swap places': 'Touche ton Jumeau pour échanger vos places',
+  'In solo mode, your first take brings a Twin swap.': 'En solo, ta première prise t\'apporte un Échange jumeau.',
+  'The Twin copies bonus moves too: after a Double step it goes two squares, after a Double move it plays both of your moves one after the other. After a Switcheroo or a Twin swap it stays put; Armor protects only you.': 'Le Jumeau copie aussi les coups bonus : après un Double pas il avance de deux cases, après un Double coup il joue tes deux coups l\'un après l\'autre. Après un Échange furtif ou un Échange jumeau il reste en place ; l\'Armure ne protège que toi.',
+  '**How to earn it:** take your first piece in solo mode (once per match).': '**Comment l\'obtenir :** faire ta première prise en solo (une fois par partie).',
 };
 export default dict;

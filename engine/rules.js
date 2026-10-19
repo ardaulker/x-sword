@@ -21,14 +21,15 @@ export const SURVIVOR_BONUS = 30;
 // Taking two pieces with the two moves of one Double move also earns Armor.
 // Bonuses are earned by conditions: 20 points double step, 40 points double move, 60 points one of the two (from the seed),
 // 50 points Switcheroo (swap places with any piece), surviving the first shrink gives armor, the second shrink a double move.
-// In single player a Switcheroo also comes when the Twin takes a piece.
+// In single player a Switcheroo also comes when the Twin takes a piece, and the player's first take brings a Twin swap
+// (swap places with your own Twin; rules 4).
 // Armor works by itself (the piece that takes you bounces back). The others are used together with a move on your turn.
-export const BONUS_KINDS = ['armor', 'step', 'double', 'swap'];
+export const BONUS_KINDS = ['armor', 'step', 'double', 'swap', 'twinSwap'];
 export const BONUS_SCORES = [20, 40, 60];
 export const TWIN_TAKE_MULT = 2;
 export const SWAP_SCORE = 50;
 // Everyone starts with one double step so nobody gets stuck in a corner early.
-const startBonuses = () => ({ armor: 0, step: 1, double: 0, swap: 0 });
+const startBonuses = () => ({ armor: 0, step: 1, double: 0, swap: 0, twinSwap: 0 });
 
 const STRAIGHT = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 const CROSS = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
@@ -118,8 +119,9 @@ function randomSymmetry(state, size) {
 // the version it was played with (`rules` option) and the engine plays old matches by their old rules.
 // 1: the original rules. 2 (9 Oct 2026): taking two pieces with one Double move earns Armor.
 // 3 (19 Oct 2026): the random bonus at 60 points draws from its own stream (`ruleRandom`), so replays and guest phones agree.
+// 4 (19 Oct 2026): the solo Twin copies bonus moves (`twinSteps`) and the first take brings a Twin swap.
 // Raise it whenever a change would make an old move list play out differently.
-export const RULES_VERSION = 3;
+export const RULES_VERSION = 4;
 
 // seats: [{ kind: 'human' | 'bot', level: 'easy' | 'normal' | 'hard' }], 1–4 of them.
 // A single seat is single-player mode: the player's mirror, the Twin, also joins the board.
@@ -139,10 +141,10 @@ export function createGame({
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
       level: s.level || 'normal', takes: 0, score: 0, bonus: 0, out: false,
-      bonuses: startBonuses(), scoreTier: 0, swapGiven: false, persona: null, team: null, bonusUses: 0, pairTakes: 0,
+      bonuses: startBonuses(), scoreTier: 0, swapGiven: false, twinSwapGiven: false, persona: null, team: null, bonusUses: 0, pairTakes: 0,
     })),
     pieces: [], order: [], turn: 0, over: false, winner: null, outOrder: [], log: [],
-    solo: n === 1, lastStep: null, extra: null, matchOrder: [], keepGoing: !!keepGoing, decided: false,
+    solo: n === 1, lastStep: null, twinSteps: [], extra: null, matchOrder: [], keepGoing: !!keepGoing, decided: false,
     blocked: null, holes: null, teams: teams && n === 4 ? [0, 1, 0, 1] : null, winTeam: null, puzzle: null,
   };
 
@@ -278,7 +280,7 @@ export function createPuzzle({ map = null, me = null, bots = [], limit, mode = '
   st.pieces = st.pieces.filter(p => p.kind !== 'twin');
   const star = st.pieces.find(p => p.kind === 'star');
   [star.r, star.c] = me;
-  st.seats[0].bonuses = { armor: 0, step: 0, double: 0, swap: 0, ...bonuses };
+  st.seats[0].bonuses = { armor: 0, step: 0, double: 0, swap: 0, twinSwap: 0, ...bonuses };
   bots.forEach((b, i) => st.pieces.push({ id: `b${i + 1}`, kind: b.kind, label: String(i + 1), r: b.r, c: b.c, alive: true, ...(b.walks ? { walks: true } : {}) }));
   if (holes) {
     st.holes = holes;
@@ -357,6 +359,10 @@ export function legalMoves(state, piece, mode = nextMode(state, piece), bonus = 
       .map(p => ({ r: p.r, c: p.c, type: 'swap', targetId: p.id, bonus }));
     return [...moves, ...out];
   }
+  if (bonus === 'twinSwap') {
+    const twin = twinOf(state, piece);
+    return twin ? [...moves, { r: twin.r, c: twin.c, type: 'swap', targetId: twin.id, bonus }] : moves;
+  }
   return moves;
 }
 
@@ -376,10 +382,23 @@ function baseMoves(state, piece, mode) {
 
 // The Twin plays the same direction its star just played: it walks if that square is empty,
 // takes the piece there if occupied, and stays put if it is off the board or collapsed.
+// Rules 4: it copies every step of its star's turn (`state.twinSteps`): both moves of a Double move, one after the other,
+// and the two squares of a Double step (the square between must be empty). A Switcheroo or a Twin swap is no step: it stays.
 export function twinMove(state, twin) {
-  const s = state.lastStep;
-  if (!s || s.id !== twin.mirrors || (!s.dr && !s.dc)) return null;
-  return legalMoves(state, twin, state.mode).find(m => m.r === twin.r + s.dr && m.c === twin.c + s.dc) ?? null;
+  const s = state.rules >= 4 ? state.twinSteps[0] : state.lastStep;
+  if (!s || (state.rules < 4 && s.id !== twin.mirrors) || (!s.dr && !s.dc)) return null;
+  const r = twin.r + s.dr, c = twin.c + s.dc;
+  let m;
+  if (state.rules >= 4 && (Math.abs(s.dr) === 2 || Math.abs(s.dc) === 2)) {
+    const r1 = twin.r + s.dr / 2, c1 = twin.c + s.dc / 2;
+    if (!inArena(state, r1, c1) || pieceAt(state, r1, c1) || !inArena(state, r, c)) return null;
+    const t = pieceAt(state, r, c);
+    m = t ? { r, c, type: 'take', targetId: t.id } : { r, c, type: 'walk' };
+  } else {
+    m = legalMoves(state, twin, state.mode).find(x => x.r === r && x.c === c);
+  }
+  // Never its own star (the two moves of a Double move could otherwise bring it onto the star's square).
+  return m && m.targetId !== twin.mirrors ? m : null;
 }
 
 const twinOf = (state, piece) =>
@@ -443,8 +462,9 @@ export function isSafe(state, piece, move) {
 export function play(state, move) {
   const actor = currentActor(state);
   if (!actor) return state;
+  const mirror = state.rules >= 4 && actor.kind === 'twin';
   if (move) {
-    const m = legalMoves(state, actor, state.mode, move.bonus ?? null)
+    const m = (mirror ? [twinMove(state, actor)].filter(Boolean) : legalMoves(state, actor, state.mode, move.bonus ?? null))
       .find(x => x.r === move.r && x.c === move.c && (x.bonus ?? null) === (move.bonus ?? null));
     if (!m) throw new Error(`Illegal move: ${nameOf(state, actor)} → ${move.r},${move.c}`);
     if (m.bonus) {
@@ -456,6 +476,7 @@ export function play(state, move) {
     state.lastStep = { id: actor.id, dr: m.r - actor.r, dc: m.c - actor.c };
     const seq = state.extra?.id === actor.id ? state.extra : null; // earlier moves of this Double move
     let took = false;
+    const from = [actor.r, actor.c];
     if (m.type === 'swap') {
       const other = pieceById(state, m.targetId);
       [other.r, other.c] = [actor.r, actor.c];
@@ -464,6 +485,11 @@ export function play(state, move) {
       // Armor took the hit: the move is wasted and the taker stays where it was.
     } else {
       actor.r = m.r; actor.c = m.c;
+    }
+    // Rules 4: the star's steps this turn, for its Twin to copy (a swap is no step).
+    if (state.rules >= 4 && actor.kind === 'star') {
+      if (!seq) state.twinSteps = [];
+      if (twinOf(state, actor) && m.type !== 'swap' && (actor.r !== from[0] || actor.c !== from[1])) state.twinSteps.push({ dr: actor.r - from[0], dc: actor.c - from[1] });
     }
     // Two takes in one Double move earn Armor.
     const seqTakes = (seq?.takes ?? 0) + (took ? 1 : 0);
@@ -480,7 +506,13 @@ export function play(state, move) {
     }
   } else {
     state.lastStep = { id: actor.id, dr: 0, dc: 0 };
+    if (state.rules >= 4 && actor.kind === 'star') state.twinSteps = [];
     if (actor.kind === 'star') log(state, `${nameOf(state, actor)} had no move, turn passed.`);
+  }
+  // Rules 4: the Twin keeps the turn while it has steps left to copy (after a Double move).
+  if (mirror) {
+    state.twinSteps.shift();
+    if (state.twinSteps.length && actor.alive && !state.over) return state;
   }
   state.turn++;
   state.extra = null;
@@ -493,7 +525,7 @@ export function play(state, move) {
   return state;
 }
 
-export const BONUS_NAMES = { armor: 'Armor', step: 'Double step', double: 'Double move', swap: 'Switcheroo' };
+export const BONUS_NAMES = { armor: 'Armor', step: 'Double step', double: 'Double move', swap: 'Switcheroo', twinSwap: 'Twin swap' };
 
 // True if the take happens. An armored star isn't taken: it loses the armor and the attacker bounces back.
 function takePiece(state, actor, target) {
@@ -504,8 +536,10 @@ function takePiece(state, actor, target) {
   }
   target.alive = false;
   if (actor.kind === 'star') {
-    state.seats[actor.seat].takes++;
-    addScore(state, state.seats[actor.seat], POINTS[target.kind]);
+    const seat = state.seats[actor.seat];
+    seat.takes++;
+    addScore(state, seat, POINTS[target.kind]);
+    if (state.rules >= 4 && state.solo && !seat.twinSwapGiven && twinOf(state, actor)) { seat.twinSwapGiven = true; grantBonus(state, seat, 'twinSwap'); }
   } else if (actor.kind === 'twin') {
     // A take by the Twin is hard to set up: it brings its owner double points and a Switcheroo bonus.
     const seat = state.seats[pieceById(state, actor.mirrors).seat];
@@ -600,7 +634,7 @@ export function isWinner(state, seat) {
 export function stateHash(state) {
   const parts = [
     state.rules, state.round, state.mode, state.ring, state.turn, state.over ? 1 : 0, state.winner ?? '-', state.extra ? `${state.extra.id}.${state.extra.n}.${state.extra.takes}` : '-',
-    ...state.seats.map(s => `${s.score}.${s.takes}.${s.out ? 1 : 0}.${s.bonuses.armor}${s.bonuses.step}${s.bonuses.double}${s.bonuses.swap}.${s.scoreTier}`),
+    ...state.seats.map(s => `${s.score}.${s.takes}.${s.out ? 1 : 0}.${s.bonuses.armor}${s.bonuses.step}${s.bonuses.double}${s.bonuses.swap}${state.rules >= 4 ? s.bonuses.twinSwap : ''}.${s.scoreTier}`),
     ...state.pieces.map(p => `${p.id}@${p.r},${p.c}${p.alive ? '' : 'x'}`),
   ];
   let h = 0x811c9dc5;

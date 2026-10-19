@@ -325,8 +325,8 @@ test('the game always ends (thanks to the shrinking arena)', () => {
 // ---------------------------------------------------------------- single-player mode and the mirror Twin
 
 // Single-player position: s0, the Twin and the given bots.
-function soloPosition({ me, twin, bots = [], mode = 'STRAIGHT' }) {
-  const st = createGame({ seats: [{ kind: 'human' }], seed: 1, neutrals: 0, shuffle: false });
+function soloPosition({ me, twin, bots = [], mode = 'STRAIGHT', rules = RULES_VERSION }) {
+  const st = createGame({ seats: [{ kind: 'human' }], seed: 1, neutrals: 0, shuffle: false, rules });
   Object.assign(pieceById(st, 's0'), { r: me[0], c: me[1] });
   Object.assign(pieceById(st, 'tw'), { r: twin[0], c: twin[1] });
   st.pieces.push(...bots.map((p, i) => ({ id: `b${i + 1}`, label: String(i + 1), alive: true, ...p })));
@@ -389,6 +389,95 @@ test('single player: you win when the bots are gone (even with the Twin left), y
   assert.equal(pieceById(lose, 's0').alive, false);
   assert.equal(lose.over, true);
   assert.equal(lose.winner, null);
+});
+
+test('the Twin copies a Double step: two squares, the square between must be empty (rules 4)', () => {
+  const st = soloPosition({ me: [1, 1], twin: [5, 2] });
+  play(st, { r: 1, c: 3, bonus: 'step' });
+  const tw = pieceById(st, 'tw');
+  play(st, chooseMove(st, tw));
+  assert.deepEqual([tw.r, tw.c], [5, 4]);
+  assert.equal(currentActor(st).id !== 'tw', true);
+
+  const blocked = soloPosition({ me: [1, 1], twin: [5, 2], bots: [{ kind: 'red', r: 5, c: 3 }] });
+  play(blocked, { r: 1, c: 3, bonus: 'step' });
+  assert.equal(chooseMove(blocked, pieceById(blocked, 'tw')), null);
+
+  const takes = soloPosition({ me: [1, 1], twin: [5, 2], bots: [{ kind: 'red', r: 5, c: 4 }, { kind: 'blue', r: 8, c: 8 }] });
+  play(takes, { r: 1, c: 3, bonus: 'step' });
+  play(takes, chooseMove(takes, pieceById(takes, 'tw')));
+  assert.equal(pieceById(takes, 'b1').alive, false);
+
+  // Rules 3: the Twin stayed put after a Double step.
+  const old = soloPosition({ me: [1, 1], twin: [5, 2], rules: 3 });
+  play(old, { r: 1, c: 3, bonus: 'step' });
+  assert.equal(chooseMove(old, pieceById(old, 'tw')), null);
+});
+
+test('the Twin copies both moves of a Double move, one after the other (rules 4)', () => {
+  const st = soloPosition({ me: [1, 1], twin: [5, 5] });
+  st.seats[0].bonuses.double = 1;
+  play(st, { r: 1, c: 2, bonus: 'double' }); // right
+  play(st, { r: 2, c: 2 }); // down
+  const tw = pieceById(st, 'tw');
+  assert.equal(currentActor(st).id, 'tw');
+  play(st, chooseMove(st, tw));
+  assert.deepEqual([tw.r, tw.c], [5, 6]);
+  assert.equal(currentActor(st).id, 'tw'); // still the Twin: one step left
+  play(st, chooseMove(st, tw));
+  assert.deepEqual([tw.r, tw.c], [6, 6]);
+  assert.notEqual(currentActor(st)?.id, 'tw');
+
+  // A blocked first step doesn't skip the second.
+  const b = soloPosition({ me: [1, 1], twin: [5, 8] });
+  b.seats[0].bonuses.double = 1;
+  play(b, { r: 1, c: 2, bonus: 'double' });
+  play(b, { r: 2, c: 2 });
+  const t2 = pieceById(b, 'tw');
+  play(b, chooseMove(b, t2));
+  play(b, chooseMove(b, t2));
+  assert.deepEqual([t2.r, t2.c], [6, 8]);
+
+  // The Twin never lands on its own star: star (3,3) → right (3,4) → up (2,4); the Twin at (2,3) would step right onto it.
+  const own = soloPosition({ me: [3, 3], twin: [2, 3] });
+  own.seats[0].bonuses.double = 1;
+  play(own, { r: 3, c: 4, bonus: 'double' });
+  play(own, { r: 2, c: 4 });
+  const t3 = pieceById(own, 'tw');
+  assert.equal(chooseMove(own, t3), null);
+  play(own, null);
+  assert.equal(pieceById(own, 's0').alive, true);
+});
+
+test('the Twin stays put after a Switcheroo', () => {
+  const st = soloPosition({ me: [1, 1], twin: [5, 5], bots: [{ kind: 'red', r: 7, c: 1 }] });
+  st.seats[0].bonuses.swap = 1;
+  play(st, { r: 7, c: 1, bonus: 'swap' });
+  assert.equal(chooseMove(st, pieceById(st, 'tw')), null);
+});
+
+test('Twin swap: your first take in single player brings it (once); it swaps you with your Twin', () => {
+  const st = soloPosition({ me: [1, 1], twin: [6, 6], bots: [{ kind: 'red', r: 1, c: 2 }, { kind: 'blue', r: 2, c: 3 }, { kind: 'blue', r: 8, c: 8 }] });
+  play(st, { r: 1, c: 2 }); // take #1
+  assert.equal(st.seats[0].bonuses.twinSwap, 1);
+  const me = pieceById(st, 's0'), tw = pieceById(st, 'tw');
+  assert.deepEqual(legalMoves(st, me, st.mode, 'twinSwap').filter(m => m.bonus).map(m => m.targetId), ['tw']);
+  assert.equal(legalMoves(st, me, st.mode, 'swap').some(m => m.targetId === 'tw'), false);
+  play(st, chooseMove(st, tw));
+  while (currentActor(st)?.id !== 's0') play(st, chooseMove(st, currentActor(st)));
+  const [tr, tc] = [tw.r, tw.c];
+  play(st, { r: tr, c: tc, bonus: 'twinSwap' });
+  assert.deepEqual([me.r, me.c, tw.r, tw.c], [tr, tc, 1, 2]);
+  assert.equal(st.seats[0].bonuses.twinSwap, 0);
+  assert.equal(chooseMove(st, tw), null); // a swap is no step: the Twin stays
+
+  // Not in multiplayer, not by rules 3.
+  const multi = position([{ kind: 'red', r: 1, c: 2 }, { kind: 'blue', r: 8, c: 8 }]);
+  play(multi, { r: 1, c: 2 });
+  assert.equal(multi.seats[0].bonuses.twinSwap, 0);
+  const old = soloPosition({ me: [1, 1], twin: [6, 6], bots: [{ kind: 'red', r: 1, c: 2 }, { kind: 'blue', r: 8, c: 8 }], rules: 3 });
+  play(old, { r: 1, c: 2 });
+  assert.equal(old.seats[0].bonuses.twinSwap, 0);
 });
 
 // ---------------------------------------------------------------- bots

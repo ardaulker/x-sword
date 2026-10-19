@@ -19,7 +19,7 @@ import { block, isBlocked, unblock } from '../game/blocklist';
 import { canReport, reportLink } from '../game/report';
 import type { ReportReason } from '../game/report';
 import { skinById } from '../game/themes';
-import { BONUS_ICONS, shortBonus } from './ActionPanel';
+import { BONUS_ICONS, bonusKinds, shortBonus } from './ActionPanel';
 import { PUZZLES } from '../game/puzzles';
 import { puzzleNo, puzzleTitle } from '../game/puzzleText';
 import { tr } from '../i18n';
@@ -124,12 +124,13 @@ export function BonusSheet({ ctl }: { ctl: GameController }) {
   const close = () => ctl.closeSheet();
   const seat = st.seats[ME];
   const color = PLAYER_COLORS[ME];
-  const kinds: BonusKind[] = ['step', 'double', 'swap', 'armor'];
+  const kinds: BonusKind[] = (['step', 'double', 'swap', 'twinSwap', 'armor'] as BonusKind[]).filter(k => bonusKinds(st).includes(k));
   const effect: Record<BonusKind, string> = {
     armor: tr('+1 life: protects you from being taken once. It works by itself; the piece that tried to take you bounces back.'),
     step: tr('This move you go two squares (the square between must be empty).'),
     double: tr('After your move you immediately make another.'),
     swap: tr('Swap places with any piece on the board (a rival star or a bot).'),
+    twinSwap: tr('Swap places with your own Twin. Solo mode only.'),
   };
   const points: Milestone[] = [
     { at: 0, kind: 'step', top: tr('Start') },
@@ -165,6 +166,7 @@ export function BonusSheet({ ctl }: { ctl: GameController }) {
         <div className="bg-head">{tr('Earned with points')}</div>
         <Track marks={points} value={seat.score} color={color} you={tr('{n} pts', { n: seat.score })} />
         {st.solo && <p className="bg-note">{tr('In solo mode, a take by your Twin also gives a Switcheroo.')}</p>}
+        {kinds.includes('twinSwap') && <p className="bg-note">{tr('In solo mode, your first take brings a Twin swap.')}</p>}
 
         <div className="bg-head">{tr('Earned by surviving')}</div>
         <Track marks={rounds} value={st.round} color={color} you={tr('Round {n}', { n: st.round })} />

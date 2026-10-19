@@ -104,6 +104,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         </Card>
         <Card title={tr('Solo: the Twin')} visual={<div className="rule-pair"><PieceGlyph {...star} size={34} diamond={false} /><PieceGlyph kind="twin" seat={0} size={34} diamond={false} /></div>}>
           <p>{tr("The Twin is your mirror: right after you, it plays the same direction you did. If that square is occupied it takes the piece there; if the way is blocked it stays put. It can never take you. You win when all bots are gone; you don't need to take the Twin. If the Twin takes a piece, you get double points and a Switcheroo bonus.")}</p>
+          <p>{tr('The Twin copies bonus moves too: after a Double step it goes two squares, after a Double move it plays both of your moves one after the other. After a Switcheroo or a Twin swap it stays put; Armor protects only you.')}</p>
         </Card>
 
         <Card title={tr('Options')} visual={<Icon d="M4 7 H14 M18 7 H20 M4 17 H8 M12 17 H20 M16 5 V9 M10 15 V19" size={36} stroke={2} />}>
@@ -133,6 +134,10 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
         <Card title={tr('Switcheroo')} visual={<Icon d="M4 8 H18 M15 5 L18 8 L15 11 M20 16 H6 M9 13 L6 16 L9 19" size={36} stroke={2} />}>
           <p>{tr('Swap places with any piece on the board (a rival star or a bot).')}</p>
           <p className="rule-when">{rich('**How to earn it:** reach 50 points. In solo mode it also comes when the Twin takes a piece; that take scores you double points too.')}</p>
+        </Card>
+        <Card title={tr('Twin swap')} visual={<Icon d="M7 4 A3 3 0 1 1 7.01 4 Z M17 14 A3 3 0 1 1 17.01 14 Z M11 6 C15 6 17 8 17 11 M15 9 L17 11 L19 9 M13 18 C9 18 7 16 7 13 M5 15 L7 13 L9 15" size={36} stroke={2} />}>
+          <p>{tr('Swap places with your own Twin. Solo mode only.')}</p>
+          <p className="rule-when">{rich('**How to earn it:** take your first piece in solo mode (once per match).')}</p>
         </Card>
         <p className="rules-foot">{tr('Everyone starts with a Double step. On your turn, tap a bonus in the panel and the squares light up for it.')}</p>
       </div>
