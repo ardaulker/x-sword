@@ -3,7 +3,7 @@ import { BOARD_SIZES, SIZE_BY_STARS, defaultNeutrals, maxNeutrals } from '../../
 import type { Level } from '../../../engine/rules.js';
 import { Icon } from '../components/bits';
 import { PieceGlyph } from '../components/PieceGlyph';
-import { Opt, PlayerSheet } from '../components/Sheets';
+import { Opt, PlayerSheet, shrinkLabels } from '../components/Sheets';
 import { isBlocked } from '../game/blocklist';
 import { cleanCode, isCode } from '../net/protocol';
 import { directory } from '../net/directory';
@@ -224,11 +224,19 @@ export function LobbyScreen({ room, onLeave, onStart }: { room: AnyRoom; onLeave
           {host && <button type="button" className="btn btn-ghost bots-max" onClick={() => hostRoom?.setBots(maxBots)}>{tr('Max {n}', { n: maxBots })}</button>}
         </div>
 
+        <div className="field-label">{tr('ARENA SHRINK')}</div>
+        <div className="seg seg-shrink" role="radiogroup" aria-label={tr('Arena shrink')}>
+          {shrinkLabels().map(([m, name, how]) => (
+            <button key={m} type="button" role="radio" aria-checked={(v.opts.shrink ?? 'classic') === m} disabled={!host} className={(v.opts.shrink ?? 'classic') === m ? 'is-on' : ''} onClick={() => host && hostRoom?.setOpts({ shrink: m })}>
+              <b>{name}</b><span>{how}</span>
+            </button>
+          ))}
+        </div>
+
         <div className="field-label">{tr('OPTIONS')}</div>
         <div className="lobby-opts">
           <Opt label={tr('Bot characters')} sub={tr('AI rivals play as a hunter, a cautious one or an opportunist.')} on={v.opts.personas} onChange={x => host && hostRoom?.setOpts({ personas: x })} />
           <Opt label={tr('Obstacle squares')} sub={tr('Places blocked squares on the board that never touch each other.')} on={v.opts.obstacles} onChange={x => host && hostRoom?.setOpts({ obstacles: x })} />
-          {size === 15 && <Opt label={tr('Fast shrink')} sub={tr('The ring falls after 3 rounds, then after 2 more, then every round.')} on={v.opts.fastShrink !== false} onChange={x => host && hostRoom?.setOpts({ fastShrink: x })} />}
           {filled === 4 && <Opt label={tr('Teams (2 vs 2)')} sub={tr("Opposite corners form a team; you can't take your teammate.")} on={v.opts.teams} onChange={x => host && hostRoom?.setOpts({ teams: x })} />}
         </div>
 

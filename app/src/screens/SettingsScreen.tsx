@@ -7,9 +7,7 @@ import type { Settings } from '../game/settings';
 import './RulesScreen.css';
 import { Flag } from '../components/Flag';
 import { LANGS, setLang, tr, useLang } from '../i18n';
-import { THEMES, isUnlocked, needProgress, needText } from '../game/themes';
-import { PeekCard, SkinPicker } from '../components/SkinPicker';
-import { loadStats } from '../game/stats';
+import { SkinPicker, ThemePicker } from '../components/SkinPicker';
 
 const speeds = (): [Settings['speed'], string, string][] => [
   ['slow', tr('Slow'), tr('Slide 320 ms · bot turn ~2 s')],
@@ -30,9 +28,7 @@ function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: 
 export function SettingsScreen({ onBack, onRules, onLegal, inGame = false }: { onBack: () => void; onRules?: () => void; onLegal?: () => void; inGame?: boolean }) {
   const lang = useLang();
   const [s, setS] = useState(settings);
-  const stats = loadStats();
   // Tapping a locked style doesn't select it; it opens the big preview so players see what they would get.
-  const [peek, setPeek] = useState<{ kind: 'theme'; id: string } | null>(null);
   const update = (patch: Partial<Settings>) => { const next = { ...s, ...patch }; setS(next); saveSettings(next); };
   return (
     <div className="rules">
@@ -103,36 +99,7 @@ export function SettingsScreen({ onBack, onRules, onLegal, inGame = false }: { o
           </div>
         </div>
         <SkinPicker skin={s.skin} onPick={skin => update({ skin })} />
-        <div className="rule set-col">
-          <div className="rule-text"><h3>{tr('Board theme')}</h3><p>{tr('New themes unlock as you play.')}</p></div>
-          <div className="theme-grid" role="radiogroup" aria-label={tr('Board theme')}>
-            {THEMES.map(t => {
-              const open = isUnlocked(t, stats);
-              return (
-                <button key={t.id} type="button" role="radio" aria-checked={s.theme === t.id}
-                  className={`theme-chip${s.theme === t.id ? ' is-on' : ''}${open ? '' : ' is-locked'}${peek?.id === t.id && peek.kind === 'theme' ? ' is-peek' : ''}`}
-                  onClick={() => { if (open) { update({ theme: t.id }); setPeek(null); } else setPeek({ kind: 'theme', id: t.id }); }}>
-                  <span className="theme-sw" aria-hidden="true" style={{ background: `linear-gradient(135deg, ${t.square} 50%, ${t.square2} 50%)`, boxShadow: `inset 0 0 0 5px ${t.frameColor}` }}>
-                    {!open && <Icon d="M7 11 V8 A5 5 0 0 1 17 8 V11 M6 11 H18 V20 H6 Z" size={16} stroke={2.2} />}
-                  </span>
-                  <b>{t.name()}</b>
-                  {!open && t.need && <small>{needText(t)} ({needProgress(t, stats)}/{t.need.n})</small>}
-                </button>
-              );
-            })}
-          </div>
-          {peek?.kind === 'theme' && (() => {
-            const t = THEMES.find(x => x.id === peek.id)!;
-            return (
-              <PeekCard title={t.name()} need={t.need} stats={stats} onClose={() => setPeek(null)}>
-                <div className="peek-board" style={{ background: t.frameColor }}>
-                  {Array.from({ length: 28 }, (_, i) => <i key={i} style={{ background: (Math.floor(i / 7) + i) % 2 ? t.square2 : t.square }} />)}
-                  <span className="peek-star"><PieceGlyph kind="star" seat={0} size={22} diamond={false} /></span>
-                </div>
-              </PeekCard>
-            );
-          })()}
-        </div>
+        <ThemePicker theme={s.theme} onPick={theme => update({ theme })} />
           </>
         )}
         {onLegal && (

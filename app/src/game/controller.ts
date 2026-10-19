@@ -51,6 +51,7 @@ export class GameController {
   private pausedAt = 0;
   private deferred: (() => void)[] = []; // timers that fired while paused; they run on resume
   private parked = false;   // back on the main menu: the match is paused and kept
+  private dropped = false;  // "End match" before a winner: the match is thrown away, not kept for "Continue"
   private restored = false; // the match came from the device save: the next step must start on resume
   private opts: Opts | null = null; // the createGame options that built this match (for saves and replays)
   private statsDone = false;
@@ -159,6 +160,7 @@ export class GameController {
 
   // When leaving the game screen: an unfinished local match is kept, otherwise it is cleaned up.
   leave() {
+    if (this.dropped) { this.dispose(); return; }
     if (!this.net && !this.replay && !this.state.over && !this.parked) {
       this.pause();
       this.parked = true;
@@ -184,6 +186,14 @@ export class GameController {
     this.emit({ sheet: null });
     this.unpause();
     if (this.restored) { this.restored = false; this.later(300, () => this.advance()); }
+  }
+
+  // "End match" from the pause menu before the winner is decided: no result, no save; the main menu offers no "Continue".
+  abandon() {
+    this.dispose();
+    clearSave();
+    this.dropped = true;
+    this.emit({ sheet: null });
   }
 
   // Drop the kept match (a new match is starting).
@@ -321,11 +331,12 @@ export class GameController {
   }
 
   private reset(match?: MatchStart, preset?: { opts: Opts; moves: (Move | null)[] }) {
+    this.dropped = false;
     // Seat names: profile names from the lobby in multiplayer, your name on one device (AI players stay "Player N").
     setSeatNames(match ? (match.names ?? []).map(n => (n && isBlocked(n) ? tr('Blocked player') : n)) : [getProfile().name]);
     if (match) {
       this.opts = null;
-      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals, personas: !!match.personas, obstacles: !!match.obstacles, teams: !!match.teams, fastShrink: !!match.fastShrink, rules: match.rules ?? 1 });
+      this.state = createGame({ seats: match.seats, neutralLevel: match.level, seed: match.seed, size: match.size, neutrals: match.neutrals, personas: !!match.personas, obstacles: !!match.obstacles, teams: !!match.teams, shrink: match.shrink ?? null, rules: match.rules ?? 1 });
     } else {
       this.opts = preset?.opts ?? buildOpts(this.setup);
       this.state = makeState(this.opts);
@@ -818,7 +829,7 @@ export class GameController {
 
     if (collapsed) {
       stopTension();
-      this.view = { ...this.view, fall: { key: this.key(), ring: st.ring - 1 } };
+      this.view = { ...this.view, fall: { key: this.key(), ring, to: st.ring } };
       for (const p of fallen) {
         events.push({ key: this.key(), round, attackerId: null, victimId: p.id, at: this.moves.length });
         this.fx.burst(p.r, p.c, HAZARD);

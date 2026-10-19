@@ -1,7 +1,7 @@
 // Messages between phones. The phone that created the room (host) runs the match; guests only send intents.
 // Since the engine is seeded, everyone builds the same board from the same start, then the moves flow in order.
 
-import type { Level, Move } from '../../../engine/rules.js';
+import type { Level, Move, ShrinkMode } from '../../../engine/rules.js';
 import type { PublicProfile } from '../game/profile';
 
 export type SeatKind = 'host' | 'guest' | 'bot' | 'empty';
@@ -24,13 +24,13 @@ export interface MatchStart {
   personas?: boolean;  // personalities for AI rivals
   obstacles?: boolean; // obstacle squares
   teams?: boolean;     // 2 vs 2 (4 players only)
-  fastShrink?: boolean; // rings fall after rounds 3, 5, 6, 7 … (15×15 only)
+  shrink?: ShrinkMode;  // how the arena shrinks (missing = classic)
   names?: (string | null)[]; // profile names in match seat order (null for AI)
   rules?: number;    // rules version (RULES_VERSION); missing means 1
 }
 
 // Options chosen by the host in the lobby, off by default.
-export interface LobbyOpts { personas: boolean; obstacles: boolean; teams: boolean; fastShrink?: boolean }
+export interface LobbyOpts { personas: boolean; obstacles: boolean; teams: boolean; shrink?: ShrinkMode }
 
 export type ToHost =
   | { t: 'hello'; token?: string; profile?: PublicProfile; rules?: number }

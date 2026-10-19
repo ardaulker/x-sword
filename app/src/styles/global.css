@@ -186,6 +186,16 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
 .field-label.is-off { opacity: .45; }
 .seg button:disabled { opacity: .45; cursor: default; }
 .char-open { flex: 1.1; min-width: 0; padding: 0 8px; font-size: 14px; white-space: normal; line-height: 1.1; }
+/* New-game sheet: two groups (Arena settings, Game options) with a heading line; Start stays pinned at the bottom while it scrolls. */
+.sheet-section {
+  display: flex; align-items: center; gap: 10px; margin-top: 4px;
+  font: 800 13px var(--font-display); letter-spacing: .16em; text-transform: uppercase; color: var(--ice);
+}
+.sheet-section::after { content: ''; flex: 1; height: 1px; background: var(--line-2); }
+.seg-shrink button { min-height: 56px; padding: 4px 2px; }
+.seg-shrink button b { font-size: 14px; text-align: center; line-height: 1.1; }
+.seg-shrink button span { font-size: 11px; text-align: center; line-height: 1.15; white-space: normal; }
+.sheet-tall > .btn-row { position: sticky; bottom: -18px; z-index: 1; margin: 0 -18px -18px; padding: 10px 18px 18px; background: var(--surface-1); box-shadow: 0 -10px 16px var(--surface-1); }
 .pause-list { display: flex; flex-direction: column; gap: 8px; }
 .pause-btn { width: 100%; flex: none; }
 

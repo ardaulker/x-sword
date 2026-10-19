@@ -70,7 +70,8 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
     if (!el) return;
     const ro = new ResizeObserver(() => {
       if (el.dataset.play !== '1') return; // the end-of-match card may grow over the board; only panels in play count
-      const key = sizeKey.current, h = Math.ceil(el.getBoundingClientRect().height);
+      // Capped, so one unexpected tall panel can never shrink the board for good.
+      const key = sizeKey.current, h = Math.min(Math.ceil(el.getBoundingClientRect().height), PANEL_ROOM.full + 60);
       if (h > (panelSeen.get(key) ?? 0)) panelSeen.set(key, h);
       setPanelH(panelSeen.get(key) ?? h);
     });
@@ -99,7 +100,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
   const [shown, setShown] = useState(st.ring);
   useEffect(() => {
     if (st.ring <= shown) { if (st.ring < shown) setShown(st.ring); return; }
-    if (!(view.fall && view.fall.ring === st.ring - 1)) { setShown(st.ring); return; }
+    if (!(view.fall && view.fall.to === st.ring)) { setShown(st.ring); return; }
     const id = window.setTimeout(() => setShown(st.ring), 950 * SPEED[settings.speed]);
     return () => clearTimeout(id);
   }, [st.ring]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -177,7 +178,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
           </div>
         )}
       </div>
-      {!landscape && <div ref={dockRef} className="panel-dock" data-play={!st.over && (ctl.myStar().alive || view.watching) ? '1' : '0'}><ActionPanel ctl={ctl} view={view} net={net} onPuzzle={goPuzzle} /></div>}
+      {!landscape && <div ref={dockRef} className="panel-dock" data-play={view.phase !== 'over' && !st.over && (ctl.myStar().alive || view.watching) ? '1' : '0'}><ActionPanel ctl={ctl} view={view} net={net} onPuzzle={goPuzzle} /></div>}
     </div>
   );
   return (
@@ -199,7 +200,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
       {sheet?.type === 'menu' && !net && (sub === 'new'
         ? <SetupSheet setup={ctl.setup} onStart={s => { setSub(null); onNewGame(s); }} onClose={() => setSub(null)} />
         : <PauseSheet onResume={() => ctl.closeSheet()} onNew={() => setSub('new')} onRestart={() => ctl.restart()} onSettings={() => setSub('settings')}
-          onHome={onHome} onEnd={ctl.state.decided && !ctl.state.over ? () => ctl.endNow() : undefined} />)}
+          onHome={onHome} onEnd={ctl.state.decided && !ctl.state.over ? () => ctl.endNow() : () => { ctl.abandon(); onHome(); }} />)}
       {sheet?.type === 'menu' && !net && sub === 'settings' && (
         <div className="rules-overlay"><SettingsScreen inGame onBack={() => setSub(null)} onRules={() => setRulesOpen(true)} /></div>
       )}

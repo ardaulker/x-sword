@@ -121,15 +121,16 @@ function randomSymmetry(state, size) {
 // 3 (19 Oct 2026): the random bonus at 60 points draws from its own stream (`ruleRandom`), so replays and guest phones agree.
 // 4 (19 Oct 2026): the solo Twin copies bonus moves (`twinSteps`) and the first take brings a Twin swap.
 // 5 (19 Oct 2026): the fast shrink option (`fastShrink`, 15×15): the ring collapses after 3 rounds, 2 more, then every round.
+// 6 (19 Oct 2026): shrink modes for every board (`shrink`: classic / fast / big); big drops 3 rings at round 6, 2 at round 12, then 1.
 // Raise it whenever a change would make an old move list play out differently.
-export const RULES_VERSION = 5;
+export const RULES_VERSION = 6;
 
 // seats: [{ kind: 'human' | 'bot', level: 'easy' | 'normal' | 'hard' }], 1–4 of them.
 // A single seat is single-player mode: the player's mirror, the Twin, also joins the board.
 // firstSeat: this seat always moves first (the player on Easy). Without it everyone's place is random.
 // shuffle: false keeps corners and order fixed (tests only).
 export function createGame({
-  seats, neutralLevel = 'normal', seed, shrinkStart = 6, shrinkEvery = 6, neutrals, firstSeat = null, shuffle: mix = true, keepGoing = false, size: sizeOpt = null, personas = false, obstacles = false, teams = false, fastShrink = false, rules = RULES_VERSION,
+  seats, neutralLevel = 'normal', seed, shrinkStart = 6, shrinkEvery = 6, neutrals, firstSeat = null, shuffle: mix = true, keepGoing = false, size: sizeOpt = null, personas = false, obstacles = false, teams = false, shrink = null, fastShrink = false, rules = RULES_VERSION,
 } = {}) {
   const n = seats?.length;
   if (!(rules >= 1 && rules <= RULES_VERSION)) throw new Error(`Unknown rules version ${rules}.`);
@@ -137,7 +138,7 @@ export function createGame({
   const size = BOARD_SIZES.includes(sizeOpt) && sizeOpt >= SIZE_BY_STARS[n] ? sizeOpt : SIZE_BY_STARS[n];
   const rng = ((seed ?? Math.floor(Math.random() * 2 ** 31)) >>> 0) || 1;
   const state = {
-    rules, size, round: 1, mode: 'STRAIGHT', ring: 0, shrinkStart, shrinkEvery, neutralLevel, fastShrink: rules >= 5 && !!fastShrink,
+    rules, size, round: 1, mode: 'STRAIGHT', ring: 0, shrinkStart, shrinkEvery, neutralLevel, shrinkMode: shrinkModeOf(shrink ?? (fastShrink ? 'fast' : 'classic'), rules), shrinks: 0,
     rng, ruleRng: ((rng ^ 0x9e3779b9) >>> 0) || 1,
     seats: seats.map((s, i) => ({
       index: i, name: SEAT_NAMES[i], kind: s.kind === 'bot' ? 'bot' : 'human',
@@ -419,35 +420,55 @@ export function attackersOf(state, r, c, except = [], victim = null) {
   return out;
 }
 
-// Every 6 rounds (at the end of rounds 6, 12, 18 …) the arena loses its outer ring.
-// Fast shrink (rules 5, an option on 15×15, where matches ran long): the first ring falls after 3 rounds, the next 2 rounds later,
-// then one every round (rounds 3, 5, 6, 7 …).
+// How the arena shrinks (`state.shrinkMode`):
+// classic: every 6 rounds (at the end of rounds 6, 12, 18 …) the arena loses its outer ring.
+// fast (rules 5): the first ring falls after 3 rounds, the next 2 rounds later, then one every round (rounds 3, 5, 6, 7 …).
+// big (rules 6): every 6 rounds as in classic, but the first collapse takes 3 rings at once, the second 2, then 1.
+export const SHRINK_MODES = ['classic', 'fast', 'big'];
 const FAST_GAPS = [3, 2];
+const BIG_DROPS = [3, 2];
+function shrinkModeOf(mode, rules) {
+  if (mode === 'big') return rules >= 6 ? 'big' : 'classic';
+  if (mode === 'fast') return rules >= 5 ? 'fast' : 'classic';
+  return 'classic';
+}
+const lastRing = state => (state.size - 1) / 2;
+
 export function collapseDue(state) {
-  if (state.fastShrink) return state.ring < (state.size - 1) / 2 && state.round === collapseRound(state, state.ring);
-  return state.round >= state.shrinkStart
-    && (state.round - state.shrinkStart) % state.shrinkEvery === 0
-    && state.ring < (state.size - 1) / 2;
+  if (state.ring >= lastRing(state)) return false;
+  if (state.shrinkMode === 'fast') return state.round === collapseRound(state, state.ring);
+  if (state.shrinkMode === 'big') return state.round === collapseRound(state, state.shrinks);
+  return state.round >= state.shrinkStart && (state.round - state.shrinkStart) % state.shrinkEvery === 0;
 }
 
-// The round at whose end ring k (0 = the outermost) collapses.
+// The round at whose end collapse k (0 = the first) happens.
 export function collapseRound(state, k) {
-  if (!state.fastShrink) return state.shrinkStart + k * state.shrinkEvery;
+  if (state.shrinkMode !== 'fast') return state.shrinkStart + k * state.shrinkEvery;
   let r = 0;
   for (let i = 0; i <= k; i++) r += FAST_GAPS[i] ?? 1;
   return r;
 }
 
+// How many rings the next collapse takes (big drops several at once), never more than are left.
+export function nextDrop(state) {
+  const n = state.shrinkMode === 'big' ? BIG_DROPS[state.shrinks] ?? 1 : 1;
+  return Math.max(0, Math.min(n, lastRing(state) - state.ring));
+}
+
+// True if a square on this ring falls with the next collapse.
+export const ringFallsNext = (state, ring) => ring >= state.ring && ring < state.ring + nextDrop(state);
+
 export function nextCollapseRound(state) {
-  if (state.ring >= (state.size - 1) / 2) return null;
-  if (state.fastShrink) return Math.max(state.round, collapseRound(state, state.ring));
+  if (state.ring >= lastRing(state)) return null;
+  if (state.shrinkMode === 'fast') return Math.max(state.round, collapseRound(state, state.ring));
+  if (state.shrinkMode === 'big') return Math.max(state.round, collapseRound(state, state.shrinks));
   if (state.round < state.shrinkStart) return state.shrinkStart;
   const into = (state.round - state.shrinkStart) % state.shrinkEvery;
   return state.round + (into === 0 ? 0 : state.shrinkEvery - into);
 }
 
 // For the piece moving now: will this square collapse before its next turn?
-export const doomedAt = (state, r, c) => collapseDue(state) && ringOf(state, r, c) === state.ring;
+export const doomedAt = (state, r, c) => collapseDue(state) && ringFallsNext(state, ringOf(state, r, c));
 
 // Move preview: if piece makes this move, who can take it and will the square collapse?
 // The star's own Twin isn't guessed, it is known exactly: it comes the same direction.
@@ -687,19 +708,19 @@ function endRound(state) {
 }
 
 function collapse(state) {
-  const ring = state.ring;
-  const fallen = state.pieces.filter(p => p.alive && ringOf(state, p.r, p.c) === ring);
+  const drop = nextDrop(state);
+  const fallen = state.pieces.filter(p => p.alive && ringFallsNext(state, ringOf(state, p.r, p.c)));
   fallen.forEach(p => { p.alive = false; });
-  state.ring++;
+  state.ring += drop;
+  state.shrinks++;
   const side = state.size - 2 * state.ring;
   log(state, fallen.length
     ? `🌀 The arena shrank (${side}×${side})! Fell off: ${fallen.map(p => nameOf(state, p)).join(', ')}.`
     : `🌀 The arena shrank (${side}×${side}).`);
   fallen.filter(p => p.kind === 'star').forEach(p => starOut(state, p));
-  // Every star that survives the first shrink earns armor.
-  if (state.ring === 1) state.seats.filter(s => !s.out).forEach(s => grantBonus(state, s, 'armor'));
-  // Every star that survives the second shrink gets a double move.
-  if (state.ring === 2) state.seats.filter(s => !s.out).forEach(s => grantBonus(state, s, 'double'));
+  // Every star that survives the first shrink earns armor, the second shrink a double move (counted in collapses, not rings).
+  if (state.shrinks === 1) state.seats.filter(s => !s.out).forEach(s => grantBonus(state, s, 'armor'));
+  if (state.shrinks === 2) state.seats.filter(s => !s.out).forEach(s => grantBonus(state, s, 'double'));
   checkOver(state);
 }
 

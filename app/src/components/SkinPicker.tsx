@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { Icon } from './bits';
 import { PieceGlyph } from './PieceGlyph';
 import { SkinFx } from './SkinFx';
-import { SKINS, isUnlocked, needProgress, needText } from '../game/themes';
+import { SKINS, THEMES, isUnlocked, needProgress, needText } from '../game/themes';
 import type { Need } from '../game/themes';
 import { loadStats } from '../game/stats';
 import { tr } from '../i18n';
@@ -56,6 +56,45 @@ export function SkinPicker({ skin, onPick, title = true }: { skin: string; onPic
         return (
           <PeekCard title={k.name()} need={k.need} stats={stats} onClose={() => setPeek(null)}>
             <PieceGlyph kind="star" seat={0} size={76} diamond={false}><SkinFx id={k.id} /></PieceGlyph>
+          </PeekCard>
+        );
+      })()}
+    </div>
+  );
+}
+
+// The board themes (square and frame colors). Tapping a locked one opens a big preview with how to unlock it.
+// Used in Settings and in the new-game sheet ("Customize board and character").
+export function ThemePicker({ theme, onPick, title = true }: { theme: string; onPick: (id: string) => void; title?: boolean }) {
+  const stats = loadStats();
+  const [peek, setPeek] = useState<string | null>(null);
+  return (
+    <div className="rule set-col">
+      {title && <div className="rule-text"><h3>{tr('Board theme')}</h3><p>{tr('New themes unlock as you play.')}</p></div>}
+      <div className="theme-grid" role="radiogroup" aria-label={tr('Board theme')}>
+        {THEMES.map(t => {
+          const open = isUnlocked(t, stats);
+          return (
+            <button key={t.id} type="button" role="radio" aria-checked={theme === t.id}
+              className={`theme-chip${theme === t.id ? ' is-on' : ''}${open ? '' : ' is-locked'}${peek === t.id ? ' is-peek' : ''}`}
+              onClick={() => { if (open) { onPick(t.id); setPeek(null); } else setPeek(t.id); }}>
+              <span className="theme-sw" aria-hidden="true" style={{ background: `linear-gradient(135deg, ${t.square} 50%, ${t.square2} 50%)`, boxShadow: `inset 0 0 0 5px ${t.frameColor}` }}>
+                {!open && <Icon d="M7 11 V8 A5 5 0 0 1 17 8 V11 M6 11 H18 V20 H6 Z" size={16} stroke={2.2} />}
+              </span>
+              <b>{t.name()}</b>
+              {!open && t.need && <small>{needText(t)} ({needProgress(t, stats)}/{t.need.n})</small>}
+            </button>
+          );
+        })}
+      </div>
+      {peek && (() => {
+        const t = THEMES.find(x => x.id === peek)!;
+        return (
+          <PeekCard title={t.name()} need={t.need} stats={stats} onClose={() => setPeek(null)}>
+            <div className="peek-board" style={{ background: t.frameColor }}>
+              {Array.from({ length: 28 }, (_, i) => <i key={i} style={{ background: (Math.floor(i / 7) + i) % 2 ? t.square2 : t.square }} />)}
+              <span className="peek-star"><PieceGlyph kind="star" seat={0} size={22} diamond={false} /></span>
+            </div>
           </PeekCard>
         );
       })()}

@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import {
-  collapseDue, currentActor, legalMoves, nextCollapseRound, nextMode, pieceAt, pieceById, play, ringOf, threatsFor, twinMove,
+  collapseDue, currentActor, legalMoves, nextCollapseRound, nextMode, pieceAt, pieceById, play, ringFallsNext, ringOf, threatsFor, twinMove,
 } from '../../../engine/rules.js';
 import type { Move, Piece } from '../../../engine/rules.js';
 import { targetOf } from '../../../engine/bots.js';
@@ -156,7 +156,7 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     if (pinned === p.id) return 'pinned';
     if (view.phase === 'bot' && view.bots.currentId === p.id) return 'current';
     if (threatIds.has(p.id)) return 'threat';
-    if (warn && ringOf(st, p.r, p.c) === st.ring) return 'ring';
+    if (warn && ringFallsNext(st, ringOf(st, p.r, p.c))) return 'ring';
     if (p.id === me.id && myTurn) return 'turn';
     if (p.id === me.id) return 'me'; // your own piece always stands out in a crowd
     return null;
@@ -274,9 +274,10 @@ export function Board({ ctl, view, cell, offset = 0 }: Props) {
     for (let c = o; c < n - o; c++) {
       const ring = ringOf(st, r, c);
       const gone = ring < st.ring;
-      const doomedRing = !gone && warn && ring === st.ring;
-      const soonRing = soon && ring === st.ring;
-      const falling = gone && view.fall?.ring === ring;
+      // A big drop takes several rings at once: all of them are flagged and fall together.
+      const doomedRing = !gone && warn && ringFallsNext(st, ring);
+      const soonRing = soon && ringFallsNext(st, ring);
+      const falling = gone && !!view.fall && ring >= view.fall.ring && ring < view.fall.to;
       const rc = reach.get(`${r},${c}`);
       const im = rc ? undefined : inspectMoves.get(`${r},${c}`);
       let background = (r + c) % 2 ? 'var(--square-2)' : 'var(--square)';

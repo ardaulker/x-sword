@@ -1,7 +1,7 @@
 // Tests for the rules engine and the bots: node tests/engine.test.mjs
 import assert from 'node:assert/strict';
 import {
-  createGame, collapseRound, nextCollapseRound, endMatch, maxNeutrals, createPuzzle, isWinner, friendly, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
+  createGame, collapseRound, nextCollapseRound, nextDrop, endMatch, maxNeutrals, createPuzzle, isWinner, friendly, play, currentActor, legalMoves, attackersOf, isSafe, collapseDue, ringOf,
   roundOrder, random, pieceById, threatsFor, ranking, SIZE_BY_STARS, NEUTRALS_BY_STARS, POINTS, SURVIVOR_BONUS, RULES_VERSION, stateHash,
 } from '../engine/rules.js';
 import { chooseMove, targetOf } from '../engine/bots.js';
@@ -480,22 +480,40 @@ test('Twin swap: your first take in single player brings it (once); it swaps you
   assert.equal(old.seats[0].bonuses.twinSwap, 0);
 });
 
-test('fast shrink (15×15 option, rules 5): rings fall after rounds 3, 5, 6, 7 …; off, every 6 rounds as before', () => {
-  const st = createGame({ seats: seats(4, 'bot'), seed: 5, size: 15, fastShrink: true, keepGoing: true });
-  assert.deepEqual([0, 1, 2, 3, 4].map(k => collapseRound(st, k)), [3, 5, 6, 7, 8]);
-  assert.equal(nextCollapseRound(st), 3);
-  const ringAt = {};
-  for (let i = 0; i < 20000 && !st.over && st.round <= 9; i++) {
-    const round = st.round;
-    play(st, chooseMove(st, currentActor(st)));
-    if (st.round !== round) ringAt[round] = st.ring;
-  }
-  assert.deepEqual([ringAt[2], ringAt[3], ringAt[4], ringAt[5], ringAt[6]], [0, 1, 1, 2, 3]); // ring = rings fallen by the end of that round
+test('shrink modes: fast falls after rounds 3, 5, 6, 7 …; big drops 3 rings at round 6, 2 at 12, then 1; classic every 6', () => {
+  const ringsBy = (opts, last) => {
+    const st = createGame({ seats: seats(4, 'bot'), seed: 5, size: 15, keepGoing: true, ...opts });
+    const at = {};
+    for (let i = 0; i < 40000 && !st.over && st.round <= last; i++) {
+      const round = st.round;
+      play(st, chooseMove(st, currentActor(st)));
+      if (st.round !== round) at[round] = st.ring;
+    }
+    return { st, at };
+  };
+  const fast = ringsBy({ shrink: 'fast' }, 6);
+  assert.deepEqual([0, 1, 2, 3, 4].map(k => collapseRound(fast.st, k)), [3, 5, 6, 7, 8]);
+  assert.deepEqual([fast.at[2], fast.at[3], fast.at[4], fast.at[5], fast.at[6]], [0, 1, 1, 2, 3]); // rings fallen by the end of that round
+
+  const big = createGame({ seats: seats(1), seed: 5, size: 15, shrink: 'big' });
+  assert.equal(nextDrop(big), 3);
+  assert.equal(nextCollapseRound(big), 6);
+  const sim = ringsBy({ shrink: 'big' }, 6);
+  assert.deepEqual([sim.at[5], sim.at[6]], [0, 3]);
+  assert.equal(sim.st.shrinks, 1);
+  assert.equal(nextDrop(sim.st), 2);
+  assert.equal(nextCollapseRound(sim.st), 12);
+  // 9×9 has 4 rings: big takes 3, then only 1 is left.
+  const small = createGame({ seats: seats(1), seed: 5, size: 9, shrink: 'big' });
+  small.ring = 3; small.shrinks = 1;
+  assert.equal(nextDrop(small), 1);
 
   const plain = createGame({ seats: seats(4, 'bot'), seed: 5, size: 15 });
-  assert.deepEqual([0, 1, 2].map(k => collapseRound(plain, k)), [6, 12, 18]);
-  // An old match (rules 4) ignores the option.
-  assert.equal(createGame({ seats: seats(4, 'bot'), seed: 5, size: 15, fastShrink: true, rules: 4 }).fastShrink, false);
+  assert.deepEqual([plain.shrinkMode, ...[0, 1, 2].map(k => collapseRound(plain, k))], ['classic', 6, 12, 18]);
+  // Old versions: rules 5 knew fast (as `fastShrink`) but not big; rules 4 neither.
+  assert.equal(createGame({ seats: seats(2), size: 15, fastShrink: true, rules: 5 }).shrinkMode, 'fast');
+  assert.equal(createGame({ seats: seats(2), size: 15, shrink: 'big', rules: 5 }).shrinkMode, 'classic');
+  assert.equal(createGame({ seats: seats(2), size: 15, fastShrink: true, rules: 4 }).shrinkMode, 'classic');
 });
 
 // ---------------------------------------------------------------- bots

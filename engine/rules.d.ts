@@ -51,6 +51,8 @@ export interface Seat {
   outRound?: number;
 }
 
+export type ShrinkMode = 'classic' | 'fast' | 'big';
+
 export type BonusKind = 'armor' | 'step' | 'double' | 'swap' | 'twinSwap';
 
 export interface Move {
@@ -68,8 +70,10 @@ export interface GameState {
   ring: number;
   shrinkStart: number;
   shrinkEvery: number;
-  /** Rules 5: rings fall after rounds 3, 5, 6, 7 … instead of every `shrinkEvery` rounds. */
-  fastShrink: boolean;
+  /** How the arena shrinks: classic (1 ring every `shrinkEvery` rounds), fast (rules 5: after rounds 3, 5, 6, 7 …), big (rules 6: 3 rings, then 2, then 1, every `shrinkEvery` rounds). */
+  shrinkMode: ShrinkMode;
+  /** Collapses so far (a big drop takes several rings in one collapse). */
+  shrinks: number;
   neutralLevel: Level;
   rng: number;
   seats: Seat[];
@@ -118,7 +122,8 @@ export interface GameOptions {
   personas?: boolean;
   obstacles?: boolean;
   teams?: boolean;
-  /** Rules 5: the ring falls after 3 rounds, 2 more, then every round (offered on 15×15). */
+  /** Shrink mode (rules 6); `fastShrink: true` is the rules-5 way to ask for 'fast'. */
+  shrink?: ShrinkMode | null;
   fastShrink?: boolean;
   /** Rules version to play by; old saves and replays carry theirs. Defaults to RULES_VERSION. */
   rules?: number;
@@ -170,8 +175,12 @@ export function legalMoves(state: GameState, piece: Piece, mode?: Mode, bonus?: 
 export function attackersOf(state: GameState, r: number, c: number, except?: string[], victim?: Piece | null): Piece[];
 export function collapseDue(state: GameState): boolean;
 export function nextCollapseRound(state: GameState): number | null;
-/** The round at whose end ring k (0 = outermost) collapses. */
+/** The round at whose end collapse k (0 = the first) happens. */
 export function collapseRound(state: GameState, k: number): number;
+/** Rings the next collapse takes. */
+export function nextDrop(state: GameState): number;
+export function ringFallsNext(state: GameState, ring: number): boolean;
+export const SHRINK_MODES: ShrinkMode[];
 export function doomedAt(state: GameState, r: number, c: number): boolean;
 export function twinMove(state: GameState, twin: Piece): Move | null;
 export function threatsFor(state: GameState, piece: Piece, move: Move): { attackers: Piece[]; doomed: boolean };

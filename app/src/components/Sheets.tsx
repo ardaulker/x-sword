@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { BONUS_NAMES, BONUS_SCORES, SWAP_SCORE, POINTS, collapseRound, isWinner, SIZE_BY_STARS, BOARD_SIZES, defaultNeutrals, maxNeutrals, pieceById, ranking, starOf } from '../../../engine/rules.js';
-import type { BonusKind, GameState, Level, Piece } from '../../../engine/rules.js';
+import type { BonusKind, GameState, Level, Piece, ShrinkMode } from '../../../engine/rules.js';
 import type { GameController, Setup, TakeEvent } from '../game/controller';
 import { HAZARD_TXT, ICON, TXT, colorOf, diamondOf, seatOf } from '../game/look';
 import { ME, labelOf, modeLower, seatName, subjectOf, winnerLine } from '../game/names';
@@ -13,7 +13,7 @@ import { replayCode } from '../game/record';
 import { freshRewards, markRewardsSeen } from '../game/themes';
 import { freshAchievements, markAchievementsSeen } from '../game/achievements';
 import { SkinFx } from './SkinFx';
-import { SkinPicker } from './SkinPicker';
+import { SkinPicker, ThemePicker } from './SkinPicker';
 import { saveSettings, settings } from '../game/settings';
 import { block, isBlocked, unblock } from '../game/blocklist';
 import { canReport, reportLink } from '../game/report';
@@ -142,8 +142,8 @@ export function BonusSheet({ ctl }: { ctl: GameController }) {
   const first = collapseRound(st, 0), second = collapseRound(st, 1);
   const rounds: Milestone[] = [
     { at: 1, kind: 'none', top: tr('Round {n}', { n: 1 }), done: true },
-    { at: first, kind: 'armor', top: tr('Round {n}', { n: first }), done: st.ring >= 1 },
-    { at: second, kind: 'double', top: tr('Round {n}', { n: second }), done: st.ring >= 2 },
+    { at: first, kind: 'armor', top: tr('Round {n}', { n: first }), done: st.shrinks >= 1 },
+    { at: second, kind: 'double', top: tr('Round {n}', { n: second }), done: st.shrinks >= 2 },
   ];
   return (
     <SheetFrame label={tr('Bonuses')} onClose={close}>
@@ -262,6 +262,13 @@ export function PauseSheet({ onResume, onNew, onRestart, onSettings, onHome, onE
   );
 }
 
+// The three ways the arena shrinks: name and a short "how" under it.
+export const shrinkLabels = (): [ShrinkMode, string, string][] => [
+  ['classic', tr('Classic'), tr('1 ring · every 6')],
+  ['fast', tr('Speeding up'), tr('rounds 3, 5, 6, 7…')],
+  ['big', tr('Big drops'), tr('3 → 2 → 1 rings')],
+];
+
 // Match setup: opens from "Play" on the main menu and from the in-game menu button.
 export function SetupSheet({ setup, onStart, onClose }: {
   setup: Setup; onStart: (s: Setup) => void; onClose: () => void;
@@ -272,9 +279,10 @@ export function SetupSheet({ setup, onStart, onClose }: {
   const [personas, setPersonas] = useState(!!setup.personas);
   const [obstacles, setObstacles] = useState(!!setup.obstacles);
   const [teams, setTeams] = useState(!!setup.teams);
-  const [fastShrink, setFastShrink] = useState(setup.fastShrink !== false);
+  const [shrink, setShrink] = useState<ShrinkMode>(setup.shrink ?? 'classic');
+  const [theme, setTheme] = useState(settings.theme);
   const [skin, setSkin] = useState(settings.skin);
-  const [character, setCharacter] = useState(false); // the "Customize character" page
+  const [character, setCharacter] = useState(false); // the "Customize board and character" page
   const [pickedSize, setBoardSize] = useState(setup.boardSize);
   // If the bot count was left untouched (null), the default crowd for the board and player count is used.
   const [picked, setBots] = useState<number | null>(
@@ -285,13 +293,14 @@ export function SetupSheet({ setup, onStart, onClose }: {
   const botCount = Math.min(picked ?? defaultNeutrals(players, size), maxBots);
   if (character) {
     return (
-      <SheetFrame label={tr('Customize character')} onClose={() => setCharacter(false)}>
+      <SheetFrame label={tr('Board and character')} onClose={() => setCharacter(false)}>
         <div className="sheet-head">
-          <div className="sheet-title">{tr('Customize character')}</div>
+          <div className="sheet-title">{tr('Board and character')}</div>
           <button type="button" className="round-btn" aria-label={tr('Close')} onClick={() => setCharacter(false)}><Icon d={ICON.close} size={18} stroke={2.2} /></button>
         </div>
-        <p className="menu-note">{tr('Pick the effect your star wears. Locked ones open as you play.')}</p>
-        <SkinPicker skin={skin} title={false} onPick={id => { setSkin(id); saveSettings({ ...settings, skin: id }); }} />
+        <p className="menu-note">{tr('Pick your board theme and the effect your star wears. Locked ones open as you play.')}</p>
+        <ThemePicker theme={theme} onPick={id => { setTheme(id); saveSettings({ ...settings, theme: id }); }} />
+        <SkinPicker skin={skin} onPick={id => { setSkin(id); saveSettings({ ...settings, skin: id }); }} />
         <button type="button" className="btn btn-main btn-block" onClick={() => setCharacter(false)}>{tr('Done')}</button>
       </SheetFrame>
     );
@@ -310,23 +319,34 @@ export function SetupSheet({ setup, onStart, onClose }: {
           </button>
         ))}
       </div>
-      {(
-        <>
-          <div className="field-label">{tr('BOARD')}</div>
-          <div className="seg" role="radiogroup" aria-label={tr('Board size')}>
-            {BOARD_SIZES.map(n => (
-              <button key={n} type="button" role="radio" aria-checked={size === n} disabled={n < minSize} className={size === n ? 'is-on' : ''} onClick={() => setBoardSize(n)}>
-                <b>{n}×{n}</b>
-              </button>
-            ))}
-          </div>
-          <div className="field-label">{tr('ARENA BOTS: {n}', { n: botCount })}</div>
-          <div className="bots-row">
-            <input type="range" min={2} max={maxBots} value={botCount} aria-label={tr('Number of arena bots')} onChange={e => setBots(Number(e.target.value))} />
-            <button type="button" className="btn btn-ghost bots-max" onClick={() => setBots(maxBots)}>{tr('Max {n}', { n: maxBots })}</button>
-          </div>
-        </>
-      )}
+
+      {/* Arena settings: the board itself (size, bots, how it shrinks, obstacles). */}
+      <div className="sheet-section">{tr('Arena settings')}</div>
+      <div className="field-label">{tr('BOARD')}</div>
+      <div className="seg" role="radiogroup" aria-label={tr('Board size')}>
+        {BOARD_SIZES.map(n => (
+          <button key={n} type="button" role="radio" aria-checked={size === n} disabled={n < minSize} className={size === n ? 'is-on' : ''} onClick={() => setBoardSize(n)}>
+            <b>{n}×{n}</b>
+          </button>
+        ))}
+      </div>
+      <div className="field-label">{tr('ARENA BOTS: {n}', { n: botCount })}</div>
+      <div className="bots-row">
+        <input type="range" min={2} max={maxBots} value={botCount} aria-label={tr('Number of arena bots')} onChange={e => setBots(Number(e.target.value))} />
+        <button type="button" className="btn btn-ghost bots-max" onClick={() => setBots(maxBots)}>{tr('Max {n}', { n: maxBots })}</button>
+      </div>
+      <div className="field-label">{tr('ARENA SHRINK')}</div>
+      <div className="seg seg-shrink" role="radiogroup" aria-label={tr('Arena shrink')}>
+        {shrinkLabels().map(([v, name, how]) => (
+          <button key={v} type="button" role="radio" aria-checked={shrink === v} className={shrink === v ? 'is-on' : ''} onClick={() => setShrink(v)}>
+            <b>{name}</b><span>{how}</span>
+          </button>
+        ))}
+      </div>
+      <Opt label={tr('Obstacle squares')} sub={tr('Places blocked squares on the board that never touch each other.')} on={obstacles} onChange={setObstacles} />
+
+      {/* Game options: the players (AI rivals, arena bots, characters, teams). */}
+      <div className="sheet-section">{tr('Game options')}</div>
       {/* Always shown so the sheet keeps its height when the player count changes; only usable with AI rivals. */}
       <div className={`field-label${players === 1 ? ' is-off' : ''}`}>{tr('RIVAL INTELLIGENCE')}</div>
       <div className="seg" role="radiogroup" aria-label={tr('Rival intelligence')}>
@@ -344,14 +364,9 @@ export function SetupSheet({ setup, onStart, onClose }: {
           </button>
         ))}
       </div>
-      <div className="field-label">{tr('OPTIONS')}</div>
-      <div className="opts">
-        {size === 15 && <Opt label={tr('Fast shrink')} sub={tr('The ring falls after 3 rounds, then after 2 more, then every round.')} on={fastShrink} onChange={setFastShrink} />}
-        {players === 4 && <Opt label={tr('Teams (2 vs 2)')} sub={tr("Opposite corners form a team; you can't take your teammate.")} on={teams} onChange={setTeams} />}
-        <div className="opts-pair">
-          <Opt className="opt-tile" label={tr('Obstacle squares')} on={obstacles} onChange={setObstacles} />
-          <Opt className="opt-tile" label={tr('Bot characters')} title={players === 1 ? tr('Needs 2–4 players') : undefined} on={personas} onChange={setPersonas} disabled={players === 1} />
-        </div>
+      <div className="opts-pair">
+        <Opt className="opt-tile" label={tr('Bot characters')} title={players === 1 ? tr('Needs 2–4 players') : undefined} on={personas} onChange={setPersonas} disabled={players === 1} />
+        <Opt className="opt-tile" label={tr('Teams (2 vs 2)')} title={players !== 4 ? tr('Needs 4 players') : undefined} on={teams} onChange={setTeams} disabled={players !== 4} />
       </div>
       <div className="menu-note">
         {players === 1
@@ -362,9 +377,9 @@ export function SetupSheet({ setup, onStart, onClose }: {
       <div className="btn-row">
         <button type="button" className="btn btn-ghost char-open" onClick={() => setCharacter(true)}>
           <PieceGlyph kind="star" seat={ME} size={26} diamond={false}><SkinFx id={skinById(skin).id} /></PieceGlyph>
-          <span>{tr('Customize character')}</span>
+          <span>{tr('Board and character')}</span>
         </button>
-        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, aiLevel, boardSize: size, bots: botCount, daily: null, puzzle: null, personas: players > 1 && personas, obstacles, teams: players === 4 && teams, fastShrink })}>{tr('Start')}</button>
+        <button type="button" className="btn btn-main" onClick={() => onStart({ ...setup, players, level, aiLevel, boardSize: size, bots: botCount, daily: null, puzzle: null, personas: players > 1 && personas, obstacles, teams: players === 4 && teams, shrink })}>{tr('Start')}</button>
       </div>
     </SheetFrame>
   );

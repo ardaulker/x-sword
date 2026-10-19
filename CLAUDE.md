@@ -43,7 +43,7 @@
   random legal moves (bonuses, pause, undo) in six setups on the dev server and checks for crashes, stuck matches, the result card and that the
   replay link reproduces the match. Run it after changing the controller or the engine; don't edit app files while it runs (the dev
   server reloads the page).
-- **Rules version** (9 October 2026): `RULES_VERSION` in `engine/rules.js` (now 5; 5 = the fast shrink option; 3 = the random 60-point bonus draws from `state.ruleRng`,
+- **Rules version** (9 October 2026): `RULES_VERSION` in `engine/rules.js` (now 6; 6 = shrink modes incl. big drops; 5 = the fast shrink option; 3 = the random 60-point bonus draws from `state.ruleRng`,
   a stream the bots never touch, because guests and replays do not run the bots and used to get a different bonus; 4 = the Twin copies
   bonus moves (`state.twinSteps`) and the solo Twin swap bonus). `createGame({ rules })` plays a match by an older
   version; saves, replay links and multiplayer rooms record it (`opts.rules`, `MatchStart.rules`, `hello.rules`). A save or
@@ -100,8 +100,11 @@
   piece is taken mid-round, numbers don't change that round. The turn queue shows future rounds with that round's new
   numbers.
 - A move: tap a square, preview, confirm. 20 seconds per move; when time runs out a safe move is played.
-- Every 6 rounds (6, 12, 18 …) the outermost ring collapses (on 15×15 **fast shrink**, on by default since 19 October 2026 and rules 5:
-  after rounds 3, 5, 6, 7 …; `fastShrink`, `collapseRound`; Setup, lobby and `MatchStart` carry it); a thin orange edge warns one round before and stripes mark
+- Every 6 rounds (6, 12, 18 …) the outermost ring collapses. **Shrink modes** (19 October 2026, any board, chosen under Arena settings;
+  `Setup.shrink`, `LobbyOpts.shrink`, `MatchStart.shrink`, engine `shrink` → `state.shrinkMode`): **Classic** (default), **Speeding up**
+  (rules 5, after rounds 3, 5, 6, 7 …) and **Big drops** (rules 6, Arda's idea: 3 rings at once in round 6, 2 in round 12, then 1). A
+  collapse can take several rings (`nextDrop`, `ringFallsNext`, `state.shrinks` counts collapses; the Armor / Double move rewards follow
+  collapses, not rings). Turkish names: Klasik, Hızlanan, Toplu; a thin orange edge warns one round before and stripes mark
   the collapse round. Tension music plays.
 - Points: star / Twin / red-blue (`POINTS`), `SURVIVOR_BONUS` for the last star standing. Ranking: score, takes,
   survival. The winner is decided when the rival stars are gone; in a local 2–4 player match the game asks
@@ -128,8 +131,11 @@
 - Pause: the menu button pauses a local match (`GameController.pause/unpause`; timers fall into `deferred`). Going back
   to the main menu doesn't delete the match; it is `park`ed and the main menu shows "Continue". The unfinished match is
   saved under `xsword-save` (options + move list, `game/record.ts`) and resumes when the app reopens. Starting a
-  multiplayer match deletes the save. Pause menu: Continue, Restart, New game, Settings (in a match only sound,
-  vibration and language), Main menu.
+  multiplayer match deletes the save. Pause menu: Continue, End match, Restart, New game, Settings (in a match only sound,
+  vibration and language), Main menu. **End match** (Arda, 19 October 2026): with the winner decided it ends the match with the result
+  card (`endNow`); before that it throws the match away (`GameController.abandon`: no save, no "Continue") and goes to the main menu.
+- Bug fixed 19 October 2026: the board stayed small for good after "Continue" past a decided match, because the end-of-match card was
+  counted as a panel in play; only panels in play count now (`data-play`) and the reserved room is capped.
 
 ## Measurements (printed by `tests/engine.test.mjs`)
 - Careful player: wins 92–96% against an Easy rival, ~50–54% against Normal, ~14–15% against Hard. Hard beats Normal
@@ -504,10 +510,10 @@ S#....#.
   match** (starts at once with the last New game setup, `App.tsx → lastSetup`; a puzzle or daily start does not change it and the
   button shows it as "Last setup: Solo · Normal · 9×9"), Daily challenge + Puzzles side by side, a wide Multiplayer button, and
   Statistics + Settings at the bottom. "How to play" lives in Settings.
-- **Setup sheet** (`Sheets.tsx → SetupSheet`): the X closes it; the bottom row is "Customize character" (opens the piece-effect
-  picker, `components/SkinPicker.tsx`, shared with Settings) + Start. "Obstacle squares" and "Bot characters" (the AI rival
-  personalities) are two tiles side by side. Rival intelligence is always shown but disabled in solo, so the sheet keeps its
-  height when the player count changes; `.sheet-tall` lets it fill 94% so Start stays in view up to 3 players (4 adds the Teams row).
+- **Setup sheet** (`Sheets.tsx → SetupSheet`, regrouped 19 October 2026): Players, then **Arena settings** (board, arena bots, shrink
+  mode, obstacle squares) and **Game options** (rival intelligence, arena bot intelligence, Bot characters + Teams tiles; disabled
+  rather than hidden, so the sheet keeps its height). The sheet scrolls and the bottom row stays pinned: "Board and character" (board
+  theme + piece effect, `ThemePicker` / `SkinPicker` in `components/SkinPicker.tsx`, shared with Settings) + Start.
 - **Match start** (9 October 2026): every new match except puzzles starts with a 3 · 2 · 1 countdown over the board (`View.countdown`,
   `GameController.launch`, `.countdown` in `GameScreen.css`), then the sword is drawn (the recorded `unsheath` sound; Arda asked for
   the sword after the countdown, not before) and 0.9 s later the first mode card. A guest who rejoins a running match skips it.

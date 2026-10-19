@@ -1,6 +1,6 @@
 // Types shared by the match controller (game/controller.ts), the screens and the effects (game/effects.ts).
 
-import type { BonusKind, Level, Move } from '../../../engine/rules.js';
+import type { BonusKind, Level, Move, ShrinkMode } from '../../../engine/rules.js';
 
 // This device's role in a multiplayer match. The host runs the match and broadcasts every move;
 // a guest sends its own move to the host and applies every move it receives from the host.
@@ -38,8 +38,8 @@ export interface Setup {
   personas?: boolean;
   obstacles?: boolean;
   teams?: boolean;
-  /** 15×15 only: rings fall after rounds 3, 5, 6, 7 … (on unless switched off). */
-  fastShrink?: boolean;
+  /** How the arena shrinks: classic (default), fast or big (see `SHRINK_MODES` in the engine). */
+  shrink?: ShrinkMode;
 }
 // players 1: single-player mode (you + your mirror Twin + bots). 2–4: against AI players.
 export const DEFAULT_SETUP: Setup = { players: 1, level: 'normal', aiLevel: 'normal', moveSeconds: 20, boardSize: 9, bots: 14 };
@@ -80,7 +80,7 @@ export interface View {
   clockEnd: number | null;
   watching: boolean;
   shake: number;
-  fall: { key: number; ring: number } | null; // the ring that just collapsed (for the animation)
+  fall: { key: number; ring: number; to: number } | null; // the rings that just collapsed, ring ≤ r < to (for the animation)
   hit: number; // grows when you are taken or fall: the screen flashes red
   countdown: number | null; // 3, 2, 1 before a match starts (null: not counting)
   version: number;
