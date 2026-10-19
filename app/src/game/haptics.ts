@@ -186,7 +186,16 @@ function playBell(ac: AudioContext, t0: number) {
 
 // Recorded sounds. A name listed here plays its file (decoded once, kept in memory); the synthesized version below is
 // the fallback while the file loads or if it cannot be loaded. Files live in app/public/sounds/ (sources: docs/third-party-licenses.md).
-const SAMPLE_FILES: Partial<Record<SoundName, string>> = { unsheath: 'sounds/sword-draw.m4a' };
+// Kenney's CC0 packs (RPG Audio, Impact Sounds, Interface Sounds), made by tools/make-sounds.py; the sword draw is Arda's file.
+const RECORDED: SoundName[] = ['select', 'move', 'take', 'slash', 'slashBig', 'points', 'myTurn', 'turn', 'mode', 'collapse', 'out',
+  'bonusGain', 'bonusUse', 'useStep', 'useDouble', 'useSwap', 'armor', 'win', 'lose', 'tick', 'count', 'bell'];
+const SAMPLE_FILES: Partial<Record<SoundName, string>> = {
+  unsheath: 'sounds/sword-draw.m4a',
+  ...Object.fromEntries(RECORDED.map(n => [n, `sounds/${n}.m4a`])),
+};
+// Loudness per sound (the recordings are mastered at different levels; frequent ones stay quiet).
+const SAMPLE_GAIN: Partial<Record<SoundName, number>> = { select: 0.5, move: 0.55, turn: 0.35, tick: 0.5, myTurn: 0.6, points: 0.6, take: 0.6, slash: 0.8, slashBig: 1, bell: 0.8 };
+export const SOUND_NAMES = Object.keys(SAMPLE_FILES) as SoundName[];
 const samples = new Map<string, AudioBuffer | 'loading' | 'failed'>();
 
 function loadSamples(ac: AudioContext) {
@@ -209,14 +218,14 @@ function playSample(ac: AudioContext, buf: AudioBuffer, t0: number, gain: number
   src.start(t0);
 }
 
-export function sound(name: SoundName) {
+export function sound(name: SoundName, opts?: { synth?: boolean }) {
   if (!settings.sound || settings.volume <= 0) return;
   const ac = audio();
   if (!ac || ac.state !== 'running') return;
   const t0 = ac.currentTime;
-  if (SAMPLE_FILES[name]) {
+  if (SAMPLE_FILES[name] && !opts?.synth) {
     const buf = samples.get(name);
-    if (buf && buf !== 'loading' && buf !== 'failed') { playSample(ac, buf, t0, 0.9); return; }
+    if (buf && buf !== 'loading' && buf !== 'failed') { playSample(ac, buf, t0, SAMPLE_GAIN[name] ?? 0.9); return; }
     loadSamples(ac);
   }
   if (name === 'slash' || name === 'slashBig') playSlash(ac, t0, name === 'slashBig');

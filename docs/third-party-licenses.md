@@ -20,4 +20,6 @@ The OFL asks that the fonts keep their license text when redistributed: it is in
 |---|---|---|
 | `app/public/sounds/sword-draw.m4a` | sword drawn at match start | Trimmed and compressed from a file Arda supplied (`sword.wav`, 9 Oct 2026) as royalty-free. Source: freesound.org (Arda, 9 Oct 2026: taken from the royalty-free sources suggested in chat). **The exact page URL, creator and license (CC0 or CC BY) are still to be recorded here.** If it is CC BY, the creator's name must also go into the in-app "Open-source licenses" screen (`app/src/legal/{en,tr}.json → licenses`). |
 
-All other sounds are synthesized in code (`app/src/game/haptics.ts`) and carry no license.
+| `app/public/sounds/*.m4a` (all other game sounds) | moves, takes, bonuses, bell, countdown … | Kenney Vleugels, kenney.nl packs "RPG Audio", "Impact Sounds", "Interface Sounds", **CC0 1.0** (public domain; no credit needed, credited anyway). Downloaded 19 Oct 2026; the file-to-event table is in `tools/make-sounds.py`. |
+
+The synthesized versions in `app/src/game/haptics.ts` stay as the fallback when a file cannot load.

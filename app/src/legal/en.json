@@ -201,6 +201,12 @@
         ]
       },
       {
+        "h": "Sounds",
+        "p": [
+          "Game sounds by Kenney (kenney.nl), released under CC0 1.0 (public domain)."
+        ]
+      },
+      {
         "h": "Software",
         "p": [
           "React and React DOM (MIT License, © Meta Platforms, Inc. and affiliates).",

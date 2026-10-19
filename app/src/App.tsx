@@ -15,6 +15,7 @@ import { PuzzleScreen } from './screens/PuzzleScreen';
 import { ReplayScreen } from './screens/ReplayScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 // Rarely opened screens load on demand (the legal texts are long).
+const SoundTestScreen = lazy(() => import('./screens/SoundTestScreen').then(m => ({ default: m.SoundTestScreen })));
 const LegalScreen = lazy(() => import('./screens/LegalScreen').then(m => ({ default: m.LegalScreen })));
 import { legacyLevel } from './game/legacy';
 
@@ -45,8 +46,8 @@ function saveSetup(s: Setup) {
 // Screens are chosen by the #/ in the address bar; the phone's back button returns to the previous screen.
 // #/join/CODE is an invite link: opening it joins that room. #/replay/CODE opens a replay.
 // Links shared before the English rename use the old Turkish paths; they still work (LEGACY).
-type Screen = 'menu' | 'play' | 'rules' | 'settings' | 'multiplayer' | 'room' | 'match' | 'join' | 'stats' | 'puzzles' | 'replay' | 'profile' | 'legal';
-const SCREENS: Screen[] = ['play', 'rules', 'settings', 'multiplayer', 'room', 'match', 'stats', 'puzzles', 'profile', 'legal'];
+type Screen = 'menu' | 'play' | 'rules' | 'settings' | 'multiplayer' | 'room' | 'match' | 'join' | 'stats' | 'puzzles' | 'replay' | 'profile' | 'legal' | 'sounds';
+const SCREENS: Screen[] = ['play', 'rules', 'settings', 'multiplayer', 'room', 'match', 'stats', 'puzzles', 'profile', 'legal', 'sounds'];
 const LEGACY: Record<string, Screen> = {
   oyun: 'play', kurallar: 'rules', ayarlar: 'settings', cok: 'multiplayer', oda: 'room', mac: 'match',
   istatistik: 'stats', bulmaca: 'puzzles', profil: 'profile', katil: 'join', izle: 'replay',
@@ -137,6 +138,7 @@ export function App() {
     return <PuzzleScreen onBack={() => go('menu')} onPick={id => start({ ...ctl.setup, players: 1, daily: null, puzzle: id })} />;
   }
   if (screen === 'replay') return <ReplayScreen code={readRoute()[1]} onBack={() => go('menu')} />;
+  if (screen === 'sounds') return <Suspense fallback={null}><SoundTestScreen onBack={() => go('menu')} /></Suspense>;
   if (screen === 'legal') {
     const open = (id: string) => { location.hash = id ? `#/legal/${id}` : '#/legal'; };
     return <Suspense fallback={null}><LegalScreen docId={readRoute()[1]} onOpen={open} onBack={() => go('settings')} /></Suspense>;
