@@ -102,6 +102,7 @@
 /* ------------------------------------------------------------ board area */
 
 .stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.panel-dock { flex: none; }
 .board-area { position: relative; flex: 1; min-height: 0; display: flex; justify-content: center; align-items: flex-start; }
 /* Zoomed board: scrolls inside its own box. */
 .board-scroll { position: absolute; inset: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; }
@@ -244,6 +245,12 @@
 .bonus-label { font: 700 11px var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--text-2); }
 .bonus-next { flex: 1; min-width: 0; text-align: right; font-size: 12px; font-weight: 600; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* The icon stays 24 px; the tappable area is 44 px (the usual minimum). */
+.bonus-undo {
+  flex: none; height: 24px; padding: 0 9px; border-radius: 12px; border: 1px solid var(--line-2); background: transparent; color: var(--text-1);
+  display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; white-space: nowrap; position: relative;
+}
+.bonus-undo::after { content: ''; position: absolute; inset: -10px -2px; }
+.bonus-undo:disabled { opacity: .4; }
 .bonus-info::after { content: ''; position: absolute; inset: -10px; }
 .bonus-info { position: relative; flex: none; width: 24px; height: 24px; border-radius: 12px; border: 0; background: var(--surface-3); color: var(--text-1); display: flex; align-items: center; justify-content: center; }
 .bonus-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }

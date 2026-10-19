@@ -593,6 +593,10 @@ S#....#.
   `GameController.openBonusGuide`; the local clock stops while it is open) lists what each bonus does and shows two
   tracks: points (Start, 20, 40, 50, 60) and surviving shrinks (round 6 Armor, round 12 Double move), with a marker for
   your score or round.
+- **The panel never covers the board** (19 October 2026, Arda on a real iPhone 14: "I must always see what happens below"): the board
+  leaves at least `PANEL_ROOM`, and more if the panel was ever taller at this screen size (`GameScreen.tsx → panelSeen`, measured on
+  `.panel-dock`). Undo sits in the bonus header (`.bonus-undo`) outside puzzles to keep the panel short. `tests/layout.mjs` fails if the
+  board's frame reaches under the panel.
 - **Double move counter**: the engine sets `state.extra = { id, n }` while a star plays the extra moves of a Double move
   (cleared when the turn passes). The panel shows a strip (`BonusStrip`) with the bonus, what to do and a "Move 1/2 ·
   2/2" counter; previews say "Move 1/2 · Double move". The strip takes the place of the hint and the bonus header so the

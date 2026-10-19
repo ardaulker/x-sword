@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { PUZZLES } from '../game/puzzles';
 import { puzzleHint } from '../game/puzzleText';
 import {
@@ -309,8 +309,14 @@ export function ActionPanel({ ctl, view, net, onPuzzle }: { ctl: GameController;
           </div>
         )}
         {!stripOn && <div className="panel-hint" style={{ color: hintColor }}>{hint}</div>}
-        {view.phase === 'mine' && <BonusBar ctl={ctl} view={view} />}
-        {view.phase === 'mine' && (ctl.undoAvailable || (st.puzzle && onPuzzle)) && (
+        {/* Undo sits in the bonus header (outside puzzles) so the panel stays short and never covers the board. */}
+        {view.phase === 'mine' && <BonusBar ctl={ctl} view={view} undo={ctl.undoAvailable && !st.puzzle ? (
+          <button type="button" className="bonus-undo" disabled={!ctl.canUndo} onClick={() => ctl.undo()}>
+            <Icon d="M9 14 L4 9 L9 4 M4 9 H15 A5 5 0 0 1 15 19 H8" size={14} stroke={2.2} />
+            {ctl.undosRemaining == null ? tr('Undo') : tr('Undo ({n})', { n: ctl.undosRemaining })}
+          </button>
+        ) : undefined} />}
+        {view.phase === 'mine' && st.puzzle && (ctl.undoAvailable || onPuzzle) && (
           <div className="mini-row">
             {ctl.undoAvailable && (
               <button type="button" className="btn btn-ghost btn-undo" disabled={!ctl.canUndo} onClick={() => ctl.undo()}>
@@ -413,7 +419,7 @@ function BonusStrip({ st, me, view }: { st: GameState; me: Piece; view: View }) 
 
 // The bonuses on your turn: always visible so nobody misses them. Armor works by itself; tap another one and the squares light up for it.
 // A bonus you don't hold opens the guide that explains how to earn it.
-function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
+function BonusBar({ ctl, view, undo }: { ctl: GameController; view: View; undo?: ReactNode }) {
   const st = ctl.state;
   const b = st.seats[ME].bonuses;
   const me = ctl.myStar();
@@ -424,7 +430,8 @@ function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
       <BonusStrip st={st} me={me} view={view} />
       {!(view.bonus || extraMoves(st, me) > 0) && <div className="bonus-head">
         <span className="bonus-label">{tr('Bonuses')}</span>
-        {next && <span className="bonus-next">{tr('Next: {name} at {n} pts', { name: next.name, n: next.pts })}</span>}
+        <span className="bonus-next">{next ? tr('Next: {name} at {n} pts', { name: next.name, n: next.pts }) : ''}</span>
+        {undo}
         <button type="button" className="bonus-info" aria-label={tr('Bonus guide')} onClick={() => ctl.openBonusGuide()}>
           <Icon d="M12 3 A9 9 0 1 0 12.01 3 Z M12 11 V16 M12 8 V8.2" size={16} stroke={2.2} />
         </button>

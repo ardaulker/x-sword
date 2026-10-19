@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { currentActor, isWinner } from '../../../engine/rules.js';
 import type { GameController, Setup, View } from '../game/controller';
 import { ICON } from '../game/look';
@@ -20,9 +20,12 @@ import { tr } from '../i18n';
 
 // On a short screen (iPhone SE, or with browser bars showing) the header and mode fold into one row.
 const COMPACT_BELOW = 740;
-// The panel needs this much room at its tallest (preview + threat chips). The board always leaves it,
-// so the board neither grows nor shifts when the panel changes. Centering uses the panel's usual height.
+// The panel needs at least this much room. The board always leaves it, so the board neither grows nor shifts when the panel
+// changes. Centering uses the panel's usual height.
 const PANEL_ROOM = { full: 196, compact: 182 };
+// The panel's tallest height seen at each screen size (your turn with the bonus bar and Undo is usually the tallest). The board
+// leaves at least that much, so the panel never covers it; kept across matches, so after the first turn the board stays put.
+const panelSeen = new Map<string, number>();
 const PANEL_USUAL = { full: 128, compact: 104 };
 const GAP = 6;
 
@@ -56,6 +59,21 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
   const [rootH, setRootH] = useState(0);
   const [rootW, setRootW] = useState(0);
   const [stage, setStage] = useState({ w: 0, h: 0 });
+  const [, setPanelH] = useState(0); // re-renders when the panel's tallest height grows
+  const sizeKey = useRef('');
+  const dockObserver = useRef<ResizeObserver | null>(null);
+  const dockRef = useCallback((el: HTMLDivElement | null) => {
+    dockObserver.current?.disconnect();
+    dockObserver.current = null;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const key = sizeKey.current, h = Math.ceil(el.getBoundingClientRect().height);
+      if (h > (panelSeen.get(key) ?? 0)) panelSeen.set(key, h);
+      setPanelH(panelSeen.get(key) ?? h);
+    });
+    ro.observe(el);
+    dockObserver.current = ro;
+  }, []);
 
   useLayoutEffect(() => {
     const ro = new ResizeObserver(entries => {
@@ -83,7 +101,9 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
     return () => clearTimeout(id);
   }, [st.ring]); // eslint-disable-line react-hooks/exhaustive-deps
   const vis = n - 2 * shown, gap = boardGap(vis), rings = shown * RING_W;
-  const room = landscape ? 0 : compact ? PANEL_ROOM.compact : PANEL_ROOM.full;
+  sizeKey.current = `${Math.round(rootW)}x${Math.round(rootH)}`;
+  const seenH = panelSeen.get(sizeKey.current) ?? 0;
+  const room = landscape ? 0 : Math.max(compact ? PANEL_ROOM.compact : PANEL_ROOM.full, seenH);
   const usual = landscape ? 0 : compact ? PANEL_USUAL.compact : PANEL_USUAL.full;
   const availW = stage.w - 12, availH = stage.h - room - (landscape ? 0 : GAP);
   const fitK = (a: number, k: number, g: number, pad: number) => Math.floor((a - 2 * BOARD_PAD - 2 * pad - g * (k - 1)) / k);
@@ -147,7 +167,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
           </div>
         )}
       </div>
-      {!landscape && <ActionPanel ctl={ctl} view={view} net={net} onPuzzle={goPuzzle} />}
+      {!landscape && <div ref={dockRef} className="panel-dock"><ActionPanel ctl={ctl} view={view} net={net} onPuzzle={goPuzzle} /></div>}
     </div>
   );
   return (

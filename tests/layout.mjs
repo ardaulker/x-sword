@@ -37,6 +37,12 @@ for (const lang of ['tr', 'de']) for (const [w, h] of SIZES) {
         if (r.right > W + 1 || r.left < -1) out.push(`${el.className || el.tagName} "${(el.textContent || '').trim().slice(0, 30)}" leaves the screen (${Math.round(r.left)}..${Math.round(r.right)})`);
         if (el.scrollWidth > el.clientWidth + 2 && getComputedStyle(el).overflowX !== 'auto' && getComputedStyle(el).overflowX !== 'scroll' && el.clientWidth > 0) out.push(`${el.className || el.tagName} "${(el.textContent || '').trim().slice(0, 30)}" text overflows its box`);
       }
+      // The board must never sit under the action panel (portrait; in landscape the panel is in the side column).
+      const frame = document.querySelector('.board-frame'), panel = document.querySelector('.stage .panel');
+      if (frame && panel && !document.querySelector('.board-scroll')) {
+        const fb = frame.getBoundingClientRect().bottom, pt = panel.getBoundingClientRect().top;
+        if (fb > pt + 1) out.push(`the panel covers the board (board ends at ${Math.round(fb)}, panel starts at ${Math.round(pt)})`);
+      }
       return [...new Set(out)].slice(0, 6);
     });
     for (const f of found) {
