@@ -67,6 +67,9 @@ export function SettingsScreen({ onBack, onRules, onLegal, inGame = false }: { o
         </div>
         <Toggle label={tr('Vibration')} sub={tr("On supported phones. On iPhone the browser doesn't allow vibration.")} on={s.haptics}
           onChange={v => { update({ haptics: v }); if (v) feel('select', 20); }} />
+        {/* A play-style choice, so it is also offered from the in-match menu. Off by default: the preview protects new players. */}
+        <Toggle label={tr('One-tap moves')} sub={tr('Tapping a square plays the move right away. No confirm screen.')} on={s.quick}
+          onChange={v => update({ quick: v })} />
         {!inGame && (
           <>
         <Toggle label={tr('Tips')} sub={tr('Shows a short tip card at the start of your first three matches.')} on={s.tips}
@@ -82,8 +85,6 @@ export function SettingsScreen({ onBack, onRules, onLegal, inGame = false }: { o
           </div>
           <p className="set-note">{speeds().find(x => x[0] === s.speed)?.[2]}</p>
         </div>
-        <Toggle label={tr('Play without preview')} sub={tr('Tapping a square plays the move right away. No confirm screen.')} on={s.quick}
-          onChange={v => update({ quick: v })} />
         <Toggle label={tr('Play bots fast')} sub={tr("Bot rounds don't wait. Moves are played all at once.")} on={s.fastBots}
           onChange={v => update({ fastBots: v })} />
         <Toggle label={tr('Danger indicator')} sub={tr('Marks squares that pieces able to take you can reach with red stripes.')} on={s.danger}

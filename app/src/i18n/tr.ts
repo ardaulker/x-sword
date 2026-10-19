@@ -428,7 +428,7 @@ const dict: Record<string, string> = {
   'Undo': 'Geri al',
   'Undo ({n})': 'Geri al ({n})',
   'Move undone': 'Hamle geri alındı',
-  'Play without preview': 'Önizlemesiz oyna',
+  'One-tap moves': 'Tek dokunuşla oyna',
   'Tapping a square plays the move right away. No confirm screen.': 'Kareye dokununca hamle hemen oynanır. Onay ekranı çıkmaz.',
   'Play bots fast': 'Botları hızlı oynat',
   'Bot rounds don\'t wait. Moves are played all at once.': 'Bot turları bekletmez. Hamleler tek seferde oynanır.',

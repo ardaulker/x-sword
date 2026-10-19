@@ -428,7 +428,7 @@ const dict: Record<string, string> = {
   'Undo': 'Rückgängig',
   'Undo ({n})': 'Rückgängig ({n})',
   'Move undone': 'Zug zurückgenommen',
-  'Play without preview': 'Ohne Vorschau spielen',
+  'One-tap moves': 'Züge mit einem Tippen',
   'Tapping a square plays the move right away. No confirm screen.': 'Tippen auf ein Feld spielt den Zug sofort. Kein Bestätigungsbildschirm.',
   'Play bots fast': 'Bots schnell spielen',
   'Bot rounds don\'t wait. Moves are played all at once.': 'Bot-Runden warten nicht. Die Züge werden auf einmal gespielt.',

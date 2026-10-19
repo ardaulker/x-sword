@@ -58,6 +58,7 @@ export class GameController {
   private undosLeft = 3;
   replay: { opts: Opts; moves: (Move | null)[]; i: number; ended: boolean } | null = null;
   private endedEarly = false; // "Finish" was chosen after the winner was decided
+  private clockOn = false;    // the match clock starts after the countdown (or a puzzle's start), not while tips show
   private fx: Effects;
 
   constructor(setup: Setup = DEFAULT_SETUP) {
@@ -97,15 +98,24 @@ export class GameController {
   // The first move of a new match: 3 · 2 · 1 over the board, then the sword is drawn, then the first mode card.
   // Puzzles skip it (they restart often); so does a guest who rejoins a match in progress (see startMatch).
   private launch(delay: number) {
-    if (this.setup.puzzle != null) { this.later(delay, () => this.advance()); return; }
+    if (this.setup.puzzle != null) { this.later(delay, () => { this.startClock(); this.advance(); }); return; }
     this.later(delay, () => {
       [3, 2, 1].forEach((n, i) => this.later(i * 900, () => { this.emit({ countdown: n }); feel('count', 12); }));
       this.later(3 * 900, () => {
         this.emit({ countdown: null });
+        this.startClock();
         feel('unsheath', BUZZ.mode);
         this.later(900, () => this.advance()); // the "shing" lands, then the first card
       });
     });
+  }
+
+  // The clock shows 00:00 until the match really starts.
+  private startClock() {
+    if (this.clockOn) return;
+    this.clockOn = true;
+    const now = Date.now();
+    this.emit({ clockStart: now, clockEnd: null });
   }
 
   newGame(setup: Setup = this.setup, opts?: Opts) {
@@ -133,14 +143,14 @@ export class GameController {
     this.pausedAt = Date.now();
     this.stopTicker();
     stopTension();
-    this.emit({ clockEnd: this.pausedAt });
+    if (this.clockOn) this.emit({ clockEnd: this.pausedAt });
   }
 
   unpause() {
     if (!this.paused) return;
     this.paused = false;
     const dt = Date.now() - this.pausedAt;
-    this.emit({ clockStart: this.view.clockStart + dt, clockEnd: null });
+    if (this.clockOn) this.emit({ clockStart: this.view.clockStart + dt, clockEnd: null });
     const fns = this.deferred.splice(0);
     fns.forEach(f => f());
     if (!this.halted && ['mine', 'preview', 'rival'].includes(this.view.phase)) this.startTicker();
@@ -199,6 +209,7 @@ export class GameController {
       if (this.state.over) { clearSave(); return false; }
       const now = Date.now();
       this.view = { ...this.view, phase: 'wait', clockStart: now - s.elapsed, clockEnd: now };
+      this.clockOn = true;
       this.parked = true;
       this.restored = true;
       this.paused = true;
@@ -249,7 +260,7 @@ export class GameController {
     this.reset(match);
     for (const m of replay) { play(this.state, m); this.moves.push(m); }
     this.emit();
-    if (replay.length) this.later(0, () => this.advance()); else this.launch(300);
+    if (replay.length) { this.startClock(); this.later(0, () => this.advance()); } else this.launch(300);
   }
 
   // ------------------------------------------------------------ the bell (multiplayer)
@@ -321,6 +332,7 @@ export class GameController {
     }
     this.moves = [];
     this.endedEarly = false;
+    this.clockOn = false;
     this.undoPoints = [];
     this.undosLeft = 3;
     for (const m of preset?.moves ?? []) { play(this.state, m); this.moves.push(m); }
@@ -546,7 +558,7 @@ export class GameController {
   select(move: Move) {
     if (!this.isMyMove()) return;
     this.view = { ...this.view, inspect: null };
-    // Play without preview: the tapped square is played right away.
+    // One-tap moves (settings.quick): the tapped square is played right away.
     if (settings.quick && this.view.phase === 'mine') { feel('move', BUZZ.confirm); return this.commitMine(move); }
     const sel = this.view.sel;
     if (this.view.phase === 'preview' && sel && sel.r === move.r && sel.c === move.c) return this.confirm();

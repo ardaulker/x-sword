@@ -428,7 +428,7 @@ const dict: Record<string, string> = {
   'Undo': 'Annuler',
   'Undo ({n})': 'Annuler ({n})',
   'Move undone': 'Coup annulé',
-  'Play without preview': 'Jouer sans aperçu',
+  'One-tap moves': 'Coups en un toucher',
   'Tapping a square plays the move right away. No confirm screen.': 'Toucher une case joue le coup tout de suite. Pas d\'écran de confirmation.',
   'Play bots fast': 'Jouer vite les bots',
   'Bot rounds don\'t wait. Moves are played all at once.': 'Les tours des bots n\'attendent pas. Les coups sont joués d\'un coup.',

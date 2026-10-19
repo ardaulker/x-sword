@@ -29,11 +29,12 @@ export function makeState(o: Opts): GameState {
     return (o.puzzle ? createPuzzle({ ...(o.puzzle as object), rules: o.rules } as unknown as Parameters<typeof createPuzzle>[0]) : createGame(o as unknown as Parameters<typeof createGame>[0])) as GameState;
 }
 
+// The clock is frozen at 00:00 (clockEnd = clockStart) until GameController.startClock.
 export function freshView(setup: Setup): View {
     return {
       phase: 'ready', sel: null, showThreats: false, timer: setup.moveSeconds,
       trails: [], lastMoves: [], bursts: [], slashes: [], floats: [], toast: null, banner: null, modeOverlay: false, sheet: null, inspect: null, bonus: null,
       bots: { done: 0, total: 0, currentId: null }, events: [],
-      clockStart: Date.now(), clockEnd: null, watching: false, shake: 0, fall: null, hit: 0, countdown: null, version: 0,
+      clockStart: Date.now(), clockEnd: Date.now(), watching: false, shake: 0, fall: null, hit: 0, countdown: null, version: 0,
     };
 }
