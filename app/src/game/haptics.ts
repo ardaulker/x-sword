@@ -1,7 +1,9 @@
-// Feedback: vibration + sound. Every event has a short vibration and a synthesized sound (no audio files).
+// Feedback: vibration + sound. Every event has a short vibration and a sound: a recording from the chosen sound theme, or the
+// synthesized version below.
 // iOS Safari doesn't support vibration; it is silently skipped there (the phone app plays it natively through the XSwordGames plugin). Sound starts on the first tap (a browser rule).
 
 import { settings } from './settings';
+import type { SoundTheme } from './settings';
 import { nativeHaptic } from './platform';
 
 // Every event has its own rhythm, recognizable even with eyes closed:
@@ -59,6 +61,8 @@ const SOUNDS: Record<string, Note[]> = {
   // The sword strokes are built from noise (see playSlash); the note lists stay empty.
   slash: [],
   slashBig: [],
+  // Two or more takes in a quick burst: one big combined strike (see strike()).
+  combo: [],
   // Match start: a tick for 3, 2, 1, then the sword leaves its scabbard (a recording, with the synthesized playUnsheath as fallback).
   unsheath: [],
   bell: [],
@@ -186,50 +190,88 @@ function playBell(ac: AudioContext, t0: number) {
 
 // Recorded sounds. A name listed here plays its file (decoded once, kept in memory); the synthesized version below is
 // the fallback while the file loads or if it cannot be loaded. Files live in app/public/sounds/ (sources: docs/third-party-licenses.md).
-// Kenney's CC0 packs (RPG Audio, Impact Sounds, Interface Sounds), made by tools/make-sounds.py; the sword draw is Arda's file.
+// Kenney's CC0 packs (RPG Audio, Impact Sounds, Interface Sounds, Sci-Fi Sounds), made by tools/make-sounds.py; the sword draw is Arda's file.
+// Sound themes (settings.soundTheme): the classic files sit in sounds/, a theme's own files in sounds/<theme>/ and override them;
+// THEME_SYNTH sounds are synthesized in that theme (the energy blade hums, no recording does that).
 const RECORDED: SoundName[] = ['select', 'move', 'take', 'slash', 'slashBig', 'points', 'myTurn', 'turn', 'mode', 'collapse', 'out',
   'bonusGain', 'bonusUse', 'useStep', 'useDouble', 'useSwap', 'armor', 'win', 'lose', 'tick', 'count', 'bell'];
-const SAMPLE_FILES: Partial<Record<SoundName, string>> = {
+const THEME_RECORDED: Record<SoundTheme, SoundName[]> = {
+  classic: [],
+  future: ['take', 'slash', 'slashBig', 'combo', 'collapse', 'out', 'armor', 'useStep', 'useDouble', 'useSwap', 'unsheath'],
+  energy: ['take', 'collapse', 'armor', 'useSwap'],
+};
+const THEME_SYNTH: Record<SoundTheme, SoundName[]> = { classic: [], future: [], energy: ['slash', 'slashBig', 'combo', 'unsheath'] };
+const CLASSIC_FILES: Partial<Record<SoundName, string>> = {
   unsheath: 'sounds/sword-draw.m4a',
   ...Object.fromEntries(RECORDED.map(n => [n, `sounds/${n}.m4a`])),
 };
+const fileOf = (name: SoundName, theme: SoundTheme) =>
+  THEME_RECORDED[theme].includes(name) ? `sounds/${theme}/${name}.m4a` : CLASSIC_FILES[name];
 // Loudness per sound (the recordings are mastered at different levels; frequent ones stay quiet).
 const SAMPLE_GAIN: Partial<Record<SoundName, number>> = { select: 0.5, move: 0.55, turn: 0.35, tick: 0.5, myTurn: 0.6, points: 0.6, take: 0.6, slash: 0.8, slashBig: 1, bell: 0.8 };
-export const SOUND_NAMES = Object.keys(SAMPLE_FILES) as SoundName[];
+// Sounds that repeat a lot get a slightly different pitch each time, so a burst of them doesn't sound like a machine gun.
+const VARY: SoundName[] = ['move', 'take', 'slash', 'slashBig', 'select', 'turn'];
+// At most this many copies of one sound at once: a fast run of takes stays a run of strokes, not a wall of noise.
+const MAX_VOICES = 2;
+export const SOUND_NAMES = Object.keys(SOUNDS) as SoundName[];
 const samples = new Map<string, AudioBuffer | 'loading' | 'failed'>();
+const voices = new Map<SoundName, number>();
 
 function loadSamples(ac: AudioContext) {
-  for (const [name, file] of Object.entries(SAMPLE_FILES)) {
-    if (samples.has(name)) continue;
-    samples.set(name, 'loading');
+  const theme = settings.soundTheme;
+  for (const name of SOUND_NAMES) {
+    const file = fileOf(name, theme);
+    if (!file || samples.has(file)) continue;
+    samples.set(file, 'loading');
     fetch(import.meta.env.BASE_URL + file)
       // The iPhone shell (capacitor://) answers local files with status 0, not 200: that is a success there too.
       .then(r => (r.ok || r.status === 0 ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
       .then(data => ac.decodeAudioData(data))
-      .then(buf => samples.set(name, buf))
-      .catch(e => { samples.set(name, 'failed'); console.warn(`X Sword: sound ${file} could not load:`, e instanceof Error ? e.message : e); });
+      .then(buf => samples.set(file, buf))
+      .catch(e => { samples.set(file, 'failed'); console.warn(`X Sword: sound ${file} could not load:`, e instanceof Error ? e.message : e); });
   }
 }
 
-function playSample(ac: AudioContext, buf: AudioBuffer, t0: number, gain: number) {
+// Called when the player picks another sound theme: its files start loading at once.
+export function preloadSounds() {
+  const ac = ctx;
+  if (ac) loadSamples(ac);
+}
+
+function playSample(ac: AudioContext, buf: AudioBuffer, t0: number, gain: number, rate = 1) {
   const src = ac.createBufferSource(), g = ac.createGain();
   src.buffer = buf;
+  src.playbackRate.value = rate;
   g.gain.value = gain * settings.volume;
   src.connect(g).connect(ac.destination);
   src.start(t0);
+  return src;
 }
 
-export function sound(name: SoundName, opts?: { synth?: boolean }) {
+export function sound(name: SoundName, opts?: { synth?: boolean; theme?: SoundTheme }) {
   if (!settings.sound || settings.volume <= 0) return;
   const ac = audio();
   if (!ac || ac.state !== 'running') return;
+  const busy = voices.get(name) ?? 0;
+  if (busy >= MAX_VOICES) return;
+  voices.set(name, busy + 1);
+  setTimeout(() => voices.set(name, Math.max(0, (voices.get(name) ?? 1) - 1)), 220);
   const t0 = ac.currentTime;
-  if (SAMPLE_FILES[name] && !opts?.synth) {
-    const buf = samples.get(name);
-    if (buf && buf !== 'loading' && buf !== 'failed') { playSample(ac, buf, t0, SAMPLE_GAIN[name] ?? 0.9); return; }
+  const theme = opts?.theme ?? settings.soundTheme;
+  if (THEME_SYNTH[theme].includes(name) && !opts?.synth) { playThemeSynth(ac, t0, name, theme); return; }
+  const file = fileOf(name, theme);
+  if (file && !opts?.synth) {
+    const buf = samples.get(file);
+    if (buf && buf !== 'loading' && buf !== 'failed') {
+      const rate = VARY.includes(name) ? 0.95 + Math.random() * 0.1 : 1;
+      playSample(ac, buf, t0, SAMPLE_GAIN[name] ?? 0.9, rate);
+      if (name === 'combo') playBoom(ac, t0, 0.5);
+      return;
+    }
     loadSamples(ac);
   }
   if (name === 'slash' || name === 'slashBig') playSlash(ac, t0, name === 'slashBig');
+  if (name === 'combo') playCombo(ac, t0, theme);
   if (name === 'unsheath') playUnsheath(ac, t0);
   if (name === 'bell') playBell(ac, t0);
   for (const [freq, at, dur, type = 'sine', gain = 0.1] of SOUNDS[name]) {
@@ -245,6 +287,126 @@ export function sound(name: SoundName, opts?: { synth?: boolean }) {
   }
 }
 
+// A take's sword stroke. Takes that land within STRIKE_WINDOW of each other (a Double move that takes two, the Twin taking
+// right after you, fast bots) are one burst: the first plays its stroke, the second adds one big combined strike, and the
+// rest of the burst stays quiet so the strokes don't pile up into noise (Arda, 20 October 2026).
+const STRIKE_WINDOW = 450;
+let strikeAt = -Infinity, strikeRun = 0;
+export function strike(big: boolean) {
+  const now = performance.now();
+  strikeRun = now - strikeAt < STRIKE_WINDOW ? strikeRun + 1 : 1;
+  strikeAt = now;
+  if (strikeRun === 1) sound(big ? 'slashBig' : 'slash');
+  else if (strikeRun === 2) sound('combo');
+}
+
+// ------------------------------------------------------------ synthesized theme sounds
+
+const noiseSource = (ac: AudioContext, secs: number) => {
+  const buf = ac.createBuffer(1, Math.floor(ac.sampleRate * secs), ac.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  return src;
+};
+
+// A low boom under a big strike: a sine that drops in pitch, and a short thud of low noise.
+function playBoom(ac: AudioContext, t0: number, level: number) {
+  const vol = level * settings.volume;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(120, t0); o.frequency.exponentialRampToValueAtTime(34, t0 + 0.5);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.7 * vol, t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.6);
+  o.connect(g).connect(ac.destination); o.start(t0); o.stop(t0 + 0.65);
+  const n = noiseSource(ac, 0.3), lp = ac.createBiquadFilter(), ng = ac.createGain();
+  lp.type = 'lowpass'; lp.frequency.value = 300;
+  ng.gain.setValueAtTime(0.0001, t0); ng.gain.exponentialRampToValueAtTime(0.5 * vol, t0 + 0.008); ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.28);
+  n.connect(lp).connect(ng).connect(ac.destination); n.start(t0); n.stop(t0 + 0.3);
+}
+
+// The combined strike when no recording is there: two blades crossing (two strokes a hair apart), a long ring and the boom.
+function playCombo(ac: AudioContext, t0: number, theme: SoundTheme) {
+  if (theme === 'energy') { playSaber(ac, t0, true); playSaber(ac, t0 + 0.07, true); playCrackle(ac, t0 + 0.12, 0.45); playBoom(ac, t0 + 0.1, 0.6); return; }
+  const big = samples.get(fileOf('slashBig', theme) ?? '');
+  if (big && big !== 'loading' && big !== 'failed') {
+    playSample(ac, big, t0, 1, 0.88);
+    playSample(ac, big, t0 + 0.06, 0.8, 1.12);
+  } else {
+    playSlash(ac, t0, true);
+    playSlash(ac, t0 + 0.06, true);
+  }
+  for (const [f, gain, ring] of [[1320, 0.06, 1.4], [1980, 0.045, 1.1], [3170, 0.03, 0.7]] as const) {
+    const o = ac.createOscillator(), og = ac.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    og.gain.setValueAtTime(0.0001, t0 + 0.12);
+    og.gain.exponentialRampToValueAtTime(gain * settings.volume, t0 + 0.135);
+    og.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.12 + ring);
+    o.connect(og).connect(ac.destination); o.start(t0 + 0.12); o.stop(t0 + 0.17 + ring);
+  }
+  playBoom(ac, t0 + 0.1, 0.55);
+}
+
+// An energy blade swung through the air: a buzzing hum (two detuned sawtooth waves) that bends up and back down as the blade
+// passes (a Doppler swoop), with a hiss of air on top. Not any film's sound: just a hum that moves.
+function playSaber(ac: AudioContext, t0: number, big: boolean) {
+  const dur = big ? 0.5 : 0.36, vol = (big ? 0.26 : 0.18) * settings.volume;
+  const lp = ac.createBiquadFilter(), g = ac.createGain();
+  lp.type = 'lowpass'; lp.Q.value = 4;
+  lp.frequency.setValueAtTime(700, t0); lp.frequency.exponentialRampToValueAtTime(2600, t0 + dur * 0.45); lp.frequency.exponentialRampToValueAtTime(600, t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + dur * 0.4); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  lp.connect(g).connect(ac.destination);
+  for (const base of [92, 93.7, 184.5]) {
+    const o = ac.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(base, t0); o.frequency.exponentialRampToValueAtTime(base * 1.35, t0 + dur * 0.45); o.frequency.exponentialRampToValueAtTime(base * 0.85, t0 + dur);
+    o.connect(lp); o.start(t0); o.stop(t0 + dur + 0.02);
+  }
+  const air = noiseSource(ac, dur), bp = ac.createBiquadFilter(), ag = ac.createGain();
+  bp.type = 'bandpass'; bp.Q.value = 2;
+  bp.frequency.setValueAtTime(900, t0); bp.frequency.exponentialRampToValueAtTime(3800, t0 + dur * 0.45); bp.frequency.exponentialRampToValueAtTime(1200, t0 + dur);
+  ag.gain.setValueAtTime(0.0001, t0); ag.gain.exponentialRampToValueAtTime(vol * 0.5, t0 + dur * 0.45); ag.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  air.connect(bp).connect(ag).connect(ac.destination); air.start(t0); air.stop(t0 + dur);
+  if (big) playCrackle(ac, t0 + dur * 0.45, 0.25);
+}
+
+// Electric crackle: a handful of tiny bright noise clicks at random moments.
+const playCrackle = (ac: AudioContext, t0: number, secs: number) => playCrackleTo(ac, ac.destination, t0, secs, 0.35 * settings.volume);
+function playCrackleTo(ac: AudioContext, out: AudioNode, t0: number, secs: number, level = 0.3) {
+  const hp = ac.createBiquadFilter(), g = ac.createGain();
+  hp.type = 'highpass'; hp.frequency.value = 2500;
+  g.gain.value = level;
+  hp.connect(g).connect(out);
+  const count = Math.round(secs * 40);
+  for (let i = 0; i < count; i++) {
+    const at = t0 + Math.random() * secs, n = noiseSource(ac, 0.012), cg = ac.createGain();
+    cg.gain.setValueAtTime(Math.random() * 0.8 + 0.2, at); cg.gain.exponentialRampToValueAtTime(0.0001, at + 0.01);
+    n.connect(cg).connect(hp); n.start(at); n.stop(at + 0.012);
+  }
+}
+
+// The blade switches on: the hum rises from a growl to its pitch with a flash of crackle, then settles and fades.
+function playIgnite(ac: AudioContext, t0: number) {
+  const vol = 0.24 * settings.volume;
+  const lp = ac.createBiquadFilter(), g = ac.createGain();
+  lp.type = 'lowpass'; lp.frequency.setValueAtTime(300, t0); lp.frequency.exponentialRampToValueAtTime(2200, t0 + 0.35); lp.frequency.exponentialRampToValueAtTime(900, t0 + 1.4);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + 0.3); g.gain.setValueAtTime(vol, t0 + 0.6); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.6);
+  lp.connect(g).connect(ac.destination);
+  for (const base of [92, 93.7, 184.5]) {
+    const o = ac.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(base * 0.4, t0); o.frequency.exponentialRampToValueAtTime(base * 1.1, t0 + 0.32); o.frequency.exponentialRampToValueAtTime(base, t0 + 0.6);
+    o.connect(lp); o.start(t0); o.stop(t0 + 1.65);
+  }
+  playCrackle(ac, t0 + 0.2, 0.3);
+}
+
+function playThemeSynth(ac: AudioContext, t0: number, name: SoundName, theme: SoundTheme) {
+  if (name === 'slash' || name === 'slashBig') playSaber(ac, t0, name === 'slashBig');
+  else if (name === 'combo') playCombo(ac, t0, theme);
+  else if (name === 'unsheath') playIgnite(ac, t0);
+}
+
 // One event: sound + vibration together.
 export function feel(name: SoundName, pattern?: number | readonly number[]) {
   sound(name);
@@ -252,8 +414,9 @@ export function feel(name: SoundName, pattern?: number | readonly number[]) {
 }
 
 // ------------------------------------------------------------ tension music
-// Plays in a round where the arena will shrink and stops when the ring collapses or the match ends: a low hum,
-// a heavy heartbeat and now and then a high, dissonant ring. All synthesized.
+// Plays in a round where the arena will shrink and stops when the ring collapses or the match ends. All synthesized, one
+// piece per sound theme: Classic a low hum, a heavy heartbeat and now and then a high, dissonant ring; Futuristic a pulsing
+// synth arpeggio over a kick; Energy blade a deep buzzing drone that swells, with a slow pulse and electric crackle.
 
 let tension: { master: GainNode; stops: (() => void)[]; timer: number } | null = null;
 
@@ -266,7 +429,17 @@ export function startTension() {
   master.gain.exponentialRampToValueAtTime(settings.volume, ac.currentTime + 0.8);
   master.connect(ac.destination);
   const stops: (() => void)[] = [];
+  const theme = settings.soundTheme;
+  const tick = theme === 'future' ? futureMusic(ac, master, stops) : theme === 'energy' ? energyMusic(ac, master, stops) : classicMusic(ac, master, stops);
+  const timer = window.setInterval(() => { if (!settings.music || settings.volume <= 0) stopTension(); else tick(); }, 120);
+  tick();
+  tension = { master, stops, timer };
+}
 
+// Each piece sets up its steady layers and returns a scheduler that queues the next beats ahead of time.
+type Music = (ac: AudioContext, master: GainNode, stops: (() => void)[]) => () => void;
+
+const classicMusic: Music = (ac, master, stops) => {
   // Hum: two slightly detuned sawtooth waves through a low-pass filter.
   const lp = ac.createBiquadFilter();
   lp.type = 'lowpass'; lp.frequency.value = 180;
@@ -310,10 +483,67 @@ export function startTension() {
       beat++; next += BEAT;
     }
   };
-  const timer = window.setInterval(() => { if (!settings.music || settings.volume <= 0) stopTension(); else tick(); }, 120);
-  tick();
-  tension = { master, stops, timer };
-}
+  return tick;
+};
+
+const kick = (ac: AudioContext, out: AudioNode, at: number, vol: number) => {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(130, at); o.frequency.exponentialRampToValueAtTime(42, at + 0.12);
+  g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.22);
+  o.connect(g).connect(out); o.start(at); o.stop(at + 0.24);
+};
+
+const futureMusic: Music = (ac, master) => {
+  // A minor arpeggio in sixteenths through a filter that slowly opens, a kick on every beat; the line climbs a step every bar.
+  const ARP = [110, 130.8, 164.8, 220, 164.8, 130.8, 110, 98];
+  const BARS = [1, 1, 1.0595, 0.9439];
+  const STEP = 0.125;
+  let i = 0, next = ac.currentTime + 0.1;
+  return () => {
+    while (next < ac.currentTime + 0.3) {
+      const bar = Math.floor(i / 16) % BARS.length;
+      const f = ARP[i % ARP.length] * BARS[bar];
+      const o = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain();
+      o.type = 'square'; o.frequency.value = f;
+      lp.type = 'lowpass'; lp.Q.value = 6; lp.frequency.value = 600 + 900 * (0.5 + 0.5 * Math.sin(i / 20));
+      g.gain.setValueAtTime(0.0001, next); g.gain.exponentialRampToValueAtTime(0.05, next + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, next + STEP * 0.9);
+      o.connect(lp).connect(g).connect(master); o.start(next); o.stop(next + STEP);
+      if (i % 4 === 0) kick(ac, master, next, 0.32);
+      i++; next += STEP;
+    }
+  };
+};
+
+const energyMusic: Music = (ac, master, stops) => {
+  // The drone: the blade's buzz an octave down, swelling slowly, plus a high whine that wavers.
+  const lp = ac.createBiquadFilter(), hum = ac.createGain();
+  lp.type = 'lowpass'; lp.frequency.value = 420; lp.Q.value = 3;
+  hum.gain.value = 0.06;
+  lp.connect(hum).connect(master);
+  for (const f of [46, 46.6, 92.3]) {
+    const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f;
+    o.connect(lp); o.start(); stops.push(() => o.stop());
+  }
+  const lfo = ac.createOscillator(), lfoG = ac.createGain();
+  lfo.frequency.value = 0.25; lfoG.gain.value = 220;
+  lfo.connect(lfoG).connect(lp.frequency); lfo.start(); stops.push(() => lfo.stop());
+  const whine = ac.createOscillator(), wg = ac.createGain(), vib = ac.createOscillator(), vibG = ac.createGain();
+  whine.type = 'sine'; whine.frequency.value = 1480; wg.gain.value = 0.008;
+  vib.frequency.value = 5.5; vibG.gain.value = 9;
+  vib.connect(vibG).connect(whine.frequency);
+  whine.connect(wg).connect(master); whine.start(); vib.start();
+  stops.push(() => whine.stop(), () => vib.stop());
+  let beat = 0, next = ac.currentTime + 0.1;
+  const BEAT = 0.7;
+  return () => {
+    while (next < ac.currentTime + 0.3) {
+      kick(ac, master, next, 0.26);
+      if (beat % 3 === 2) playCrackleTo(ac, master, next + 0.35, 0.18);
+      beat++; next += BEAT;
+    }
+  };
+};
 
 export function stopTension() {
   if (!tension) return;

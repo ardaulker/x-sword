@@ -651,5 +651,9 @@ const dict: Record<string, string> = {
   'Game options': 'Options de jeu',
   'Needs 4 players': '4 joueurs requis',
   '**Arena shrink** (new match → Arena settings): **Classic** is one ring every 6 rounds. **Speeding up**: rings fall after rounds 3, 5, 6, 7 and so on. **Big drops**: 3 rings at once in round 6, 2 in round 12, then 1 every 6 rounds.': '**Rétrécissement de l\'arène** (nouvelle partie → Réglages de l\'arène) : **Classique**, un anneau tous les 6 tours. **Accéléré** : les anneaux tombent après les tours 3, 5, 6, 7 et ainsi de suite. **Grandes chutes** : 3 anneaux d\'un coup au tour 6, 2 au tour 12, puis 1 tous les 6 tours.',
+  'Sound theme': 'Thème sonore',
+  'Futuristic': 'Futuriste',
+  'Energy blade': 'Lame d\'énergie',
+  'Sword strokes, takes and the shrink music change with the theme.': 'Les coups d\'épée, les prises et la musique du rétrécissement changent avec le thème.',
 };
 export default dict;

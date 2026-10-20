@@ -1,7 +1,7 @@
 // Short-lived visuals of a match: move trails, take bursts, sword strokes, floating scores, toasts and the banner queue.
 // The controller owns the view; an `Effects` reads and writes it through a small host.
 
-import { sound } from './haptics';
+import { strike } from './haptics';
 import type { Banner, Spot, Toast, View } from './controllerTypes';
 
 const BANNER_MS = 1800;
@@ -36,7 +36,7 @@ export class Effects {
     const key = this.host.key();
     const angle = Math.round(Math.atan2(Math.sign(to.r - from.r), Math.sign(to.c - from.c)) * 180 / Math.PI);
     this.host.view = { ...this.host.view, slashes: [...this.host.view.slashes, { key, r: to.r, c: to.c, angle, color, big }] };
-    sound(big ? 'slashBig' : 'slash');
+    strike(big);
     this.host.later(big ? 900 : 640, () => this.host.emit({ slashes: this.host.view.slashes.filter(s => s.key !== key) }));
   }
 

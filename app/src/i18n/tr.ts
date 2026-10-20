@@ -651,5 +651,9 @@ const dict: Record<string, string> = {
   'Game options': 'Oyun seçenekleri',
   'Needs 4 players': '4 oyuncu gerekir',
   '**Arena shrink** (new match → Arena settings): **Classic** is one ring every 6 rounds. **Speeding up**: rings fall after rounds 3, 5, 6, 7 and so on. **Big drops**: 3 rings at once in round 6, 2 in round 12, then 1 every 6 rounds.': '**Arena daralması** (yeni maç → Arena ayarları): **Klasik**, her 6 turda bir halka. **Hızlanan**: halkalar 3, 5, 6, 7. turların sonunda düşer ve böyle devam eder. **Toplu**: 6. turda 3 halka birden, 12. turda 2 halka, sonra her 6 turda 1 halka.',
+  'Sound theme': 'Ses teması',
+  'Futuristic': 'Fütüristik',
+  'Energy blade': 'Enerji kılıcı',
+  'Sword strokes, takes and the shrink music change with the theme.': 'Kılıç darbeleri, alma sesleri ve daralma müziği temaya göre değişir.',
 };
 export default dict;

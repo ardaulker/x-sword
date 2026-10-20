@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '../components/bits';
-import { feel } from '../game/haptics';
-import { paletteOf, saveSettings, settings } from '../game/settings';
+import { feel, preloadSounds, sound } from '../game/haptics';
+import { SOUND_THEMES, paletteOf, saveSettings, settings } from '../game/settings';
 import { PieceGlyph } from '../components/PieceGlyph';
 import type { Settings } from '../game/settings';
 import './RulesScreen.css';
@@ -14,6 +14,8 @@ const speeds = (): [Settings['speed'], string, string][] => [
   ['normal', tr('Normal'), tr('Slide 220 ms · bot turn ~1.2 s')],
   ['fast', tr('Fast'), tr('Slide 140 ms · bot turn ~0.8 s')],
 ];
+
+const soundThemeName = (t: Settings['soundTheme']) => (t === 'future' ? tr('Futuristic') : t === 'energy' ? tr('Energy blade') : tr('Classic'));
 
 function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -56,6 +58,17 @@ export function SettingsScreen({ onBack, onRules, onLegal, inGame = false }: { o
           onChange={v => { update({ sound: v }); if (v) feel('select'); }} />
         <Toggle label={tr('Music')} sub={tr('Tense music that plays in rounds where the arena will shrink.')} on={s.music}
           onChange={v => update({ music: v })} />
+        <div className="rule set-col">
+          <div className="rule-text"><h3>{tr('Sound theme')}</h3><p>{tr('Sword strokes, takes and the shrink music change with the theme.')}</p></div>
+          <div className="seg" role="radiogroup" aria-label={tr('Sound theme')}>
+            {SOUND_THEMES.map(t => (
+              <button key={t} type="button" role="radio" aria-checked={s.soundTheme === t} className={s.soundTheme === t ? 'is-on' : ''}
+                onClick={() => { update({ soundTheme: t }); preloadSounds(); setTimeout(() => sound('slashBig'), 250); }}>
+                <b>{soundThemeName(t)}</b>
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="rule set-col">
           <div className="rule-text"><h3>{tr('Volume')}</h3></div>
           <input type="range" className="vol" min={0} max={100} value={Math.round(s.volume * 100)} aria-label={tr('Volume')}
