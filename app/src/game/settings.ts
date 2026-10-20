@@ -23,9 +23,10 @@ export interface Settings {
   skin: string;         // animated effect shown on your star (game/themes.ts → SKINS)
 }
 
-// Sound themes (Arda, 20 October 2026): Classic (steel and wood, the default), Futuristic, Energy blade.
-export type SoundTheme = 'classic' | 'future' | 'energy';
-export const SOUND_THEMES: SoundTheme[] = ['classic', 'future', 'energy'];
+// Sound themes (Arda, 20 October 2026): Classic (steel and wood, the default) and Laser sword (id 'energy'). A Futuristic theme
+// was tried the same day and dropped (Arda didn't like it); a saved 'future' falls back to Classic.
+export type SoundTheme = 'classic' | 'energy';
+export const SOUND_THEMES: SoundTheme[] = ['classic', 'energy'];
 
 const NORMAL_COLORS = ['#3BFF8F', '#FFC53D', '#FF5CC0', '#B392FF'];
 const CB_COLORS = ['#56E0A6', '#F5D43B', '#FF8A5C', '#8FB8FF'];

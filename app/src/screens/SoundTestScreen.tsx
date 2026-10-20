@@ -34,7 +34,7 @@ export function SoundTestScreen({ onBack }: { onBack: () => void }) {
             </div>
           </div>
         ))}
-        <p className="rules-foot">Recorded sounds: Kenney.nl (CC0). Map them in tools/make-sounds.py (a theme's files go to sounds/&lt;theme&gt;/).</p>
+        <p className="rules-foot">Recorded sounds: Kenney.nl (CC0). Map them in tools/make-sounds.py (a theme's files go to sounds/&lt;theme&gt;/, the laser sword's to sounds/energy/).</p>
       </div>
     </div>
   );

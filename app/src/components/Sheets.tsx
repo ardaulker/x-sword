@@ -25,7 +25,8 @@ import { puzzleNo, puzzleTitle } from '../game/puzzleText';
 import { tr } from '../i18n';
 
 // A bottom sheet; the background dims and tapping outside closes it.
-export function SheetFrame({ label, onClose, children, tall = false }: { label: string; onClose: () => void; children: ReactNode; tall?: boolean }) {
+// closeX: a visible close button at the top right (the result card; Arda, 20 Oct 2026). Every sheet also closes on Escape and a tap outside.
+export function SheetFrame({ label, onClose, children, tall = false, closeX = false }: { label: string; onClose: () => void; children: ReactNode; tall?: boolean; closeX?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     ref.current?.focus();
@@ -37,6 +38,7 @@ export function SheetFrame({ label, onClose, children, tall = false }: { label: 
     <div className="sheet-scrim" onClick={onClose}>
       <div ref={ref} className={`sheet${tall ? ' sheet-tall' : ''}`} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} onClick={e => e.stopPropagation()}>
         <div className="sheet-handle" aria-hidden="true" />
+        {closeX && <button type="button" className="round-btn sheet-x" aria-label={tr('Close')} onClick={onClose}><Icon d="M6 6 L18 18 M18 6 L6 18" size={18} stroke={2.4} /></button>}
         {children}
       </div>
     </div>
@@ -452,8 +454,9 @@ function Trophy({ fx, label }: { fx: string; label?: string }) {
 }
 
 // End-of-match summary: title, your stats, the ranking.
-export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle }: {
+export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle, onHome }: {
   ctl: GameController; time: string; onAgain?: () => void; againLabel: string; onClose: () => void;
+  onHome?: () => void; // a "Main menu" link under the buttons (not in multiplayer, which has "Back to lobby")
   onPuzzle?: (id: number | null) => void; // puzzle over: the next puzzle (id) or the list (null)
 }) {
   const st = ctl.state;
@@ -505,7 +508,7 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
     const at = PUZZLES.findIndex(p => p.id === id);
     const next = PUZZLES[at + 1], prev = PUZZLES[at - 1];
     return (
-      <SheetFrame label={tr('Puzzle')} onClose={onClose}>
+      <SheetFrame label={tr('Puzzle')} onClose={onClose} closeX>
         <div className="res-head">
           <div className="res-daily">{def?.tutorial ? tr('Tutorial {n}', { n: no }) : tr('Puzzle {n}', { n: no })}{def ? ` · ${puzzleTitle(def.title)}` : ''}</div>
           <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{won ? tr('Solved!') : tr('Not solved')}</div>
@@ -527,14 +530,14 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
     );
   }
   return (
-    <SheetFrame label={tr('Match result')} onClose={onClose}>
+    <SheetFrame label={tr('Match result')} onClose={onClose} closeX>
       <div className="res-head">
         {daily && <div className="res-daily">{tr('Daily {date}', { date: daily })}</div>}
         {won && !pending && <Trophy fx={daily ? 'bolt' : 'gold'} />}
         <div className="res-title" style={{ color: won ? PLAYER_COLORS[ME] : undefined }}>{title}</div>
         <div className="res-sub">{pending ? tr('No rival stars left. You can keep fighting the bots') : st.solo ? (won ? tr('No bots left in the arena') : tr('Better luck next time')) : tr('You finished #{n}', { n: order.indexOf(ME) + 1 })} · {time}</div>
       </div>
-      {why && <div className="res-why">{why}</div>}
+      {why && !won && <div className="res-why">{why}</div>}
       {unlocked}
       {achievements}
       <div className="res-stats">
@@ -584,6 +587,7 @@ export function ResultsSheet({ ctl, time, onAgain, againLabel, onClose, onPuzzle
           {linked ? tr('Link copied') : tr('Share the match replay')}
         </button>
       )}
+      {!pending && onHome && <button type="button" className="link-btn res-link" onClick={onHome}>{tr('Main menu')}</button>}
     </SheetFrame>
   );
 }

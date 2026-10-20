@@ -191,18 +191,16 @@ function playBell(ac: AudioContext, t0: number) {
 // Recorded sounds. A name listed here plays its file (decoded once, kept in memory); the synthesized version below is
 // the fallback while the file loads or if it cannot be loaded. Files live in app/public/sounds/ (sources: docs/third-party-licenses.md).
 // Kenney's CC0 packs (tools/make-sounds.py) and cuts from the Sonniss GDC 2026 bundle (tools/cut-sounds.py: the classic wood,
-// steel and bell, the futuristic interface sounds, the energy arcs); the sword draw is Arda's file.
+// steel and bell, the laser sword's arcs); the sword draw is Arda's file.
 // Sound themes (settings.soundTheme): the classic files sit in sounds/, a theme's own files in sounds/<theme>/ and override them;
-// THEME_SYNTH sounds are synthesized in that theme (the energy blade hums, no recording does that).
+// THEME_SYNTH sounds are synthesized in that theme (the laser sword hums, no recording does that).
 const RECORDED: SoundName[] = ['select', 'move', 'take', 'slash', 'slashBig', 'combo', 'points', 'myTurn', 'turn', 'mode', 'collapse', 'out',
   'bonusGain', 'bonusUse', 'useStep', 'useDouble', 'useSwap', 'armor', 'win', 'lose', 'tick', 'count', 'bell'];
 const THEME_RECORDED: Record<SoundTheme, SoundName[]> = {
   classic: [],
-  future: ['select', 'move', 'take', 'slash', 'slashBig', 'combo', 'points', 'myTurn', 'mode', 'collapse', 'out', 'bonusGain', 'bonusUse',
-    'armor', 'useStep', 'useDouble', 'useSwap', 'unsheath', 'win', 'lose'],
   energy: ['take', 'collapse', 'armor', 'useSwap'],
 };
-const THEME_SYNTH: Record<SoundTheme, SoundName[]> = { classic: [], future: [], energy: ['slash', 'slashBig', 'combo', 'unsheath'] };
+const THEME_SYNTH: Record<SoundTheme, SoundName[]> = { classic: [], energy: ['slash', 'slashBig', 'combo', 'unsheath'] };
 const CLASSIC_FILES: Partial<Record<SoundName, string>> = {
   unsheath: 'sounds/sword-draw.m4a',
   ...Object.fromEntries(RECORDED.map(n => [n, `sounds/${n}.m4a`])),
@@ -349,7 +347,7 @@ function playCombo(ac: AudioContext, t0: number, theme: SoundTheme) {
   playBoom(ac, t0 + 0.1, 0.55);
 }
 
-// An energy blade swung through the air: a buzzing hum (two detuned sawtooth waves) that bends up and back down as the blade
+// A laser sword swung through the air: a buzzing hum (two detuned sawtooth waves) that bends up and back down as the blade
 // passes (a Doppler swoop), with a hiss of air on top. Not any film's sound: just a hum that moves.
 function playSaber(ac: AudioContext, t0: number, big: boolean) {
   const dur = big ? 0.5 : 0.36, vol = (big ? 0.26 : 0.18) * settings.volume;
@@ -417,8 +415,8 @@ export function feel(name: SoundName, pattern?: number | readonly number[]) {
 
 // ------------------------------------------------------------ tension music
 // Plays in a round where the arena will shrink and stops when the ring collapses or the match ends. All synthesized, one
-// piece per sound theme: Classic a low hum, a heavy heartbeat and now and then a high, dissonant ring; Futuristic a pulsing
-// synth arpeggio over a kick; Energy blade a deep buzzing drone that swells, with a slow pulse and electric crackle.
+// piece per sound theme: Classic a low hum, a heavy heartbeat and now and then a high, dissonant ring; Laser sword a deep
+// buzzing drone that swells, with a slow pulse and electric crackle.
 
 let tension: { master: GainNode; stops: (() => void)[]; timer: number } | null = null;
 
@@ -432,7 +430,7 @@ export function startTension() {
   master.connect(ac.destination);
   const stops: (() => void)[] = [];
   const theme = settings.soundTheme;
-  const tick = theme === 'future' ? futureMusic(ac, master, stops) : theme === 'energy' ? energyMusic(ac, master, stops) : classicMusic(ac, master, stops);
+  const tick = theme === 'energy' ? energyMusic(ac, master, stops) : classicMusic(ac, master, stops);
   const timer = window.setInterval(() => { if (!settings.music || settings.volume <= 0) stopTension(); else tick(); }, 120);
   tick();
   tension = { master, stops, timer };
@@ -494,27 +492,6 @@ const kick = (ac: AudioContext, out: AudioNode, at: number, vol: number) => {
   o.frequency.setValueAtTime(130, at); o.frequency.exponentialRampToValueAtTime(42, at + 0.12);
   g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.22);
   o.connect(g).connect(out); o.start(at); o.stop(at + 0.24);
-};
-
-const futureMusic: Music = (ac, master) => {
-  // A minor arpeggio in sixteenths through a filter that slowly opens, a kick on every beat; the line climbs a step every bar.
-  const ARP = [110, 130.8, 164.8, 220, 164.8, 130.8, 110, 98];
-  const BARS = [1, 1, 1.0595, 0.9439];
-  const STEP = 0.125;
-  let i = 0, next = ac.currentTime + 0.1;
-  return () => {
-    while (next < ac.currentTime + 0.3) {
-      const bar = Math.floor(i / 16) % BARS.length;
-      const f = ARP[i % ARP.length] * BARS[bar];
-      const o = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain();
-      o.type = 'square'; o.frequency.value = f;
-      lp.type = 'lowpass'; lp.Q.value = 6; lp.frequency.value = 600 + 900 * (0.5 + 0.5 * Math.sin(i / 20));
-      g.gain.setValueAtTime(0.0001, next); g.gain.exponentialRampToValueAtTime(0.05, next + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, next + STEP * 0.9);
-      o.connect(lp).connect(g).connect(master); o.start(next); o.stop(next + STEP);
-      if (i % 4 === 0) kick(ac, master, next, 0.32);
-      i++; next += STEP;
-    }
-  };
 };
 
 const energyMusic: Music = (ac, master, stops) => {

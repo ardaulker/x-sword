@@ -193,6 +193,7 @@ export function GameScreen({ ctl, onNewGame, onHome, onPuzzles, net }: {
       {sheet?.type === 'results' && (
         <ResultsSheet
           ctl={ctl} time={matchTime} onClose={() => ctl.closeSheet()}
+          onHome={net ? undefined : onHome}
           onAgain={net ? net.onRematch : () => ctl.newGame()} againLabel={net ? tr('Back to lobby') : tr('Rematch')}
           onPuzzle={id => (id == null ? onPuzzles?.() : onNewGame({ ...ctl.setup, puzzle: id }))}
         />

@@ -15,7 +15,7 @@ const speeds = (): [Settings['speed'], string, string][] => [
   ['fast', tr('Fast'), tr('Slide 140 ms · bot turn ~0.8 s')],
 ];
 
-const soundThemeName = (t: Settings['soundTheme']) => (t === 'future' ? tr('Futuristic') : t === 'energy' ? tr('Energy blade') : tr('Classic'));
+const soundThemeName = (t: Settings['soundTheme']) => (t === 'energy' ? tr('Laser sword') : tr('Classic'));
 
 function Toggle({ label, sub, on, onChange }: { label: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {
   return (

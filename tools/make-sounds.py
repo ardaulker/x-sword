@@ -1,9 +1,9 @@
 """Builds app/public/sounds/**/*.m4a from Kenney's CC0 sound packs (kenney.nl: RPG Audio, Impact Sounds, Interface Sounds,
-Sci-Fi Sounds, Casino Audio).
+Sci-Fi Sounds).
 Run: python3 tools/make-sounds.py <folder with the unzipped kenney_* packs> [theme]   (macOS: uses afconvert)
 Each game event (the names in app/src/game/haptics.ts → SOUNDS) maps to one recording. Change a table to try another one.
 Events cut from the Sonniss bundle (tools/cut-sounds.py: classic select, move, take, slash, slashBig, combo, out, collapse, armor,
-bell; futuristic interface sounds and collapse; energy take and collapse) are not in these tables; run that script after this one.
+bell; energy take and collapse) are not in these tables; run that script after this one.
 The classic theme ('') writes app/public/sounds/<event>.m4a; another theme writes app/public/sounds/<theme>/<event>.m4a and
 only needs the events it changes (haptics.ts → THEME_RECORDED lists them; the rest fall back to classic)."""
 import glob, os, subprocess, sys
@@ -27,20 +27,7 @@ MAPS = {
         'tick':       'interface-sounds/tick_001',
         'count':      'impact-sounds/impactPlank_medium_000',
     },
-    # Futuristic: lasers, force fields and crunchy explosions from Kenney's Sci-Fi Sounds.
-    'future': {
-        'take':       'sci-fi-sounds/laserSmall_000',
-        'slash':      'sci-fi-sounds/laserLarge_000',
-        'slashBig':   'sci-fi-sounds/laserLarge_002',
-        'combo':      'sci-fi-sounds/explosionCrunch_000',
-        'out':        'sci-fi-sounds/explosionCrunch_002',
-        'armor':      'sci-fi-sounds/forceField_000',
-        'useStep':    'sci-fi-sounds/laserRetro_000',
-        'useDouble':  'sci-fi-sounds/laserRetro_002',
-        'useSwap':    'sci-fi-sounds/forceField_002',
-        'unsheath':   'sci-fi-sounds/forceField_001',
-    },
-    # Energy blade: the strokes, the ignition and the combo are synthesized in haptics.ts; these are the zaps around them.
+    # Laser sword (id 'energy'): the strokes, the ignition and the combo are synthesized in haptics.ts; these are the zaps around them.
     'energy': {
         'armor':      'sci-fi-sounds/forceField_003',
         'useSwap':    'sci-fi-sounds/forceField_004',

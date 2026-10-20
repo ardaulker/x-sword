@@ -574,6 +574,8 @@ S#....#.
   `Need`). Tapping a locked style opens a big animated preview card (`SettingsScreen.tsx → PeekCard`) with how to
   unlock it and the progress. If rewards are sold later, add a "purchased" source next to `need` and make `isUnlocked`
   check both; payment and accounts are Arda's clicks.
+- **Result card** (Arda, 20 Oct 2026): a close button (X) at the top right and a "Main menu" link under the buttons (not in multiplayer); the
+  "why I lost" line is hidden when you won (a winner kept playing after "Continue" and was then caught in the ring).
 - **Result rewards**: a won match shows a gold star, the daily a lightning star; a 3-star puzzle a flame star
   ("Flawless!"), 2 stars a crystal star ("Well done!"); earned stars pop in one by one.
 - **Daily streak** (`daily.ts → dailyStreak`): played days in `xsword-daily-days`; the main menu shows "N day streak".
@@ -618,10 +620,10 @@ S#....#.
 - **Sounds** (`game/haptics.ts`; since 19 October 2026 **recorded**: Kenney's CC0 packs for every event, `app/public/sounds/<event>.m4a` made by
   `tools/make-sounds.py` (edit its table to swap a sound, loudness in `SAMPLE_GAIN`), plus Arda's sword-draw file; the old synthesized sounds
   remain the fallback. The hidden page `#/sounds` plays every sound new and old side by side.
-  **Sound themes** (Arda, 20 October 2026; `settings.soundTheme`, Settings → Sound theme): **Classic** (default; Turkish Klasik), **Futuristic**
-  (Fütüristik, `sounds/future/`) and **Energy blade** (Enerji kılıcı; a synthesized humming blade, `sounds/energy/` for the zaps). Classic
-  is wood and steel from the free Sonniss GDC 2026 bundle (`tools/cut-sounds.py`, run after `tools/make-sounds.py`; Arda chose free sounds over
-  buying a pack). Never call it "lightsaber": Lucasfilm owns that trademark. A theme's file overrides the classic one (`THEME_RECORDED`, `THEME_SYNTH`); the
+  **Sound themes** (Arda, 20 October 2026; `settings.soundTheme`, Settings → Sound theme): **Classic** (default; Turkish Klasik) and **Laser
+  sword** (id `energy`; Turkish Işın kılıcı; a synthesized humming blade, `sounds/energy/` for the zaps). Never call it "lightsaber": Lucasfilm owns
+  that trademark. A Futuristic theme was tried and dropped the same day (Arda didn't like it). Classic is wood and steel from the free Sonniss
+  GDC 2026 bundle (`tools/cut-sounds.py`, run after `tools/make-sounds.py`; Arda chose free sounds over buying a pack). A theme's file overrides the classic one (`THEME_RECORDED`, `THEME_SYNTH`); the
   tension music has one synthesized piece per theme. Takes within 450 ms are one burst (`strike()`): the first plays its stroke, the second one big
   combined strike (`combo`), the rest stay quiet; at most 2 copies of a sound play at once and frequent sounds vary their pitch slightly. Licenses: `docs/third-party-licenses.md`.
   The synthesized originals, for reference: every take plays a sword stroke (`playSlash`: a noise whoosh that

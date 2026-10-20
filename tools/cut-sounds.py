@@ -21,18 +21,7 @@ CUTS = [
     ('', 'collapse', 'Trailer Booms',     'Booms_Vol2_011',                        0.25, 3.20, 1.50),
     ('', 'armor',    'HD Game Materials', 'Metal Old File Impact',                 0.00, 0.50, 0.15),
     ('', 'bell',     'Church Bells',      '04 Church Bells, Near Distance',        1.55, 4.50, 1.60),
-    # Futuristic: glassy interface sounds and a dark braam for the collapse.
-    ('future', 'select',    'Interface & Infographics', 'Interface Pop High Short',      0.00, 0.60, 0.20),
-    ('future', 'move',      'Interface & Infographics', 'Interface Percussion Snap',     0.00, 0.70, 0.25),
-    ('future', 'points',    'Interface & Infographics', 'Interface Accept Glassy Snap',  0.00, 0.40, 0.15),
-    ('future', 'myTurn',    'System & UI',              'Interface Sci-Fi Ping Down',    0.00, 0.80, 0.30),
-    ('future', 'mode',      'Ultra Transitions',        'Woosh Sweep Slide Infographics', 0.00, 0.50, 0.15),
-    ('future', 'bonusGain', 'User Interface',           'Button Arp Twinkle',            0.00, 1.80, 0.60),
-    ('future', 'bonusUse',  'Fantasy Game 2',           'Collect Scifi Futuristic',      0.00, 0.30, 0.10),
-    ('future', 'win',       'User Interface',           'Interface Plucks Happy',        0.00, 0.90, 0.30),
-    ('future', 'lose',      'System & UI',              'Interface Deny Low Fat Dark',   0.00, 0.70, 0.25),
-    ('future', 'collapse',  'Ultra Transitions',        'Transition Braam Slow Dark',    0.00, 3.00, 1.20),
-    # Energy blade: electric arcs (the blade itself is synthesized in haptics.ts).
+    # Laser sword (id 'energy'): electric arcs (the blade itself is synthesized in haptics.ts).
     ('energy', 'take',     'InMotionAudio - Arc',  'ArcDesign15',                 0.00, 1.00, 0.35),
     ('energy', 'collapse', 'Elemental Mutation',   'Impact Electric Tonal Deep',  0.00, 3.06, 1.20),
 ]

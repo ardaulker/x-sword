@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { collapseDue, nextCollapseRound, starOf } from '../../../engine/rules.js';
 import type { GameState, Mode } from '../../../engine/rules.js';
@@ -71,6 +72,28 @@ export function TopBar({ ctl, view }: { ctl: GameController; view: View }) {
 
 const modeSub = (mode: Mode) => (mode === 'STRAIGHT' ? tr('Stars move straight and take straight') : tr('Stars move diagonally and take diagonally'));
 
+// The mode word stays on one line in every language: when it doesn't fit, its font shrinks just enough (Arda, 20 Oct 2026:
+// "DIAGO-NAL" broke over two lines next to the zoom button). Measured again whenever the box changes size or the fonts load.
+function FitLabel({ text }: { text: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const fit = () => {
+      el.style.fontSize = '';
+      if (el.clientWidth > 0 && el.scrollWidth > el.clientWidth) {
+        el.style.fontSize = `${Math.floor(parseFloat(getComputedStyle(el).fontSize) * el.clientWidth / el.scrollWidth * 0.97)}px`;
+      }
+    };
+    fit();
+    document.fonts?.ready.then(fit).catch(() => {});
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(fit);
+    ro?.observe(el.parentElement ?? el);
+    return () => ro?.disconnect();
+  }, [text]);
+  return <span ref={ref} className="mode-box-label">{text}</span>;
+}
+
 // Mode indicator: the most important information in the game. STRAIGHT on ice, DIAGONAL on night with a diagonal pattern.
 export function ModeIndicator({ mode, showSub }: { mode: Mode; showSub: boolean }) {
   const next: Mode = mode === 'STRAIGHT' ? 'DIAGONAL' : 'STRAIGHT';
@@ -78,7 +101,7 @@ export function ModeIndicator({ mode, showSub }: { mode: Mode; showSub: boolean 
     <div key={mode} className={`mode-box mode-flip mode-${mode === 'STRAIGHT' ? 'straight' : 'diagonal'}${showSub ? ' has-sub' : ''}`} role="status" aria-label={tr('Mode {mode}. {sub}. Next round {next}.', { mode: modeWord(mode), sub: modeSub(mode), next: modeWord(next) })}>
       <ModeIcon mode={mode} size={34} stroke={9} />
       <div className="mode-box-text">
-        <span className="mode-box-label">{modeWord(mode)}</span>
+        <FitLabel text={modeWord(mode)} />
         {showSub && <span className="mode-box-sub">{modeSub(mode)}</span>}
       </div>
       <div className="mode-box-next">
@@ -105,7 +128,7 @@ export function CompactBar({ ctl, view, extra }: { ctl: GameController; view: Vi
       <MenuButton ctl={ctl} size={40} />
       <div key={mode} className={`mode-box mode-box-compact mode-flip mode-${mode === 'STRAIGHT' ? 'straight' : 'diagonal'}`} role="status" aria-label={tr('Mode {mode}', { mode: modeWord(mode) })}>
         <ModeIcon mode={mode} size={24} stroke={10} />
-        <span className="mode-box-label">{modeWord(mode)}</span>
+        <FitLabel text={modeWord(mode)} />
         <div className="compact-info">
           <span>{turText(st)} · <span role="timer" aria-label={tr('Match time {time}', { time })}>{time}</span></span>
           <span className={ring.warn ? 'is-warn' : undefined}>{ring.long}</span>
