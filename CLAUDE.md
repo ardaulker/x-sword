@@ -619,8 +619,9 @@ S#....#.
   `tools/make-sounds.py` (edit its table to swap a sound, loudness in `SAMPLE_GAIN`), plus Arda's sword-draw file; the old synthesized sounds
   remain the fallback. The hidden page `#/sounds` plays every sound new and old side by side.
   **Sound themes** (Arda, 20 October 2026; `settings.soundTheme`, Settings → Sound theme): **Classic** (default; Turkish Klasik), **Futuristic**
-  (Fütüristik, Kenney Sci-Fi files in `sounds/future/`) and **Energy blade** (Enerji kılıcı; a synthesized humming blade, `sounds/energy/` for the
-  zaps). Never call it "lightsaber": Lucasfilm owns that trademark. A theme's file overrides the classic one (`THEME_RECORDED`, `THEME_SYNTH`); the
+  (Fütüristik, `sounds/future/`) and **Energy blade** (Enerji kılıcı; a synthesized humming blade, `sounds/energy/` for the zaps). Classic
+  is wood and steel from the free Sonniss GDC 2026 bundle (`tools/cut-sounds.py`, run after `tools/make-sounds.py`; Arda chose free sounds over
+  buying a pack). Never call it "lightsaber": Lucasfilm owns that trademark. A theme's file overrides the classic one (`THEME_RECORDED`, `THEME_SYNTH`); the
   tension music has one synthesized piece per theme. Takes within 450 ms are one burst (`strike()`): the first plays its stroke, the second one big
   combined strike (`combo`), the rest stay quiet; at most 2 copies of a sound play at once and frequent sounds vary their pitch slightly. Licenses: `docs/third-party-licenses.md`.
   The synthesized originals, for reference: every take plays a sword stroke (`playSlash`: a noise whoosh that

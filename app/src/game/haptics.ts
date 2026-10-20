@@ -190,14 +190,16 @@ function playBell(ac: AudioContext, t0: number) {
 
 // Recorded sounds. A name listed here plays its file (decoded once, kept in memory); the synthesized version below is
 // the fallback while the file loads or if it cannot be loaded. Files live in app/public/sounds/ (sources: docs/third-party-licenses.md).
-// Kenney's CC0 packs (RPG Audio, Impact Sounds, Interface Sounds, Sci-Fi Sounds), made by tools/make-sounds.py; the sword draw is Arda's file.
+// Kenney's CC0 packs (tools/make-sounds.py) and cuts from the Sonniss GDC 2026 bundle (tools/cut-sounds.py: the classic wood,
+// steel and bell, the futuristic interface sounds, the energy arcs); the sword draw is Arda's file.
 // Sound themes (settings.soundTheme): the classic files sit in sounds/, a theme's own files in sounds/<theme>/ and override them;
 // THEME_SYNTH sounds are synthesized in that theme (the energy blade hums, no recording does that).
-const RECORDED: SoundName[] = ['select', 'move', 'take', 'slash', 'slashBig', 'points', 'myTurn', 'turn', 'mode', 'collapse', 'out',
+const RECORDED: SoundName[] = ['select', 'move', 'take', 'slash', 'slashBig', 'combo', 'points', 'myTurn', 'turn', 'mode', 'collapse', 'out',
   'bonusGain', 'bonusUse', 'useStep', 'useDouble', 'useSwap', 'armor', 'win', 'lose', 'tick', 'count', 'bell'];
 const THEME_RECORDED: Record<SoundTheme, SoundName[]> = {
   classic: [],
-  future: ['take', 'slash', 'slashBig', 'combo', 'collapse', 'out', 'armor', 'useStep', 'useDouble', 'useSwap', 'unsheath'],
+  future: ['select', 'move', 'take', 'slash', 'slashBig', 'combo', 'points', 'myTurn', 'mode', 'collapse', 'out', 'bonusGain', 'bonusUse',
+    'armor', 'useStep', 'useDouble', 'useSwap', 'unsheath', 'win', 'lose'],
   energy: ['take', 'collapse', 'armor', 'useSwap'],
 };
 const THEME_SYNTH: Record<SoundTheme, SoundName[]> = { classic: [], future: [], energy: ['slash', 'slashBig', 'combo', 'unsheath'] };
