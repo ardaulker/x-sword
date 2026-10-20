@@ -195,6 +195,9 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ice); 
 .seg-shrink button { min-height: 56px; padding: 4px 2px; }
 .seg-shrink button b { font-size: 14px; text-align: center; line-height: 1.1; }
 .seg-shrink button span { font-size: 11px; text-align: center; line-height: 1.15; white-space: normal; }
+/* Sound theme names ("Energieklinge", "Futuristisch") wrap instead of spilling out at 320 px. */
+.seg-sound button { min-width: 0; padding: 6px 2px; }
+.seg-sound button b { font-size: 13px; text-align: center; line-height: 1.1; white-space: normal; overflow-wrap: anywhere; hyphens: auto; }
 .sheet-tall > .btn-row { position: sticky; bottom: -18px; z-index: 1; margin: 0 -18px -18px; padding: 10px 18px 18px; background: var(--surface-1); box-shadow: 0 -10px 16px var(--surface-1); }
 .pause-list { display: flex; flex-direction: column; gap: 8px; }
 .pause-btn { width: 100%; flex: none; }

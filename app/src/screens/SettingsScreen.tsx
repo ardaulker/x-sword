@@ -60,7 +60,7 @@ export function SettingsScreen({ onBack, onRules, onLegal, inGame = false }: { o
           onChange={v => update({ music: v })} />
         <div className="rule set-col">
           <div className="rule-text"><h3>{tr('Sound theme')}</h3><p>{tr('Sword strokes, takes and the shrink music change with the theme.')}</p></div>
-          <div className="seg" role="radiogroup" aria-label={tr('Sound theme')}>
+          <div className="seg seg-sound" role="radiogroup" aria-label={tr('Sound theme')}>
             {SOUND_THEMES.map(t => (
               <button key={t} type="button" role="radio" aria-checked={s.soundTheme === t} className={s.soundTheme === t ? 'is-on' : ''}
                 onClick={() => { update({ soundTheme: t }); preloadSounds(); setTimeout(() => sound('slashBig'), 250); }}>
