@@ -2,8 +2,8 @@
 Sci-Fi Sounds).
 Run: python3 tools/make-sounds.py <folder with the unzipped kenney_* packs> [theme]   (macOS: uses afconvert)
 Each game event (the names in app/src/game/haptics.ts → SOUNDS) maps to one recording. Change a table to try another one.
-Events cut from the Sonniss bundle (tools/cut-sounds.py: classic select, move, out, collapse, armor, bell; energy take and
-collapse) and the classic take sounds (tools/make-take-sounds.py) are not in these tables; run those scripts after this one.
+Events cut from the Sonniss bundle (tools/cut-sounds.py: classic select, move, take, slash, slashBig, combo, out, collapse, armor,
+bell; energy take and collapse) are not in these tables; run that script after this one.
 The classic theme ('') writes app/public/sounds/<event>.m4a; another theme writes app/public/sounds/<theme>/<event>.m4a and
 only needs the events it changes (haptics.ts → THEME_RECORDED lists them; the rest fall back to classic)."""
 import glob, os, subprocess, sys
@@ -13,7 +13,7 @@ THEME = sys.argv[2] if len(sys.argv) > 2 else ''
 OUT = 'app/public/sounds' + (f'/{THEME}' if THEME else '')
 MAPS = {
     '': {
-        'points':     'interface-sounds/confirmation_001',
+        'points':     'rpg-audio/handleCoins2',  # a few coins clinking: calm and classic (Arda, 21 Oct 2026: the blip was too modern)
         'myTurn':     'interface-sounds/pluck_001',
         'turn':       'interface-sounds/tick_002',
         'mode':       'interface-sounds/switch_002',

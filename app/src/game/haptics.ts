@@ -190,7 +190,7 @@ function playBell(ac: AudioContext, t0: number) {
 
 // Recorded sounds. A name listed here plays its file (decoded once, kept in memory); the synthesized version below is
 // the fallback while the file loads or if it cannot be loaded. Files live in app/public/sounds/ (sources: docs/third-party-licenses.md).
-// Kenney's CC0 packs (tools/make-sounds.py; the calm classic take sounds: tools/make-take-sounds.py) and cuts from the Sonniss GDC 2026 bundle (tools/cut-sounds.py: the classic wood,
+// Kenney's CC0 packs (tools/make-sounds.py) and cuts from the Sonniss GDC 2026 bundle (tools/cut-sounds.py: the classic wood,
 // steel and bell, the laser sword's arcs); the sword draw is built from Kenney recordings (tools/make-sword-draw.py).
 // Sound themes (settings.soundTheme): the classic files sit in sounds/, a theme's own files in sounds/<theme>/ and override them;
 // THEME_SYNTH sounds are synthesized in that theme (the laser sword hums, no recording does that).
@@ -208,7 +208,7 @@ const CLASSIC_FILES: Partial<Record<SoundName, string>> = {
 const fileOf = (name: SoundName, theme: SoundTheme) =>
   THEME_RECORDED[theme].includes(name) ? `sounds/${theme}/${name}.m4a` : CLASSIC_FILES[name];
 // Loudness per sound (the recordings are mastered at different levels; frequent ones stay quiet).
-const SAMPLE_GAIN: Partial<Record<SoundName, number>> = { select: 0.5, move: 0.55, turn: 0.35, tick: 0.5, myTurn: 0.6, points: 0.6, take: 0.6, slash: 0.6, slashBig: 0.8, combo: 0.8, bell: 0.8 };
+const SAMPLE_GAIN: Partial<Record<SoundName, number>> = { select: 0.5, move: 0.55, turn: 0.35, tick: 0.5, myTurn: 0.6, points: 0.6, take: 0.6, slash: 0.8, slashBig: 1, bell: 0.8 };
 // Sounds that repeat a lot get a slightly different pitch each time, so a burst of them doesn't sound like a machine gun.
 const VARY: SoundName[] = ['move', 'take', 'slash', 'slashBig', 'select', 'turn'];
 // At most this many copies of one sound at once: a fast run of takes stays a run of strokes, not a wall of noise.
@@ -265,6 +265,7 @@ export function sound(name: SoundName, opts?: { synth?: boolean; theme?: SoundTh
     if (buf && buf !== 'loading' && buf !== 'failed') {
       const rate = VARY.includes(name) ? 0.95 + Math.random() * 0.1 : 1;
       playSample(ac, buf, t0, SAMPLE_GAIN[name] ?? 0.9, rate);
+      if (name === 'combo') playBoom(ac, t0, 0.5);
       return;
     }
     loadSamples(ac);

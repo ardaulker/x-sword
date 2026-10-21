@@ -10,9 +10,13 @@ import array, glob, math, os, subprocess, sys, wave
 SRC = sys.argv[1]
 PEAK = 10 ** (-2 / 20)  # -2 dBFS
 CUTS = [
-    # Classic: wooden pieces, steel and a church bell (the take sounds are made by tools/make-take-sounds.py).
+    # Classic: wooden pieces, real steel and a church bell.
     ('', 'select',   'Board Game',        'UIClick_UI Button Analog Vintage',      0.00, 0.20, 0.05),
     ('', 'move',     'Board Game',        'Piece Action Organic Connect Dots',     0.00, 0.20, 0.05),
+    ('', 'take',     'Historical Weapons', 'Spear And Stick Impact, Wooden',        1.97, 2.32, 0.12),
+    ('', 'slash',    'Historical Weapons', 'Sword Slide Cuts, Metallic',            4.32, 4.92, 0.20),
+    ('', 'slashBig', 'Historical Weapons', 'Sword Slide Cuts, Metallic',           10.80, 11.60, 0.30),
+    ('', 'combo',    'Melee Weapons',     'METAL SWING HIT',                       0.00, 2.30, 0.90),
     ('', 'out',      'Melee Weapons',     'SWING IMPACTS Quick Heavy',             0.00, 1.00, 0.30),
     ('', 'collapse', 'Trailer Booms',     'Booms_Vol2_011',                        0.25, 3.20, 1.50),
     ('', 'armor',    'HD Game Materials', 'Metal Old File Impact',                 0.00, 0.50, 0.15),
