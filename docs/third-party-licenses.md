@@ -19,6 +19,7 @@ The OFL asks that the fonts keep their license text when redistributed: it is in
 | File | Use | Source and license |
 |---|---|---|
 | `app/public/sounds/sword-draw.m4a` | sword drawn at match start | Built by `tools/make-sword-draw.py` (21 Oct 2026) from Kenney's **CC0** "RPG Audio" (`metalClick`, `drawKnife1`, `drawKnife3`) and "Impact Sounds" (`impactMetal_light_003`), slowed and given a tuned metal ring. It replaced a Freesound file Arda supplied on 9 Oct 2026 whose page and license could not be traced; that file is no longer shipped. |
+| `app/public/sounds/{points,bonusGain,useStep,useDouble,useSwap}.m4a` | classic points and bonus sounds | Built by `tools/make-classic-ui.py` (21 Oct 2026) from Kenney's **CC0** "RPG Audio" (`cloth1`–`cloth3`) and "Impact Sounds" (`impactWood_*`, `footstep_wood_*`, `impactBell_heavy_*`), re-pitched, with tuned resonators for the wooden tone. |
 
 | `app/public/sounds/*.m4a` (all other game sounds) | moves, takes, bonuses, bell, countdown … | Kenney Vleugels, kenney.nl packs "RPG Audio", "Impact Sounds", "Interface Sounds", **CC0 1.0** (public domain; no credit needed, credited anyway). Downloaded 19 Oct 2026; the file-to-event table is in `tools/make-sounds.py`. |
 | `app/public/sounds/energy/armor.m4a`, `useSwap.m4a` | the Laser sword sound theme | Kenney Vleugels, kenney.nl "Sci-Fi Sounds", **CC0 1.0**. Downloaded 20 Oct 2026. The laser sword strokes, its ignition and all tension music are synthesized in `app/src/game/haptics.ts`. |

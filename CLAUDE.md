@@ -623,8 +623,8 @@ S#....#.
   **Sound themes** (Arda, 20 October 2026; `settings.soundTheme`, Settings → Sound theme): **Classic** (default; Turkish Klasik) and **Laser
   sword** (id `energy`; Turkish Işın kılıcı; a synthesized humming blade, `sounds/energy/` for the zaps). Never call it "lightsaber": Lucasfilm owns
   that trademark. A Futuristic theme was tried and dropped the same day (Arda didn't like it). Classic is wood and steel from the free Sonniss
-  GDC 2026 bundle (`tools/cut-sounds.py`, run after `tools/make-sounds.py`; Arda chose free sounds over buying a pack). The points sound after your or your Twin's take is a soft coin clink (Kenney `handleCoins2`; Arda, 21 Oct 2026: the
-  interface blip was too modern for classic). A theme's file overrides the classic one (`THEME_RECORDED`, `THEME_SYNTH`); the
+  GDC 2026 bundle (`tools/cut-sounds.py`, run after `tools/make-sounds.py`; Arda chose free sounds over buying a pack). The classic points and bonus sounds (points, bonusGain, useStep, useDouble, useSwap) are wood, cloth and a small bell, built
+  from Kenney CC0 recordings by `tools/make-classic-ui.py` (Arda, 21 Oct 2026: the interface blips and a coin clink didn't fit the classic theme). A theme's file overrides the classic one (`THEME_RECORDED`, `THEME_SYNTH`); the
   tension music has one synthesized piece per theme. Takes within 450 ms are one burst (`strike()`): the first plays its stroke, the second one big
   combined strike (`combo`), the rest stay quiet; at most 2 copies of a sound play at once and frequent sounds vary their pitch slightly. Licenses: `docs/third-party-licenses.md`.
   The synthesized originals, for reference: every take plays a sword stroke (`playSlash`: a noise whoosh that
