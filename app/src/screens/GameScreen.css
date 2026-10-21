@@ -271,6 +271,7 @@
 .bonus span { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bonus b { position: absolute; top: -6px; right: -4px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--ice); color: var(--ink); font: 800 10px/16px var(--font-display); }
 .bonus.is-empty { border-style: dashed; color: var(--text-2); background: transparent; }
+.bonus.is-gone { opacity: .35; } /* Twin swap after the Twin is taken */
 .bonus.is-passive { border-style: dashed; border-color: var(--player-1); }
 .bonus.is-ready { border-color: var(--player-1); animation: bonus-ready 2.2s ease-in-out infinite; }
 .bonus.is-on { background: var(--ice); color: var(--ink); border-color: var(--ice); }

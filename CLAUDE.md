@@ -116,7 +116,7 @@
   of your turn (`state.twinSteps`): two squares after a Double step (the square between must be empty), both moves of a Double move
   one after the other (it keeps the turn while steps remain), never onto its own star; it stays put after a Switcheroo or Twin swap,
   and Armor protects only you. Your first take in solo brings a **Twin swap** (`twinSwap`, Turkish "İkiz Takası", once per match,
-  `seat.twinSwapGiven`): swap places with your own Twin. Its button (short name "Twin") shows only in solo, making the bar five wide. In the first demo file the Twin was different: a hunter that chose its own
+  `seat.twinSwapGiven`): swap places with your own Twin. Its button (short name "Twin") shows only in solo, making the bar five wide. Once the Twin is taken the button stays but is switched off (dimmed, `is-gone`). In the first demo file the Twin was different: a hunter that chose its own
   moves under the player's rules.
 - Bonuses: everyone starts with one double step. 20 points double step, 40 double move, 60 one of the two at random,
   50 Switcheroo (swap places with any piece on the board; Turkish name "Yer Çalma"). Surviving the first shrink gives armor (one extra life); so does taking two pieces with the two moves of one Double move (`state.extra.takes`, once per sequence). The

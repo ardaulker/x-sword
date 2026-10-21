@@ -422,16 +422,19 @@ function BonusBar({ ctl, view }: { ctl: GameController; view: View }) {
   const st = ctl.state;
   const b = st.seats[ME].bonuses;
   const me = ctl.myStar();
+  const twinAlive = st.pieces.some(p => p.kind === 'twin' && p.alive);
   if (st.puzzle && !Object.values(b).some(n => n > 0) && !extraMoves(st, me)) return null;
   return (
     <div className="bonus-wrap">
       <BonusStrip st={st} me={me} view={view} />
       <div className={`bonus-bar${bonusKinds(st).length > 4 ? ' is-five' : ''}`} role="group" aria-label={tr('Bonuses')}>
         {bonusKinds(st).map(k => {
-          const have = b[k] > 0, usable = have && k !== 'armor';
+          // Twin swap needs a Twin to swap with: once it is taken the button stays visible but switched off.
+          const gone = k === 'twinSwap' && !twinAlive;
+          const have = b[k] > 0, usable = have && k !== 'armor' && !gone;
           return (
-            <button key={k} type="button" aria-pressed={view.bonus === k}
-              className={`bonus${view.bonus === k ? ' is-on' : ''}${k === 'armor' && have ? ' is-passive' : ''}${usable && view.bonus !== k ? ' is-ready' : ''}${have ? '' : ' is-empty'}`}
+            <button key={k} type="button" aria-pressed={view.bonus === k} disabled={gone}
+              className={`bonus${view.bonus === k ? ' is-on' : ''}${k === 'armor' && have ? ' is-passive' : ''}${usable && view.bonus !== k ? ' is-ready' : ''}${have && !gone ? '' : ' is-empty'}${gone ? ' is-gone' : ''}`}
               onClick={() => (usable ? ctl.selectBonus(k) : ctl.openBonusGuide())} aria-label={`${tr(BONUS_NAMES[k])}: ${b[k]}`}>
               <Icon d={BONUS_ICONS[k]} size={18} stroke={2} fill={k === 'double' ? 'currentColor' : 'none'} />
               <span>{shortBonus(k)}</span>
