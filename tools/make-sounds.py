@@ -2,8 +2,8 @@
 Sci-Fi Sounds).
 Run: python3 tools/make-sounds.py <folder with the unzipped kenney_* packs> [theme]   (macOS: uses afconvert)
 Each game event (the names in app/src/game/haptics.ts → SOUNDS) maps to one recording. Change a table to try another one.
-Events cut from the Sonniss bundle (tools/cut-sounds.py: classic select, move, take, slash, slashBig, combo, out, collapse, armor,
-bell; energy take and collapse) are not in these tables; run that script after this one.
+Events cut from the Sonniss bundle (tools/cut-sounds.py: classic select, move, out, collapse, armor, bell; energy take and
+collapse) and the classic take sounds (tools/make-take-sounds.py) are not in these tables; run those scripts after this one.
 The classic theme ('') writes app/public/sounds/<event>.m4a; another theme writes app/public/sounds/<theme>/<event>.m4a and
 only needs the events it changes (haptics.ts → THEME_RECORDED lists them; the rest fall back to classic)."""
 import glob, os, subprocess, sys
