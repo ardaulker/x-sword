@@ -79,7 +79,6 @@ The no-install alternative is the web version: Safari → Share → "Add to Home
 
 - Apple's guideline 4.2 (minimum functionality): the native pieces above (Game Center, haptics, offline play) are what make this more
   than a web wrapper. Offline play already works because the web build is bundled in the app; multiplayer needs the network.
-- Settle the sword-draw sound's license (see `docs/third-party-licenses.md`).
 - Decide whether the public lobby ships; it needs the report/block flow answered (see `docs/store-compliance.md`).
 - Real-device checks: vibration patterns, Game Center sign-in, audio with the silent switch, rotating the phone, a PeerJS match between
   the phone and a browser.

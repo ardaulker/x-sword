@@ -191,7 +191,7 @@ function playBell(ac: AudioContext, t0: number) {
 // Recorded sounds. A name listed here plays its file (decoded once, kept in memory); the synthesized version below is
 // the fallback while the file loads or if it cannot be loaded. Files live in app/public/sounds/ (sources: docs/third-party-licenses.md).
 // Kenney's CC0 packs (tools/make-sounds.py) and cuts from the Sonniss GDC 2026 bundle (tools/cut-sounds.py: the classic wood,
-// steel and bell, the laser sword's arcs); the sword draw is Arda's file.
+// steel and bell, the laser sword's arcs); the sword draw is built from Kenney recordings (tools/make-sword-draw.py).
 // Sound themes (settings.soundTheme): the classic files sit in sounds/, a theme's own files in sounds/<theme>/ and override them;
 // THEME_SYNTH sounds are synthesized in that theme (the laser sword hums, no recording does that).
 const RECORDED: SoundName[] = ['select', 'move', 'take', 'slash', 'slashBig', 'combo', 'points', 'myTurn', 'turn', 'mode', 'collapse', 'out',

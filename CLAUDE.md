@@ -618,7 +618,7 @@ S#....#.
   "{name} swung their sword. You are out!" and the "why I lost" line says "Struck down by {name} (…) · round n"; the
   rules' Taking card explains the sword mark (+ straight, × diagonal).
 - **Sounds** (`game/haptics.ts`; since 19 October 2026 **recorded**: Kenney's CC0 packs for every event, `app/public/sounds/<event>.m4a` made by
-  `tools/make-sounds.py` (edit its table to swap a sound, loudness in `SAMPLE_GAIN`), plus Arda's sword-draw file; the old synthesized sounds
+  `tools/make-sounds.py` (edit its table to swap a sound, loudness in `SAMPLE_GAIN`), plus the sword draw built from CC0 Kenney recordings by `tools/make-sword-draw.py` (21 Oct 2026; the earlier Freesound file had no traceable license); the old synthesized sounds
   remain the fallback. The hidden page `#/sounds` plays every sound new and old side by side.
   **Sound themes** (Arda, 20 October 2026; `settings.soundTheme`, Settings → Sound theme): **Classic** (default; Turkish Klasik) and **Laser
   sword** (id `energy`; Turkish Işın kılıcı; a synthesized humming blade, `sounds/energy/` for the zaps). Never call it "lightsaber": Lucasfilm owns

@@ -68,4 +68,4 @@ open `chrome://inspect` in Chrome, or talk to `http://localhost:9222/json` with 
 
 - Real-phone checks: vibration patterns, Play Games sign-in (after step 3), sound, edge-to-edge layout, rotating the phone, a PeerJS match between
   the phone and a browser.
-- The sword-draw sound's license (see `docs/third-party-licenses.md`) and the contact e-mail in `app/src/legal/config.json`.
+- The contact e-mail in `app/src/legal/config.json`.
